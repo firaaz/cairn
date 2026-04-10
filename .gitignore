@@ -1,0 +1,15 @@
+# Editors
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Python (for validate_architecture.py if tooling grows)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local dev state
+.claude/handoff.md
+.claude/current-slice/
