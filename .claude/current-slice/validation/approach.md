@@ -101,9 +101,9 @@ Locating V1–V7 in the testing pyramid surfaced that they are **not unit tests*
 
 This mapping is what Phase 2 would have committed to in `validation/approach.md` on completion. Flagging it here so it is not re-derived on resume.
 
-## Open sub-decisions deferred to `/decision`
+## Open sub-decisions — DEFERRED OUT OF SLICE-002 (2026-04-12 rescope)
 
-These blocked Phase 2 closure, which is why the slice is stopped rather than completed:
+**2026-04-12 rescope note.** The three items below were originally framed as Phase 2 blockers. P0b review on 2026-04-12 amended SLICE-002 to narrow Phase 2 scope: all three sub-decisions are now **deferred out of SLICE-002 as future scope**, tracked independently in `docs/plans/2026-04-11-substrate-and-framework-exploration-notes.md`. Phase 2 proceeds on the current Python substrate with pytest + stdlib only (no hypothesis). The items below are preserved verbatim as the historical Phase 2 brainstorming record — they are no longer blockers for SLICE-002 but remain open questions for separate decisions:
 
 1. **Adopt `hypothesis` as a Python test dependency** to property-test the primitive layer. Cairn currently has zero Python runtime dependencies. Adding one is an architectural move, needs explicit commitment.
 2. **Cairn's test-pyramid commitment** — is the unit/property/contract/behavior pyramid (explicitly no eval-based) cairn's self-applied testing discipline going forward? This is a durable commitment, ADR-shaped.
@@ -127,19 +127,13 @@ These blocked Phase 2 closure, which is why the slice is stopped rather than com
 
 ## What resume needs
 
-**If decision says "stay on current substrate":**
+Post-2026-04-12 rescope: no decision gate, no branch. Phase 2 proceeds directly on the current Python substrate:
 
 - Pick up this approach.md unchanged
-- Answer sub-decision (1) — hypothesis yes/no — append to this file
-- Write `tests/unit/test_context_discipline_protocol.py` with the primitive layer and V1–V7 thin test functions
+- Write `tests/unit/test_context_discipline_protocol.py` with the primitive layer and V1–V7 thin test functions (pytest + stdlib only, no hypothesis)
 - Commit, verify Phase 2 gate, handoff to Phase 3
 
-**If decision says "rewrite substrate":**
-
-- SLICE-002's envelope probably changes (test file language/location differs)
-- Re-evaluate whether the primitive-layer sketch translates to the new language
-- V2 (B), V4, V6, V7 sub-resolutions are language-independent and remain valid
-- May need a new slice superseding SLICE-002, or an intent.md amendment
+The original two-branch structure ("stay" vs "rewrite substrate") is preserved in git history — see commit message on the rescope commit. If substrate ever changes in a future decision, the primitive-layer sketch is language-independent and the V2/V4/V6/V7 sub-resolutions port directly.
 
 ## Do NOT re-derive on resume
 
