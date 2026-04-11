@@ -218,3 +218,44 @@ Three hooks wired in `.claude/settings.json`:
 - **`reality-check.sh`** (PostToolUse on `Edit|Write`): runs `ruff format` and `ruff check --fix` on Python files.
 
 Hooks are friction-plus-walls, not security boundaries. A determined or careless agent can route around the friction layer; the wall layer (the explicit patterns above) holds.
+
+## Cairn repo internals (load on demand)
+
+This section documents cairn's own repo layout and working practices. It is deliberately not in `CLAUDE.md` — CLAUDE.md is a safety cheat sheet, not a README. Load this section when doing non-trivial work on cairn itself.
+
+### What this repo is
+
+Cairn is a methodology repository, not a runnable application or library. It contains the protocols, shell-script hooks, slash commands, and documentation that implement a four-phase slice pipeline (Intent → Validation → Implementation → Integration), a decision protocol for architectural work, and a substrate validator. It is consumed by *other* projects, which symlink it as `.slice-system/` and reference its scripts/docs from their own `.claude/` configuration. Cairn also consumes itself the same way — a `.slice-system → .` self-symlink lets the same pipeline run on cairn's own development (see ADR-001 for the bootstrap exception that put this in place).
+
+Status: solo, pre-v1. See `docs/roadmap.md` for the work required to reach v1, and `CHANGELOG.md` for the delta since v0.1.0.
+
+### Repo layout
+
+- `checks/` — POSIX shell hooks. PreToolUse / PostToolUse handlers that read JSON from stdin. Three hooks: `reversibility-guard.sh` (blocks destructive ops, enforces ADR append-only), `scope-guard.sh` (blocks edits outside the current slice envelope), `reality-check.sh` (runs `ruff format` + `ruff check --fix` on Python edits).
+- `commands/claude-code/` — Markdown slash commands (`/start-slice`, `/decision`, `/catchup`, `/handoff`, `/integration-sweep`, `/new-adr`, `/refresh-architecture`, `/status`). A `commands/windsurf/` mirror is roadmapped but does not exist yet.
+- `docs/` — Three layers: `operational-reference.md` (Layer 1, this file), `spec-v1.md` (Layer 2, canonical spec — deliberately not auto-loaded), `vision.md` + `roadmap.md` (what v1 commits to and the ordered slice sequence to get there).
+- `scripts/validate_architecture.py` — single-file validator checking consistency between `docs/ARCHITECTURE.md` invariants and the `docs/adr/` corpus.
+- `templates/` — currently empty; template extraction is a may-land-before-v1 item.
+
+### Working on cairn itself
+
+There is no build, no package manifest, and no test suite in this repo. Common operations:
+
+- **Lint a hook script:** `shellcheck checks/<name>.sh` (if shellcheck is installed).
+- **Smoke-test a hook locally:** the hooks read JSON from stdin. Example:
+  ```
+  echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}' | bash checks/reversibility-guard.sh
+  ```
+  Exit code 2 + JSON on stdout = blocked. Exit 0 = allowed.
+- **Run the validator:** `python3 scripts/validate_architecture.py` (stdlib only). Fails in this repo until the meta-dogfood `docs/ARCHITECTURE.md` and `docs/adr/` exist — expected, not a bug.
+
+When doing non-trivial work on cairn, the intended flow is meta-dogfood: use cairn's own slice pipeline (via the slash commands) to develop cairn. Per CHANGELOG, this is not yet wired up — the first cairn slice is supposed to set it up.
+
+### Editing rules expanded
+
+- **Scope-guard goes dormant when slice status is `complete` or `failed`** and always allows writes under `.claude/current-slice/`, `.claude/handoff.md`, `.claude/sweep.yaml`, `docs/adr/`, `docs/ARCHITECTURE.md`, `docs/lessons.md`. Auto-includes test mirrors of envelope source files. Override: `EXPAND_ENVELOPE=1`, which logs to `.claude/current-slice/envelope-expansions.log`.
+- **Six v1 commitments** (`docs/vision.md`) are the spec for cairn's own development: agent-portable, parallelism-native, soft agent-split, meta-dogfoodable from slice #1, plastic phase shape through v1, explicit cognitive roles per phase. Don't lock in designs that contradict these — especially not a global "one active slice" pointer (parallelism is a v1 commitment, not a future feature).
+
+### Documentation tiers — when to load what
+
+If a question is operational ("what does Phase 2 receive as input?", "what does scope-guard allow?"), this file (`docs/operational-reference.md`) is sufficient. If a question is about the *why* (failure modes, the dual context-engineering / role-reset thesis, empirical support, what the system does and does not claim), read `docs/spec-v1.md`. The spec is long and intentionally kept out of default context — pull it in deliberately when needed.
