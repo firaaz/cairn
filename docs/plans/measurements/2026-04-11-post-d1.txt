@@ -1,0 +1,17 @@
+post-D1 turn-1 context (cairn, 3 most recent sessions by mtime):
+------------------------------------------------------------
+  5c9679bd  total= 30340  (cc=13725 cr=16609)   [pre-D1: this execution session, started before trims]
+  32fba4c6  total= 27314  (cc=10699 cr=16609)   [POST-D1 FRESH SESSION]
+  2d54c22a  total= 31911  (cc=15296 cr=16609)   [pre-D1: from baseline window]
+
+Only one fresh post-D1 session was started for measurement (32fba4c6).
+The other two most-recent-by-mtime sessions are pre-D1 and excluded
+from the average.
+
+baseline avg (5 sessions):  31429
+post-D1 fresh session:      27314
+delta:                      4115 tokens (13.1%)
+
+Target delta: 1600-2300 tokens
+Actual delta: 4115 tokens — exceeded upper target by ~1800 tokens
+Pass criterion (delta >= 1500): PASS
