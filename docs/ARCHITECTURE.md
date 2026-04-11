@@ -9,6 +9,8 @@ This document is a **derived view** synthesized from the ADR corpus in `docs/adr
 
 **INV-001** All cairn development after the bootstrap commit flows through `/decision` or `/start-slice`. Direct commits to this repo are not permitted except as recorded in a superseding ADR. (ADR-001)
 
+**INV-002** Session-to-session context transfer obeys a three-layer context discipline protocol: (a) `.claude/handoff.md` is a pointer artifact bounded at 150–400 tokens with fixed section structure and a forbidden-sections list, (b) `/catchup` reads only a fixed five-item list into main context and gates further reads behind explicit Tier 2 admission criteria dispatched via subagent, and (c) `/start-slice` wipes `.claude/current-slice/` on transition to `status: complete` so each slice inherits no residue from its predecessor. (ADR-002)
+
 ## Boundaries
 
 Cairn's internal boundaries are not yet declared. The first cairn slice (phase rethink, per `docs/roadmap.md` §Must-land-before-v1 item 1) runs `/decision` to lock phase count, boundaries, names, and role per phase. That decision will populate this section.
