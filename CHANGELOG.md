@@ -10,12 +10,10 @@ All notable changes to cairn. Format loosely follows [Keep a Changelog](https://
 
 ### Fixed
 - Dead reference `docs/development-system-spec-v1.md` in `docs/operational-reference.md:3` corrected to `docs/spec-v1.md`.
+- **Validator project-root resolution across `.slice-system` symlinks** (SLICE-001 `validator-symlink-fix`). `scripts/validate_architecture.py` no longer uses `Path(__file__).resolve().parent.parent` — that path canonicalized through the consumer project's `.slice-system` symlink back to the cairn install, making every consumer silently validate cairn's own substrate instead of their own. Resolution now tries `$CLAUDE_PROJECT_DIR`, then `git rev-parse --show-toplevel` from the current working directory, and exits with code `2` plus a stderr diagnostic if neither succeeds. No silent fallback to the script's own install path: a loud failure is strictly better than a false-green on the wrong project. Regression tests covering cairn self-dogfood, consumer via symlink with and without the env var, invocation from a subdirectory, a broken consumer substrate, and an unresolvable root live in `tests/unit/test_validate_architecture.py`.
 
 ### Changed
 - `.gitignore` no longer excludes `.claude/current-slice/` (required for the phase-gate mechanism to show committed slice artifacts in `git log`). `.claude/adr-editorial-fixes.log` added to the ignore list.
-
-### Known issues
-- **Validator follows `.slice-system` symlink to the wrong project root.** `scripts/validate_architecture.py:22` uses `Path(__file__).resolve().parent.parent` to locate the project root. When a consumer project invokes the script as `.slice-system/scripts/validate_architecture.py`, `.resolve()` canonicalizes the symlink back to the cairn install directory — so the validator reads cairn's own `docs/ARCHITECTURE.md` and `docs/adr/` instead of the consumer's. Discovered from a real consumer project where manual consistency verification passed but the validator was silently checking cairn's substrate. Latent for cairn's own self-consumption (cairn's docs are the correct answer either way), actively wrong for every other consumer. Fix direction: determine project root from `$CLAUDE_PROJECT_DIR`, then fall back to `git rev-parse --show-toplevel` against the process cwd, and only as a last resort fall back to `Path(__file__).resolve().parent.parent`. Fix belongs in cairn, not in consumer projects.
 
 ## [0.1.0] — 2026-04-11
 

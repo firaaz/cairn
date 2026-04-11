@@ -12,14 +12,67 @@ Usage:
 Exit codes:
     0 — all checks pass
     1 — one or more checks failed
-    2 — missing required files
+    2 — missing required files, or project root could not be resolved
 """
 
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+def _resolve_project_root() -> Path:
+    """Locate the consumer project's repo root.
+
+    Tried in order:
+      1. CLAUDE_PROJECT_DIR environment variable
+      2. `git rev-parse --show-toplevel` from the current working directory
+
+    On failure, write a diagnostic to stderr and exit 2. There is no
+    fallback based on this script's own location: consumers use cairn via
+    a `.slice-system` symlink, and any `__file__`-based resolution
+    canonicalizes through that symlink back to cairn's install — causing
+    the validator to silently read cairn's own substrate instead of the
+    caller's. A loud failure is strictly better than that false-green.
+    """
+    attempted: list[str] = []
+
+    env_dir = os.environ.get("CLAUDE_PROJECT_DIR")
+    if env_dir:
+        return Path(env_dir)
+    attempted.append("CLAUDE_PROJECT_DIR (unset)")
+
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        top = result.stdout.strip()
+        if top:
+            return Path(top)
+        attempted.append("git rev-parse --show-toplevel (empty output)")
+    except FileNotFoundError:
+        attempted.append("git rev-parse --show-toplevel (git not installed)")
+    except subprocess.CalledProcessError:
+        attempted.append("git rev-parse --show-toplevel (not a git repository)")
+
+    diagnostic_lines = [
+        "ERROR: cannot identify project root for architecture validation.",
+        "Mechanisms attempted:",
+    ]
+    diagnostic_lines.extend(f"  - {item}" for item in attempted)
+    diagnostic_lines.append(
+        "Set CLAUDE_PROJECT_DIR to the project root, "
+        "or invoke from inside a git repository."
+    )
+    print("\n".join(diagnostic_lines), file=sys.stderr)
+    sys.exit(2)
+
+
+PROJECT_ROOT = _resolve_project_root()
 ARCHITECTURE_FILE = PROJECT_ROOT / "docs" / "ARCHITECTURE.md"
 ADR_DIR = PROJECT_ROOT / "docs" / "adr"
 

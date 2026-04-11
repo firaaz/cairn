@@ -52,9 +52,17 @@ def _make_consumer_project(
         "",
     ]
     for i in range(1, invariants + 1):
-        target_adr = broken_ref if broken_ref else f"ADR-{900 + i:03d}"
+        if broken_ref:
+            refs_str = broken_ref
+        else:
+            own_adr = f"ADR-{900 + i:03d}"
+            if i == 1 and adrs > invariants:
+                extras = [f"ADR-{900 + j:03d}" for j in range(invariants + 1, adrs + 1)]
+                refs_str = ", ".join([own_adr, *extras])
+            else:
+                refs_str = own_adr
         arch_lines.append(
-            f"**TMP-{i:03d}** Fixture invariant {i} for symlink resolution testing. ({target_adr})"
+            f"**INV-{i:03d}** Fixture invariant {i} for symlink resolution testing. ({refs_str})"
         )
         arch_lines.append("")
     arch_lines.extend(
@@ -87,7 +95,7 @@ def _make_consumer_project(
                 supersedes-sections: []
                 superseded-by: null
                 topic: process
-                invariants-touched: [TMP-{i:03d}]
+                invariants-touched: [INV-{i:03d}]
                 date: 2026-04-11
                 ---
 
