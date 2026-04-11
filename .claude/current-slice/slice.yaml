@@ -1,0 +1,18 @@
+id: SLICE-002
+title: "Rewrite handoff and catchup protocols for context discipline"
+status: validation
+started: 2026-04-11
+completed: null
+invariants-touched: [INV-002]
+adrs-referenced: [ADR-002, ADR-003]
+adrs-created: [ADR-002]
+amend-rationale: |
+  Archived 2026-04-11 at Phase 2 pending /decision on substrate/test-pyramid/hypothesis
+  (see validation/approach.md § Open sub-decisions). P0b review 2026-04-12 amends envelope
+  contribution: SLICE-002's V1–V7 contract-conformance tests migrate INV-002 from
+  instructed to machine-checked, satisfying ADR-003 D2 (code↔invariant binding). Resume on
+  D2-contribution grounds, not just INV-002 cleanup. Substrate sub-decision still blocks
+  Phase 2 test-file write — run /decision in a fresh session before authoring
+  tests/unit/test_context_discipline_protocol.py. V2 (shared-window), V4/V6/V7
+  sub-resolutions, Approach 1+ design in approach.md remain valid regardless of substrate
+  outcome; pyramid mapping (V1–V7 as contract-conformance) is preserved.
