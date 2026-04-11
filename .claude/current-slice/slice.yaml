@@ -1,8 +1,11 @@
 id: SLICE-002
 title: "Rewrite handoff and catchup protocols for context discipline"
-status: validation
+status: stopped
 started: 2026-04-11
+stopped: 2026-04-11
 completed: null
 invariants-touched: [INV-002]
 adrs-referenced: [ADR-002]
 adrs-created: [ADR-002]
+stopped-at-phase: 2-validation
+stopped-reason: "Pending /decision on test pyramid and substrate strategy (language/runtime for cairn's own implementation). Phase 2 brainstorming produced V2 resolution (option B / shared-window) and Approach 1+ test design (primitive layer + flat test functions), preserved in validation/approach.md. SLICE-002 resumes after decision lands — envelope may need amendment if substrate changes."
