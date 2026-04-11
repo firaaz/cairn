@@ -1,6 +1,6 @@
 id: SLICE-003-precursor
 title: "ADR-004 D4 surfacing: Phase Skill Guide + phase-entry role/skill print + D3 adrs-referenced gate"
-status: implementation
+status: integration
 started: 2026-04-11
 completed: null
 invariants-touched: [INV-003]
