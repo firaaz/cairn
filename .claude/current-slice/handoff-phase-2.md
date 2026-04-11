@@ -1,35 +1,15 @@
-# SLICE-002 Phase 2 — STOPPED on 2026-04-11
+# Phase 2 Handoff — 2026-04-12
 
-## Why Stopped
+## Gate
+**MET.** `tests/unit/test_context_discipline_protocol.py` committed at 83880ea. All seven V1–V7 tests FAIL correctly (not error) against current pre-rewrite state. Scope-guard clean, no envelope violations.
 
-User opened a bigger architectural question mid-Phase-2: what language/runtime should cairn be written in, given the codebase is AI-managed, iteration speed matters, and the prize is "make bug classes unrepresentable in the type system"? That question is a `/decision`, not a Phase 2 choice. Continuing Phase 2 now risks writing tests against a substrate that may be replaced — wasted work.
+## Artifact
+Contract-conformance test file: primitive layer (`slice_frontmatter`, `slice_section`, `contains_all`, `contains_none`, `shared_window`, `proximity`, `rglob_missing`) + seven flat `test_vN_*` functions mapping 1:1 to intent.md § Verification. Follows `tests/unit/test_validate_architecture.py` style. pytest + stdlib only.
 
-## Phase Gate
+## Context isolation (Phase 3 inputs)
+Load only: `intent.md`, the test file, `ARCHITECTURE.md` for cross-reference.
 
-**Not met.** No validation tests committed. Phase 2 artifact (`tests/unit/test_context_discipline_protocol.py`) does not exist.
+Do NOT load: `validation/approach.md`. Its design choices (V2 shared-window semantics, V4 step slicing with prefix-match, V6 section rules, Approach 1+ primitive layer) are already encoded in the test code. Re-reading the rationale re-opens resolved Skeptic questions inside the Builder role.
 
-## What Phase 2 Produced (Preserved in git)
-
-- `.claude/current-slice/validation/approach.md` — full reasoning trace. V2 resolution (option B / shared-window), V4 + V6 + V7 sub-resolutions, Approach 1+ test design (primitive layer + 7 flat functions), testing pyramid mapping, open sub-decisions.
-
-No test file. No envelope-target edits.
-
-## What the Next Session Does
-
-**NOT `/start-slice phase 2`.** The slice is stopped; the next session is a decision session.
-
-1. `/catchup` (Tier 1 only)
-2. Fresh brainstorming on the substrate question (see approach.md §"Open sub-decisions" item 3 for the framing)
-3. `/decision` on the resulting substrate strategy + testing-pyramid commitment
-4. THEN — and only then — decide whether SLICE-002 resumes as-is, is amended, or is superseded
-
-## What Resume Needs
-
-After `/decision` lands:
-
-- **If substrate unchanged** → continue approach.md as-is, answer `hypothesis` sub-decision, write test file per the Approach 1+ design, commit, gate to Phase 3
-- **If substrate changes** → re-evaluate envelope; primitive-layer sketch may need translation; V2/V4/V6/V7 sub-resolutions are language-independent and still valid
-
-## Do NOT Re-Derive
-
-All V-resolutions and the Approach 1+ design are preserved in `validation/approach.md`. The brainstorming does not need to re-run unless the decision materially invalidates the shape (e.g. test language changes from Python to TypeScript, which would change primitive signatures but not semantics).
+## Ambiguities for Phase 3
+None surfaced. Approach.md's preserved V2/V4/V6/V7 sub-resolutions covered every choice point encountered while writing the primitive layer and the seven test bodies. If Phase 3 hits a structural impossibility without expanding scope, escalate per ADR-004 A2 tripwire (novel design tokens in Phase 3 absent from intent.md) rather than silently widening the envelope.
