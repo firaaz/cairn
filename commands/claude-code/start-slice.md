@@ -30,13 +30,17 @@ Each phase's artifact must be committed to git before advancing. This isn't bure
 
 | Target Phase | Required Artifact | Verification |
 |-------------|-------------------|-------------|
-| Phase 2 (Validation) | `intent.md` committed | `git log --oneline -- .claude/current-slice/intent.md` returns at least one line |
+| Phase 2 (Validation) | `intent.md` committed AND every ADR named in its `adrs-referenced` YAML field already exists as a committed file in `docs/adr/` (D3 gate, ADR-004) | `git log --oneline -- .claude/current-slice/intent.md` returns at least one line; AND for each slug in `adrs-referenced`, `git log --oneline -- docs/adr/<NNN>-*.md` (where `<NNN>` is the slug's numeric suffix) returns at least one commit |
 | Phase 3 (Implementation) | Validation tests committed | `git log --oneline -- tests/` returns commits for test files matching the envelope's test patterns |
 | Phase 4 (Integration) | Source files committed | `git status --short` shows no uncommitted changes in envelope files |
 
+**D3 gate semantics (Phase 2 row).** Every ADR slug named in `intent.md`'s `adrs-referenced` field MUST already exist as a committed file in `docs/adr/` before Phase 2 starts. This enforces `docs/spec-v1.md` §6's Decision→Intent immutability rule structurally: intent cannot reference a decision that has not yet been made. Slug resolution is filename-glob based — for a slug like `ADR-004`, check `git log --oneline -- docs/adr/004-*.md` (the numeric suffix is the key; the descriptive tail of the filename is not part of the slug contract). An **empty** `adrs-referenced` field **passes the gate trivially** — cleanup slices, pure-implementation slices, and other low-consequence slices are not forced to cite ADRs they do not depend on, per ADR-004 D3.
+
+**D3 gate failure path.** When one or more ADRs are missing from `docs/adr/`, the gate MUST fail and the failure message MUST name **every** missing ADR slug, not just the first. Example: `Gate FAILED: missing ADR files for slugs [ADR-004, ADR-007]. intent.md references ADRs that are not yet committed to docs/adr/. Either commit the missing ADRs first (via /decision or /new-adr), or remove them from adrs-referenced in intent.md.` The plurality commitment matters because silent truncation ("missing ADR: ADR-004") would let a slice drift past a second unresolved decision on retry. List all missing slugs in every failure message.
+
 **If the gate fails:** Explain what's missing and give the exact git commands to fix it. Do not proceed — this gate is what makes the whole system work.
 
-**If the gate passes:** Update `slice.yaml` status field and proceed with phase-specific guidance below.
+**If the gate passes:** Update `slice.yaml` status field. Then — before advancing into the phase-specific guidance below — read `docs/operational-reference.md § Phase Skill Guide` and print the target phase's **role name**, **primary anti-behavior**, **secondary anti-behaviors**, and **primary + supporting skills** to the operator. This is the ADR-004 D4 surfacing commitment: roles and skills are not dead text, they are echoed at every phase entry. For Phase 1, the primary-skills column is an em-dash (no primary fit) — still print the row so the operator sees the explicit absence rather than inferring a missing assignment. The Phase Skill Guide is a living registry; if an entry looks stale, the registry is the source to update, not this skill.
 
 ### Phase 2: Validation
 

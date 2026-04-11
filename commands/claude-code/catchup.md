@@ -66,6 +66,8 @@ Then load ONLY the declared inputs for the target phase:
 - Load: `.claude/current-slice/intent.md`, `docs/ARCHITECTURE.md`, the implementation (source files in envelope)
 - Exclude: Phase 3's `implementation/notes.md` — check the code, not the reasoning
 
+Then — before printing the orientation report below — read `docs/operational-reference.md § Phase Skill Guide` and surface the target phase's **role name**, **primary anti-behavior**, **secondary anti-behaviors**, and **primary + supporting skills** to the operator. This surfacing is the ADR-004 D4 commitment: the role and skill mapping are not dead text, they are read and echoed at every phase entry. For Phase 1 specifically, the primary-skills column is an em-dash (no primary fit) — still print the row so the operator sees the explicit absence rather than inferring a missing assignment. The Phase Skill Guide is a living registry; if an entry looks stale, the registry is the source to update, not this skill.
+
 Report what's loaded AND what's deliberately excluded:
 > **Loaded**: intent.md, 3 test files, ARCHITECTURE.md
 > **Excluded** (context isolation): Phase 2 approach.md, implementation notes
