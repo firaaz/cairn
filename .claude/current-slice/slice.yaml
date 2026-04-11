@@ -1,8 +1,8 @@
 id: SLICE-002
 title: "Rewrite handoff and catchup protocols for context discipline"
-status: integration
+status: complete
 started: 2026-04-11
-completed: null
+completed: 2026-04-12
 invariants-touched: [INV-002]
 adrs-referenced: [ADR-002, ADR-003]
 adrs-created: [ADR-002]
