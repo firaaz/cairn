@@ -21,3 +21,38 @@ Cross-cutting patterns discovered during slice work, referenced by `/decision` P
 **Exceptions**: `/integration-sweep` and `/refresh-architecture` commits are pipeline-substrate operations whose exclusion from `/start-slice` is a known scar (see the recursive consequence above). They are not a license for other kinds of direct commits.
 
 **Anti-pattern signals**: "it's just docs," "it's only three lines," "I'll open the slice right after," "the invariant doesn't really mean this." All of these were internally true in the concrete instance. None of them prevented the violation.
+
+## L-002: Route-before-run — triage, framing, and analysis are three distinct steps
+
+**Discovered**: 2026-04-11, during the phase rethink `/decision` session (P0a from the ADR-003 v1 execution plan). Observed while comparing cairn's `/decision` against Superpowers' `brainstorming` skill and RIPER-5's capability-gated modes; formalized in the same session.
+
+**Pattern**: Every incoming unit of work answers three questions in order, and each question can be revisited when the next one reveals the prior answer was wrong.
+
+**Step 0 — Triage (which flow(s), how many, in what order?)**: classify the work against cairn's current flow corpus:
+
+- `superpowers:brainstorming` — framing-only; output is a spec, no commitment to a direction
+- `/decision` — architectural commitment; output is an ADR
+- `/start-slice` — implementation under existing constraints; output is a 4-phase passage
+- `/integration-sweep` — cross-slice audit; output is sweep notes + possibly new slices
+- `/refresh-architecture` — derived-view regeneration; output is `docs/ARCHITECTURE.md`
+- Direct ADR editorial fix (`ADR_EDITORIAL_FIX=1`) — frontmatter or typo patch
+
+Triage outputs **a sequence** of one or more flows. Examples: a code-local bug report → `/start-slice` alone (1 flow). An architectural question with a clear framing → `/decision` alone (1 flow). An architectural question arriving cold → `brainstorming` → fresh session → `/decision` (2 flows). A feature request that implies both a decision and an implementation → `/decision` → fresh session → `/start-slice` (2 flows). An exploratory "I'm not sure what I want yet" → `brainstorming` alone, the session itself is the output (1 flow, no downstream commitment). A cross-project observation from integration-sweep that needs a new invariant → sweep findings → `/decision` → `/start-slice` (3 flows). The scope of triage is expected to expand as cairn's flow corpus grows.
+
+**Step 1 — Framing (does a framing artifact already exist?)**: a framing artifact is any document that maps the constraint space and enumerates candidate approaches — exploration note, plan doc, RFC, ADR predecessor, prior brainstorming output. If yes → feed it directly to the next flow's entry point (`/decision` Phase 0, `/start-slice` Step 5). If no → run `superpowers:brainstorming` in a **fresh session** to produce one. The session boundary between framing and the next flow is load-bearing — it extends ADR-002's session-isolation principle from slice-phase boundaries to decision-framing boundaries.
+
+**Step 2 — Analysis/execution**: run the chosen flow in its own fresh session. Standard flow rules apply. No framing work happens inside `/decision` Phase 0; no `/decision`-flavored adversarial analysis happens inside brainstorming. Each phase does its own job.
+
+**Triage is a classifier, not a commitment. Flows are open to change mid-run:**
+
+- **Downshift** (spec-v1 §4 already implements this): `/decision` started, work turns out to be trivial → demote by marking the ADR `firmness: provisional` and skipping Phase 5. The Phase 0 constraint harvest and Phase 2 enumeration remain valuable even for trivial work.
+- **Upshift** (spec-v1 §5; `docs/reviews/2026-04-11-from-rag-session.md` Finding 2): `/start-slice` started, architectural invariant discovered mid-slice → fail the slice, restart with a `/decision` that produces the ADR, then re-enter the slice with the new constraint as input. Do NOT patch around the discovery inside the slice — that routes around the verification layer.
+- **Reframe** (applies to any flow, any phase): if triage was wrong, return to triage. The cost of a mis-triage caught early is small; the cost of running the wrong flow to completion is the cost of all the work done under the wrong discipline.
+
+**Concrete instance**: the phase rethink `/decision` session on 2026-04-11 ran as a clean 1-flow path (`/decision` alone) because (a) triage routed the work to `/decision` per ADR-003 D4's "standalone `/decision`, not a slice" and the v1 execution plan's P0a, and (b) `.claude/current-slice/exploration-notes.md` (two 2026-04-11 exploratory sessions) was the framing artifact — brainstorming was correctly skipped. The session boundary between the exploratory sessions and today's `/decision` preserved isolation for free.
+
+**Anti-pattern signals**: "I'll just start a slice and figure out the decision as I go" (upshift-in-denial), "this is obviously an [X]" (triage skipped under false certainty), "we already know what we want so skip brainstorming" (framing confused with approval), "I'll run `/decision` to confirm what I already decided" (analysis used as theater). All four are internally plausible; none prevent the routing error.
+
+**Refinements upstream, not downstream**: "one question at a time, multiple choice preferred" and "incremental approval gates" from Superpowers' `brainstorming` skill belong in the framing step (Step 1), not inside `/decision`'s analysis phases. If framing happens in brainstorming and analysis happens in `/decision`, neither phase has to re-do the other's work.
+
+**Scope note**: this lesson captures the pattern as a mental routing rule. Promotion to a dedicated `/triage` skill is deferred — the scope will be cleaned up and pressure-tested through use before earning its own command.
