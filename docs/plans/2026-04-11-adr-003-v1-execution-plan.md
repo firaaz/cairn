@@ -44,7 +44,8 @@ Candidate slices. Each slice's Phase 1 intent re-evaluates this sequencing again
 - Two possible outcomes:
   1. **Amend and resume**: SLICE-002's envelope contributes to a defense (most plausibly D2 via INV-002 machine-checking). Record amendment rationale in `slice.yaml § stopped-reason` and resume.
   2. **Supersede**: envelope does not contribute or is substantively different from the amended path. Write a successor ADR amending ADR-002 and/or superseding SLICE-002 outright.
-- SLICE-002's Phase 2 work on V2 resolution (shared-window) and Approach 1+ test design is preserved in `.claude/current-slice/validation/approach.md` — do not lose this on supersession.
+- SLICE-002's Phase 2 work on V2 resolution (shared-window) and Approach 1+ test design is preserved in `.claude/completed-slices/SLICE-002-stopped/validation/approach.md` — do not lose this on supersession.
+- **Status (2026-04-11): on backburner.** SLICE-002 artifacts archived to `.claude/completed-slices/SLICE-002-stopped/` to free `.claude/current-slice/` for SLICE-003-precursor (pre-D1 D4 surfacing per ADR-004 Consequences). This is an **archive, not a supersession** — the resolve/amend-or-supersede decision is still owed, just deferred. Resume path: read the archived `slice.yaml § stopped-reason` and `validation/approach.md`, then re-run this P0b review before SLICE-003 (D1) start.
 
 ### Tier 1 — D1 automated architecture refresh
 
