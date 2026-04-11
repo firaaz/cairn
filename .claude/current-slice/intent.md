@@ -1,145 +1,194 @@
 ---
-slice: validator-symlink-fix
+slice: handoff-catchup-protocol-rewrite
 date: 2026-04-11
 phase: 1-intent
-invariants-touched: []
-adrs-referenced: [ADR-001]
+invariants-touched: [INV-002]
+adrs-referenced: [ADR-002]
 envelope:
-  - "scripts/validate_architecture.py"
-  - "tests/unit/test_validate_architecture.py"
-  - "CHANGELOG.md"
+  - "commands/claude-code/handoff.md"
+  - "commands/claude-code/catchup.md"
+  - "commands/claude-code/start-slice.md"
+  - "templates/handoff.md"
+  - ".claude/learning.md"
+  - "docs/operational-reference.md"
+  - "tests/unit/test_context_discipline_protocol.py"
 out-of-scope:
-  - "Check A, B, or C logic (invariant/ADR consistency rules themselves)"
-  - "ADR frontmatter parsing and ARCHITECTURE.md invariant parsing"
-  - "Validator CLI interface, output format, or exit-code semantics beyond the new resolution-failure case"
-  - "Any changes to checks/*.sh hooks"
-  - "Refactoring scripts/validate_architecture.py beyond PROJECT_ROOT resolution"
-  - "The scope-guard canonicalization quirk documented in CLAUDE.md (separate concern)"
-  - "Consumer-side workarounds — the fix belongs in cairn"
+  - "Self-learn automation at /handoff (invocation of claude-md-management skills) — SLICE-003"
+  - "3× promotion rule and learning.md threshold review — SLICE-003"
+  - "Any change to the four-phase pipeline shape"
+  - "scope-guard.sh and reversibility-guard.sh internals"
+  - "CLAUDE.md edits — D1 startup floor cuts already shipped"
+  - "SessionStart hook override for superpowers — D1.2, deferred"
+  - "docs/spec-v1.md edits beyond cross-references"
+  - "Consumer-project rollout (consumers inherit via `.slice-system → .` symlink)"
 ---
 
-# Intent: SLICE-001 — Correct validator project root resolution across symlinks
+# Intent: SLICE-002 — Rewrite handoff and catchup protocols for context discipline
 
 ## What and Why
 
-The substrate validator (`scripts/validate_architecture.py`) must read the **consumer project's** `docs/ARCHITECTURE.md` and `docs/adr/` when invoked via the `.slice-system` symlink. Today, `Path(__file__).resolve().parent.parent` at module load time canonicalizes the symlink back to cairn's install directory, so every consumer project's validator silently reads cairn's own docs instead of the caller's. This produces false-green validator output in `/status` for every real consumer of cairn — the primary substrate-health signal lies. Cairn's own self-dogfood is the one environment where the bug is latent (cairn validating cairn is a degenerate case where the wrong answer equals the right answer), so the bug was invisible until surfaced from a real consumer project.
+Measured across 10 recent cairn and consumer sessions, a freshly-oriented session sits at ~47k tokens on turn 1 — well past the ~30–40k sweet spot — because `/handoff` writes a ~3k-token narrative and `/catchup` eagerly reads every file its instructions mention. Root cause is not size bloat; it is a design mismatch where handoffs carry reflective prose (smuggling mental state across the role-reset boundary) and catchup reads into main context where a subagent dispatch would cost ~100× less. Full baseline and analysis in `docs/plans/2026-04-11-context-discipline-design.md`.
 
-The fix belongs in cairn, not in consumer projects: every consumer should be able to drop in `.slice-system` and run the validator without any patching.
+This slice implements **ADR-002 / INV-002** — the context-discipline protocol committed in `docs/adr/002-context-discipline-protocol.md`. ADR-002 codifies the three load-bearing layers as an architectural commitment; this slice delivers their working form by rewriting the handoff and catchup skill templates, the slice-closure step in `/start-slice`, and the operational reference so that the commitment is enforced in the tooling agents actually use. The three layers, verbatim from ADR-002: (1) handoffs are pointers with annotations, not narratives, (2) catchup runs a minimal Tier 1 pass and dispatches Tier 2 only under explicit admission criteria, (3) slice closure wipes `.claude/current-slice/` so the next slice inherits no residue. Expected result: post-catchup context drops from ~47k → ~28–30k tokens per session, a ~10–18k saving.
 
 ## Specification Detail
 
-### Resolution contract
+### 1. Handoff format contract (`templates/handoff.md`)
 
-The validator's notion of "project root" — the directory whose `docs/ARCHITECTURE.md` and `docs/adr/` are being validated — must resolve correctly for all four calling contexts below. Exact mechanism is not specified here (Phase 3's choice); only the observable behavior is specified.
+New file. Imperative/declarative voice only. **Token budget: 150–400** (hard upper bound, soft lower bound). Shape:
 
-1. **Cairn self-dogfood**: `python scripts/validate_architecture.py` invoked from cairn's own repo root → resolves to cairn's own repo root. This is the baseline behavior today and must not regress.
+```
+---
+slice: <SLICE-id or "none">
+phase: <1-intent | 2-validation | 3-implementation | 4-integration | complete | n/a>
+branch: <branch-name>
+as-of: <YYYY-MM-DD commit-sha>
+---
 
-2. **Consumer project, invoked via symlink, from consumer repo root**: a consumer project has `.slice-system` as a symlink pointing to a cairn install. The consumer runs `.slice-system/scripts/validate_architecture.py` with cwd equal to the consumer's repo root. → Must resolve to the consumer's repo root, NOT cairn's install directory.
+## State
+<1–2 present-tense sentences. Current state, not history.>
 
-3. **Consumer project, invoked via symlink, from a subdirectory inside the consumer repo**: same setup as (2), but the process cwd is some subdirectory within the consumer project. → Must still resolve to the consumer's repo root, NOT cairn's install directory, NOT the subdirectory.
+## Next
+<One imperative. One line. Specific.>
 
-4. **Resolution failure — no viable project root**: if none of the available resolution mechanisms can identify a project root with plausible substrate (`docs/ARCHITECTURE.md` present), the validator MUST fail loudly with a stderr message and a nonzero exit code. It MUST NOT fall back to a default that could silently read cairn's own docs or any other unrelated project's docs.
+## Blocked / Pending
+- <short item> → <pointer>
+  (max 5 lines, each a one-liner + pointer, no rationale)
 
-### Invariant the fix establishes
+## Pointers
+- `path/to/file.md` — what's there + when to read it
+```
 
-> The validator never silently reads a project whose root the caller did not intend.
+### 2. Banned sections (contractual)
 
-This is the core correctness property. A false-green from reading the wrong project's docs is strictly worse than a loud failure — loud failures get fixed, silent false-greens rot. Phase 2's tests must directly verify this property.
+The rewritten `commands/claude-code/handoff.md` skill template MUST NOT instruct the agent to produce any of these sections, and must not contain them as examples of the target output:
 
-### Exit-code contract
+- "What This Session Was About"
+- "What Was Accomplished"
+- "Surprises or Discoveries"
+- "Self-Check" (or "Self Check")
+- Narrative paragraphs of reasoning
+- Test run output or pass/fail tallies
 
-Existing exit codes, preserved:
+These belong elsewhere: commit messages, `git log`, ADRs, or `docs/lessons.md`. The handoff carries state + next step, not reflection.
 
-- `0` — all checks passed
-- `1` — one or more checks failed (invariant/ADR corpus inconsistent)
-- `2` — missing required files (`docs/ARCHITECTURE.md` or `docs/adr/` absent)
+### 3. Catchup tier model (`commands/claude-code/catchup.md`)
 
-New behavior layered onto existing codes:
+The skill template must enforce three tiers with explicit admission criteria.
 
-- A resolution failure (context 4 above) exits with code `2` and writes a diagnostic message to stderr that explains which resolution mechanisms were attempted and why none succeeded. It is treated as a "missing required files" case because the project root cannot be identified and therefore required files cannot even be located.
+**Tier 1 — always runs, strictly bounded.** Reads ONLY:
+- `.claude/handoff.md`
+- `.claude/current-slice/slice.yaml` (if present)
+- `.claude/sweep.yaml` (if present)
+- `git log --oneline -5`
+- `git status --short`
 
-### What the fix must not change
+Produces the orientation summary. STOPS. No additional main-context file reads without crossing into Tier 2.
 
-- CLI invocation pattern: `python scripts/validate_architecture.py` with no arguments, no new flags.
-- stdout format when checks pass or fail (the human-readable summary with invariant and ADR counts).
-- The semantics of Checks A, B, and C. They operate on whatever docs they're pointed at; only the pointing changes.
-- The requirement that `docs/ARCHITECTURE.md` and `docs/adr/` are siblings under the project root.
+**Tier 2 — dispatched via subagent.** The skill template must contain this admission-criteria block verbatim (Phase 2 will grep for it as a literal substring):
+
+```
+DISPATCH Tier 2 subagent if and only if:
+  1. User asked a specific factual question that Tier 1 data did not answer, OR
+  2. User directed entry into a specific pipeline phase and the handoff pointers
+     explicitly list files for that phase, OR
+  3. You are about to take an action that requires verifying the current state
+     of a specific file, AND that file is named in the handoff pointers.
+
+DO NOT DISPATCH Tier 2 if:
+  - You are orienting "just in case"
+  - Tier 1 data sufficed to answer the user
+  - The user has not given you a concrete direction
+  - You want to "be thorough"
+```
+
+The skill template must also contain a subagent contract block with (at minimum) the literal keys `CONTEXT:`, `QUESTION:`, `FILES AVAILABLE:`, `YOUR BEHAVIOR:`, `YOUR RETURN`, and `DO NOT return:`. The contract caps the subagent return at ~200 words/tokens regardless of underlying file size.
+
+**Tier 3 — end of catchup.** The skill template must state that once the user gives a direct work imperative, catchup is over and normal file reading is appropriate. No bookkeeping needed for Tier 3 — it is the absence of catchup, not a third protocol step.
+
+### 4. Slice closure wipes `.claude/current-slice/` (`commands/claude-code/start-slice.md`)
+
+The `/start-slice` skill's Step 7 (Complete a Slice) must, after committing the final slice state, remove every file under `.claude/current-slice/`. The commit that carries the `status: complete` update IS the git-history record of the slice — nothing else is preserved. Acceptable implementations:
+
+- The completion commit itself stages the removals alongside the status update (one commit, cleanest).
+- A separate close commit immediately follows the completion commit.
+
+No file under `.claude/current-slice/` may survive the close sequence. There is **no archive directory** — the string `.claude/archive/` must not appear anywhere in the rewritten skill template (git history + `.claude/learning.md` cover the post-mortem case).
+
+Failed-slice recovery (Step 8) is out of scope for this slice; its existing `.claude/completed-slices/` path remains, because the failure case preserves debugging context that the normal close does not need.
+
+### 5. Learning staging ground (`.claude/learning.md`)
+
+Slice #2 creates this file, empty except for a short header:
+
+```
+# Session Learning Staging Ground
+
+Append-only. Free-form entries captured at session end. Promotion to CLAUDE.md happens via the 3× rule in a later slice.
+```
+
+File size at close of Slice #2: < 500 bytes. Slice #2 does not wire any skill to write to this file — that is SLICE-003.
+
+### 6. Operational reference update (`docs/operational-reference.md`)
+
+Add a new top-level section titled exactly `## Context Discipline Protocol`, placed after `## Session Handoff Protocol`. The new section must document, in operational terms:
+
+- The 150–400 token handoff budget and pointer-not-payload rule
+- The banned-sections list (at least the four literal phrases from §2)
+- The Tier 1 / Tier 2 / Tier 3 catchup model, including the Tier 1 read list and the Tier 2 admission criteria
+- The subagent contract template (may reference the canonical copy in `catchup.md` rather than duplicating)
+- The wipe-on-close rule for `.claude/current-slice/`
+- The existence of `.claude/learning.md` as a staging ground, with automation explicitly marked "deferred to SLICE-003"
+
+The existing `## Session Handoff Protocol` section must either be merged into the new section or rewritten to cross-reference it. No section in `operational-reference.md` may describe the handoff as a narrative artifact after this slice lands.
 
 ## Boundary
 
-In scope (the only files Phase 2 and Phase 3 may touch):
+Already listed in the YAML `out-of-scope` block. Reiterating the non-obvious items:
 
-- `scripts/validate_architecture.py` — modify `PROJECT_ROOT` resolution only
-- `tests/unit/test_validate_architecture.py` — new test file (Phase 2 creates it)
-- `CHANGELOG.md` — move the [Unreleased] § Known issues entry to [Unreleased] § Fixed with a reference to this slice
-
-Out of scope (explicitly):
-
-- Check A/B/C logic or their helper functions
-- Frontmatter parsing, invariant parsing, ADR index parsing
-- The validator's CLI surface (no new flags, no changed flags)
-- Any `checks/*.sh` hook — scope-guard's separate canonicalization bug is a different slice
-- Any refactoring of `validate_architecture.py` beyond what the resolution fix requires (e.g., no renaming unrelated constants, no extracting unrelated helpers)
-- Behavior when `docs/ARCHITECTURE.md` or `docs/adr/` is present but malformed — that path was broken before and stays broken
-- Consumer-project workarounds — the fix is cairn-side only
+- **No handoff automation.** `commands/claude-code/handoff.md` after this slice still ends by telling the user "run `/catchup` next session" — it does NOT invoke `claude-md-management` skills. SLICE-003 adds that.
+- **No 3× rule, no promotion review, no threshold logic.** SLICE-003.
+- **No edits to `.claude/handoff.md` content format in consumer projects.** Consumers pick up the new format by re-running `/handoff` against the new skill template.
+- **No changes to hook behavior.** `scope-guard.sh`, `reversibility-guard.sh`, `reality-check.sh` are untouched.
+- **No new ADR written during this slice.** ADR-002 was authored as a pre-slice step before Phase 1 began (see "Decision points" in the Phase 1 session transcript and `docs/adr/002-context-discipline-protocol.md`). If Phase 2 or Phase 3 surfaces a protocol commitment not already captured in ADR-002, the mid-slice ADR-creation path in `docs/operational-reference.md` §"ADR Rules During a Slice" applies.
 
 ## Verification
 
-Phase 2 must produce pytest-based tests covering each item below. Each test is independent and uses `tempfile.TemporaryDirectory()` for fixture setup so no real consumer project is required.
+Phase 2 writes `tests/unit/test_context_discipline_protocol.py`. Each assertion below must have a concrete, runnable test. Tests are file-content and structure checks — no runtime behavior to exercise.
 
-### V1 — Cairn self-dogfood baseline (regression check)
+### V1. Handoff template exists and is tight
+- `templates/handoff.md` is a regular file.
+- `len(read_text()) <= 2000` (approximates ≤400 tokens, per 5 chars/token).
+- Frontmatter block contains keys `slice`, `phase`, `branch`, `as-of`.
+- Body contains the four section headers: `## State`, `## Next`, `## Blocked / Pending`, `## Pointers`.
 
-Running `python scripts/validate_architecture.py` from cairn's own repo root produces `ALL CHECKS PASSED` with the current 1-invariant, 1-ADR state. Exit code 0. Ensures the fix does not regress cairn's own validation.
+### V2. Handoff skill template is free of the old narrative format
+- `commands/claude-code/handoff.md` contains NONE of these literal substrings (case-insensitive): `What This Session Was About`, `What Was Accomplished`, `Surprises or Discoveries`, `Self-Check`, `Self Check`.
+- It references `templates/handoff.md` as the target format.
+- It explicitly states the 150–400 token budget (the literal substring `150` and `400` both appear within 100 characters of the word `token`).
 
-### V2 — Consumer project via symlink, happy path
+### V3. Catchup skill template encodes the tier model
+- `commands/claude-code/catchup.md` contains headers or labeled blocks for `Tier 1`, `Tier 2`, and `Tier 3`.
+- It contains the literal substring `DISPATCH Tier 2 subagent if and only if:` exactly as written in §3 of this intent.
+- It contains a subagent contract block in which all of these literal keys appear: `CONTEXT:`, `QUESTION:`, `FILES AVAILABLE:`, `YOUR BEHAVIOR:`, `YOUR RETURN`, `DO NOT return:`.
+- Tier 1's read list explicitly enumerates all five items: `.claude/handoff.md`, `.claude/current-slice/slice.yaml`, `.claude/sweep.yaml`, `git log --oneline -5`, `git status --short`.
 
-Construct a temporary consumer project in a tmp directory:
+### V4. Start-slice closure wipes current-slice
+- `commands/claude-code/start-slice.md` Step 7 (Complete a Slice) contains an instruction to remove or wipe all files under `.claude/current-slice/` (one of: `wipe`, `rm -r`, `git rm`, `remove`, `delete`) within 300 characters of the literal `.claude/current-slice`.
+- The literal substring `.claude/archive/` does NOT appear in `commands/claude-code/start-slice.md`.
+- Failed-slice recovery (Step 8) is unchanged — it still moves to `.claude/completed-slices/<ID>-failed/`. (Phase 2 asserts this has not been refactored.)
 
-- `<tmp>/docs/ARCHITECTURE.md` containing a distinct invariant (e.g., `TMP-001`) that references a distinct ADR (e.g., `ADR-042`)
-- `<tmp>/docs/adr/042-tmp-decision.md` with `status: accepted`, `firmness: firm`, and the referenced ID
-- `<tmp>/docs/adr/index.md` listing ADR-042
-- `<tmp>/.slice-system` as an `os.symlink()` to cairn's repo root
+### V5. Learning staging ground exists and is minimal
+- `.claude/learning.md` is a regular file.
+- First non-blank line is exactly `# Session Learning Staging Ground`.
+- File size < 500 bytes.
 
-Invoke the validator as `<tmp>/.slice-system/scripts/validate_architecture.py` via `subprocess.run()` with `cwd=<tmp>` and `env` including `CLAUDE_PROJECT_DIR=<tmp>` (test the env-var path explicitly).
+### V6. Operational reference documents the new protocol
+- `docs/operational-reference.md` contains the literal header `## Context Discipline Protocol`.
+- That section (from its header to the next `## ` header or EOF) contains all of: `150`, `400`, `Tier 1`, `Tier 2`, `DISPATCH`, `wipe` or `remove`, `learning.md`, `SLICE-003`.
+- The existing `## Session Handoff Protocol` section either no longer exists or contains a cross-reference (markdown link or literal phrase `Context Discipline Protocol`) to the new section.
 
-Assertion: the validator output references `TMP-001`/`ADR-042`, NOT cairn's `INV-001`/`ADR-001`. Exit code 0.
+### V7. No stale narrative-format residue anywhere under `commands/` or `templates/`
+- Grep across `commands/` and `templates/`: literal phrases `Surprises or Discoveries` and `What This Session Was About` appear 0 times.
 
-### V3 — Consumer project via symlink, env var unset
-
-Same fixture as V2, but invoke without `CLAUDE_PROJECT_DIR` set in the subprocess environment. The validator must still identify `<tmp>` as the project root (via `git rev-parse --show-toplevel` or equivalent). Requires `git init` on the tmp directory.
-
-Assertion: same as V2. Output references the tmp project's invariants, not cairn's.
-
-### V4 — Consumer project invoked from subdirectory
-
-Same fixture as V3 (tmp is git-initialized). Create a subdirectory `<tmp>/src/submod/`. Invoke the validator from that subdirectory as `<tmp>/.slice-system/scripts/validate_architecture.py` with `cwd=<tmp>/src/submod`.
-
-Assertion: validator still resolves root to `<tmp>`. Output references the tmp project's invariants.
-
-### V5 — Consumer project with deliberately broken substrate
-
-Construct a tmp project whose `ARCHITECTURE.md` references a nonexistent ADR (e.g., `ADR-999`). Invoke via the symlink path as in V2 or V3.
-
-Assertion: validator exits with code 1 (check failure) and the failure message references the tmp project's inconsistency, NOT a false-green from cairn's substrate.
-
-### V6 — Resolution failure, no viable mechanism
-
-Construct a scenario where:
-
-- `CLAUDE_PROJECT_DIR` is unset
-- The cwd is outside any git repository
-- The validator is invoked through a `.slice-system` symlink in a directory that has no `docs/` of its own
-
-Assertion: validator exits with code 2. Stderr contains a diagnostic that names the resolution mechanisms attempted. stdout contains NO "ALL CHECKS PASSED" or check-failure message — because no checks ran. This is the single most important test: it proves the validator never silently reads the wrong project.
-
-### V7 — Phase 4 integration regression check
-
-Running `uv run python scripts/validate_architecture.py` from cairn's repo root still outputs `ALL CHECKS PASSED` after all implementation changes land. This is redundant with V1 in principle but runs as part of Phase 4's integration sweep, not as a unit test.
-
----
-
-## Notes on resolution mechanism (non-binding guidance for Phase 3)
-
-The handoff from the prior session suggested a chain: `$CLAUDE_PROJECT_DIR` → `git rev-parse --show-toplevel` → `Path(__file__).resolve().parent.parent` fallback. **Phase 3 is free to implement any chain or mechanism that satisfies V1-V6 above.** The intent commits to the observable behavior, not to a specific resolution sequence. If Phase 3 finds a better mechanism during implementation, it should use it and record the deviation in `implementation/notes.md`.
-
-The one non-negotiable constraint: no silent fallback that could read the wrong project's docs. V6 enforces this directly.
+All seven tests are required for the phase gate from Phase 2 to Phase 3.
