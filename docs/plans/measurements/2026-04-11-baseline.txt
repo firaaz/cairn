@@ -1,0 +1,9 @@
+baseline turn-1 context (cairn, 5 most recent sessions):
+------------------------------------------------------------
+  5c9679bd  total= 30340  (cc=13725 cr=16609)
+  2d54c22a  total= 31911  (cc=15296 cr=16609)
+  9ce532ee  total= 32247  (cc=15633 cr=16609)
+  9814c88e  total= 30287  (cc=13672 cr=16609)
+  7a5c955d  total= 32360  (cc=0 cr=32355)
+
+avg: 31429 tokens
