@@ -181,15 +181,20 @@ The fresh session matters — context isolation is what makes the external check
 
 ## Step 7: Complete a Slice
 
-When Phase 4 passes:
+When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory for successful slices — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Per ADR-002, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
+
+Sequence:
 
 1. Update `slice.yaml`: set `status: complete`, `completed: <today>`
 2. Check if an integration sweep is due: read `.claude/sweep.yaml` and compare `current-slice-number` against `last-sweep-at-slice + sweep-interval`. If `sweep.yaml` is missing, create it with defaults (same as Step 4) before checking.
 3. If sweep is due, suggest: "This is slice N — an integration sweep is due. Run `/integration-sweep` in a fresh session."
-4. Commit the final slice state:
+4. Stage the completion state AND the removal of every file under `.claude/current-slice/` in a single commit. The cleanest form is one commit that both updates `slice.yaml` → `status: complete` and removes the rest of the directory:
    ```
-   git add .claude/current-slice/ && git commit -m "slice: <name> — complete"
+   git add .claude/current-slice/slice.yaml
+   git rm -r .claude/current-slice/intent.md .claude/current-slice/validation .claude/current-slice/implementation .claude/current-slice/integration .claude/current-slice/handoff-phase-*.md
+   git commit -m "slice: <name> — complete"
    ```
+   If a file listed above does not exist (for example, a slice that never entered Phase 4 `integration/`), omit it from the `git rm` call; do not fail the close on a missing optional artifact. A follow-up close commit is an acceptable alternative when a single commit would be awkward, but no file under `.claude/current-slice/` may survive the close sequence — `slice.yaml` itself is the one exception because the `status: complete` commit needs somewhere to live until the next slice overwrites it.
 5. Run `/handoff` to package session context
 6. For the next slice or sweep, start a fresh session and run `/catchup` to orient
 

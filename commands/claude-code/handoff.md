@@ -1,18 +1,24 @@
 # Handoff — Package Session Context for the Next Session
 
-Close out a working session by capturing what happened, what's left, and what comes next.
+Close out a working session by writing a pointer, not a story.
 
 Usage: `/handoff` (end of any session) or `/handoff phase` (end of a pipeline phase)
 
 ## Why This Exists
 
-Every session accumulates context that's invisible to the next session. When you close a tab, all the "I know what I was doing" reasoning disappears. Without an explicit handoff, the next session wastes time rediscovering what was already known — or worse, makes different assumptions and silently diverges.
+Every session accumulates context that is invisible to the next session. The naive fix is to write a long narrative — what happened, what was discovered, what to watch out for. That narrative smuggles mental state across a boundary the pipeline deliberately erected: the next session is supposed to load a *fresh* perspective on the artifacts, not inherit the previous session's framing. It also costs ~3k tokens per catchup, which the session then pays for every subsequent turn.
 
-This skill is the exit bookend. Its companion `/catchup` is the entry bookend. Together they bridge the gap between sessions, whether you're doing pipeline work, fixing bugs, running research, or anything else.
+ADR-002 (context discipline protocol) replaces the narrative with a bounded pointer. The handoff note is the team interface: it tells the next session where to look, not what to think.
+
+## Target format
+
+The output of this skill is a file at `.claude/handoff.md` that strictly follows `templates/handoff.md`. Read the template before writing the handoff — it is the source of truth for shape and tone. Do not invent new sections; do not expand any section into prose.
+
+**Token budget: 150–400 tokens** (measured against the whole file including frontmatter). This is a hard upper bound and a soft lower bound. If you cannot say what you need inside 400 tokens, you are writing the wrong kind of artifact — commit messages, ADRs, and `docs/lessons.md` are where reflection goes.
+
+Voice: imperative and declarative only. Present tense for state, imperative for the next action. No first person, no hedging, no "we", no "I", no "maybe".
 
 ## Step 1: Take Stock
-
-Start by understanding the current state of the working directory.
 
 1. Run `git status --short` to see uncommitted changes
 2. Run `git log --oneline -3` to see recent commits
@@ -22,51 +28,33 @@ If there are uncommitted changes, list them and ask whether to commit before han
 
 ## Step 2: Write the Handoff Note
 
-Create (or overwrite) `.claude/handoff.md` with this structure:
+Overwrite `.claude/handoff.md` with content that conforms to `templates/handoff.md`. The four body sections are fixed:
 
-```markdown
-# Session Handoff — <date>
+- **`## State`** — 1–2 present-tense sentences. Current state, not history. "SLICE-002 Phase 3 complete at <sha>; V1–V7 all GREEN." Not "I finished implementing the seven envelope files and verified the tests pass."
+- **`## Next`** — one imperative, one line, specific. "Run `/start-slice phase 4` to enter Integration." Not "continue the slice."
+- **`## Blocked / Pending`** — up to five one-line items, each a pointer. No rationale. If something needs rationale, it belongs in a commit message or ADR.
+- **`## Pointers`** — one line per file the next session should read, with a short note on *when* to read it. The body of the pointed-at file carries the detail; the handoff only indexes.
 
-## What This Session Was About
-<One sentence. Be specific: "Implemented Tier 2 query decomposition" not "worked on code.">
+After writing, count the characters of the file. If it exceeds 2000 characters (the ~400 token budget), cut prose until it fits. Shrinking is almost always possible — narrative dressing, apologies, and "note that…" asides are the first things to go.
 
-## What Was Accomplished
-- <Concrete outcome, not activity. "Added X" not "worked on X">
-- <Each bullet should be verifiable — someone could check if this is true>
+## Step 3: Banned shapes
 
-## What's Unfinished or Blocked
-- <Specific item, not vague. "test_tier2_decompose fails on multi-table joins" not "some tests fail">
-- <If blocked, say why and what would unblock it>
+The following sections and patterns MUST NOT appear in the handoff note. They are not a style preference — they are the failure mode this slice is closing:
 
-## Next Session Should
-1. <First thing to do — the most important or time-sensitive item>
-2. <Second thing>
-3. <Any cleanup or follow-up>
+- Reflective summaries of what the session did
+- Pass/fail test tallies or test output
+- Apologies, rationale, "I tried X but Y", or any first-person reasoning
+- Paragraphs of discovery or surprise
+- Inline explanation of *why* the next step is the next step — just state it
 
-## Surprises or Discoveries
-<Anything unexpected that came up. New constraints, bugs found in unrelated code, 
-assumptions that turned out wrong, patterns worth recording in lessons.md.
-If nothing surprising happened, say "None" — don't invent drama.>
-```
-
-This note is overwritten each session. It represents *current state*, not history. Git history provides the historical record.
-
-## Step 3: Self-Check
-
-Answer in one sentence: **"Does what I produced match what I set out to do?"**
-
-- A direct, specific answer ("Yes — the intent document covers all three zones and is committed") means the session was well-sized.
-- Hedging ("Mostly, but I also ended up refactoring the query router") means the session drifted or was too large. Note the drift in the handoff note so the next session knows.
+If you feel an urge to explain, that is a signal the explanation belongs in a commit message, an ADR, or `docs/lessons.md`. Put it there and leave the handoff alone.
 
 ## Step 4: Slice-Specific Handling
 
 If `.claude/current-slice/slice.yaml` exists and `$ARGUMENTS` includes "phase":
 
 1. Read `slice.yaml` to get the current phase number and slice ID
-2. Write a phase-specific handoff to `.claude/current-slice/handoff-phase-N.md` with:
-   - What this phase produced (the artifact)
-   - Whether the phase gate is met (artifact committed?)
-   - Any ambiguities discovered that the next phase should know about
+2. Write a phase-specific handoff to `.claude/current-slice/handoff-phase-N.md` using the same `templates/handoff.md` shape and the same 150–400 token budget. The phase handoff carries only: the artifact produced, whether the phase gate is met, and any ambiguity the next phase must know. No reflection.
 3. Update `slice.yaml` → `status` to the next phase name
 4. Print the context isolation reminder:
 
@@ -87,11 +75,11 @@ Print a concise summary for the user:
 ```
 ## Handoff Complete
 
-**Session**: <what it was about>
-**Git**: <N uncommitted files / clean>
-**Handoff note**: .claude/handoff.md updated
+**Handoff note**: .claude/handoff.md updated (<N> chars, within 2000-char budget)
 <if slice> **Slice**: SLICE-NNN moved to phase N+1
 <if slice> **Phase handoff**: .claude/current-slice/handoff-phase-N.md written
 
 Next session: run `/catchup` to orient.
 ```
+
+The one piece of telemetry worth printing is the byte count — it surfaces budget compliance without the user having to check manually. Everything else the user can read from git and the handoff file itself.

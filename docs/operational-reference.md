@@ -186,7 +186,68 @@ Every phase transition — and every session end — involves a handoff:
 
 The handoff note (`.claude/handoff.md`) is overwritten each session. It represents current state, not history. Git provides the historical record.
 
-For pipeline phases, `/catchup` loads ONLY the declared inputs for the target phase and explicitly reports what was excluded.
+The operational detail of handoff shape and catchup tiering is the **[Context Discipline Protocol](#context-discipline-protocol)** below; this section is the one-paragraph cover story, that section is the contract.
+
+## Context Discipline Protocol
+
+ADR-002 / INV-002. Three load-bearing layers that together hold post-catchup session context at ~28–30k tokens instead of the ~47k baseline we measured before the protocol landed. None of the three layers is optional — the savings come from all three interacting, not from any one of them in isolation.
+
+### Layer 1 — Handoff is a pointer, not a payload
+
+`/handoff` writes `.claude/handoff.md` against `templates/handoff.md`. The format is fixed: a YAML frontmatter with `slice`, `phase`, `branch`, `as-of`, then four body sections — `## State`, `## Next`, `## Blocked / Pending`, `## Pointers`.
+
+**Token budget: 150 to 400 tokens, whole-file.** 150 is a soft lower bound (if you cannot say enough to orient the next session inside that, your next step isn't specific), 400 is a hard upper bound (if you need more than a token budget of 400 to say what state the repo is in, the overflow belongs in commit messages, ADRs, or `docs/lessons.md` — not in the handoff). Measured in bytes, 400 tokens is roughly 2000 characters at the 5-char-per-token approximation the contract test uses.
+
+**Banned sections** — the handoff skill template MUST NOT instruct the agent to produce, and MUST NOT contain as examples, any of:
+
+- "What This Session Was About"
+- "What Was Accomplished"
+- "Surprises or Discoveries"
+- "Self-Check" / "Self Check"
+- Narrative paragraphs of reasoning
+- Pass/fail test tallies or test output
+
+These belong in commit messages, ADRs, or `docs/lessons.md`. The handoff carries state plus next step, not reflection. If you feel an urge to explain *why* in the handoff, the urge is a signal the explanation belongs elsewhere.
+
+### Layer 2 — Catchup reads in tiers, dispatches subagents, never eager-loads
+
+`/catchup` runs in three tiers. The tier boundaries are the whole point of the protocol — crossing a tier without satisfying its admission criteria is the failure mode this layer is closing.
+
+**Tier 1 — always runs, strictly bounded.** Reads ONLY these five items:
+
+- `.claude/handoff.md`
+- `.claude/current-slice/slice.yaml`
+- `.claude/sweep.yaml`
+- `git log --oneline -5`
+- `git status --short`
+
+Produces the orientation summary. STOPS. No `CLAUDE.md` rereads, no `docs/ARCHITECTURE.md`, no source, no ADRs. Any additional main-context file read crosses into Tier 2 — and Tier 2 has admission criteria.
+
+**Tier 2 — dispatched via subagent, under admission criteria.** Tier 2 exists to answer a *specific* question or to load a phase's declared inputs when the user has given explicit direction. It runs in a subagent, never in main context. The full admission block (and its mirror "do not dispatch" block) lives verbatim in `commands/claude-code/catchup.md` — the skill template is the canonical copy; this section is the operational summary and defers to it. The key literal on the positive side is `DISPATCH Tier 2 subagent if and only if:`; the three conditions are (1) specific factual question Tier 1 did not answer, (2) user directed entry into a pipeline phase, (3) about to act on a file named in the handoff pointers. None of those? Do not dispatch.
+
+The subagent contract caps the return at ~200 words regardless of underlying file size. A subagent that dumps everything it read back into main context defeats the ~100× savings Tier 2 is supposed to buy. If a legitimate answer genuinely does not fit in 200 words, split the question into two Tier 2 dispatches rather than raise the cap.
+
+**Tier 3 — the absence of catchup.** Once the user gives a direct work imperative, catchup is over and normal file reading resumes under whatever skill governs the work. No bookkeeping — Tier 3 is the boundary past which `/catchup` is simply not running anymore.
+
+### Layer 3 — Slice close wipes `.claude/current-slice/`
+
+`/start-slice complete` is required to remove every file under `.claude/current-slice/` as part of the completion sequence. Acceptable shape: the completion commit stages the removals alongside the `status: complete` update (one commit), or a separate close commit immediately follows. `slice.yaml` itself is the one exception — the completion commit needs somewhere to live until the next slice overwrites it; every other file under `.claude/current-slice/` must not survive close.
+
+There is **no archive directory** for successful slices. Git history plus `.claude/learning.md` plus ADRs cover the post-mortem case. Failed-slice recovery (`/start-slice failed`) still uses `.claude/completed-slices/<ID>-failed/` — that path preserves debugging context the normal close does not need, and is a separate discipline.
+
+### Layer adjuncts — `.claude/learning.md`
+
+`.claude/learning.md` is the session-end learning staging ground. Append-only, free-form entries; the 3× promotion rule that moves stable patterns from `learning.md` into `CLAUDE.md` is **deferred to SLICE-003**. Until SLICE-003 lands, nothing in cairn writes to `learning.md` automatically — sessions may append by hand, but the skill-driven side of the capture loop does not yet exist.
+
+### Operator mental model
+
+One sentence each:
+
+- Handoff is a **team interface**, not a diary. The next session reads it to *act*, not to relive the last one.
+- Catchup is a **tiered query**, not a flood. Tier 1 orients, Tier 2 answers specific questions via subagents, Tier 3 is the exit.
+- Slice close is a **wipe**, not an archive. The next slice must inherit zero residue from the last.
+
+If any of those three drift, reload this section and the canonical skill templates (`handoff.md`, `catchup.md`, `start-slice.md`) before trying to patch the symptom.
 
 ## Integration Sweep
 
