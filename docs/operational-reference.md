@@ -1,6 +1,6 @@
 # Development System
 
-Operational quick reference for the slice-based development pipeline. **For the full theory, failure modes, empirical support, and adversarial review framing, see `docs/development-system-spec-v1.md`** — that document is the canonical spec. This file is the operational quick reference and should be loaded at the start of any slice.
+Operational quick reference for the slice-based development pipeline. **For the full theory, failure modes, empirical support, and adversarial review framing, see `docs/spec-v1.md`** — that document is the canonical spec. This file is the operational quick reference and should be loaded at the start of any slice.
 
 A slice is a vertical feature cut that goes through four phases: Intent → Validation → Implementation → Integration. Each phase runs in a fresh session, takes a declared input artifact, and commits a declared output artifact. Phase transitions are enforced by git commits, not by session state.
 
