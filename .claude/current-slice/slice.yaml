@@ -1,6 +1,6 @@
 id: SLICE-004
 title: "D1 dogfood instrumentation"
-status: validation
+status: implementation
 started: 2026-04-12
 completed: null
 invariants-touched: []
