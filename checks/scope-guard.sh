@@ -35,7 +35,7 @@ fi
 #     - "src/db/queries.py"
 PATTERNS=$(awk '
   /^envelope:/ { capture=1; next }
-  capture && /^[[:space:]]+-/ { gsub(/^[[:space:]]+-[[:space:]]*"?|"?[[:space:]]*$/, ""); print; next }
+  capture && /^[[:space:]]+-/ { gsub(/[[:space:]]*#.*$/, ""); gsub(/^[[:space:]]+-[[:space:]]*"?|"?[[:space:]]*$/, ""); print; next }
   capture && /^[^[:space:]]/ { capture=0 }
 ' "$INTENT_FILE")
 

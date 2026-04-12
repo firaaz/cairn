@@ -12,8 +12,7 @@ SLICE-003 complete. Turn-1 context at 20,123 tokens (−26.3%). INV-004 register
 Start next slice (`/start-slice`) or merge dev → main.
 
 ## Blocked / Pending
-- Scope-guard YAML inline comment bug (`checks/scope-guard.sh:36-38`) → future slice
-- Two carry-over doc drift items in `operational-reference.md:96,:102` → next slice touching that file
+None.
 
 ## Pointers
 - `docs/ARCHITECTURE.md` — INV-004 added, Phase Skill Guide data-ownership updated
