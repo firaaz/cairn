@@ -1,8 +1,8 @@
 id: SLICE-004
 title: "D1 dogfood instrumentation"
-status: integration
+status: complete
 started: 2026-04-12
-completed: null
+completed: 2026-04-12
 invariants-touched: []
 adrs-referenced: [ADR-003]
 adrs-created: []
