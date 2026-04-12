@@ -1,6 +1,6 @@
 id: SLICE-005
 title: "Feature-slice model — design decomposition and ADRs"
-status: validation-active
+status: implementation
 started: 2026-04-12
 completed: null
 invariants-touched: []
