@@ -1,19 +1,20 @@
 ---
 slice: SLICE-004
-phase: 3-implementation
+phase: 4-integration
 branch: dev
-as-of: 2026-04-12 37f9d12
+as-of: 2026-04-12 870191a
 ---
 
 ## State
-SLICE-004 (d1-dogfood-instrumentation) Phase 2 complete. 18 RED tests committed. Slice status advanced to implementation.
+SLICE-004 Phase 3 complete. Dogfood evaluator and log committed at 870191a. Slice status advanced to integration.
 
 ## Next
-Run `/start-slice phase 3` to enter Implementation. Pass the 18-test suite by building `scripts/dogfood_evaluate.py` and `docs/dogfood-log.md`.
+Run `/start-slice phase 4` to enter Integration.
 
 ## Blocked / Pending
 None.
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 3 input artifact; read at session start
-- `tests/unit/test_dogfood_evaluate.py` — Phase 3 input: the validation suite to pass
+- `.claude/current-slice/intent.md` — Phase 4 input: envelope, invariants, ADRs referenced
+- `.claude/current-slice/implementation/notes.md` — Phase 3 decisions for audit
+- `tests/unit/test_dogfood_evaluate.py` — validation suite (18 tests)
