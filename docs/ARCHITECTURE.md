@@ -15,6 +15,8 @@ This document is a **derived view** synthesized from the ADR corpus in `docs/adr
 
 **INV-003** Every slice runs through exactly four phases in order — Intent (Reader), Validation (Skeptic), Implementation (Builder), Integration (Auditor). Each phase's role and anti-behaviors are surfaced at phase entry by `/catchup` and `/start-slice` via `docs/operational-reference.md § Phase Skill Guide`. Phase count, names, and role assignments are locked; changes require a superseding ADR. Roles are instructed in protocol text, not hook-enforced (commitment #6 mechanization is time-boxed to v2+ per ADR-003 D4). (ADR-004)
 
+**INV-004** Session-start context on a fresh prompt in cairn uses ≤22,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. (ADR-002; dedicated ADR pending after 2+ slices of progressive-disclosure use)
+
 ## Boundaries
 
 The slice pipeline has four phase boundaries, each implemented as a fresh session separated by a committed artifact (ADR-004 D1):
@@ -34,7 +36,7 @@ Cairn has no runtime data. The substrate is files on disk: shell hooks in `check
 
 Two additional substrate files are reserved by ADR-003 as part of D1's operating envelope: `.claude/d1-bypasses.log` (append-only log of `ADR_D1_BYPASS=1` slice-close invocations, each with slice ID and one-line reason; three entries in a rolling 10-slice window triggers a D1 design review) and `.claude/learning.md` (append-only staging ground for post-slice learnings, per ADR-002 Consequences). Neither exists until its owning slice lands.
 
-A new section `docs/operational-reference.md § Phase Skill Guide` is reserved by ADR-004 D4 as the living registry of per-phase role anti-behaviors and recommended Superpowers skills. The section does not yet exist; it is created by the follow-up slice named in ADR-004 Consequences (pre-D1). Updates to the registry are normal documentation commits and do not require ADR supersession.
+`docs/operational-reference.md § Phase Skill Guide` is the living registry of per-phase role anti-behaviors and recommended Superpowers skills, reserved by ADR-004 D4. Created by SLICE-003; updated by normal documentation commits without ADR supersession.
 
 ## Current Phase Constraints
 
