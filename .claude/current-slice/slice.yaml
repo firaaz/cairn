@@ -1,8 +1,8 @@
-id: SLICE-004
-title: "D1 dogfood instrumentation"
-status: complete
+id: SLICE-005
+title: "Feature-slice model — design decomposition and ADRs"
+status: intent
 started: 2026-04-12
-completed: 2026-04-12
+completed: null
 invariants-touched: []
-adrs-referenced: [ADR-003]
+adrs-referenced: [ADR-002, ADR-003, ADR-004]
 adrs-created: []
