@@ -1,20 +1,20 @@
 ---
-slice: SLICE-003
-phase: complete
+slice: none
+phase: n/a
 branch: dev
-as-of: 2026-04-12 35e4f31
+as-of: 2026-04-12 40b1545
 ---
 
 ## State
-SLICE-003 complete. Turn-1 context at 20,123 tokens (−26.3%). INV-004 registered in ARCHITECTURE.md. 4 invariants verified, 28/28 tests green.
+SLICE-003 complete, all carry-overs cleared. Branch dev clean, 28/28 tests green, sweep current at slice 3.
 
 ## Next
-Start next slice (`/start-slice`) or merge dev → main.
+Start next slice (`/start-slice`) or merge dev -> main.
 
 ## Blocked / Pending
 None.
 
 ## Pointers
-- `docs/ARCHITECTURE.md` — INV-004 added, Phase Skill Guide data-ownership updated
-- `.claude/sweep.yaml` — sweep current at slice 3
-- `docs/plans/measurements/2026-04-12-slice-003.txt` — token budget measurement
+- `docs/ARCHITECTURE.md` — INV-004, Phase Skill Guide current as of SLICE-003
+- `checks/scope-guard.sh:38` — inline-comment stripping added; no test coverage yet for that path
+- `docs/operational-reference.md:95,96` — Phase Skill Guide table updated: dispatching-parallel-agents moved to Phase 3 supporting
