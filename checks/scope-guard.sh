@@ -59,6 +59,7 @@ REL_FILE="${FILE#$PROJECT_ROOT/}"
 case "$REL_FILE" in
   .claude/current-slice/*|.claude/handoff.md|.claude/sweep.yaml) exit 0 ;;
   docs/adr/*|docs/ARCHITECTURE.md|docs/lessons.md) exit 0 ;;
+  CLAUDE.md|.gitignore) exit 0 ;;
 esac
 
 # Check if file matches any envelope pattern

@@ -87,8 +87,31 @@ Test count grew from 13 → 28 since last sweep: +7 `test_context_discipline_pro
 
 5. **`.claude/learning.md` created.** ADR-003 D1 substrate file now exists (7 lines). Previously declared but absent.
 
+## Phase 4 — Integration verification
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full test suite | **PASS** 28/28 | `python3 -m pytest -v` — 6.99s, zero failures |
+| Architecture validator | **PASS** 3 inv, 4 ADRs | `python3 scripts/validate_architecture.py` |
+| INV-002 (context discipline) | **PASS** | V1-V7 tests unchanged since SLICE-002 (`83880ea`). All 7 pass. `ARCHITECTURE.md:14` |
+| INV-004 (token budget ≤22k) | **PASS** (hard gate) | 20,123 tokens. Delta: -7,191 (-26.3%) from D1 baseline (27,314). Aspirational ≤20k: MISS (20,123). `test_context_budget.py:102` |
+| Command file structure | **PASS** | 8 lite + 7 full = 15 files. `status.md` has no full (by design) |
+| CLAUDE.md terseness rule | **PASS** | `CLAUDE.md:20` |
+| Regressions | **NONE** | S1-S5 structural tests pass, V1-V7 untouched, validator green |
+
+### INV-004 pending: not yet in ARCHITECTURE.md
+
+Intent (`intent.md:69`) declares INV-004 is added at Phase 4 via `/refresh-architecture`. Must run before slice close.
+
+### Scope-guard observations (non-envelope, user-flagged)
+
+1. **Admin allowlist uncommitted** (`scope-guard.sh:62`): adds `CLAUDE.md|.gitignore` to admin bypass. Legitimate infrastructure change from Phase 3. Diff present but uncommitted.
+2. **YAML inline comment bug** (`scope-guard.sh:36-38`): awk `gsub` strips leading `- "` and trailing `"`, but does not strip trailing `# comment`. An envelope entry like `"src/foo.py"  # note` would match against `src/foo.py"  # note`. Not triggered by any current intent.md (no inline comments in envelope blocks), but latent.
+
 ## Verdict
 
 **PASS.**
 
 All three invariants verified. INV-002 upgraded from FAIL → PASS (SLICE-002's major deliverable). INV-001 scar rate improved. INV-003 continues clean. Full substrate check green (28/28 tests, validator, lint, hooks). Two carry-over doc drift items remain (non-blocking, fold into next slice touching `operational-reference.md`). No new slices required.
+
+**Phase 4 verdict: PASS.** Hard gate met on all declared invariants. Two actions remain before slice close: (1) `/refresh-architecture` to register INV-004, (2) commit scope-guard admin allowlist.
