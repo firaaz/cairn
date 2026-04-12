@@ -1,24 +1,22 @@
 ---
-slice: none
-phase: n/a
+slice: SLICE-005
+phase: 2-validation
 branch: dev
-as-of: 2026-04-12 a56c97e
+as-of: 2026-04-12 7edef02
 ---
 
 ## State
-Pipeline idle. Feature-slice model design approved and committed. Three structural problems (identity, grouping, dependencies) have a unified design; parallelism is v1-native.
+SLICE-005 Phase 1 complete. Intent committed: produce 4 ADRs (semantic identity, feature-slice model, parallelism v1, context tiers integration) formalizing the approved design.
 
 ## Next
-Run `writing-plans` skill to decompose the feature-slice model design into implementation slices, then start the first slice.
+Run `/catchup` then `/start-slice phase 2` to enter Validation. Enumerate ambiguities in intent.md and write verification tests for the 4 ADRs.
 
 ## Blocked / Pending
 - Uncommitted: `docs/plans/measurements/2026-04-12-slice-003.txt` — stage or discard
-- Stale artifact: `.claude/current-slice/handoff.md` — untracked, safe to remove
 - Dogfood log empty: `docs/dogfood-log.md` — needs retroactive entries
-- L-003 fix not landed: `/decision` index-row leak protocol refinement
 
 ## Pointers
-- `docs/plans/2026-04-12-feature-slice-model-design.md` — full approved design; read before decomposing into slices
-- `docs/roadmap.md` — items 5/6/9 are covered by the design; items 2/3 interact with it
-- `docs/adr/003-cliff-failure-mode-and-v1-defenses.md` — D4 to be superseded by new ADR
-- `docs/adr/004-phase-lock-and-role-declaration.md` — D4 exclusions need updating for parallelism
+- `.claude/current-slice/intent.md` — Phase 2 primary input; read on entry
+- `docs/plans/2026-04-12-feature-slice-model-design.md` — approved design; read if intent references need tracing
+- `docs/adr/003-cliff-failure-mode-and-v1-defenses.md` — ADR-007 partially supersedes D4; read when writing supersession tests
+- `docs/adr/004-phase-lock-and-role-declaration.md` — ADR-007 un-excludes D4 skills; read when writing supersession tests
