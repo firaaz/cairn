@@ -1,19 +1,24 @@
 ---
-slice: SLICE-004
-phase: complete
+slice: none
+phase: n/a
 branch: dev
-as-of: 2026-04-12 7acefd1
+as-of: 2026-04-12 a56c97e
 ---
 
 ## State
-SLICE-004 Phase 4 integration passed. Sweep notes committed at 7acefd1 with full evidence table.
+Pipeline idle. Feature-slice model design approved and committed. Three structural problems (identity, grouping, dependencies) have a unified design; parallelism is v1-native.
 
 ## Next
-Run `/start-slice complete` to close SLICE-004, then run integration sweep (due: last at slice 3, interval 1, now at 4).
+Run `writing-plans` skill to decompose the feature-slice model design into implementation slices, then start the first slice.
 
 ## Blocked / Pending
-- Unstaged modification: `docs/plans/measurements/2026-04-12-slice-003.txt` — pre-existing, not part of this slice
+- Uncommitted: `docs/plans/measurements/2026-04-12-slice-003.txt` — stage or discard
+- Stale artifact: `.claude/current-slice/handoff.md` — untracked, safe to remove
+- Dogfood log empty: `docs/dogfood-log.md` — needs retroactive entries
+- L-003 fix not landed: `/decision` index-row leak protocol refinement
 
 ## Pointers
-- `.claude/current-slice/integration/sweep-notes.md` — Phase 4 pass/fail evidence, read if auditing the verdict
-- `.claude/sweep.yaml` — sweep is due; check before starting next slice
+- `docs/plans/2026-04-12-feature-slice-model-design.md` — full approved design; read before decomposing into slices
+- `docs/roadmap.md` — items 5/6/9 are covered by the design; items 2/3 interact with it
+- `docs/adr/003-cliff-failure-mode-and-v1-defenses.md` — D4 to be superseded by new ADR
+- `docs/adr/004-phase-lock-and-role-declaration.md` — D4 exclusions need updating for parallelism
