@@ -1,21 +1,21 @@
 ---
 slice: SLICE-003
-phase: 3-implementation
+phase: complete
 branch: dev
-as-of: 2026-04-12 606f8e6
+as-of: 2026-04-12 35e4f31
 ---
 
 ## State
-SLICE-003 Phase 3 complete at 606f8e6. Progressive disclosure implemented: 8 lite + 7 full command files, CLAUDE.md terseness rule. 28/28 tests GREEN.
+SLICE-003 complete. Turn-1 context at 20,123 tokens (−26.3%). INV-004 registered in ARCHITECTURE.md. 4 invariants verified, 28/28 tests green.
 
 ## Next
-Run `/catchup phase 4`, then `/start-slice phase 4` to enter Integration.
+Start next slice (`/start-slice`) or merge dev → main.
 
 ## Blocked / Pending
-- Sweep due per sweep.yaml → run `/integration-sweep` before or after Phase 4
-- I1/M1 carried-forward → Phase 4 manual verification
+- Scope-guard YAML inline comment bug (`checks/scope-guard.sh:36-38`) → future slice
+- Two carry-over doc drift items in `operational-reference.md:96,:102` → next slice touching that file
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 4 primary input
-- `.claude/current-slice/implementation/notes.md` — 7 implementation decisions to verify
-- `docs/ARCHITECTURE.md` — invariant checks for INV-002, INV-004
+- `docs/ARCHITECTURE.md` — INV-004 added, Phase Skill Guide data-ownership updated
+- `.claude/sweep.yaml` — sweep current at slice 3
+- `docs/plans/measurements/2026-04-12-slice-003.txt` — token budget measurement
