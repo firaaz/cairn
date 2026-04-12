@@ -1,28 +1,8 @@
-id: SLICE-002
-title: "Rewrite handoff and catchup protocols for context discipline"
-status: complete
-started: 2026-04-11
-completed: 2026-04-12
-invariants-touched: [INV-002]
-adrs-referenced: [ADR-002, ADR-003]
-adrs-created: [ADR-002]
-amend-rationale: |
-  Archived 2026-04-11 at Phase 2 pending substrate/framework/hypothesis/test-pyramid
-  sub-decisions surfaced during Phase 1 exploration. P0b review 2026-04-12 executed
-  path-a (amend-and-resume) and bound the envelope to ADR-003 D2 contribution: V1–V7
-  contract-conformance tests migrate INV-002 from instructed to machine-checked,
-  satisfying D2 (code↔invariant binding).
-
-  Second amendment 2026-04-12 narrows Phase 2 scope: substrate strategy, framework
-  build-vs-adopt, hypothesis adoption, and test-pyramid ratification are all DEFERRED
-  OUT OF SLICE-002 as future scope. Full analysis moved to
-  docs/plans/2026-04-11-substrate-and-framework-exploration-notes.md (was
-  exploration-notes.md — executes the orphaned Phase 1 promote-out instruction).
-
-  Phase 2 proceeds on the current Python substrate with pytest + stdlib only (no
-  hypothesis). V1–V7 are language-independent conformance tests; the D2 contribution
-  holds regardless of eventual substrate outcome. Preserved Phase 2 work in
-  validation/approach.md (V2 shared-window, V4/V6/V7 sub-resolutions, Approach 1+
-  primitive-layer design, pyramid mapping) remains valid unchanged. Phase 2 is no
-  longer blocked — resume writes tests/unit/test_context_discipline_protocol.py
-  directly against the existing Approach 1+ design.
+id: SLICE-003
+title: "Context budget compression"
+status: intent
+started: 2026-04-12
+completed: null
+invariants-touched: [INV-002, INV-004]
+adrs-referenced: [ADR-002, ADR-004]
+adrs-created: []
