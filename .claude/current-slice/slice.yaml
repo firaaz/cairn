@@ -1,6 +1,6 @@
 id: SLICE-003
 title: "Context budget compression"
-status: implementation
+status: integration
 started: 2026-04-12
 completed: null
 invariants-touched: [INV-002, INV-004]

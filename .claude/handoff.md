@@ -1,23 +1,21 @@
 ---
 slice: SLICE-003
-phase: 2-validation
+phase: 3-implementation
 branch: dev
-as-of: 2026-04-12 4ce91ac
+as-of: 2026-04-12 606f8e6
 ---
 
 ## State
-SLICE-003 Phase 2 validation committed at 4ce91ac. Eight test functions across two files: S1–S5 progressive disclosure, INV-004 live budget, CLAUDE.md terseness, subjective-trigger guard. RED state: 4 failing, 3 vacuous, 1 pre-passing.
+SLICE-003 Phase 3 complete at 606f8e6. Progressive disclosure implemented: 8 lite + 7 full command files, CLAUDE.md terseness rule. 28/28 tests GREEN.
 
 ## Next
-Run `/catchup phase 3`, then `/start-slice phase 3` to enter Implementation.
+Run `/catchup phase 4`, then `/start-slice phase 4` to enter Integration.
 
 ## Blocked / Pending
-- INV-004 already passes at ~20k tokens → progressive disclosure is structural insurance, not the budget-crossing mechanism
-- Sweep due per sweep.yaml → run `/integration-sweep` before or after Phase 3
-- Carried-forward I1/M1 → deferred to Phase 4 manual verification
+- Sweep due per sweep.yaml → run `/integration-sweep` before or after Phase 4
+- I1/M1 carried-forward → Phase 4 manual verification
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 3 primary input; read first
-- `tests/unit/test_progressive_disclosure.py` — S1–S5 + terseness tests; Phase 3 must make these GREEN
-- `tests/unit/test_context_budget.py` — INV-004 regression guard; must stay GREEN
-- `.claude/current-slice/validation/approach.md` — ambiguity resolutions and RED state table
+- `.claude/current-slice/intent.md` — Phase 4 primary input
+- `.claude/current-slice/implementation/notes.md` — 7 implementation decisions to verify
+- `docs/ARCHITECTURE.md` — invariant checks for INV-002, INV-004
