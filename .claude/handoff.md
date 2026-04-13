@@ -1,21 +1,21 @@
 ---
-slice: SLICE-005
-phase: complete
+slice: SLICE-006
+phase: 1-intent
 branch: dev
-as-of: 2026-04-13 beb9a45
+as-of: 2026-04-13 54c7eab
 ---
 
 ## State
-SLICE-005 complete. 4 ADRs (005–008) landed, ARCHITECTURE.md refreshed with 7 invariants, `.claude/current-slice/` wiped.
+SLICE-006 (phase-rethink) Phase 1 intent committed. Evaluates whether ADR-004's four-phase lock holds or needs supersession, scoped to produce an ADR with slice-history evidence.
 
 ## Next
-Run `/integration-sweep` in a fresh session — sweep is due (slice 5, last sweep at 4, interval 1).
+Start a fresh session, run `/catchup`, then `/start-slice phase 2` to enter Validation.
 
 ## Blocked / Pending
-- Dirty file `docs/plans/measurements/2026-04-12-slice-003.txt` — pre-existing token count drift, causes V7 test-ordering interaction; stage before next slice
+- Dirty file `docs/plans/measurements/2026-04-12-slice-003.txt` — pre-existing, stage before next slice
+- Integration sweep still due (skipped this session)
 
 ## Pointers
-- `docs/adr/005-semantic-identity.md` — naming convention; read when starting ADR rename implementation slice
-- `docs/adr/006-feature-slice-model.md` — feature file model; read when implementing `.claude/features/` directory
-- `docs/adr/007-parallelism-v1.md` — parallelism rules (provisional); read when first concurrent slices run
-- `docs/adr/008-context-tiers-integration.md` — context tier mapping; read when updating `/catchup` or `/handoff` for feature awareness
+- `.claude/current-slice/intent.md` — Phase 2 input; specifies 4 evaluation axes and evidence requirements
+- `docs/adr/004-phase-lock-and-role-declaration.md` — the ADR under review; read when entering Phase 2/3
+- `docs/adr/003-target-failure-mode-and-v1-defense-commitments.md` — referenced by intent; ADR-003 D4 time-box context
