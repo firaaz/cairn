@@ -1,8 +1,8 @@
-id: SLICE-006
-title: "Phase pipeline rethink — evaluate and potentially supersede ADR-004"
-status: complete
+id: SLICE-007
+title: "Sweep debt cleanup — stale measurement artifact and Phase Skill Guide drift"
+status: intent
 started: 2026-04-13
-completed: 2026-04-13
-invariants-touched: [INV-003]
-adrs-referenced: [ADR-004, ADR-003]
+completed: null
+invariants-touched: []
+adrs-referenced: [ADR-007]
 adrs-created: []
