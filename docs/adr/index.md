@@ -10,3 +10,4 @@
 | ADR-006 | Feature-Slice Model | accepted | firm | architecture | 2026-04-12 |
 | ADR-007 | Parallelism v1 | accepted | provisional | scope | 2026-04-12 |
 | ADR-008 | Context Tiers Integration for Feature-Slice Model | accepted | firm | process | 2026-04-12 |
+| ADR-009 | Phase Pipeline Evaluation — Confirmation of Four-Phase Structure | accepted | firm | process | 2026-04-13 |
