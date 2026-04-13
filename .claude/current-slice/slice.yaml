@@ -1,6 +1,6 @@
 id: SLICE-008
 title: "D1 automated architecture refresh — post-slice hook with session isolation"
-status: validation
+status: implementation
 started: 2026-04-13
 completed: null
 invariants-touched: [INV-001, INV-002]
