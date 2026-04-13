@@ -1,8 +1,8 @@
 id: SLICE-006
 title: "Phase pipeline rethink — evaluate and potentially supersede ADR-004"
-status: implementation
+status: complete
 started: 2026-04-13
-completed: null
+completed: 2026-04-13
 invariants-touched: [INV-003]
 adrs-referenced: [ADR-004, ADR-003]
 adrs-created: []
