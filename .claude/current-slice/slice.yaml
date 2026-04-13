@@ -1,6 +1,6 @@
 id: SLICE-007
 title: "Sweep debt cleanup — stale measurement artifact and Phase Skill Guide drift"
-status: implementation
+status: integration
 started: 2026-04-13
 completed: null
 invariants-touched: []
