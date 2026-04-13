@@ -13,7 +13,6 @@ Run `/integration-sweep` in a fresh session.
 
 ## Blocked / Pending
 - test_context_budget.py side-effect regeneration → pre-existing test-ordering bug, needs its own slice
-- SLICE-002 P0b resolve/supersede → blocks D1 start
 
 ## Pointers
 - `.claude/sweep.yaml` — sweep cadence; confirm before running integration-sweep
