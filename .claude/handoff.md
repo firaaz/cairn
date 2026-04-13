@@ -1,22 +1,21 @@
 ---
 slice: SLICE-006
-phase: 3-implementation
+phase: complete
 branch: dev
-as-of: 2026-04-13 cf992b8
+as-of: 2026-04-13 92e9312
 ---
 
 ## State
-SLICE-006 (phase-rethink) Phase 3 complete at cf992b8. ADR-009 confirms ADR-004's four-phase structure; 8/8 tests GREEN, architecture validator passes.
+SLICE-006 (phase-rethink) complete. ADR-009 confirms ADR-004's four-phase structure; INV-003 reaffirmed. Integration sweep overdue since SLICE-005.
 
 ## Next
-Start a fresh session, run `/catchup phase 4`, then `/start-slice phase 4` to enter Integration.
+Run `/integration-sweep` in a fresh session to clear the sweep backlog.
 
 ## Blocked / Pending
 - `docs/plans/measurements/2026-04-12-slice-003.txt` recalculated by context-budget hook on every commit — infinite dirty cycle, needs separate fix
-- Integration sweep still due (skipped since SLICE-005)
+- Integration sweep overdue (last at SLICE-004, interval 1, now at SLICE-006)
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 4 input; verification items and envelope declaration
-- `docs/adr/009-phase-pipeline-evaluation.md` — Phase 3 output; the ADR under audit
-- `docs/ARCHITECTURE.md` — INV-003 updated to reference ADR-009; verify in Phase 4
-- `.claude/current-slice/implementation/notes.md` — 4 Builder decisions recorded; review if any seem spec-adjacent
+- `docs/adr/009-phase-pipeline-evaluation.md` — SLICE-006 output; confirms ADR-004, evaluates A2 tripwire (NOT FIRED)
+- `docs/ARCHITECTURE.md` — INV-003 updated to reference ADR-009
+- `.claude/sweep.yaml` — sweep state; next session should check and run `/integration-sweep`
