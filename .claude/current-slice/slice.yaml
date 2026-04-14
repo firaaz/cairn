@@ -1,8 +1,8 @@
-id: SLICE-011
-title: "D2 assertion-block migration — machine-checkable assertions for remaining invariants"
-status: complete
+id: SLICE-012
+title: "D3 automated unknown-unknown backstop — design slice"
+status: intent
 started: 2026-04-14
-completed: 2026-04-14
+completed: null
 invariants-touched: []
 adrs-referenced: [ADR-003]
 adrs-created: []
