@@ -1,21 +1,20 @@
 ---
 slice: SLICE-008
-phase: 4-integration
+phase: complete
 branch: dev
-as-of: 2026-04-14 b88a269
+as-of: 2026-04-14 dfa9c87
 ---
 
 ## State
-SLICE-008 (d1-automated-architecture-refresh) Phase 3 complete at b88a269. All 6 D1 gate tests (V1–V6) pass.
+SLICE-008 (d1-automated-architecture-refresh) complete at dfa9c87. Integration sweep is due (slice 8, last sweep at 7, interval 1).
 
 ## Next
-Run `/start-slice phase 4` to enter Integration (Auditor role).
+Run `/integration-sweep` in a fresh session.
 
 ## Blocked / Pending
-- test_context_budget.py side-effect regeneration → pre-existing test-ordering bug, needs its own slice
-- docs/plans/measurements/2026-04-12-slice-003.txt → pre-existing uncommitted debt file, not part of SLICE-008
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → pre-existing debt, needs its own slice
+- `test_context_budget.py` ordering bug → pre-existing, needs its own slice
 
 ## Pointers
-- `.claude/current-slice/intent.md` — D1 spec: trigger, session isolation, escape hatch, bypass log format. Read at Phase 4 entry.
-- `tests/unit/test_d1_gate.py` — six V1–V6 tests. Read at Phase 4 for invariant verification.
-- `.claude/current-slice/implementation/notes.md` — two Builder decisions (gate placement, V6 note placement). Read at Phase 4 entry.
+- `.claude/sweep.yaml` — sweep cadence config. Read at integration-sweep entry.
+- `docs/ARCHITECTURE.md` — current invariant set (7 invariants, 9 ADRs). Read at sweep.
