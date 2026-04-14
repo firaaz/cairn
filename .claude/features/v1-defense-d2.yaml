@@ -4,3 +4,6 @@ created: 2026-04-14
 slices:
   - id: SLICE-010
     added: 2026-04-14
+  - id: SLICE-011
+    added: 2026-04-14
+    after: [SLICE-010]

@@ -1,8 +1,8 @@
-id: SLICE-010
-title: "D2 code↔invariant binding — machine-checkable assertions for firm invariants"
-status: complete
+id: SLICE-011
+title: "D2 assertion-block migration — machine-checkable assertions for remaining invariants"
+status: intent
 started: 2026-04-14
-completed: 2026-04-14
+completed: null
 invariants-touched: []
 adrs-referenced: [ADR-003]
 adrs-created: []
