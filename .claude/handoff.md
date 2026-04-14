@@ -1,25 +1,25 @@
 ---
 slice: SLICE-012
-phase: 3-implementation
+phase: 4-integration
 branch: dev
-as-of: 2026-04-14 72c33e2
+as-of: 2026-04-14 d022e4b
 ---
 
 ## State
-SLICE-012 (D3 automated backstop) Phase 3 implementation complete. `integration_gate.py` and `snapshot_diff.py` pass all 30 validation tests; command files updated to reference scripts.
+SLICE-012 (D3 automated backstop) Phase 4 integration complete. Verdict PASS: 204 tests, 7 invariants, 10/10 verification items confirmed.
 
 ## Next
-Run `/start-slice phase 4` in a fresh session to enter Integration.
+Run `/start-slice complete` in a fresh session to execute D1+D3 gates and close the slice.
 
 ## Blocked / Pending
 - `docs/plans/measurements/2026-04-12-slice-003.txt` — uncommitted modification, pre-dates SLICE-010
-- Integration sweep due (last at slice 10, interval 1, current 12) — user-deferred
+- Integration sweep overdue (last at slice 10, interval 1, current 12) — user-deferred
 
 ## Features
 - v1-defense-d2: SLICE-010 complete, SLICE-011 complete
-- v1-defense-d3: SLICE-012 phase 3 implementation complete
+- v1-defense-d3: SLICE-012 phase 4 integration complete
 
 ## Pointers
-- `.claude/current-slice/intent.md` — D3 specification; Phase 4 primary input
-- `.claude/current-slice/implementation/notes.md` — decisions made during Phase 3
-- `docs/operational-reference.md` — phase pipeline and skill guide; read at phase entry
+- `.claude/current-slice/integration/sweep-notes.md` — full evidence table; read if gate results need review
+- `.claude/current-slice/intent.md` — D3 specification; needed by `/start-slice complete` for D3 gates
+- `docs/operational-reference.md` — phase pipeline reference; read at phase entry
