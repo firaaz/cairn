@@ -183,7 +183,16 @@ The fresh session matters — context isolation is what makes the external check
 
 When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory for successful slices — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Per ADR-002, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
 
-Sequence:
+### D1 Refresh Gate
+
+Before the wipe sequence begins, run the D1 automated architecture refresh to ensure `docs/ARCHITECTURE.md` is consistent with the ADR corpus.
+
+1. Run `/refresh-architecture` logic. The refresh loads only `docs/adr/*.md` (excluding `index.md` and files with status: superseded) plus the prior `docs/ARCHITECTURE.md`. It does NOT load `.claude/current-slice/` artifacts or phase-role context — this is the session isolation contract from ADR-003 D1 and ADR-002 INV-002.
+2. Run `uv run python .slice-system/scripts/validate_architecture.py`. If the validator exits non-zero and `ADR_D1_BYPASS` is not set, the slice MUST NOT transition to `status: complete`. Print the validator output and instruct the operator to either fix the ADR/architecture inconsistency or set `ADR_D1_BYPASS=1` to bypass.
+3. **Bypass escape hatch.** If `ADR_D1_BYPASS=1` is set and the validator fails, completion proceeds. Append a line to `.claude/d1-bypasses.log` in the format: `<slice-id> <YYYY-MM-DD> <one-line-reason>`. The log is append-only and does not exist until the first bypass.
+4. **Rolling-window check.** After logging a bypass, count entries in `.claude/d1-bypasses.log` whose slice-id numeric suffix falls within the last 10 slices. If 3 or more bypasses exist in that window, print a warning: "D1 design review recommended — three bypasses in the last 10 slices suggests the validator is producing more noise than signal."
+
+### Completion Sequence
 
 1. Update `slice.yaml`: set `status: complete`, `completed: <today>`
 2. Check if an integration sweep is due: read `.claude/sweep.yaml` and compare `current-slice-number` against `last-sweep-at-slice + sweep-interval`. If `sweep.yaml` is missing, create it with defaults (same as Step 4) before checking.

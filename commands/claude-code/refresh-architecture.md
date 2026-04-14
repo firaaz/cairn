@@ -4,6 +4,8 @@ Regenerate `docs/ARCHITECTURE.md` from the ADR corpus and validate consistency.
 
 Usage: `/refresh-architecture`
 
+**Note:** This command is also invoked automatically by the D1 refresh gate during `/start-slice complete` (see start-slice.full.md Step 7). The manual command behavior is unchanged.
+
 ## Rules
 
 1. Read every `.md` in `docs/adr/` (skip `index.md`). Parse YAML frontmatter. Skip `status: superseded` or `retired`.
