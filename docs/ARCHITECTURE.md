@@ -12,17 +12,65 @@ This document is a **derived view** synthesized from the ADR corpus in `docs/adr
 
 **INV-001** All cairn development after the bootstrap commit flows through `/decision` or `/start-slice`. Direct commits to this repo are not permitted except as recorded in a superseding ADR. (ADR-001)
 
+```invariant-check INV-001
+type: file-exists
+target: "commands/claude-code/start-slice.md"
+description: "Verifies /start-slice command exists as the mechanism enabling this invariant"
+```
+
 **INV-002** Session-to-session context transfer obeys a three-layer context discipline protocol: (a) `.claude/handoff.md` is a pointer artifact bounded at 150–400 tokens with fixed section structure and a forbidden-sections list, (b) `/catchup` reads only a fixed five-item list into main context and gates further reads behind explicit Tier 2 admission criteria dispatched via subagent, and (c) `/start-slice` wipes `.claude/current-slice/` on transition to `status: complete` so each slice inherits no residue from its predecessor. (ADR-002)
+
+```invariant-check INV-002
+type: grep
+pattern: "Token budget: 150 to 400 tokens"
+target: "docs/operational-reference.md"
+expect: match
+description: "Verifies handoff token budget constraint is documented in operational reference"
+```
 
 **INV-003** Every slice runs through exactly four phases in order — Intent (Reader), Validation (Skeptic), Implementation (Builder), Integration (Auditor). Each phase's role and anti-behaviors are surfaced at phase entry by `/catchup` and `/start-slice` via `docs/operational-reference.md § Phase Skill Guide`. Phase count, names, and role assignments are locked; changes require a superseding ADR. Roles are instructed in protocol text, not hook-enforced (commitment #6 mechanization is time-boxed to v2+ per ADR-003 D4). (ADR-004; confirmed by ADR-009)
 
+```invariant-check INV-003
+type: grep
+pattern: "### Phase 1: Intent"
+target: "docs/operational-reference.md"
+expect: match
+description: "Verifies the four-phase pipeline definition exists in operational reference"
+```
+
 **INV-004** Session-start context on a fresh prompt in cairn uses ≤22,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. (ADR-002; dedicated ADR pending after 2+ slices of progressive-disclosure use)
+
+```invariant-check INV-004
+type: test-ref
+pattern: "tests/unit/test_context_budget.py"
+description: "Points to the test suite that machine-checks the 22k token budget"
+```
 
 **INV-005** All new slices and ADRs use semantic kebab-case identifiers. Cross-references in YAML fields use the ADR's `id` frontmatter field value. Existing ADRs retain numeric prefixes until a migration slice renames them; both naming conventions coexist during the transition period. Hooks (`reversibility-guard.sh`, `scope-guard.sh`) accept both formats until migration completes. (ADR-005)
 
+```invariant-check INV-005
+type: file-exists
+target: "docs/adr/005-semantic-identity.md"
+description: "Verifies the kebab-case naming convention ADR exists"
+```
+
 **INV-006** Every piece of work decomposes into a feature (the unit of intent) containing one or more slices (the unit of execution). Each feature has a file at `.claude/features/<id>.yaml` carrying the slice list with `after` dependency fields, feature intent, and creation date. Even single-slice features get a feature file (always-create policy). State lives in exactly one file with no duplication; slice status is derived from observable state (branch existence, merge state, `parked` flag), not stored — except `dropped`, which is the one stored exception. (ADR-006)
 
+```invariant-check INV-006
+type: file-exists
+target: ".claude/features/*.yaml"
+description: "Verifies at least one feature file exists under .claude/features/"
+```
+
 **INV-007** Feature-slice artifacts integrate into ADR-002's three-tier context model without creating a new tier or amending INV-002: `handoff.md` gains a cross-feature index at Tier 1 (within the 150–400 token budget), feature files load as Tier 2 on-demand reads gated by existing admission criteria, and `slice.yaml` remains Tier 3 working context. Beyond ~5 concurrent features the token budget may bind — this is a named v1 scalability ceiling, not a defect. (ADR-008)
+
+```invariant-check INV-007
+type: grep
+pattern: "\.claude/features/"
+target: "commands/claude-code/handoff.full.md"
+expect: match
+description: "Verifies the handoff command references feature files for context integration"
+```
 
 ## Boundaries
 
