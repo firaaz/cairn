@@ -1,46 +1,43 @@
-# Integration Sweep #7 — SLICE-010
+# Integration — SLICE-011
 
 **Date:** 2026-04-14
-**Slice:** SLICE-010 (D2 code-invariant binding)
+**Slice:** SLICE-011 (D2 assertion-block migration)
 **Verdict:** PASS
 
-## Invariant Check
+## Invariant Evidence
 
-| Invariant | Status | Evidence |
-|-----------|--------|----------|
-| INV-001 (pipeline flow) | PASS | All 20 recent commits use pipeline prefixes (`slice:`, `handoff:`, `sweep:`, `measurement:`, `fix:`, `integration:`, `implementation:`, `validation:`). No unpipelined direct commits. |
-| INV-002 (context discipline) | PASS | `handoff.md` is 123 words (within 150–400 token budget). Fixed section structure intact: State, Next, Blocked/Pending, Features, Pointers. No forbidden sections. `.claude/handoff.md:1-25` |
-| INV-003 (four-phase pipeline) | PASS | SLICE-010 traversed all four phases: Intent (64d2b5e), Validation (edcf6e4), Implementation (14f9907), Complete (e9c00d3). Phase names unchanged in `docs/ARCHITECTURE.md:17,29-36`. |
-| INV-004 (context budget) | PASS | `test_context_budget.py` passes. `tests/unit/test_context_budget.py:1` |
-| INV-005 (semantic kebab-case) | PASS | Both naming conventions coexist as specified. ADRs use numeric prefixes (001-009). Feature file uses kebab-case (`v1-defense-d2.yaml`). |
-| INV-006 (feature-slice model) | PASS | Feature file `.claude/features/v1-defense-d2.yaml` present with correct schema (id, intent, created, slices with id+added). SLICE-010 correctly listed. |
-| INV-007 (feature-slice context integration) | PASS | `handoff.md` has `## Features` section with cross-feature index. Feature file loadable as Tier 2. No new tier introduced. `.claude/handoff.md:20-21` |
+| INV | Assertion Type | Target | Verdict | Evidence |
+|-----|---------------|--------|---------|----------|
+| 001 | file-exists | `commands/claude-code/start-slice.md` | PASS | File exists on disk |
+| 002 | grep match | `docs/operational-reference.md` | PASS | Line 197: "Token budget: 150 to 400 tokens" |
+| 003 | grep match | `docs/operational-reference.md` | PASS | Line 18: "### Phase 1: Intent" |
+| 004 | test-ref | `tests/unit/test_context_budget.py` | PASS | File exists on disk |
+| 005 | file-exists | `docs/adr/005-semantic-identity.md` | PASS | File exists on disk |
+| 006 | file-exists | `.claude/features/*.yaml` | PASS | `v1-defense-d2.yaml` matches glob |
+| 007 | grep match | `commands/claude-code/handoff.full.md` | PASS | Line 54: ".claude/features/" |
 
-## Cross-Module Checks
+## Verification Checks
 
 | Check | Result |
 |-------|--------|
-| Test suite | 159/159 pass (9.57s) |
-| Ruff lint | 2 E741 warnings in `tests/unit/test_feature_cross_index.py:88,95` — known, tracked in handoff |
-| Architecture validator | ALL CHECKS PASSED (7 invariants, 9 ADRs). 7 Check E warnings (no assertion blocks) — expected, migration deferred |
-| Import integrity | No import conflicts across SLICE-010 changes |
-| Schema check | `slice.yaml` and feature file schemas valid |
-| Structural diff | SLICE-010 changes confined to declared envelope: `scripts/validate_architecture.py`, `tests/unit/test_invariant_assertions.py`, `tests/unit/test_slice_005_design_decomposition.py`, `tests/unit/test_sweep_debt_cleanup.py`, `.claude/` state files |
+| Full test suite | 174/174 pass (12.54s) |
+| Architecture validator | ALL CHECKS PASSED — 7 invariants, 9 ADRs, 0 Check D failures, 0 Check E warnings |
+| Envelope compliance | Changes confined to `docs/ARCHITECTURE.md` + slice infrastructure files |
+| Invariant text integrity | No invariant paragraphs modified — only assertion blocks inserted after each |
+| Falsification tests | Present for all 3 assertion types: grep-match, grep-no-match, file-exists, test-ref |
 
-## Git History Review
+## Regression Check
 
-No workarounds, hacks, bypasses, TODOs, or out-of-envelope edits in last 20 commits. Multi-file commit `28cb096` (`fix: exclude live measurement file`) touched two test files — justified fix for pre-existing measurement file issue, not a boundary violation.
+Files changed in Phase 3 (`git diff --name-only HEAD~2..HEAD`):
+- `docs/ARCHITECTURE.md` — 7 assertion blocks added (in-envelope)
+- `.claude/current-slice/implementation/notes.md` — Builder notes (infrastructure)
+- `.claude/current-slice/slice.yaml` — status update (infrastructure)
+- `.claude/current-slice/handoff-phase-3.md` — handoff artifact (infrastructure)
+- `.claude/handoff.md` — handoff pointer (infrastructure)
 
-## Staleness Check (handoff Blocked/Pending)
+No out-of-envelope source changes. No test regressions (174 pass vs 159 at SLICE-010 close — delta is 15 new tests in `test_invariant_assertions.py` for SLICE-011 coverage).
 
-| Item | Status |
-|------|--------|
-| Ruff E741 in `test_feature_cross_index.py:88,95` | NOT STALE — still present in ruff output |
-| `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted | NOT STALE — `git diff` confirms 2 insertions, 2 deletions pending |
-| INV-004/005/006 assertion-block migration | NOT STALE — no work done; follow-on slice needed |
+## Carried Items
 
-## Action Items
-
-1. **E741 cleanup** — rename `l` → `line` in `tests/unit/test_feature_cross_index.py:88,95`. Low priority, cosmetic.
-2. **Assertion-block migration** — next slice should add assertion blocks for INV-004/005/006/007 to `ARCHITECTURE.md` so Check D can execute. This is the primary D2 follow-on deliverable.
-3. **Uncommitted measurement file** — `docs/plans/measurements/2026-04-12-slice-003.txt` has been uncommitted across two slices. Commit or discard.
+- Ruff E741 in `tests/unit/test_feature_cross_index.py:88,95` — cosmetic, pre-existing
+- `docs/plans/measurements/2026-04-12-slice-003.txt` — uncommitted, pre-dates SLICE-010
