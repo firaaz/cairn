@@ -1,0 +1,250 @@
+{
+  "commands/claude-code/catchup.full.md": {
+    "hash": "872634658541a2c4506b60e3934842618ccf561869259e961e75a492290f130d",
+    "size": 9748
+  },
+  "commands/claude-code/catchup.md": {
+    "hash": "17bde2975798490c1bd581cd21cef0ac4f55c631fb697bf4fe2f3a4f8f8f9c98",
+    "size": 1642
+  },
+  "commands/claude-code/decision.full.md": {
+    "hash": "256fc5e170080616915f5e6456c6af8aadfc684a434124ab2cec9f3bd8a81568",
+    "size": 7622
+  },
+  "commands/claude-code/decision.md": {
+    "hash": "33e3e668f9bea83ecfa2bc889ef48c0df3f5f27775aa100e0bc108177ef2b1c7",
+    "size": 1601
+  },
+  "commands/claude-code/handoff.full.md": {
+    "hash": "d365224bbf43d36a3f3654d09befd50f8aba80fbf2063c941f26497cfc3a2399",
+    "size": 6086
+  },
+  "commands/claude-code/handoff.md": {
+    "hash": "28d982c5f2fceccc491cbf28c338dc2a12c198f14f0afe117716544944db9d04",
+    "size": 1155
+  },
+  "commands/claude-code/integration-sweep.full.md": {
+    "hash": "eb5296378e79920ac591fdc66a59ffe537861fc861948eda889183b76704dc02",
+    "size": 5189
+  },
+  "commands/claude-code/integration-sweep.md": {
+    "hash": "a8f26708445e5ed95802164257845c9e8f440db88e8799940a39cde088abb41b",
+    "size": 1677
+  },
+  "commands/claude-code/new-adr.full.md": {
+    "hash": "93f0c78c2611497abebcf3d1cb63fd38783a82714e3b0847ddbcb48acb834454",
+    "size": 3576
+  },
+  "commands/claude-code/new-adr.md": {
+    "hash": "1aab0801554bb36c0052c7e1a3789efd06fb543bc1f2324ab900d04688271b6b",
+    "size": 1254
+  },
+  "commands/claude-code/refresh-architecture.full.md": {
+    "hash": "b5930edfe9d9312b55de8891e4204c5e7bf3bc2a9c1865d94b80acff15487f9b",
+    "size": 2959
+  },
+  "commands/claude-code/refresh-architecture.md": {
+    "hash": "3c59e7dd067cad282accc7c27a010b4f5d5035cf85a672b7c8421005137a70b5",
+    "size": 1308
+  },
+  "commands/claude-code/start-slice.full.md": {
+    "hash": "09c4c72602dad11827a58e33e5a989c326f6275209a23fdb747e6c75e78d6cb1",
+    "size": 18276
+  },
+  "commands/claude-code/start-slice.md": {
+    "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
+    "size": 1903
+  },
+  "commands/claude-code/status.md": {
+    "hash": "f650a63b5dd63f010267ecaadbd6d0a5f0ea61e701d84267e05cab4b33f92ac1",
+    "size": 849
+  },
+  "docs/ARCHITECTURE.md": {
+    "hash": "b3b05bda32227f7ba553eed1e6a267a6bdde9e377cce6d3360c2d294cc2be688",
+    "size": 15216
+  },
+  "docs/adr/001-bootstrap-exception.md": {
+    "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
+    "size": 4795
+  },
+  "docs/adr/002-context-discipline-protocol.md": {
+    "hash": "a20ba4fa027bc54c8062c7c0eb87afa23cd06b3c158c7f415b9d458a441e5a8f",
+    "size": 10783
+  },
+  "docs/adr/003-cliff-failure-mode-and-v1-defenses.md": {
+    "hash": "050c1b1b7c1866e9a1472fd72d2560b458e283b5c06d9b81d4140f905e28cebf",
+    "size": 24852
+  },
+  "docs/adr/004-phase-lock-and-role-declaration.md": {
+    "hash": "7be1f9cb355291065af96320f511c7c4eeb3ad962f6893c3953d1f259a1dba9d",
+    "size": 31838
+  },
+  "docs/adr/005-semantic-identity.md": {
+    "hash": "753c74cea95337aded4d82af78096fd75959e6700dc2dfd2d280c5421276f485",
+    "size": 5448
+  },
+  "docs/adr/006-feature-slice-model.md": {
+    "hash": "a486908a891c8fe0d3c217b04a5da9782f09a7de25ad18d4aaae460bc6c62a64",
+    "size": 7713
+  },
+  "docs/adr/007-parallelism-v1.md": {
+    "hash": "e4e5856308d5231ea4220f4871beffc0084284d7523265728510acfcb21629eb",
+    "size": 9288
+  },
+  "docs/adr/008-context-tiers-integration.md": {
+    "hash": "7a49d0da7f0f270bad1e845fb73ec034770ed8bafa2f7c3e487e79e6a728fc58",
+    "size": 6089
+  },
+  "docs/adr/009-phase-pipeline-evaluation.md": {
+    "hash": "345e3b2649cd3e4064a4af7f64f65fcb80fa56e1ca8dfda061b86af4f1a07763",
+    "size": 9656
+  },
+  "docs/adr/index.md": {
+    "hash": "03c200a4b91ec43bbd6bdf96cadce07efc5a0bc2d470d1d362dab0b0c3081e87",
+    "size": 953
+  },
+  "docs/dogfood-log.md": {
+    "hash": "be243b422e2632df3da78b2ad84a81271ce4ace4e60678e286dc61df20193e01",
+    "size": 292
+  },
+  "docs/lessons.md": {
+    "hash": "8b7a4df5adf7a1ba4cc795d48cd7ecfdfd58ee3eaaa8e447640c6ff5600dffb3",
+    "size": 12768
+  },
+  "docs/operational-reference.md": {
+    "hash": "341525e71da98370d6260bf0e552012cba4a2ae50fc362d2943f6ce50e5dd813",
+    "size": 25729
+  },
+  "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
+    "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
+    "size": 11681
+  },
+  "docs/plans/2026-04-11-context-discipline-design.md": {
+    "hash": "5e2d8eb82a09fa393a560f96d3a3a0788ea2d639cc19102a15a972c8342b2a82",
+    "size": 17394
+  },
+  "docs/plans/2026-04-11-d1-2-superpowers-hook-deferral.md": {
+    "hash": "a0e664a46230b80ad33915bb2059735ecaf564b353cd3de0ed820ae1fd27847e",
+    "size": 3262
+  },
+  "docs/plans/2026-04-11-d1-completion.md": {
+    "hash": "0a0999a92e0fd11e0323d4783cce819c32da4642d097408103d1f2fe9c89167b",
+    "size": 2961
+  },
+  "docs/plans/2026-04-11-d1-floor-cuts-plan.md": {
+    "hash": "49d18be22ef3549187e3ae860db148c6ff4e3e10e199c1db04889ef7d48a3856",
+    "size": 26687
+  },
+  "docs/plans/2026-04-11-substrate-and-framework-exploration-notes.md": {
+    "hash": "225e6a6ebe585d3f3963ac5a2831eb2ec4a049b6bed472c6c308d36c5b21301d",
+    "size": 28864
+  },
+  "docs/plans/2026-04-12-context-budget-compression-design.md": {
+    "hash": "0cdb3378d533cfc9dcc04792d6f61f0e16ed7a7644f4e727c57d52d38429b9de",
+    "size": 16798
+  },
+  "docs/plans/2026-04-12-feature-slice-model-design.md": {
+    "hash": "b22ee840a3993217860445eaf85101628c6af47ea7e65d026d454eee40d817b6",
+    "size": 8631
+  },
+  "docs/reviews/2026-04-11-from-rag-session.md": {
+    "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
+    "size": 13864
+  },
+  "docs/roadmap.md": {
+    "hash": "cd0c65f721abf201acedd46c9c2ad22b722f183a5f53304951b303bfebba116d",
+    "size": 3239
+  },
+  "docs/spec-v1.md": {
+    "hash": "c366e3476a23424b42922f7e6fc6cdf4329e8b8c5c8dd64f0962409cf7049bd4",
+    "size": 49110
+  },
+  "docs/vision.md": {
+    "hash": "7d96b65a52a27271ce8194a8e1e2fd7ea3ae6d683188453f20d8ec6db8af3dff",
+    "size": 3959
+  },
+  "scripts/dogfood_evaluate.py": {
+    "hash": "7e27e088bf6e89c07716385ab23386e7d79ca9a9593d029615fa042c43dc8b47",
+    "size": 8138
+  },
+  "scripts/integration_gate.py": {
+    "hash": "cb2a5717c8b3f1a1a7246fc42144a3f36b4c0008f19a3ce1f84b89d587f3483a",
+    "size": 4552
+  },
+  "scripts/snapshot_diff.py": {
+    "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
+    "size": 5832
+  },
+  "scripts/validate_architecture.py": {
+    "hash": "bfa6cbf19fbeb78899eccebe1a6af20e15e41d528dc40535ae3ba050c6b99e1f",
+    "size": 14169
+  },
+  "tests/unit/test_context_budget.py": {
+    "hash": "b07b72bdafdee09469b2ba4b49f81893a130904ef35ac34ad8df0db6809b38c2",
+    "size": 3591
+  },
+  "tests/unit/test_context_discipline_protocol.py": {
+    "hash": "812b37ea1cd0adcfd9a0ea132b45cb6a0332f25963b0831db611323df6f1bfbd",
+    "size": 12863
+  },
+  "tests/unit/test_d1_gate.py": {
+    "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
+    "size": 12100
+  },
+  "tests/unit/test_dogfood_evaluate.py": {
+    "hash": "4ea558092094d18d7437892cdaaf7b167f89dfb56e10041c3ad5ef5cd8ee5f8e",
+    "size": 20600
+  },
+  "tests/unit/test_feature_cross_index.py": {
+    "hash": "cd6d460aa570f7199d79e6059fd7d7f4af3a676f04f0b6e16a9a2e184e878a3f",
+    "size": 5065
+  },
+  "tests/unit/test_feature_file_schema.py": {
+    "hash": "a79b829d7d6eac538a160f2d6ea80aea39bf7b3e07ed12a61ae735ee8bb60b23",
+    "size": 11808
+  },
+  "tests/unit/test_feature_scope_guard.py": {
+    "hash": "03e332b72972d8fb70820d1fa2360ce334012efc56a8d61c3774efda24bc497c",
+    "size": 3239
+  },
+  "tests/unit/test_feature_skill_conformance.py": {
+    "hash": "047248e256505fb68ee65022699ea6e35a7b8a10a79d581b92fe57bd09a85c1f",
+    "size": 8808
+  },
+  "tests/unit/test_integration_gate.py": {
+    "hash": "c12ab97d3b12fb42fbeff3ca02a98c1e1cc9c4ef3e82a8b391b9a16ebb4ef394",
+    "size": 16527
+  },
+  "tests/unit/test_invariant_assertions.py": {
+    "hash": "1d435685ccea20c6e2a6ed2a3cdb46ccf9688904fd6f20433996dae0fcd04d95",
+    "size": 50934
+  },
+  "tests/unit/test_phase_rethink.py": {
+    "hash": "98bc52810c6053315134ba1f114516711fbbe0ba06c12ef634ab09f0d4f4bbd6",
+    "size": 10841
+  },
+  "tests/unit/test_progressive_disclosure.py": {
+    "hash": "5c3d15082eb9b343ab15828041f8d194f7707b1b7179d6581a25e26639bf3477",
+    "size": 9115
+  },
+  "tests/unit/test_slice_003_precursor.py": {
+    "hash": "31fd1f1c832dd6035ac348afb7b79942998d525347166e669411556fb4d58788",
+    "size": 8096
+  },
+  "tests/unit/test_slice_005_design_decomposition.py": {
+    "hash": "82a8d7ebc70fc50711b5446269f08e13ae839cb4e32c1e234848a292da70098a",
+    "size": 17614
+  },
+  "tests/unit/test_snapshot_diff.py": {
+    "hash": "6132d5e7d86764d047fc9a602a2dc6bcb025ad5e9ecabcea6a7ab1578398455f",
+    "size": 20330
+  },
+  "tests/unit/test_sweep_debt_cleanup.py": {
+    "hash": "69b0d9b20499809dec3fd729489c145cc3ed03ea8dc6aea47d91f09a693b5c32",
+    "size": 7341
+  },
+  "tests/unit/test_validate_architecture.py": {
+    "hash": "108ae32411762e9549f1eeb476173c07d9a8b994705829f103a20b16b851b04b",
+    "size": 11156
+  }
+}

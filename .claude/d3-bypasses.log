@@ -1,0 +1,1 @@
+SLICE-012 2026-04-14 pre-existing ruff lint (E741, E402) in test_feature_cross_index.py and test_invariant_assertions.py — outside envelope

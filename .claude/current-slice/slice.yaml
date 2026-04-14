@@ -1,8 +1,8 @@
 id: SLICE-012
 title: "D3 automated unknown-unknown backstop — design slice"
-status: integration
+status: complete
 started: 2026-04-14
-completed: null
+completed: 2026-04-14
 invariants-touched: []
 adrs-referenced: [ADR-003]
 adrs-created: []
