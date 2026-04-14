@@ -1100,3 +1100,294 @@ class TestCairnSelfDogfood:
             f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
         assert "ALL CHECKS PASSED" in result.stdout
+
+
+# === SLICE-011: Assertion block coverage for all 7 invariants =================
+#
+# These tests verify that every invariant in cairn's own ARCHITECTURE.md carries
+# a machine-checkable assertion block, completing the D2 defense commitment.
+# They are expected to FAIL until Phase 3 adds the assertion blocks.
+
+
+# Import validator functions directly for parsing tests
+sys.path.insert(0, str(CAIRN_ROOT / "scripts"))
+from validate_architecture import parse_assertion_blocks, parse_invariants
+
+
+EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 8)}
+V1_ASSERTION_TYPES = {"grep", "file-exists", "test-ref"}
+
+
+def _read_cairn_architecture() -> str:
+    """Read cairn's own ARCHITECTURE.md."""
+    return (CAIRN_ROOT / "docs" / "ARCHITECTURE.md").read_text()
+
+
+class TestSlice011AssertionCoverage:
+    """Every invariant (INV-001 through INV-007) must have an assertion block."""
+
+    def test_all_seven_invariants_have_assertion_blocks(self):
+        """Each of INV-001..INV-007 has a parsed assertion block in ARCHITECTURE.md."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        missing = EXPECTED_INVARIANT_IDS - set(blocks.keys())
+        assert not missing, f"Invariants missing assertion blocks: {sorted(missing)}"
+
+    def test_no_extra_assertion_blocks(self):
+        """No assertion blocks for non-existent invariants."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        extra = set(blocks.keys()) - EXPECTED_INVARIANT_IDS
+        assert not extra, f"Assertion blocks for unknown invariants: {sorted(extra)}"
+
+    def test_all_assertions_use_v1_types(self):
+        """Every assertion block uses grep, file-exists, or test-ref (not custom/ast)."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        for inv_id, assertion in blocks.items():
+            atype = assertion.get("type", "")
+            assert atype in V1_ASSERTION_TYPES, (
+                f"{inv_id} uses type '{atype}', expected one of {V1_ASSERTION_TYPES}"
+            )
+
+    def test_every_assertion_has_required_fields(self):
+        """Each assertion block has type and description at minimum."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        for inv_id, assertion in blocks.items():
+            assert "type" in assertion, f"{inv_id} missing 'type' field"
+            assert "description" in assertion, f"{inv_id} missing 'description' field"
+
+    def test_grep_assertions_have_pattern_and_target(self):
+        """Grep assertions must have pattern, target, and expect fields."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        for inv_id, assertion in blocks.items():
+            if assertion.get("type") == "grep":
+                assert "pattern" in assertion, f"{inv_id} grep missing 'pattern'"
+                assert "target" in assertion, f"{inv_id} grep missing 'target'"
+                assert "expect" in assertion, f"{inv_id} grep missing 'expect'"
+
+    def test_file_exists_assertions_have_target(self):
+        """File-exists assertions must have a target field."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        for inv_id, assertion in blocks.items():
+            if assertion.get("type") == "file-exists":
+                assert "target" in assertion, f"{inv_id} file-exists missing 'target'"
+
+    def test_test_ref_assertions_have_pattern(self):
+        """Test-ref assertions must have a pattern field (test file path)."""
+        arch_text = _read_cairn_architecture()
+        blocks = parse_assertion_blocks(arch_text)
+        for inv_id, assertion in blocks.items():
+            if assertion.get("type") == "test-ref":
+                assert "pattern" in assertion, f"{inv_id} test-ref missing 'pattern'"
+
+    def test_invariant_count_unchanged(self):
+        """ARCHITECTURE.md still has exactly 7 invariants (blocks didn't alter text)."""
+        arch_text = _read_cairn_architecture()
+        invariants = parse_invariants(arch_text)
+        inv_ids = {f"INV-{inv['inv_num']:03d}" for inv in invariants}
+        assert inv_ids == EXPECTED_INVARIANT_IDS, (
+            f"Expected {sorted(EXPECTED_INVARIANT_IDS)}, got {sorted(inv_ids)}"
+        )
+
+
+class TestSlice011ZeroWarnings:
+    """Validator produces zero Check E warnings and zero Check D failures."""
+
+    def test_zero_check_e_warnings(self):
+        """No 'Check E' warnings in stderr when all assertion blocks present."""
+        result = subprocess.run(
+            [sys.executable, str(VALIDATOR)],
+            cwd=str(CAIRN_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        check_e_lines = [
+            line
+            for line in result.stderr.splitlines()
+            if "Check E" in line or "no machine-checkable assertion" in line.lower()
+        ]
+        assert not check_e_lines, (
+            "Check E warnings found (expected zero):\n" + "\n".join(check_e_lines)
+        )
+
+    def test_zero_check_d_failures(self):
+        """No Check D failures — all assertions pass against current codebase."""
+        result = subprocess.run(
+            [sys.executable, str(VALIDATOR)],
+            cwd=str(CAIRN_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        assert result.returncode == 0, (
+            f"Validator should exit 0 with all assertions passing.\n"
+            f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+        )
+        check_d_lines = [
+            line
+            for line in (result.stdout + result.stderr).splitlines()
+            if "Check D" in line and "FAIL" in line
+        ]
+        assert not check_d_lines, "Check D failures found:\n" + "\n".join(
+            check_d_lines
+        )
+
+
+class TestSlice011Falsification:
+    """Falsification: for each assertion, corrupting expected state causes Check D failure.
+
+    Tests are data-driven — they read assertion blocks from cairn's own ARCHITECTURE.md
+    and synthesize type-specific corruptions. If no assertion blocks exist, the
+    test_assertions_exist_to_falsify guard catches it.
+    """
+
+    def _get_assertions(self):
+        """Parse assertion blocks from cairn's ARCHITECTURE.md."""
+        arch_text = _read_cairn_architecture()
+        return parse_assertion_blocks(arch_text)
+
+    def test_assertions_exist_to_falsify(self):
+        """Guard: at least 7 assertion blocks must exist for falsification to be meaningful."""
+        blocks = self._get_assertions()
+        assert len(blocks) >= 7, (
+            f"Only {len(blocks)} assertion blocks found; need 7 for full falsification coverage"
+        )
+
+    def test_falsify_grep_match_by_removing_pattern(self, tmp_path):
+        """For each grep+match assertion, removing the pattern from target causes Check D failure."""
+        blocks = self._get_assertions()
+        grep_match_blocks = {
+            inv_id: a
+            for inv_id, a in blocks.items()
+            if a.get("type") == "grep" and a.get("expect") == "match"
+        }
+        if not grep_match_blocks:
+            assert False, "No grep+match assertions found to falsify"
+
+        for inv_id, assertion in grep_match_blocks.items():
+            target = assertion.get("target", "")
+            inv_fixture = {
+                "id": inv_id,
+                "text": f"Falsification test for {inv_id}.",
+                "adr_id": "ADR-901",
+                "adr_num": "901",
+                "assertion": dict(assertion),
+            }
+            test_dir = tmp_path / f"falsify-grep-{inv_id}"
+            test_dir.mkdir()
+            _make_project(
+                test_dir,
+                [inv_fixture],
+                extra_files={target: "# deliberately empty — pattern absent\n"},
+            )
+            result = _run_validator(test_dir)
+            assert result.returncode != 0, (
+                f"Falsification failed for {inv_id}: validator should reject "
+                f"when grep pattern is absent from {target}.\n"
+                f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            )
+            assert inv_id in result.stdout + result.stderr, (
+                f"Failure output should name {inv_id}"
+            )
+
+    def test_falsify_grep_no_match_by_adding_pattern(self, tmp_path):
+        """For each grep+no-match assertion, adding the pattern causes Check D failure."""
+        blocks = self._get_assertions()
+        grep_nomatch_blocks = {
+            inv_id: a
+            for inv_id, a in blocks.items()
+            if a.get("type") == "grep" and a.get("expect") == "no-match"
+        }
+        if not grep_nomatch_blocks:
+            return
+
+        for inv_id, assertion in grep_nomatch_blocks.items():
+            target = assertion.get("target", "")
+            pattern = assertion.get("pattern", "")
+            inv_fixture = {
+                "id": inv_id,
+                "text": f"Falsification test for {inv_id}.",
+                "adr_id": "ADR-901",
+                "adr_num": "901",
+                "assertion": dict(assertion),
+            }
+            test_dir = tmp_path / f"falsify-nomatch-{inv_id}"
+            test_dir.mkdir()
+            _make_project(
+                test_dir,
+                [inv_fixture],
+                extra_files={target: f"# {pattern} — deliberately injected\n"},
+            )
+            result = _run_validator(test_dir)
+            assert result.returncode != 0, (
+                f"Falsification failed for {inv_id}: validator should reject "
+                f"when no-match pattern is present in {target}.\n"
+                f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            )
+
+    def test_falsify_file_exists_by_removing_file(self, tmp_path):
+        """For each file-exists assertion, omitting the target causes Check D failure."""
+        blocks = self._get_assertions()
+        file_exists_blocks = {
+            inv_id: a for inv_id, a in blocks.items() if a.get("type") == "file-exists"
+        }
+        if not file_exists_blocks:
+            return
+
+        for inv_id, assertion in file_exists_blocks.items():
+            target = assertion.get("target", "")
+            inv_fixture = {
+                "id": inv_id,
+                "text": f"Falsification test for {inv_id}.",
+                "adr_id": "ADR-901",
+                "adr_num": "901",
+                "assertion": dict(assertion),
+            }
+            test_dir = tmp_path / f"falsify-file-exists-{inv_id}"
+            test_dir.mkdir()
+            _make_project(test_dir, [inv_fixture])
+            result = _run_validator(test_dir)
+            assert result.returncode != 0, (
+                f"Falsification failed for {inv_id}: validator should reject "
+                f"when target file '{target}' is missing.\n"
+                f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            )
+            assert inv_id in result.stdout + result.stderr, (
+                f"Failure output should name {inv_id}"
+            )
+
+    def test_falsify_test_ref_by_removing_test_file(self, tmp_path):
+        """For each test-ref assertion, omitting the test file causes Check D failure."""
+        blocks = self._get_assertions()
+        test_ref_blocks = {
+            inv_id: a for inv_id, a in blocks.items() if a.get("type") == "test-ref"
+        }
+        if not test_ref_blocks:
+            return
+
+        for inv_id, assertion in test_ref_blocks.items():
+            test_path = assertion.get("pattern", "")
+            inv_fixture = {
+                "id": inv_id,
+                "text": f"Falsification test for {inv_id}.",
+                "adr_id": "ADR-901",
+                "adr_num": "901",
+                "assertion": dict(assertion),
+            }
+            test_dir = tmp_path / f"falsify-test-ref-{inv_id}"
+            test_dir.mkdir()
+            _make_project(test_dir, [inv_fixture])
+            result = _run_validator(test_dir)
+            assert result.returncode != 0, (
+                f"Falsification failed for {inv_id}: validator should reject "
+                f"when test file '{test_path}' is missing.\n"
+                f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            )
+            assert inv_id in result.stdout + result.stderr, (
+                f"Failure output should name {inv_id}"
+            )
