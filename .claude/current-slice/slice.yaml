@@ -1,8 +1,8 @@
 id: SLICE-009
 title: "Feature-slice model — feature files, skill integration, scope-guard"
-status: integration
+status: complete
 started: 2026-04-14
-completed: null
+completed: 2026-04-14
 invariants-touched: [INV-006, INV-007]
 adrs-referenced: [ADR-006, ADR-008]
 adrs-created: []
