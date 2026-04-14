@@ -1,6 +1,6 @@
 id: SLICE-012
 title: "D3 automated unknown-unknown backstop — design slice"
-status: intent
+status: validation
 started: 2026-04-14
 completed: null
 invariants-touched: []
