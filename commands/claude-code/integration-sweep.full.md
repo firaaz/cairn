@@ -30,33 +30,44 @@ Before checking anything, think adversarially. Enumerate possible cross-slice fa
 
 List these as a table with potential impact and where to look. This enumeration step exists because looking for specific things finds more than looking generally.
 
-## Step 3: Check Each Invariant
+## Steps 3–4: Integration Gate + Snapshot Diff (D3 Automated)
 
-For each invariant from ARCHITECTURE.md, verify it against the current codebase:
+Steps 3 and 4 are mechanized by D3 backstop scripts. Run them instead of manual checks:
 
-1. Read the relevant source files that the invariant constrains
-2. Determine if the code honors the invariant — cite specific file:line evidence
-3. Record PASS or FAIL
+### Integration Gate (Steps 3–4 combined)
 
-Format:
-| INV | Statement | Status | Evidence |
-|-----|-----------|--------|----------|
-| 001 | Text-to-SQL only... | PASS | No vector/graph imports in src/ (grep verified) |
+```bash
+python3 scripts/integration_gate.py
+```
 
-Use `grep` and file reads for evidence — assertions should be backed by what you actually found, not memory.
+Runs three sub-checks without short-circuiting:
+- **Step 3 (invariant check):** delegates to `validate_architecture.py` Check D — executes invariant-check assertion blocks from ARCHITECTURE.md.
+- **Step 4a (ruff check):** `ruff check .` on all Python files.
+- **Step 4b (pytest):** `python3 -m pytest tests/ -x --tb=short`.
 
-## Step 4: Cross-Module Checks
+Exit codes: 0 = all pass, 1 = one or more fail, 2 = missing prerequisites (e.g. ruff).
 
-Run concrete verification. Discover the current module structure dynamically rather than assuming specific imports:
+Each sub-check logs pass/fail status. All checks run even if early ones fail.
 
-1. **Import integrity**: Find all `__init__.py` files in `src/` and attempt to import each top-level package:
-   ```bash
-   uv run python -c "import importlib, pathlib; [importlib.import_module(f'src.{p.parent.name}') for p in pathlib.Path('src').rglob('__init__.py') if p.parent != pathlib.Path('src')]; print('All imports OK')"
-   ```
-2. **Lint check**: `ruff check src/ scripts/`
-3. **Type check**: `ty check src/` (skip if ty is not available or too slow)
-4. **Test suite**: `uv run python -m pytest tests/ -x --tb=short` (if tests/ exists)
-5. **Schema check**: If `data/rag.duckdb` exists, verify expected tables/views are present
+### Snapshot Diff (out-of-envelope detection)
+
+```bash
+python3 scripts/snapshot_diff.py --diff
+```
+
+Compares the current file tree against `.claude/structural-snapshot.json`. Reports files that are new, deleted, or changed outside the current slice's `intent.md` envelope globs.
+
+Exit codes: 0 = no out-of-envelope changes, 1 = out-of-envelope changes found (listed on stdout), 2 = no prior snapshot (creates one).
+
+After a clean sweep, update the baseline:
+```bash
+python3 scripts/snapshot_diff.py --snapshot
+```
+
+### Manual supplementary checks (still recommended)
+
+- **Type check**: `ty check src/` (skip if ty is not available or too slow)
+- **Schema check**: If `data/rag.duckdb` exists, verify expected tables/views are present
 
 ## Step 5: Review Recent History
 

@@ -19,7 +19,7 @@ Gate before advancing: Phase 2 needs intent.md + adrs-referenced committed (empt
 
 ## Step 7
 
-Completion wipes `.claude/current-slice/` — `git rm -r` all files except slice.yaml (set `status: complete`). No archive for successful slices. Check sweep.yaml for due sweep.
+Completion wipes `.claude/current-slice/`. Run D1 + D3 gates before wipe (see full ref). Check sweep.yaml for due sweep.
 
 ## Step 8
 

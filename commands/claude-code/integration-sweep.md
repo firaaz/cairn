@@ -8,8 +8,8 @@ Usage: `/integration-sweep`
 
 1. Load invariants from `docs/ARCHITECTURE.md` § Invariants. If stale, suggest `/refresh-architecture` first.
 2. Enumerate cross-slice failure modes BEFORE checking: import conflicts, schema drift, tool contract breaks, config conflicts, boundary violations, invariant interactions.
-3. Check each invariant against codebase with grep/file-read evidence. Pass/fail table with file:line citations.
-4. Cross-module checks: import integrity, `ruff check`, type check (if available), full test suite, schema check (if applicable).
+3. Run `python3 scripts/integration_gate.py` — mechanizes invariant checking (delegates to `validate_architecture.py` Check D) and cross-module checks (ruff + pytest). Exit 0 = pass, 1 = fail, 2 = missing prerequisites.
+4. Run `python3 scripts/snapshot_diff.py --diff` — detects out-of-envelope file changes since last snapshot. Exit 0 = clean, 1 = out-of-envelope changes found. Then `python3 scripts/snapshot_diff.py --snapshot` to update the baseline.
 5. Review `git log --oneline -20` for multi-module commits, workarounds, out-of-envelope edits, provisional ADRs treated as firm.
 6. Staleness check: cross-reference `handoff.md` § Blocked / Pending entries against git history — flag any items that are already resolved (completed slices, merged work, superseded ADRs).
 7. Write report to `.claude/current-slice/integration/sweep-notes.md` (if slice active) or `.claude/sweep-results/<date>-sweep.md`. Commit results.

@@ -191,14 +191,37 @@ The fresh session matters — context isolation is what makes the external check
 
 When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory for successful slices — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Per ADR-002, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
 
-### D1 Refresh Gate
+### D1 + D3 Gates
 
-Before the wipe sequence begins, run the D1 automated architecture refresh to ensure `docs/ARCHITECTURE.md` is consistent with the ADR corpus.
+Before the wipe sequence begins, run D1 and D3 gates. D1 runs first (it modifies ARCHITECTURE.md, which D3 reads). D3 gates run as parallel subagents after D1 completes.
+
+#### D1 Refresh Gate (sequential, first)
 
 1. Run `/refresh-architecture` logic. The refresh loads only `docs/adr/*.md` (excluding `index.md` and files with status: superseded) plus the prior `docs/ARCHITECTURE.md`. It does NOT load `.claude/current-slice/` artifacts or phase-role context — this is the session isolation contract from ADR-003 D1 and ADR-002 INV-002.
 2. Run `uv run python .slice-system/scripts/validate_architecture.py`. If the validator exits non-zero and `ADR_D1_BYPASS` is not set, the slice MUST NOT transition to `status: complete`. Print the validator output and instruct the operator to either fix the ADR/architecture inconsistency or set `ADR_D1_BYPASS=1` to bypass.
 3. **Bypass escape hatch.** If `ADR_D1_BYPASS=1` is set and the validator fails, completion proceeds. Append a line to `.claude/d1-bypasses.log` in the format: `<slice-id> <YYYY-MM-DD> <one-line-reason>`. The log is append-only and does not exist until the first bypass.
 4. **Rolling-window check.** After logging a bypass, count entries in `.claude/d1-bypasses.log` whose slice-id numeric suffix falls within the last 10 slices. If 3 or more bypasses exist in that window, print a warning: "D1 design review recommended — three bypasses in the last 10 slices suggests the validator is producing more noise than signal."
+
+#### D3 Gates (parallel subagents, after D1)
+
+After D1 completes, dispatch two parallel subagents:
+
+**Subagent A — Integration gate:**
+```bash
+python3 scripts/integration_gate.py
+```
+Runs Step 3 (invariant assertions via `validate_architecture.py` Check D) + Step 4 (ruff check + pytest) without short-circuiting. Returns pass/fail + details. Exit 0 = pass, 1 = fail, 2 = missing prerequisites.
+
+**Subagent B — Snapshot diff:**
+```bash
+python3 scripts/snapshot_diff.py --diff
+python3 scripts/snapshot_diff.py --snapshot   # update baseline on pass
+```
+Compares current file tree against `.claude/structural-snapshot.json`. Reports out-of-envelope changes (new/deleted/changed files not matched by intent.md envelope globs). Exit 0 = clean, 1 = out-of-envelope changes found, 2 = no prior snapshot (creates one).
+
+Each subagent returns a short pass/fail report (≤200 words). If either D3 gate fails, the slice MUST NOT transition to `status: complete` — same semantics as D1.
+
+**D3 bypass escape hatch.** If `D3_GATE_BYPASS=1` is set and a D3 gate fails, completion proceeds. Append a line to `.claude/d3-bypasses.log` in the format: `<slice-id> <YYYY-MM-DD> <one-line-reason>`. Rolling-window check: 3+ bypasses in last 10 slices triggers a warning: "D3 design review recommended — three bypasses in the last 10 slices suggests the gates are producing more noise than signal."
 
 ### Completion Sequence
 
