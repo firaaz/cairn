@@ -1,21 +1,20 @@
 ---
-slice: none
-phase: n/a
+slice: SLICE-009
+phase: 2-validation
 branch: dev
-as-of: 2026-04-14 e99e4b2
+as-of: 2026-04-14 a5ec1a2
 ---
 
 ## State
-SLICE-008 complete, sweep #5 done (PASS with known gaps). Plan for SLICE-009 (feature-slice model, INV-006/INV-007) written at `.claude/plans/lucky-enchanting-breeze.md`.
+SLICE-009 (feature-slice-model) Phase 1 complete. Intent committed at a5ec1a2. D3 gate passed — ADR-006 and ADR-008 both committed.
 
 ## Next
-Run `/start-slice` to begin SLICE-009 using the plan at `.claude/plans/lucky-enchanting-breeze.md`.
+Run `/catchup` then `/start-slice phase 2` to enter Validation.
 
 ## Blocked / Pending
 - `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → pre-existing debt, needs its own slice
-- `test_context_budget.py` ordering bug → pre-existing, needs its own slice
 
 ## Pointers
-- `.claude/plans/lucky-enchanting-breeze.md` — SLICE-009 plan (feature-slice model). Read at Phase 1 entry.
-- `docs/adr/006-feature-slice-model.md` — ADR-006 spec. Read at Phase 1 for intent writing.
-- `docs/adr/008-context-tiers-integration.md` — ADR-008 spec. Read at Phase 1 for context tier integration.
+- `.claude/current-slice/intent.md` — Phase 2 primary input. Read at session start.
+- `docs/adr/006-feature-slice-model.md` — ADR-006 spec. Read if intent references are ambiguous.
+- `docs/adr/008-context-tiers-integration.md` — ADR-008 spec. Read for cross-feature index detail.
