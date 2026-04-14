@@ -1,6 +1,6 @@
 id: SLICE-009
 title: "Feature-slice model — feature files, skill integration, scope-guard"
-status: validation
+status: implementation
 started: 2026-04-14
 completed: null
 invariants-touched: [INV-006, INV-007]

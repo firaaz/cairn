@@ -1,20 +1,20 @@
 ---
 slice: SLICE-009
-phase: 2-validation
+phase: 3-implementation
 branch: dev
-as-of: 2026-04-14 a5ec1a2
+as-of: 2026-04-14 090af4e
 ---
 
 ## State
-SLICE-009 (feature-slice-model) Phase 1 complete. Intent committed at a5ec1a2. D3 gate passed — ADR-006 and ADR-008 both committed.
+SLICE-009 (feature-slice-model) Phase 2 complete. Validation suite committed at 090af4e. 10 RED tests await Phase 3.
 
 ## Next
-Run `/catchup` then `/start-slice phase 2` to enter Validation.
+Run `/catchup` then `/start-slice phase 3` to enter Implementation.
 
 ## Blocked / Pending
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → pre-existing debt, needs its own slice
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → pre-existing debt, separate slice
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 2 primary input. Read at session start.
-- `docs/adr/006-feature-slice-model.md` — ADR-006 spec. Read if intent references are ambiguous.
-- `docs/adr/008-context-tiers-integration.md` — ADR-008 spec. Read for cross-feature index detail.
+- `.claude/current-slice/intent.md` — Phase 3 primary input. Read at session start.
+- `tests/unit/test_feature_*.py` — Phase 3 second input. 4 test files to make pass.
+- `.claude/current-slice/validation/approach.md` — ambiguity resolutions. Read only if test intent is unclear.
