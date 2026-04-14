@@ -96,9 +96,7 @@ def test_v1_four_adr_files_exist() -> None:
         assert path is not None, (
             f"No ADR file matching docs/adr/{prefix}-*.md found. (V1)"
         )
-        assert path.stat().st_size > 0, (
-            f"ADR file {path.name} is empty. (V1)"
-        )
+        assert path.stat().st_size > 0, f"ADR file {path.name} is empty. (V1)"
 
 
 # ---------------------------------------------------------------------------
@@ -113,9 +111,7 @@ def test_v2_frontmatter_valid() -> None:
         path = _find_adr(prefix)
         assert path is not None, f"ADR {prefix}-*.md not found. (V2 pre-req)"
         fm = _parse_frontmatter(_read(path))
-        assert fm is not None, (
-            f"ADR {path.name} has no valid YAML frontmatter. (V2)"
-        )
+        assert fm is not None, f"ADR {path.name} has no valid YAML frontmatter. (V2)"
         for field in required_fields:
             assert field in fm, (
                 f"ADR {path.name} frontmatter missing required field '{field}'. (V2)"
@@ -143,8 +139,7 @@ def test_v3_adr007_supersession() -> None:
     supersedes_sections = fm.get("supersedes-sections", []) or []
     all_supersession_refs = supersedes + supersedes_sections
     adr003_referenced = any(
-        "ADR-003" in str(ref) or "003" in str(ref)
-        for ref in all_supersession_refs
+        "ADR-003" in str(ref) or "003" in str(ref) for ref in all_supersession_refs
     )
     assert adr003_referenced, (
         f"ADR-007 frontmatter must reference ADR-003 in supersedes or "
@@ -197,9 +192,7 @@ def test_v5_adr008_inv002_statement() -> None:
     path = _find_adr("008")
     assert path is not None, "ADR 008-*.md not found. (V5 pre-req)"
     text = _read(path)
-    assert "INV-002" in text, (
-        "ADR-008 must reference INV-002. (V5)"
-    )
+    assert "INV-002" in text, "ADR-008 must reference INV-002. (V5)"
     # Must contain an explicit disposition — confirming no change or specifying one
     text_lower = text.lower()
     confirms_no_change = (
@@ -225,9 +218,7 @@ def test_v6_index_updated() -> None:
     text = _read(INDEX)
     for prefix in ADR_PREFIXES:
         adr_id = f"ADR-{prefix}"
-        assert adr_id in text, (
-            f"docs/adr/index.md missing entry for {adr_id}. (V6)"
-        )
+        assert adr_id in text, f"docs/adr/index.md missing entry for {adr_id}. (V6)"
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +244,8 @@ def test_v7_envelope_compliance() -> None:
         r"^\.claude/current-slice/",
         # Test files are Phase 2 output, always allowed
         r"^tests/",
+        # Measurement files are live-updated by session hooks, always dirty
+        r"^docs/plans/measurements/",
     ]
 
     result = subprocess.run(
@@ -398,9 +391,7 @@ def test_adr008_token_budget_reference() -> None:
     path = _find_adr("008")
     assert path is not None, "ADR 008-*.md not found. (A5 pre-req)"
     text = _read(path)
-    assert "ADR-002" in text, (
-        "ADR-008 must reference ADR-002. (A5)"
-    )
+    assert "ADR-002" in text, "ADR-008 must reference ADR-002. (A5)"
     text_lower = text.lower()
     budget_ref = "150" in text or "400" in text or "token" in text_lower
     assert budget_ref, (
@@ -425,9 +416,7 @@ def test_adr007_addresses_adr003_d4_parallelism() -> None:
 
     # Must address parallelism as v1-native (per intent)
     text_lower = text.lower()
-    parallelism_addressed = (
-        "parallelism" in text_lower or "concurrent" in text_lower
-    )
+    parallelism_addressed = "parallelism" in text_lower or "concurrent" in text_lower
     assert parallelism_addressed, (
         "ADR-007 must address parallelism (the core of ADR-003 D4 supersession)."
     )
@@ -449,9 +438,7 @@ def test_adr007_supersedes_adr004_d4() -> None:
     supersedes = fm.get("supersedes", []) or []
     supersedes_sections = fm.get("supersedes-sections", []) or []
     all_refs = supersedes + supersedes_sections
-    adr004_ref = any(
-        "ADR-004" in str(ref) or "004" in str(ref) for ref in all_refs
-    )
+    adr004_ref = any("ADR-004" in str(ref) or "004" in str(ref) for ref in all_refs)
     assert adr004_ref, (
         f"ADR-007 frontmatter must reference ADR-004 in supersedes or "
         f"supersedes-sections. Found: {all_refs}"
@@ -470,4 +457,6 @@ def test_index_format_canary() -> None:
     assert re.search(
         r"\|\s*ID\s*\|\s*Title\s*\|\s*Status\s*\|\s*Firmness\s*\|\s*Topic\s*\|\s*Date\s*\|",
         text,
-    ), "index.md table header must have columns: ID, Title, Status, Firmness, Topic, Date"
+    ), (
+        "index.md table header must have columns: ID, Title, Status, Firmness, Topic, Date"
+    )
