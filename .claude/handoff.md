@@ -1,22 +1,22 @@
 ---
-slice: SLICE-009
-phase: complete
+slice: none
+phase: n/a
 branch: dev
-as-of: 2026-04-14 57a90f6
+as-of: 2026-04-14 28cb096
 ---
 
 ## State
-SLICE-009 (feature-slice-model) complete. Integration sweep is due (slice 9, last sweep at slice 8, interval 1).
+SLICE-009 complete. Sweep #6 done (PASS). Measurement test fix landed. No active slice.
 
 ## Next
-Run `/integration-sweep` in a fresh session.
+Start new slice for ADR-003 D2 (code↔invariant binding) via `/start-slice`.
 
 ## Blocked / Pending
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → separate debt slice
+- Ruff E741 in `tests/unit/test_feature_cross_index.py:88,95` — cosmetic, low priority
 
 ## Features
 - feature-slice-model: SLICE-009 complete
 
 ## Pointers
-- `.claude/sweep.yaml` — sweep cadence; read before integration-sweep
-- `docs/ARCHITECTURE.md` — invariant source for sweep checks
+- `docs/ARCHITECTURE.md` § Current Phase Constraints — D2 spec
+- `docs/adr/003-*.md` — D2 defense definition
