@@ -57,7 +57,7 @@ REL_FILE="${FILE#$PROJECT_ROOT/}"
 # and must not be blocked by the slice envelope. ADR append-only protection is handled
 # separately by reversibility-guard.sh.
 case "$REL_FILE" in
-  .claude/current-slice/*|.claude/handoff.md|.claude/sweep.yaml) exit 0 ;;
+  .claude/current-slice/*|.claude/handoff.md|.claude/sweep.yaml|.claude/features/*) exit 0 ;;
   docs/adr/*|docs/ARCHITECTURE.md|docs/lessons.md) exit 0 ;;
   CLAUDE.md|.gitignore) exit 0 ;;
 esac

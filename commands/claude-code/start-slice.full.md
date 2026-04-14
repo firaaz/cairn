@@ -124,6 +124,14 @@ adrs-created: []
 
 Update `.claude/sweep.yaml` → `current-slice-number` to the new number.
 
+### Feature file (ADR-006 D3 always-create)
+
+Every slice belongs to a feature. Before guiding intent writing, create or update the feature file at `.claude/features/<feature-id>.yaml`:
+
+**If no feature file exists** for the current feature: create one with the required fields (`id`, `intent`, `created`) and a `slices` list containing the new slice entry (with `id` and `added` fields). Even single-slice features get a feature file — there is no "too small" exemption.
+
+**If a feature file already exists**: add a new slice entry to its `slices` list. Existing entries (including any with `status: dropped`) must be preserved — append only.
+
 Then guide intent writing (Step 5).
 
 ## Step 5: Guide Intent Writing (Phase 1)

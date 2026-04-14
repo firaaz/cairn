@@ -15,6 +15,9 @@ as-of: <YYYY-MM-DD commit-sha>
 - <short item> → <pointer>
 - <max 5 lines, each a one-liner plus pointer, no rationale>
 
+## Features
+<One line per active feature. Format: `- <feature-id>: <status-summary>`. Omit section if no features are active.>
+
 ## Pointers
 - `path/to/file.md` — what's there and when the next session should read it
 - `path/to/other.md` — one line each; the body of the pointed-at file carries the detail

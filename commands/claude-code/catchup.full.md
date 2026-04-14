@@ -20,7 +20,9 @@ ADR-002 (context discipline protocol) replaces eager reads with a tiered model: 
 - `git log --oneline -5`
 - `git status --short`
 
-Nothing else is loaded at this tier. No `CLAUDE.md` rereads, no `docs/ARCHITECTURE.md`, no source files, no test files, no ADRs. Produce the orientation summary from these five inputs and **STOP**. Any additional main-context file read means you have crossed into Tier 2 — and Tier 2 has admission criteria.
+Nothing else is loaded at this tier. No `CLAUDE.md` rereads, no `docs/ARCHITECTURE.md`, no source files, no test files, no ADRs, no feature files. Produce the orientation summary from these five inputs and **STOP**. Any additional main-context file read means you have crossed into Tier 2 — and Tier 2 has admission criteria.
+
+If the handoff note contains a `## Features` section (the cross-feature index), surface it in the Tier 1 orientation report. Feature files under `.claude/features/` are Tier 2 on-demand reads — they are NOT loaded at Tier 1 regardless of how many features are active.
 
 If `.claude/handoff.md` does not exist, this is a cold start. Still stay within Tier 1: report the cold-start state and ask the user what they want to work on rather than eagerly loading project docs.
 

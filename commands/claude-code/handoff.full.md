@@ -49,6 +49,12 @@ The following sections and patterns MUST NOT appear in the handoff note. They ar
 
 If you feel an urge to explain, that is a signal the explanation belongs in a commit message, an ADR, or `docs/lessons.md`. Put it there and leave the handoff alone.
 
+## Step 3b: Cross-Feature Index
+
+If any feature files exist under `.claude/features/`, write a `## Features` section in the handoff note containing one line per active feature in the cross-feature index format: `- <feature-id>: <status-summary>`. If no features are active, omit the section.
+
+If decomposition changed during the session (slices added, reordered, or dropped), prompt the operator to update the feature file before finishing the handoff.
+
 ## Step 4: Slice-Specific Handling
 
 If `.claude/current-slice/slice.yaml` exists and `$ARGUMENTS` includes "phase":
