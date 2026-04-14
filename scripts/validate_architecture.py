@@ -5,6 +5,10 @@ Checks:
   A) Every ARCHITECTURE.md invariant references a valid, non-superseded ADR
   B) Every accepted firm ADR has at least one invariant in ARCHITECTURE.md
   C) No invariant references a superseded/deprecated ADR
+  D) Per-invariant assertion execution (invariant-check blocks)
+  E) Warning for invariants lacking machine-checkable assertions
+
+Checks D/E run after A/B/C. A failure in A/B/C short-circuits before D runs.
 
 Usage:
     uv run python scripts/validate_architecture.py
@@ -142,6 +146,104 @@ def parse_invariants(text: str) -> list[dict]:
     return invariants
 
 
+def parse_assertion_blocks(text: str) -> dict[str, dict]:
+    """Extract invariant-check fenced blocks from ARCHITECTURE.md.
+
+    Returns dict mapping inv_id (e.g. "INV-001") to assertion dict with
+    keys: type, pattern, target, expect, description.
+    """
+    blocks: dict[str, dict] = {}
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        m = re.match(r"^```invariant-check\s+(INV-\d+)", line)
+        if m:
+            inv_id = m.group(1)
+            assertion: dict[str, str] = {}
+            i += 1
+            while i < len(lines) and not lines[i].startswith("```"):
+                field_line = lines[i].strip()
+                if ":" in field_line:
+                    key, _, value = field_line.partition(":")
+                    key = key.strip()
+                    value = value.strip().strip('"')
+                    assertion[key] = value
+                i += 1
+            blocks[inv_id] = assertion
+        i += 1
+    return blocks
+
+
+def _run_grep_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | None:
+    """Run a grep assertion. Returns failure message or None on pass."""
+    pattern = assertion.get("pattern", "")
+    target = assertion.get("target", "")
+    expect = assertion.get("expect", "match")
+
+    target_files = sorted(project_root.glob(target))
+    if not target_files:
+        if expect == "match":
+            return f"Check D: {inv_id} FAIL — no files matching '{target}'"
+        return None
+
+    found = False
+    for f in target_files:
+        try:
+            content = f.read_text()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if re.search(pattern, content):
+            found = True
+            break
+
+    if expect == "match" and not found:
+        return (
+            f"Check D: {inv_id} FAIL — pattern not found in {target}"
+            f" (no match for '{pattern}')"
+        )
+    if expect == "no-match" and found:
+        return (
+            f"Check D: {inv_id} FAIL — pattern found in {target}"
+            f" (expected no match for '{pattern}')"
+        )
+    return None
+
+
+def _run_file_exists_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a file-exists assertion. Returns failure message or None on pass."""
+    target = assertion.get("target", "")
+    target_files = sorted(project_root.glob(target))
+    if not target_files:
+        return f"Check D: {inv_id} FAIL — no files matching '{target}'"
+    return None
+
+
+def _run_test_ref_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a test-ref assertion. Returns failure message or None on pass."""
+    test_path = assertion.get("pattern", "")
+    full_path = project_root / test_path
+    if not full_path.exists():
+        return f"Check D: {inv_id} FAIL — test file not found: {test_path}"
+    return None
+
+
+def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | None:
+    """Dispatch assertion execution by type. Returns failure message or None."""
+    atype = assertion.get("type", "")
+    if atype == "grep":
+        return _run_grep_assertion(project_root, inv_id, assertion)
+    if atype == "file-exists":
+        return _run_file_exists_assertion(project_root, inv_id, assertion)
+    if atype == "test-ref":
+        return _run_test_ref_assertion(project_root, inv_id, assertion)
+    return None
+
+
 def parse_adr(filepath: Path) -> dict | None:
     """Parse an ADR file. Extract metadata from frontmatter."""
     text = filepath.read_text()
@@ -255,6 +357,39 @@ def validate() -> list[str]:
             failures.append(
                 f"Check B: ADR-{n:03d} ({adr['title']}) is firm/accepted "
                 f"but has no invariant in ARCHITECTURE.md"
+            )
+
+    # A/B/C failure short-circuits before check D/E
+    if failures:
+        return failures
+
+    # Parse assertion blocks for checks D and E
+    assertion_blocks = parse_assertion_blocks(arch_text)
+
+    for inv in invariants:
+        inv_id = f"INV-{inv['inv_num']:03d}"
+        if inv_id in assertion_blocks:
+            assertion = assertion_blocks[inv_id]
+            atype = assertion.get("type", "")
+
+            # V2 reserved types: skip with warning, not failure
+            if atype in ("ast", "custom"):
+                print(
+                    f"Warning: {inv_id} assertion type '{atype}' is v2-reserved,"
+                    f" skipping (Check D)",
+                    file=sys.stderr,
+                )
+                continue
+
+            # Check D: execute the assertion
+            result = _run_assertion(PROJECT_ROOT, inv_id, assertion)
+            if result:
+                failures.append(result)
+        else:
+            # Check E: no assertion block — warning only, not failure
+            print(
+                f"Warning: {inv_id} has no machine-checkable assertion (Check E)",
+                file=sys.stderr,
             )
 
     return failures
