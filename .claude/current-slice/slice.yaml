@@ -1,6 +1,6 @@
 id: SLICE-010
 title: "D2 code↔invariant binding — machine-checkable assertions for firm invariants"
-status: implementation
+status: integration
 started: 2026-04-14
 completed: null
 invariants-touched: []
