@@ -1,8 +1,8 @@
 id: SLICE-008
 title: "D1 automated architecture refresh — post-slice hook with session isolation"
-status: integration
+status: complete
 started: 2026-04-13
-completed: null
+completed: 2026-04-14
 invariants-touched: [INV-001, INV-002]
 adrs-referenced: [ADR-003, ADR-002]
 adrs-created: []
