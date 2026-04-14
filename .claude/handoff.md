@@ -1,23 +1,22 @@
 ---
 slice: SLICE-009
-phase: 4-integration
+phase: complete
 branch: dev
-as-of: 2026-04-14 e52108f
+as-of: 2026-04-14 57a90f6
 ---
 
 ## State
-SLICE-009 (feature-slice-model) Phase 3 complete. Implementation committed at e52108f. 47 validation tests pass.
+SLICE-009 (feature-slice-model) complete. Integration sweep is due (slice 9, last sweep at slice 8, interval 1).
 
 ## Next
-Run `/catchup` then `/start-slice phase 4` to enter Integration.
+Run `/integration-sweep` in a fresh session.
 
 ## Blocked / Pending
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → pre-existing debt, separate slice
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → separate debt slice
 
 ## Features
-- feature-slice-model: SLICE-009 active, phase integration
+- feature-slice-model: SLICE-009 complete
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 4 primary input. Invariants INV-006, INV-007.
-- `tests/unit/test_feature_*.py` — 4 test files, all GREEN.
-- `docs/ARCHITECTURE.md` — invariant verification source for Phase 4.
+- `.claude/sweep.yaml` — sweep cadence; read before integration-sweep
+- `docs/ARCHITECTURE.md` — invariant source for sweep checks
