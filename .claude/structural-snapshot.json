@@ -151,6 +151,10 @@
     "hash": "608cde8190af4663dcdc257ca5e51832f17c66e4a85adde4b5619ec58c77d5f2",
     "size": 4657
   },
+  "docs/plans/2026-04-15-fleet-coordinator-design.md": {
+    "hash": "5cc77655697de11640923bffe16a57a53c2d59405ab0137589e87834684c0b3a",
+    "size": 19414
+  },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
     "size": 13864
@@ -200,8 +204,8 @@
     "size": 20600
   },
   "tests/unit/test_feature_cross_index.py": {
-    "hash": "cd6d460aa570f7199d79e6059fd7d7f4af3a676f04f0b6e16a9a2e184e878a3f",
-    "size": 5065
+    "hash": "7a2492de7d34526bcaf04d94faf6e0dce077e1c40ea15c75542870889f1ae61f",
+    "size": 5110
   },
   "tests/unit/test_feature_file_schema.py": {
     "hash": "a79b829d7d6eac538a160f2d6ea80aea39bf7b3e07ed12a61ae735ee8bb60b23",
@@ -220,8 +224,8 @@
     "size": 16527
   },
   "tests/unit/test_invariant_assertions.py": {
-    "hash": "1d435685ccea20c6e2a6ed2a3cdb46ccf9688904fd6f20433996dae0fcd04d95",
-    "size": 50934
+    "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
+    "size": 50807
   },
   "tests/unit/test_phase_rethink.py": {
     "hash": "98bc52810c6053315134ba1f114516711fbbe0ba06c12ef634ab09f0d4f4bbd6",
