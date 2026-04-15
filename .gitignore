@@ -13,3 +13,6 @@ venv/
 # Local dev state
 .claude/handoff.md
 .claude/adr-editorial-fixes.log
+
+# Git worktrees (project-local, never tracked)
+.worktrees/
