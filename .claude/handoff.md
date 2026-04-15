@@ -1,24 +1,26 @@
 ---
-slice: SLICE-012
-phase: complete
+slice: SLICE-013
+phase: 1-intent
 branch: dev
-as-of: 2026-04-14 60c024d
+as-of: 2026-04-15 8ff6754
 ---
 
 ## State
-SLICE-012 (D3 automated backstop) complete. All three v1 defenses (D1/D2/D3) now have landed design slices.
+SLICE-013 (ruff-cleanup) Phase 1 intent committed. Envelope: two test files; no behavior change.
 
 ## Next
-Run `/integration-sweep` in a fresh session — sweep overdue (last at slice 10, interval 1, current 12).
+Run `/catchup phase 2` then `/start-slice phase 2` in a fresh session.
 
 ## Blocked / Pending
-- `docs/plans/measurements/2026-04-12-slice-003.txt` — uncommitted modification, pre-dates SLICE-010
-- Pre-existing ruff lint in `test_feature_cross_index.py` and `test_invariant_assertions.py` — D3 bypassed, needs cleanup slice
+- `docs/plans/measurements/2026-04-12-slice-003.txt` — uncommitted, pre-dates SLICE-010
+- `docs/plans/2026-04-14-brainstorming-formalization-exploration.md` — untracked brainstorm capture
+- `.claude/d3-bypasses.log` — 1/10 in rolling window; this slice clears the entry's underlying cause
 
 ## Features
-- v1-defense-d2: SLICE-010 complete, SLICE-011 complete
-- v1-defense-d3: SLICE-012 complete
+- v1-defense-d2: SLICE-010, SLICE-011 complete
+- v1-defense-d3: SLICE-012 complete; SLICE-013 in flight (after SLICE-012)
 
 ## Pointers
-- `.claude/d3-bypasses.log` — first D3 bypass logged; check rolling window on next slice close
-- `docs/operational-reference.md` — phase pipeline reference; read at next slice entry
+- `.claude/current-slice/intent.md` — Phase 2 input; read at slice entry
+- `.claude/current-slice/handoff-phase-1.md` — Phase 1 close detail; read before `/start-slice phase 2`
+- `.claude/sweep-results/2026-04-15-sweep.md` — sweep #8 context for why this slice exists
