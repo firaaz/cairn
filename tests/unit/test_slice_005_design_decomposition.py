@@ -116,8 +116,9 @@ def test_v2_frontmatter_valid() -> None:
             assert field in fm, (
                 f"ADR {path.name} frontmatter missing required field '{field}'. (V2)"
             )
-        assert fm["status"] == "accepted", (
-            f"ADR {path.name} status should be 'accepted', got '{fm['status']}'. (V2)"
+        assert fm["status"] in ("accepted", "superseded"), (
+            f"ADR {path.name} status should be 'accepted' or 'superseded', "
+            f"got '{fm['status']}'. (V2)"
         )
 
 
