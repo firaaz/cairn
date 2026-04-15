@@ -60,8 +60,8 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "b3b05bda32227f7ba553eed1e6a267a6bdde9e377cce6d3360c2d294cc2be688",
-    "size": 15216
+    "hash": "2c03a9ae8a60211aeb6ddb4dc4bac569f2934a0adba1739e46b5adb412597358",
+    "size": 16645
   },
   "docs/adr/001-bootstrap-exception.md": {
     "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
@@ -80,8 +80,8 @@
     "size": 31838
   },
   "docs/adr/005-semantic-identity.md": {
-    "hash": "753c74cea95337aded4d82af78096fd75959e6700dc2dfd2d280c5421276f485",
-    "size": 5448
+    "hash": "f03be39f43ccb485ec41aadb35e5a95a8ba34ba51449ba691bd7315651644c12",
+    "size": 5463
   },
   "docs/adr/006-feature-slice-model.md": {
     "hash": "a486908a891c8fe0d3c217b04a5da9782f09a7de25ad18d4aaae460bc6c62a64",
@@ -99,9 +99,13 @@
     "hash": "345e3b2649cd3e4064a4af7f64f65fcb80fa56e1ca8dfda061b86af4f1a07763",
     "size": 9656
   },
+  "docs/adr/identifier-scheme.md": {
+    "hash": "48b773f1e259b4fc013e1dcde5415b8f20fa1e6128be07d57010c6c5e549aec3",
+    "size": 15753
+  },
   "docs/adr/index.md": {
-    "hash": "03c200a4b91ec43bbd6bdf96cadce07efc5a0bc2d470d1d362dab0b0c3081e87",
-    "size": 953
+    "hash": "ee01691327446ac560687d4dacd986cc14e0827bd5d9464b032bf2e6c3bdfa47",
+    "size": 1090
   },
   "docs/dogfood-log.md": {
     "hash": "be243b422e2632df3da78b2ad84a81271ce4ace4e60678e286dc61df20193e01",
@@ -154,6 +158,10 @@
   "docs/plans/2026-04-15-fleet-coordinator-design.md": {
     "hash": "2361e9961f824724f1953ff6fc2b8df259bef319d120273f9762187ecd7db9a4",
     "size": 21348
+  },
+  "docs/plans/2026-04-15-identifier-scheme-design.md": {
+    "hash": "1c69d233750e5979c98589d070d8d2afb79949af101c0477b6e200bf49c6582f",
+    "size": 13700
   },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
@@ -240,8 +248,8 @@
     "size": 8096
   },
   "tests/unit/test_slice_005_design_decomposition.py": {
-    "hash": "82a8d7ebc70fc50711b5446269f08e13ae839cb4e32c1e234848a292da70098a",
-    "size": 17614
+    "hash": "a069dfee78d70ddbd01a6399368ab1bcf4b210de4a60720895bed53e14dd752c",
+    "size": 17662
   },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "6132d5e7d86764d047fc9a602a2dc6bcb025ad5e9ecabcea6a7ab1578398455f",
