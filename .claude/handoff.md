@@ -1,27 +1,28 @@
 ---
-slice: none
-phase: n/a
+slice: SLICE-014
+phase: 2-validation
 branch: dev
-as-of: 2026-04-15 7db21cd
+as-of: 2026-04-15 53067f9
 ---
 
 ## State
-SLICE-013 archived failed at `.claude/completed-slices/SLICE-013-failed/`. Phase 3 Builder detected a spec contradiction: intent.md's literal edit for the E402 error was unsatisfiable without `# noqa` (forbidden) or an out-of-envelope refactor. D3 bypass (1/10) remains. Working tree clean re: slice.
+SLICE-014 Phase 2 committed. Framing C: no new tests, frozen pre-slice transcripts (3 ruff errors, 58 pytests passing). Phase 3 gate met.
 
 ## Next
-Run `/start-slice` in a fresh session to create SLICE-014 (ruff-cleanup v2) using pytest `pythonpath` config.
+Run `/catchup phase 3` then `/start-slice phase 3` in a fresh session.
 
 ## Blocked / Pending
-- Stashed test edits from SLICE-013 attempt → `git stash list` top entry; discard once SLICE-014 lands
+- Stashed SLICE-013 test edits → `git stash list` top; discard after SLICE-014 lands
 - `docs/plans/measurements/2026-04-12-slice-003.txt` — uncommitted, pre-dates SLICE-010
 - `docs/plans/2026-04-14-brainstorming-formalization-exploration.md` — untracked brainstorm capture
-- `.claude/worktrees/` — untracked; unrelated
+- `.claude/worktrees/` — untracked, unrelated
 
 ## Features
 - v1-defense-d2: SLICE-010, SLICE-011 complete
-- v1-defense-d3: SLICE-012 complete; SLICE-013 failed (archived); SLICE-014 planned
+- v1-defense-d3: SLICE-012 complete; SLICE-013 failed (archived); SLICE-014 Phase 2 done, Phase 3 pending
 
 ## Pointers
-- `.claude/completed-slices/SLICE-013-failed/slice.yaml` — failure-reason with retry approach; read before drafting SLICE-014 intent
-- `.claude/completed-slices/SLICE-013-failed/intent.md` — the flawed spec; do not copy literally, revise per failure-reason
-- `.claude/d3-bypasses.log` — 1/10 entry still outstanding; SLICE-014 clears it
+- `.claude/current-slice/handoff-phase-2.md` — phase handoff; Phase 3 reads this
+- `.claude/current-slice/intent.md` — Phase 3 spec: pyproject.toml + l→line renames + relocate import
+- `.claude/current-slice/validation/approach.md` § Phase 3 entry contract — only that section, not framing rationale
+- `.claude/d3-bypasses.log` — 1/10 entry; clears when SLICE-014 gate passes clean
