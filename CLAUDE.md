@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Cairn is a methodology repo — slice pipeline, hooks, slash commands — consumed by other projects via a `.slice-system → .` symlink. No build step. Tests live under `tests/unit/`; run with `python3 -m pytest` (`python` binary not on PATH). For repo layout, working commands, expanded editing rules, and documentation tier guidance, load `docs/operational-reference.md` on demand. For the canonical spec (theory, failure modes, empirical support), load `docs/spec-v1.md` on demand.
+Cairn is a methodology repo — slice pipeline, hooks, slash commands — consumed by other projects via a `.slice-system → .` symlink. No build step. Tests live under `tests/unit/`; run with `uv run pytest` (always inside the project venv — never `python3 -m pytest`). Bootstrap: `uv sync` creates `.venv` and `uv.lock`. For repo layout, working commands, expanded editing rules, and documentation tier guidance, load `docs/operational-reference.md` on demand. For the canonical spec (theory, failure modes, empirical support), load `docs/spec-v1.md` on demand.
 
 ## Safety-critical rules
 
