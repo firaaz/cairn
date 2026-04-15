@@ -1,8 +1,9 @@
 id: SLICE-013
 title: "Ruff cleanup — clear D3-bypassed lint debt"
-status: implementation
+status: failed
 started: 2026-04-15
 completed: null
 invariants-touched: []
 adrs-referenced: []
 adrs-created: []
+failure-reason: "Phase 3 spec defect: intent.md §Specification Detail #3 prescribes a literal edit (place sys.path.insert + validate_architecture import after VALIDATOR assignment) and claims it eliminates E402 without # noqa. Ruff's default E402 fires on any module-level import preceded by a non-import statement, so the prescribed placement cannot satisfy the verification criterion — any position where sys.path.insert precedes the import triggers E402. Builder detected the contradiction, refused to re-litigate via # noqa or importlib refactor (both exit envelope). Retry approach: pytest pythonpath config (pyproject.toml [tool.pytest.ini_options] pythonpath = [\"scripts\"]) removes the need for module-level sys.path.insert entirely."
