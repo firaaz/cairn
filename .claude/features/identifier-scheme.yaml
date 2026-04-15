@@ -2,4 +2,7 @@ id: identifier-scheme
 intent: "Establish ID + Name schema across ADRs/slices/decisions/features. Supersede ADR-005. Migrate existing entities. Fleet-coordinator Feature 1 (IDs + Names combined; state taxonomy deferred to its own feature)."
 created: 2026-04-15
 shaped-from: docs/plans/2026-04-15-identifier-scheme-design.md
-slices: []
+slices:
+  - id: identifier-scheme/scheme-adr
+    slice-yaml-id: SLICE-015
+    added: 2026-04-15

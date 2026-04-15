@@ -1,8 +1,8 @@
-id: SLICE-014
-title: "Ruff cleanup v2 — pytest pythonpath + l→line renames"
-status: complete
+id: SLICE-015
+title: "identifier-scheme/scheme-adr — author governing ADR superseding ADR-005"
+status: intent
 started: 2026-04-15
-completed: 2026-04-15
+completed: null
 invariants-touched: []
-adrs-referenced: []
-adrs-created: []
+adrs-referenced: [ADR-005]
+adrs-created: [identifier-scheme]
