@@ -4,3 +4,7 @@ created: 2026-04-14
 slices:
   - id: SLICE-012
     added: 2026-04-14
+  - id: SLICE-013
+    added: 2026-04-15
+    after: [SLICE-012]
+    note: "ruff-cleanup — clears 3 D3-bypassed lint errors from SLICE-012 (logged in .claude/d3-bypasses.log)"
