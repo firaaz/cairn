@@ -1,0 +1,8 @@
+id: SLICE-014
+title: "Ruff cleanup v2 — pytest pythonpath + l→line renames"
+status: intent
+started: 2026-04-15
+completed: null
+invariants-touched: []
+adrs-referenced: []
+adrs-created: []
