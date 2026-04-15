@@ -24,6 +24,8 @@ import sys
 import textwrap
 from pathlib import Path
 
+from validate_architecture import parse_assertion_blocks, parse_invariants
+
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
 VALIDATOR = CAIRN_ROOT / "scripts" / "validate_architecture.py"
@@ -1109,11 +1111,6 @@ class TestCairnSelfDogfood:
 # They are expected to FAIL until Phase 3 adds the assertion blocks.
 
 
-# Import validator functions directly for parsing tests
-sys.path.insert(0, str(CAIRN_ROOT / "scripts"))
-from validate_architecture import parse_assertion_blocks, parse_invariants
-
-
 EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 8)}
 V1_ASSERTION_TYPES = {"grep", "file-exists", "test-ref"}
 
@@ -1233,9 +1230,7 @@ class TestSlice011ZeroWarnings:
             for line in (result.stdout + result.stderr).splitlines()
             if "Check D" in line and "FAIL" in line
         ]
-        assert not check_d_lines, "Check D failures found:\n" + "\n".join(
-            check_d_lines
-        )
+        assert not check_d_lines, "Check D failures found:\n" + "\n".join(check_d_lines)
 
 
 class TestSlice011Falsification:

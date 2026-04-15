@@ -50,11 +50,11 @@ No other lines change. `ruff E741` (ambiguous variable name `l`) is the target; 
 
 **3. `tests/unit/test_invariant_assertions.py`** — relocate the validator import to the top of the file and delete the runtime sys.path.insert.
 
-- Insertion: after the existing `VALIDATOR = CAIRN_ROOT / "scripts" / "validate_architecture.py"` assignment at line 29, add a blank line, then:
+- Insertion: add the import to the top-of-file import block, immediately after `from pathlib import Path` (line 25), as a new line:
   ```python
   from validate_architecture import parse_assertion_blocks, parse_invariants
   ```
-  The blank line separates the `VALIDATOR` assignment from the new import. The existing blank line before `# --- Fixtures ---` at line 32 is preserved.
+  Placement above the `CAIRN_ROOT` / `VALIDATOR` module-level assignments (lines 28–29) is required so that ruff E402 does not fire. The pytest `pythonpath = ["scripts"]` config makes `scripts/` available on `sys.path` before test collection, so the import resolves at top-of-file without any runtime sys.path manipulation.
 - Deletion: remove lines 1112-1114 in their entirety:
   ```python
   # Import validator functions directly for parsing tests

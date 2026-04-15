@@ -85,14 +85,16 @@ class TestEmptyIndex:
         """When no features are active, the ## Features section is absent
         or empty (intent.md V4)."""
         # An empty index has zero lines — nothing to validate
-        lines = [l for l in "".splitlines() if l.strip()]
+        lines = [line for line in "".splitlines() if line.strip()]
         assert len(lines) == 0
 
     def test_section_with_no_entries_is_valid(self):
         """A ## Features header with no entries beneath it is valid."""
         section = "## Features\n"
         content_lines = [
-            l for l in section.splitlines() if l.strip() and not l.startswith("#")
+            line
+            for line in section.splitlines()
+            if line.strip() and not line.startswith("#")
         ]
         assert len(content_lines) == 0
 
