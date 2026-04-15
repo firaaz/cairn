@@ -1,11 +1,11 @@
 ---
 id: ADR-005
 title: Semantic Identity for Slices and ADRs
-status: accepted
+status: superseded
 firmness: firm
 supersedes: []
 supersedes-sections: []
-superseded-by: null
+superseded-by: identifier-scheme
 topic: naming
 invariants-touched: []
 date: 2026-04-12
