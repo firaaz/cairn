@@ -1,6 +1,6 @@
 id: SLICE-015
 title: "identifier-scheme/scheme-adr — author governing ADR superseding ADR-005"
-status: validation
+status: implementation
 started: 2026-04-15
 completed: null
 invariants-touched: []
