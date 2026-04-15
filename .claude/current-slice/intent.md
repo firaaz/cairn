@@ -27,7 +27,7 @@ Author the governing ADR `identifier-scheme` that defines a two-field (`id:` + `
 
 ## Specification Detail
 
-**ADR identity (`id:` field of new ADR):** `identifier-scheme`. Filename: `docs/adr/identifier-scheme.md`. Note that this slice writes a flat-slug filename even though hook tolerance for that filename pattern lands in a later slice — `reversibility-guard.sh` already permits `Write` on any new ADR file under `docs/adr/` (its block targets edits to existing ADRs, not new file creation).
+**ADR identity (`id:` field of new ADR):** `identifier-scheme`. Filename: `docs/adr/identifier-scheme.md`. This slice writes a flat-slug filename even though hook tolerance for that pattern lands in `identifier-scheme/hook-tolerance`. The `Write` is permitted not because `reversibility-guard.sh` has a special new-file allow path, but because its ADR clauses (`reversibility-guard.sh:51,68`) match only the glob `*/docs/adr/[0-9]*` — `identifier-scheme.md` doesn't start with a digit, so the glob doesn't match and execution falls through to the default `exit 0`. **Bootstrap-window gap:** for the same reason, future `Edit` (body) and `Write` (overwrite) of `docs/adr/identifier-scheme.md` are also unprotected by the append-only invariant until `identifier-scheme/hook-tolerance` widens the glob. This slice creates the gap; the next slice closes it. Ordering recorded in `.claude/features/identifier-scheme.yaml`.
 
 **Frontmatter the new ADR must carry:** `id: identifier-scheme`, `name: "Identifier scheme — id + name two-field model"`, `status: accepted`, `firmness: firm`, `supersedes: [ADR-005]`, `supersedes-sections: []`, `superseded-by: null`, `topic: naming`, `invariants-touched: []`, `date: 2026-04-15`. The `supersedes:` field uses the existing-format ID `ADR-005` (renaming to flat slug is a later slice's job; this slice does not retroactively rewrite ADR-005's `id:` field).
 
@@ -45,7 +45,7 @@ Author the governing ADR `identifier-scheme` that defines a two-field (`id:` + `
    - Slice frontmatter does not gain a `supersedes:` field; `git mv` is sufficient record for renames.
    - Handoff cross-feature index: provide one before/after example in the ADR body.
 9. **Cross-reference format** — within ADR frontmatter (`adrs-referenced`, `supersedes`, `supersedes-sections`) use the target ADR's `id:` value. File references in prose use `docs/adr/<id>.md`. ADR-005's D2 stays in spirit; the ADR re-states it under the new model rather than reaching back.
-10. **Consequences** — name the migration's blast radius (every cross-ref site touched in Phase 2), the bootstrap window (this slice writes a flat-slug ADR before hook tolerance lands; the hook already permits new-file writes so this is safe), the rejected alternatives (hash-suffixed IDs, date-prefixed IDs, epic entities as first-class), and the deferred work (state taxonomy / Feature 1c, Phase 3 of migration).
+10. **Consequences** — name the migration's blast radius (every cross-ref site touched in Phase 2), the **bootstrap-window gap** (precisely: `reversibility-guard.sh:51,68` glob `*/docs/adr/[0-9]*` does not match flat-slug filenames, so `docs/adr/identifier-scheme.md` is unprotected by the ADR append-only enforcement from this slice's close until `identifier-scheme/hook-tolerance` widens the glob; the constraint that hook-tolerance is the immediately-next slice in this feature is recorded in the feature file), the rejected alternatives (hash-suffixed IDs, date-prefixed IDs, epic entities as first-class), and the deferred work (state taxonomy / Feature 1c, Phase 3 of migration).
 
 **ADR-005 update (envelope: `docs/adr/005-semantic-identity.md`):** frontmatter-only edit per `reversibility-guard.sh` rules. Set `status: superseded` and `superseded-by: identifier-scheme`. No body edits — ADR-005 is preserved as the prior commitment record.
 
@@ -61,6 +61,7 @@ Author the governing ADR `identifier-scheme` that defines a two-field (`id:` + `
 - **No `sweep.yaml.current-slice-number` retirement.** Keeps incrementing through this feature's slices; retired by a Phase 2 slice.
 - **No state taxonomy** — Feature 1c, separate feature, deferred until fleet-coordinator Feature 2 needs it.
 - **No `docs/ARCHITECTURE.md` regeneration in this slice.** Phase 4 D1 gate runs `/refresh-architecture` which will pick up the new ADR; that is part of close, not implementation.
+- **Bootstrap-window ordering constraint.** This slice intentionally creates a gap: `docs/adr/identifier-scheme.md` is unprotected by `reversibility-guard.sh`'s ADR append-only clauses (glob mismatch — see Specification Detail). `identifier-scheme/hook-tolerance` MUST be the immediately-next slice in this feature; no other flat-slug ADRs may be authored in between. Constraint recorded as the next-listed slice with `after: identifier-scheme/scheme-adr` in `.claude/features/identifier-scheme.yaml`.
 
 ## Verification
 
