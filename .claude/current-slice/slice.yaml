@@ -1,8 +1,8 @@
-id: SLICE-015
-title: "identifier-scheme/scheme-adr — author governing ADR superseding ADR-005"
-status: complete
+id: SLICE-016
+title: "identifier-scheme/hook-tolerance — widen hook patterns to accept legacy and flat-slug formats"
+status: intent
 started: 2026-04-15
-completed: 2026-04-15
-invariants-touched: []
-adrs-referenced: [ADR-005]
-adrs-created: [identifier-scheme]
+completed: null
+invariants-touched: [INV-005]
+adrs-referenced: [identifier-scheme]
+adrs-created: []
