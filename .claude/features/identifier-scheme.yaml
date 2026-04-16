@@ -19,3 +19,8 @@ slices:
     added: 2026-04-15
     after: identifier-scheme/scheme-adr
     intent: "Update scope-guard.sh, reversibility-guard.sh, reality-check.sh to accept both legacy numeric-prefix and new flat-slug formats. Closes the bootstrap-window gap left by scheme-adr."
+  - id: identifier-scheme/hook-relpath-bypass
+    slice-yaml-id: SLICE-018
+    added: 2026-04-16
+    after: identifier-scheme/hook-tolerance
+    intent: "Normalize tool-input paths in reversibility-guard.sh so bare-relative (docs/adr/foo.md) and .slice-system/-prefixed forms cannot bypass ADR append-only protection. Follow-on to hook-tolerance: extends INV-005 tolerance from filename shape to input path shape."

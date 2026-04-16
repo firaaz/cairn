@@ -1,8 +1,8 @@
-id: SLICE-017
-title: "housekeeping/inv004-rebaseline — raise INV-004 budget to 30k for CC 2.1.110 drift; commit uv.lock and measurement carry-overs"
-status: complete
+id: SLICE-018
+title: "identifier-scheme/hook-relpath-bypass — normalize tool-input paths in reversibility-guard.sh so bare-relative and .slice-system/-prefixed forms cannot bypass ADR append-only protection"
+status: intent
 started: 2026-04-16
-completed: 2026-04-16
-invariants-touched: [INV-004]
-adrs-referenced: []
+completed: null
+invariants-touched: [INV-005]
+adrs-referenced: [identifier-scheme]
 adrs-created: []
