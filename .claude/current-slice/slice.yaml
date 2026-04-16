@@ -1,8 +1,8 @@
-id: SLICE-017
-title: "housekeeping/inv004-rebaseline — raise INV-004 budget to 30k for CC 2.1.110 drift; commit uv.lock and measurement carry-overs"
-status: complete
+id: SLICE-018
+title: "housekeeping/stale-22k-cleanup — replace stale ≤22,000 wording in INV-004 description + test docstring; preserve regression-assertion literals"
+status: intent
 started: 2026-04-16
-completed: 2026-04-16
+completed: null
 invariants-touched: [INV-004]
 adrs-referenced: []
 adrs-created: []
