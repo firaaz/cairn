@@ -1,2 +1,3 @@
 SLICE-012 2026-04-14 pre-existing ruff lint (E741, E402) in test_feature_cross_index.py and test_invariant_assertions.py — outside envelope
 SLICE-014 2026-04-15 fleet-coordinator-design.md drift from parallel session (designing the automation for multi-slice work this slice's gates are catching)
+SLICE-016 2026-04-16 INV-004 turn-1 token budget failure — CC 2.1.107 → 2.1.110 drift, slice envelope does not load at session start; re-baseline queued as housekeeping
