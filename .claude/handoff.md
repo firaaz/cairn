@@ -1,30 +1,30 @@
 ---
-slice: none (SLICE-017 closed at d746476)
-phase: complete
-branch: feature/identifier-scheme
-as-of: 2026-04-16 d746476
+slice: SLICE-018
+phase: 1-intent
+branch: slice/housekeeping-stale-22k
+as-of: 2026-04-16 5a85197
 ---
 
 ## State
-SLICE-017 closed. Phase 4 PASS. Close-gates: D1 PASS, D3-A PASS, D3-B FAIL→bypassed `pre-existing` (3 paths predate d65e50c, false-positive count 0/10). Integration sweep due.
+SLICE-018 Phase 1 committed. Intent scopes two stale-22k fixes: `docs/ARCHITECTURE.md:46` description and `tests/unit/test_context_budget.py:103` docstring; regression-guard lines 121/148/149 preserved. adrs-referenced: [] (D3 trivial pass). Slice status: validation (awaiting coordinator approval).
 
 ## Next
-Fresh session → `/catchup` → `/integration-sweep` (current=17, last=16, interval=1).
+Fresh session → `/catchup` → `/start-slice phase 2` to enter Validation (Skeptic).
 
 ## Blocked / Pending
-- d3-bypass-classification Decision 1: legacy log entries SLICE-012/014/016 still need one-time reclassification to `<class>: <reason>` format
-- `docs/ARCHITECTURE.md:46` INV-004 invariant-check description stale "22k token budget" → cleanup candidate
-- `tests/unit/test_context_budget.py:103` docstring stale "≤22,000 tokens" → cleanup candidate
-- identifier-scheme follow-ons: `scripts/validate_architecture.py` flat-slug widening + `reversibility-guard.sh` relative-path bypass
-- d3-bypass-classification substrate implementation slice → queued post-sweep
+- Coordinator approval required before Phase 2 start.
+- d3-bypass-classification legacy log reclassification (SLICE-012/014/016) still pending.
+- identifier-scheme follow-ons: `scripts/validate_architecture.py` flat-slug widening + `reversibility-guard.sh` relative-path bypass.
+- v1-defense-d3 substrate implementation slice queued post-sweep.
 
 ## Features
-- housekeeping: SLICE-017 closed
-- identifier-scheme: SLICE-016 closed; follow-ons queued
-- v1-defense-d2: SLICE-010/011 queued
-- v1-defense-d3: ADR landed; substrate implementation slice pending post-sweep
+- housekeeping: SLICE-018 active at Phase 1 (stale-22k-cleanup); SLICE-017 closed.
+- identifier-scheme: SLICE-016 closed; follow-ons queued.
+- v1-defense-d2: SLICE-010/011 queued.
+- v1-defense-d3: ADR landed; substrate slice pending post-sweep.
 
 ## Pointers
-- `.claude/d3-bypasses.log` — SLICE-017 entry uses new `<class>:` format; legacy three lines still in old format
-- `docs/adr/d3-bypass-classification.md` — load before d3 substrate slice
-- `.claude/sweep.yaml` — sweep cadence state
+- `.claude/current-slice/intent.md` — Phase 2 input; specification detail + boundary + verification.
+- `.claude/current-slice/handoff-phase-1.md` — phase-scoped handoff mirror.
+- `tests/unit/test_context_budget.py` — public shape only in Phase 2; lines 121/148/149 are regression guards, not drift.
+- `docs/ARCHITECTURE.md` lines 41–47 — INV-004 block; line 46 is the Change-1 target.
