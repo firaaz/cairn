@@ -1,6 +1,6 @@
 id: SLICE-017
 title: "housekeeping/inv004-rebaseline — raise INV-004 budget to 30k for CC 2.1.110 drift; commit uv.lock and measurement carry-overs"
-status: implementation
+status: integration
 started: 2026-04-16
 completed: null
 invariants-touched: [INV-004]
