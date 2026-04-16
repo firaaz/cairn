@@ -324,3 +324,388 @@ def test_v6_resolution_failure_no_viable_root(tmp_path):
         f"Validator silently read cairn's substrate (count=1 matches cairn).\n"
         f"stdout:\n{result.stdout}"
     )
+
+
+# --- Phase 2 (SLICE-018): flat-slug ADR recognition -----------------------
+#
+# The tests below exercise the behaviors declared in SLICE-018 intent.md
+# §Verification V2–V6 and V10. V1 (legacy + commentary parity on live
+# corpus) is covered by test_v1_cairn_self_dogfood_baseline above: the
+# current ARCHITECTURE.md includes commentary inside invariant
+# parentheticals (e.g. `(ADR-004; confirmed by ADR-009)` on INV-003,
+# `(ADR-002; dedicated ADR pending ...)` on INV-004), so that test is the
+# whole-corpus regression guard for intent's "at parity with current
+# behavior" clause on commentary handling. V7 (project-root resolution
+# unchanged) is covered by V1–V6. V8/V9 are Phase 3 run-time checks, not
+# Phase 2 unit tests.
+
+
+def _make_flat_slug_project(
+    root: Path,
+    *,
+    adrs: list[dict],
+    invariants: list[dict],
+) -> None:
+    """Build a minimal substrate for flat-slug parsing tests.
+
+    ADR spec keys: id, filename, status (default "accepted"),
+    firmness (default "firm"), superseded_by (default None, else the
+    successor id), invariants_touched (default []).
+
+    Invariant spec keys: id, refs (literal parenthetical content), text
+    (default fixture boilerplate).
+    """
+    docs = root / "docs"
+    adr_dir = docs / "adr"
+    adr_dir.mkdir(parents=True)
+
+    arch_lines = [
+        "# Architecture",
+        "",
+        "System: flat-slug fixture",
+        "",
+        "## Invariants",
+        "",
+    ]
+    for inv in invariants:
+        inv_id = inv["id"]
+        refs = inv["refs"]
+        text = inv.get(
+            "text",
+            f"Fixture invariant {inv_id} for flat-slug parsing tests.",
+        )
+        arch_lines.append(f"**{inv_id}** {text} ({refs})")
+        arch_lines.append("")
+    arch_lines.extend(
+        [
+            "## Boundaries",
+            "",
+            "Not declared for this fixture.",
+            "",
+            "## Data Ownership",
+            "",
+            "No runtime data.",
+            "",
+        ]
+    )
+    (docs / "ARCHITECTURE.md").write_text("\n".join(arch_lines))
+
+    index_lines = ["# ADR Index", ""]
+    for adr in adrs:
+        filename = adr["filename"]
+        id_field = adr["id"]
+        status = adr.get("status", "accepted")
+        firmness = adr.get("firmness", "firm")
+        superseded_by = adr.get("superseded_by")
+        invariants_touched = adr.get("invariants_touched", [])
+        inv_list = (
+            "[" + ", ".join(invariants_touched) + "]" if invariants_touched else "[]"
+        )
+        superseded_val = superseded_by if superseded_by else "null"
+        body = textwrap.dedent(
+            f"""\
+            ---
+            id: {id_field}
+            status: {status}
+            firmness: {firmness}
+            supersedes: []
+            supersedes-sections: []
+            superseded-by: {superseded_val}
+            topic: process
+            invariants-touched: {inv_list}
+            date: 2026-04-16
+            ---
+
+            # {id_field}: Fixture ADR
+
+            ## Status
+            {status.title()}
+
+            ## Context
+            Fixture ADR for Phase 2 flat-slug parsing tests.
+
+            ## Decision
+            Fixture decision.
+
+            ## Consequences
+            - Fixture consequences.
+            """
+        )
+        (adr_dir / filename).write_text(body)
+        index_lines.append(f"- [{id_field}]({filename})")
+    (adr_dir / "index.md").write_text("\n".join(index_lines) + "\n")
+
+
+def _run_in(tmp_path: Path) -> subprocess.CompletedProcess:
+    return _run(
+        VALIDATOR,
+        cwd=tmp_path,
+        env_overrides={"CLAUDE_PROJECT_DIR": str(tmp_path)},
+    )
+
+
+def test_flat_slug_adr_recognized_and_referenced(tmp_path):
+    """V2 — A flat-slug ADR `id: foo-scheme` referenced via `(foo-scheme)` resolves."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "foo-scheme",
+                "filename": "foo-scheme.md",
+                "invariants_touched": ["INV-001"],
+            },
+        ],
+        invariants=[{"id": "INV-001", "refs": "foo-scheme"}],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    assert "ALL CHECKS PASSED" in result.stdout
+    assert "Invariants verified: 1" in result.stdout
+    assert "ADR files checked: 1" in result.stdout, (
+        f"Flat-slug ADR must be discovered. A count of 0 means the validator "
+        f"did not widen discovery beyond legacy NNN-slug.md filenames.\n"
+        f"stdout:\n{result.stdout}"
+    )
+
+
+def test_flat_slug_accepted_firm_without_invariant_fails_check_b(tmp_path):
+    """V3 — An accepted+firm flat-slug ADR uncovered by invariants → Check B error."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "ADR-001",
+                "filename": "001-legacy.md",
+                "invariants_touched": ["INV-001"],
+            },
+            {
+                "id": "foo-scheme",
+                "filename": "foo-scheme.md",
+                # intentionally NOT referenced by any invariant
+            },
+        ],
+        invariants=[{"id": "INV-001", "refs": "ADR-001"}],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode != 0, (
+        f"Accepted+firm flat-slug ADR without invariant coverage must fail.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "foo-scheme" in result.stdout, (
+        f"Check B error must name the uncovered flat-slug id verbatim.\n"
+        f"stdout:\n{result.stdout}"
+    )
+
+
+def test_flat_slug_soft_without_invariant_no_check_b(tmp_path):
+    """V3-neg — A soft flat-slug ADR uncovered by invariants does NOT fire Check B."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "ADR-001",
+                "filename": "001-legacy.md",
+                "invariants_touched": ["INV-001"],
+            },
+            {
+                "id": "soft-scheme",
+                "filename": "soft-scheme.md",
+                "firmness": "soft",
+            },
+        ],
+        invariants=[{"id": "INV-001", "refs": "ADR-001"}],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode == 0, (
+        f"Soft flat-slug ADRs are not required to have invariant coverage.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "ALL CHECKS PASSED" in result.stdout
+    # Anti-vacuous-pass guard: the soft-scheme flat-slug file must actually
+    # be discovered by the validator for this test's negative claim (no
+    # Check B) to have semantic content. A count of 1 (only legacy ADR-001
+    # discovered) means this test was passing for the wrong reason.
+    assert "ADR files checked: 2" in result.stdout, (
+        f"Both legacy and flat-slug ADRs must be discovered.\nstdout:\n{result.stdout}"
+    )
+
+
+def test_flat_slug_superseded_reference_fails_check_c(tmp_path):
+    """V4 — An invariant referencing a superseded flat-slug ADR → Check C error."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "old-scheme",
+                "filename": "old-scheme.md",
+                "superseded_by": "new-scheme",
+                "invariants_touched": ["INV-001"],
+            },
+            {
+                "id": "new-scheme",
+                "filename": "new-scheme.md",
+                "invariants_touched": ["INV-002"],
+            },
+        ],
+        invariants=[
+            {"id": "INV-001", "refs": "old-scheme"},
+            {"id": "INV-002", "refs": "new-scheme"},
+        ],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode != 0, (
+        f"Reference to a superseded flat-slug ADR must fail.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "old-scheme" in result.stdout, (
+        f"Check C error must name the superseded flat-slug id verbatim.\n"
+        f"stdout:\n{result.stdout}"
+    )
+    # Anti-vacuous-pass guard: intent specifies Check C ("reference to a
+    # superseded ADR") should fire here, not Check A ("unknown reference").
+    # Currently the fixture's "old-scheme" is unknown to the validator and
+    # produces a Check A error that coincidentally contains "old-scheme" —
+    # which would satisfy the assertion above for the wrong reason. Pin to
+    # the supersession concept to force Phase 3 to discover the flat-slug
+    # ADR and route the error through Check C.
+    assert "supersed" in result.stdout.lower(), (
+        f"Expected Check C (superseded-reference) wording, not Check A.\n"
+        f"stdout:\n{result.stdout}"
+    )
+
+
+def test_unknown_flat_slug_token_fails_check_a(tmp_path):
+    """V5 — A reference token matching no ADR id → Check A error with token verbatim."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "ADR-001",
+                "filename": "001-legacy.md",
+                "invariants_touched": ["INV-002"],
+            },
+        ],
+        invariants=[
+            {"id": "INV-001", "refs": "no-such-adr"},
+            {"id": "INV-002", "refs": "ADR-001"},
+        ],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode != 0, (
+        f"Unknown reference token must fail Check A.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "no-such-adr" in result.stdout, (
+        f"Check A error must name the unknown token verbatim.\nstdout:\n{result.stdout}"
+    )
+    assert "INV-001" in result.stdout, (
+        f"Check A error must name the invariant carrying the bad reference.\n"
+        f"stdout:\n{result.stdout}"
+    )
+
+
+def test_flat_slug_not_addressable_via_synthetic_adr_nnn(tmp_path):
+    """V5-alias — A flat-slug ADR cannot be reached via a synthesized ADR-NNN token."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "foo-scheme",
+                "filename": "foo-scheme.md",
+                "invariants_touched": ["INV-002"],
+            },
+        ],
+        invariants=[
+            {"id": "INV-001", "refs": "ADR-999"},
+            {"id": "INV-002", "refs": "foo-scheme"},
+        ],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode != 0, (
+        f"Flat-slug ADRs must not be aliased to synthesized ADR-NNN tokens.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "ADR-999" in result.stdout, (
+        f"Check A error must name the unresolved ADR-NNN token verbatim.\n"
+        f"stdout:\n{result.stdout}"
+    )
+
+
+def test_assertion_blocks_run_on_mixed_corpus(tmp_path):
+    """V6 — Check D/E assertion execution is unchanged on a mixed legacy + flat-slug corpus."""
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "ADR-001",
+                "filename": "001-legacy.md",
+                "invariants_touched": ["INV-001"],
+            },
+            {
+                "id": "foo-scheme",
+                "filename": "foo-scheme.md",
+                "invariants_touched": ["INV-002"],
+            },
+        ],
+        invariants=[
+            {"id": "INV-001", "refs": "ADR-001"},
+            {"id": "INV-002", "refs": "foo-scheme"},
+        ],
+    )
+    target = tmp_path / "docs" / "target.txt"
+    target.write_text("fixture target\n")
+    arch_path = tmp_path / "docs" / "ARCHITECTURE.md"
+    arch_path.write_text(
+        arch_path.read_text()
+        + "\n```invariant-check INV-002\n"
+        + "type: file-exists\n"
+        + 'target: "docs/target.txt"\n'
+        + 'description: "Fixture assertion for Check D"\n'
+        + "```\n"
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode == 0, (
+        f"Mixed corpus with a resolvable assertion must pass.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "ALL CHECKS PASSED" in result.stdout
+    assert "ADR files checked: 2" in result.stdout, (
+        f"Both the legacy and flat-slug ADRs must be discovered.\n"
+        f"stdout:\n{result.stdout}"
+    )
+
+
+def test_inv005_style_identifier_scheme_parenthetical_fixture(tmp_path):
+    """V10 — Fixture rewrites INV-005's parenthetical from `(ADR-006)` to `(identifier-scheme)`.
+
+    Proves the validator accepts the INV-005 re-point path before
+    ARCHITECTURE.md itself is edited — that edit is out of this slice's
+    envelope.
+    """
+    _make_flat_slug_project(
+        tmp_path,
+        adrs=[
+            {
+                "id": "identifier-scheme",
+                "filename": "identifier-scheme.md",
+                "invariants_touched": ["INV-005"],
+            },
+        ],
+        invariants=[
+            {
+                "id": "INV-005",
+                "refs": "identifier-scheme",
+                "text": "Cross-referenceable entities carry a two-field identity model.",
+            },
+        ],
+    )
+    result = _run_in(tmp_path)
+    assert result.returncode == 0, (
+        f"INV-005 with (identifier-scheme) parenthetical must validate cleanly.\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "ALL CHECKS PASSED" in result.stdout
+    assert "ADR files checked: 1" in result.stdout, (
+        f"The flat-slug identifier-scheme ADR must be discovered.\n"
+        f"stdout:\n{result.stdout}"
+    )

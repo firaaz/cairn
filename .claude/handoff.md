@@ -1,50 +1,48 @@
 ---
-slice: coord (manual Axis-B dogfood — mid-merge)
-phase: merge-queue
+slice: coord (manual Axis-B dogfood — all workers merged)
+phase: post-merge — coord sweep + refresh pending
 branch: feature/identifier-scheme
-as-of: 2026-04-16 — post D+B+A merge, pre C merge
+as-of: 2026-04-16 — post D+B+A+C merge
 ---
 
 ## State
-Dogfood fleet (4 workers). D, B, A merged. C pending (close-committed, no branch sweep — deferred to coord).
+All 4 dogfood workers merged into `feature/identifier-scheme`. ADR-007 D2 (parallel SLICE-ID + sweep-ID safe at merge) **confirmed** across all four branches. No content loss; per-merge reconciliation cost was ~minutes (handoff.md + sweep-13.md + slice.yaml + features-yaml text merges).
 
-| Worker | Branch | State | Merge status |
-|---|---|---|---|
-| A stale-22k | `slice/housekeeping-stale-22k` | sweep #13 PASS (A-branch) | **MERGED** |
-| B d3-log-reclass | `slice/v1-defense-d3-log-reclass` | sweep #13 PASS (B-branch) | **MERGED** |
-| C validator | `slice/identifier-scheme-validator` | close-committed; sweep deferred to coord | not yet merged |
-| D hook-relpath | `slice/identifier-scheme-hook-relpath` | sweep #13 PASS (D-branch) | **MERGED** |
+| Worker | Branch | Merge commit |
+|---|---|---|
+| D hook-relpath | `slice/identifier-scheme-hook-relpath` | `e720e6a` |
+| B bypass-log-reclass | `slice/v1-defense-d3-log-reclass` | `d8bd246` |
+| A stale-22k | `slice/housekeeping-stale-22k` | `4d3d8f6` |
+| C validator-flat-slug | `slice/identifier-scheme-validator` | (this merge) |
 
-`sweep.yaml`: `last-sweep-at-slice: 18`. Reconciled `.claude/sweep-results/2026-04-16-sweep-13.md` holds §D + §B + §A sections + reconciliation notes.
-
-ADR-007 D2 (parallel SLICE-ID collision is safe-at-merge) **confirmed** across the D+B+A triple. No content loss; ~minutes per merge to hand-merge handoff.md + sweep-13.md.
+`sweep.yaml`: `last-sweep-at-slice: 18`. `.claude/sweep-results/2026-04-16-sweep-13.md` holds §D + §B + §A sections (C deferred its sweep to coord).
 
 ## Next
-1. Merge C: `git merge --no-ff slice/identifier-scheme-validator` (expect same 3-file conflict shape; resolve by appending §C to sweep-13.md).
-2. Kill worker tmux windows + remove worktrees: `cairn:2` (A), `cairn:3` (C) after merge.
-3. Run coord-level `/integration-sweep` on `feature/identifier-scheme` covering all four merged slices (C had no branch sweep; coord sweep closes the loop).
-4. Run `/refresh-architecture` to reconcile `docs/ARCHITECTURE.md` with the merged ADR/invariant changes.
-5. End-of-dogfood: ADR-007 graduation note + `docs/lessons.md` L-005 entry (plan §8).
+1. Coord-level `/integration-sweep` on `feature/identifier-scheme` — covers C's deferred sweep + final post-merge validation of the combined tree.
+2. `/refresh-architecture` — reconcile `docs/ARCHITECTURE.md` with merged ADR/invariant changes (C's line 49 re-point, A's line 46 rebaseline wording, D/B substrate changes).
+3. Kill worker tmux windows (`cairn:2` A, `cairn:3` C) + `git worktree remove --force` (chronic measurement drift in both).
+4. End-of-dogfood writeup: append to `.claude/plans/2026-04-16-dogfood-observations.md` §8; copy closing note to `docs/lessons.md` as `L-005 — manual Axis-B dogfood findings`.
+5. ADR-007 graduation decision: provisional → accepted (D2 confirmed; other dimensions partially tested — merge-time reconciliation cost observed but low).
 
 ## Blocked / Pending
-- C merge pending.
 - Chronic uncommitted `docs/plans/measurements/2026-04-12-slice-003.txt` — user directive: ignore.
 - `scripts/snapshot_diff.py` classified-format parser — pending separate slice.
-- `commands/claude-code/start-slice.full.md:224` rolling-window rewrite — pending separate slice.
-- `d3-bypass-classification` Decision 2 `exempt:` syntax — pending separate slice (retires `.claude/slice-018-d3-oob.md`).
+- `commands/claude-code/start-slice.full.md:224` rolling-window rewrite (text still says "3+ bypasses" all-class; should say "false-positive only") — pending separate slice.
+- `d3-bypass-classification` Decision 2 `exempt:` syntax slice — pending (retires `.claude/slice-018-d3-oob.md`).
+- `docs/ARCHITECTURE.md:116` stale substrate-gap + ADR-006 proxy clauses (C flagged; `/refresh-architecture` target).
 - v1-defense-d2 SLICE-010/011 — queued.
 - v1-defense-d3 substrate slice — queued.
 
-## Features (post D+B+A merge, pre C merge)
-- identifier-scheme: D's SLICE-018 (hook-relpath-bypass) landed; C's SLICE-018 (validator-flat-slug) close-committed, merge pending.
-- housekeeping: A's SLICE-018 (stale-22k-cleanup) landed; SLICE-017 previously closed.
-- v1-defense-d3: B's SLICE-018 (bypass-log-reclass) landed.
+## Features (post all-merged)
+- identifier-scheme: D (hook-relpath) + C (validator-flat-slug) landed; feature fully drained.
+- housekeeping: A (stale-22k-cleanup) landed on top of SLICE-017.
+- v1-defense-d3: B (bypass-log-reclass) landed; substrate slice still queued.
 - v1-defense-d2: SLICE-010/011 queued.
 
 ## Pointers
-- `.claude/plans/2026-04-16-dogfood-observations.md` — obs log; §6 has `/handoff` side-effect divergence findings (A-specific pattern P2/P3/P4).
-- `.claude/plans/2026-04-16-manual-parallel-dogfood.md` §7 — merge protocol; §8 — success criteria.
-- `.claude/sweep-results/2026-04-16-sweep-13.md` — reconciled sweep (§D + §B + §A); append §C or let coord-level sweep supersede.
-- `.claude/slice-018-d3-oob.md` — one-shot D3 bypass record from B; retirement tied to Decision 2 slice.
-- `docs/adr/007-parallelism-v1.md` — contract under test (dogfood graduating — D+B+A triple confirms D2).
+- `.claude/plans/2026-04-16-dogfood-observations.md` — obs log; §6 has `/handoff` side-effect divergence findings.
+- `.claude/plans/2026-04-16-manual-parallel-dogfood.md` §7/§8 — merge protocol + success criteria.
+- `.claude/sweep-results/2026-04-16-sweep-13.md` — §D + §B + §A sweep reconciliation; coord-level sweep supersedes.
+- `.claude/slice-018-d3-oob.md` — one-shot D3 bypass record (B); retirement tied to Decision 2 slice.
+- `docs/adr/007-parallelism-v1.md` — contract under test; dogfood graduation pending.
 - `/tmp/cairn-fleet/2026-04-16/[ABCD]-*.log` — durable transcripts.

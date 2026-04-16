@@ -24,3 +24,8 @@ slices:
     added: 2026-04-16
     after: identifier-scheme/hook-tolerance
     intent: "Normalize tool-input paths in reversibility-guard.sh so bare-relative (docs/adr/foo.md) and .slice-system/-prefixed forms cannot bypass ADR append-only protection. Follow-on to hook-tolerance: extends INV-005 tolerance from filename shape to input path shape."
+  - id: identifier-scheme/validator-flat-slug
+    slice-yaml-id: SLICE-018
+    added: 2026-04-16
+    after: identifier-scheme/hook-tolerance
+    intent: "Widen scripts/validate_architecture.py to recognize flat-slug ADR filenames (docs/adr/<id>.md) and flat-slug IDs in ARCHITECTURE.md invariant references, alongside legacy NNN-slug.md. Closes the substrate gap named in ARCHITECTURE.md's 'Current Phase Constraints § Identifier scheme' paragraph so INV-005 can cite `identifier-scheme` directly instead of via the ADR-006 proxy."

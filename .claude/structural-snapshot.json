@@ -60,8 +60,8 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "fc68be4ffc2a8d3e3a76fd298222e8b4d33422605c33f6be3963c38a94f58aaa",
-    "size": 17254
+    "hash": "c7065fd467c7f6711eb7b56ca1f0bb3dca1bf764a7d0f0f758c80b6b400e985f",
+    "size": 17264
   },
   "docs/adr/001-bootstrap-exception.md": {
     "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
@@ -167,6 +167,10 @@
     "hash": "1c69d233750e5979c98589d070d8d2afb79949af101c0477b6e200bf49c6582f",
     "size": 13700
   },
+  "docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md": {
+    "hash": "8292aad178c519eedf0eb026ab821b4a63439f7a7c14833a8b91ba902dbee6c2",
+    "size": 9890
+  },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
     "size": 13864
@@ -196,8 +200,8 @@
     "size": 5832
   },
   "scripts/validate_architecture.py": {
-    "hash": "bfa6cbf19fbeb78899eccebe1a6af20e15e41d528dc40535ae3ba050c6b99e1f",
-    "size": 14169
+    "hash": "77ac479e4d3d099d0b0b0dbbf6057f0a278e7bb810f744e2762c04075b905011",
+    "size": 16144
   },
   "tests/unit/test_context_budget.py": {
     "hash": "53b6ecabe34557ddd84f80f7606c55d0227d570b9e4ee88104b70e4bd58dfe6e",
@@ -276,7 +280,7 @@
     "size": 5876
   },
   "tests/unit/test_validate_architecture.py": {
-    "hash": "108ae32411762e9549f1eeb476173c07d9a8b994705829f103a20b16b851b04b",
-    "size": 11156
+    "hash": "02adf3fa2a09e1922806bc063fea4822fbf6b0451e39babbf5484ee10e525d29",
+    "size": 24480
   }
 }

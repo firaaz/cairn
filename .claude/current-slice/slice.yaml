@@ -1,5 +1,5 @@
 id: SLICE-018
-title: "SLICE-018 dogfood batch — 4 parallel worker slices closed, merging into feature/identifier-scheme (D hook-relpath, B bypass-log-reclass, A stale-22k merged; C validator-flat-slug pending)"
+title: "SLICE-018 dogfood batch — 4 parallel worker slices closed and merged into feature/identifier-scheme (D hook-relpath, B bypass-log-reclass, A stale-22k, C validator-flat-slug)"
 status: complete
 started: 2026-04-16
 completed: 2026-04-16

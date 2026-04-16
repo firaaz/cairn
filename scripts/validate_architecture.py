@@ -117,7 +117,10 @@ def parse_frontmatter(text: str) -> dict:
 def parse_invariants(text: str) -> list[dict]:
     """Extract invariants from the ## Invariants section of ARCHITECTURE.md.
 
-    Expected format: **INV-NNN** <statement> (ADR-NNN, ADR-NNN)
+    Expected format: **INV-NNN** <statement> (<ref>; <ref>; ...).
+
+    References accepted are legacy `ADR-NNN` tokens and flat-slug tokens
+    matching an ADR's frontmatter `id:`.
     """
     invariants = []
     in_section = False
@@ -128,22 +131,50 @@ def parse_invariants(text: str) -> list[dict]:
         if in_section and line.strip().startswith("## "):
             break
         if in_section:
-            # Match **INV-NNN** ... (ADR-NNN, ADR-NNN)
             inv_match = re.match(r"\*\*INV-(\d+)\*\*\s+(.+)", line)
             if inv_match:
                 inv_num = int(inv_match.group(1))
                 rest = inv_match.group(2)
-                # Extract all ADR references
-                adr_refs = [int(m) for m in re.findall(r"ADR-(\d+)", rest)]
                 invariants.append(
                     {
                         "inv_num": inv_num,
                         "statement": rest,
-                        "adr_refs": adr_refs,
+                        "adr_refs": _extract_refs(rest),
                         "line": line_num,
                     }
                 )
     return invariants
+
+
+def _extract_refs(text: str) -> list[str]:
+    """Extract ADR reference tokens from an invariant's text.
+
+    Legacy `ADR-NNN` tokens are recognized anywhere in the text (preserves
+    current tolerance for commentary like `confirmed by ADR-009`). Flat-slug
+    tokens are recognized only as top-level `;`/`,`-separated fragments
+    inside the trailing parenthetical.
+    """
+    refs: list[str] = []
+    seen: set[str] = set()
+
+    for m in re.finditer(r"ADR-(\d+)", text):
+        key = f"ADR-{int(m.group(1)):03d}"
+        if key not in seen:
+            seen.add(key)
+            refs.append(key)
+
+    paren_match = re.search(r"\(([^()]*)\)\s*$", text)
+    if paren_match:
+        for fragment in re.split(r"[;,]", paren_match.group(1)):
+            token = fragment.strip()
+            if (
+                re.fullmatch(r"[a-z][a-z0-9]*(-[a-z0-9]+)+", token)
+                and token not in seen
+            ):
+                seen.add(token)
+                refs.append(token)
+
+    return refs
 
 
 def parse_assertion_blocks(text: str) -> dict[str, dict]:
@@ -245,34 +276,74 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
 
 
 def parse_adr(filepath: Path) -> dict | None:
-    """Parse an ADR file. Extract metadata from frontmatter."""
+    """Parse an ADR file. Extract metadata from frontmatter.
+
+    The canonical reference key is derived as follows:
+      - If frontmatter `id` is `ADR-NNN`, the key is that id, zero-padded.
+      - Else if frontmatter `id` is a kebab slug, the key is that slug verbatim.
+      - Else the filename's leading digits yield a legacy `ADR-NNN` key.
+    Files that match none of the above are skipped.
+    """
     text = filepath.read_text()
 
     frontmatter = parse_frontmatter(text)
     if not frontmatter:
         return None
 
-    # Number from frontmatter id field (ADR-001 -> 1)
-    adr_id = frontmatter.get("id", "")
-    num_match = re.search(r"(\d+)", str(adr_id))
-    adr_num = int(num_match.group(1)) if num_match else None
-
-    if adr_num is None:
+    key = _derive_adr_key(frontmatter, filepath)
+    if key is None:
         return None
 
-    # Title from first heading after frontmatter
     body = text[text.find("---", 3) + 3 :].strip()
     title_match = re.search(r"^#\s+(.+)$", body, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else filepath.stem
 
     return {
-        "num": adr_num,
+        "key": key,
         "title": title,
         "status": frontmatter.get("status", "unknown"),
         "firmness": frontmatter.get("firmness", "unknown"),
+        "superseded_by": frontmatter.get("superseded-by"),
         "invariants_touched": frontmatter.get("invariants-touched", []),
         "path": str(filepath),
     }
+
+
+def _derive_adr_key(frontmatter: dict, filepath: Path) -> str | None:
+    """Derive the canonical ADR key (ADR-NNN or flat slug) or None."""
+    raw_id = str(frontmatter.get("id", "")).strip()
+    if raw_id:
+        numeric = re.fullmatch(r"ADR-(\d+)", raw_id)
+        if numeric:
+            return f"ADR-{int(numeric.group(1)):03d}"
+        if re.fullmatch(r"[a-z][a-z0-9]*(-[a-z0-9]+)+", raw_id):
+            return raw_id
+    stem_digits = re.match(r"^(\d+)", filepath.stem)
+    if stem_digits:
+        return f"ADR-{int(stem_digits.group(1)):03d}"
+    return None
+
+
+def _is_superseded(adr: dict) -> bool:
+    """Treat as superseded if `superseded-by` is set or status says so."""
+    if adr.get("superseded_by"):
+        return True
+    return adr["status"].lower() in ("superseded", "deprecated", "retired")
+
+
+def _is_active_firm(adr: dict) -> bool:
+    """Firm ADR that still carries invariant-coverage weight."""
+    if _is_superseded(adr):
+        return False
+    return (
+        adr["status"].lower() in ("accepted", "proposed")
+        and adr["firmness"].lower() == "firm"
+    )
+
+
+def _discover_adr_files(adr_dir: Path) -> list[Path]:
+    """Discover ADR files under adr_dir, excluding the index."""
+    return sorted(f for f in adr_dir.glob("*.md") if f.name != "index.md")
 
 
 def validate() -> list[str]:
@@ -294,8 +365,8 @@ def validate() -> list[str]:
         failures.append("No invariants found in ARCHITECTURE.md ## Invariants section")
 
     # Load all ADRs
-    adr_files = sorted(ADR_DIR.glob("[0-9]*.md"))
-    adrs: dict[int, dict] = {}
+    adr_files = _discover_adr_files(ADR_DIR)
+    adrs: dict[str, dict] = {}
     for f in adr_files:
         adr = parse_adr(f)
         if adr is None:
@@ -303,32 +374,20 @@ def validate() -> list[str]:
                 f"Warning: {f.name} has no valid YAML frontmatter — skipped by all checks"
             )
             continue
-        if adr["num"] in adrs:
+        key = adr["key"]
+        if key in adrs:
             failures.append(
-                f"Check A: Duplicate ADR number ADR-{adr['num']:03d} "
-                f"in {adrs[adr['num']]['path']} and {adr['path']}"
+                f"Check A: Duplicate ADR key {key} "
+                f"in {adrs[key]['path']} and {adr['path']}"
             )
-        adrs[adr["num"]] = adr
+        adrs[key] = adr
 
     if not adrs:
         failures.append(f"No ADR files with frontmatter found in {ADR_DIR}")
         return failures
 
-    # Classify ADRs (case-insensitive status/firmness comparison)
-    active_adrs = {
-        n: a for n, a in adrs.items() if a["status"].lower() in ("accepted", "proposed")
-    }
-    inactive_adrs = {
-        n: a
-        for n, a in adrs.items()
-        if a["status"].lower() in ("superseded", "deprecated", "retired")
-    }
-    firm_active = {
-        n: a for n, a in active_adrs.items() if a["firmness"].lower() == "firm"
-    }
-
     # Track which ADRs are referenced by invariants
-    referenced_adrs: set[int] = set()
+    referenced_keys: set[str] = set()
 
     # Check A: every invariant references valid, existing, non-superseded ADRs
     for inv in invariants:
@@ -338,24 +397,26 @@ def validate() -> list[str]:
             )
             continue
 
-        for adr_num in inv["adr_refs"]:
-            referenced_adrs.add(adr_num)
-            if adr_num not in adrs:
+        for ref in inv["adr_refs"]:
+            referenced_keys.add(ref)
+            if ref not in adrs:
                 failures.append(
                     f"Check A: INV-{inv['inv_num']:03d} (line {inv['line']}) references "
-                    f"ADR-{adr_num:03d} which does not exist"
+                    f"{ref} which does not exist"
                 )
-            elif adr_num in inactive_adrs:
+            elif _is_superseded(adrs[ref]):
                 failures.append(
                     f"Check C: INV-{inv['inv_num']:03d} (line {inv['line']}) references "
-                    f"ADR-{adr_num:03d} which is {adrs[adr_num]['status']}"
+                    f"{ref} which is superseded"
                 )
 
     # Check B: every accepted firm ADR has at least one invariant referencing it
-    for n, adr in firm_active.items():
-        if n not in referenced_adrs:
+    for key, adr in adrs.items():
+        if not _is_active_firm(adr):
+            continue
+        if key not in referenced_keys:
             failures.append(
-                f"Check B: ADR-{n:03d} ({adr['title']}) is firm/accepted "
+                f"Check B: {key} ({adr['title']}) is firm/accepted "
                 f"but has no invariant in ARCHITECTURE.md"
             )
 
@@ -403,7 +464,7 @@ def main() -> None:
     if not failures:
         arch_text = ARCHITECTURE_FILE.read_text()
         invariants = parse_invariants(arch_text)
-        adr_files = sorted(ADR_DIR.glob("[0-9]*.md"))
+        adr_files = _discover_adr_files(ADR_DIR)
         print("ALL CHECKS PASSED")
         print(f"  Invariants verified: {len(invariants)}")
         print(f"  ADR files checked: {len(adr_files)}")
