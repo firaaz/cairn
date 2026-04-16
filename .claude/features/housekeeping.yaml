@@ -1,0 +1,8 @@
+id: housekeeping
+intent: "Cross-feature maintenance bucket — drift cleanup, invariant re-baselines, config sync, and other slices that don't fit a coherent feature."
+created: 2026-04-16
+slices:
+  - id: housekeeping/inv004-rebaseline
+    slice-yaml-id: SLICE-017
+    added: 2026-04-16
+    intent: "Raise INV-004 BUDGET_HARD from 22000 to 30000 for CC 2.1.110 drift; amend ARCHITECTURE.md invariant text; commit uv.lock (requires-python ≥3.11 sync) and measurement file carry-overs. Greens the integration gate."
