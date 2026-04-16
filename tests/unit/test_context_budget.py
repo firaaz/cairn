@@ -154,3 +154,122 @@ def test_inv004_architecture_rebaselined():
     assert "2.1.110" in paragraph, (
         f"INV-004 missing '2.1.110' provenance citation.\nParagraph: {paragraph!r}"
     )
+
+
+def test_inv004_invariant_check_block_description_rebaselined():
+    """INV-004 invariant-check block description points at the 30k budget.
+
+    Isolates the fenced ``invariant-check INV-004`` block in ARCHITECTURE.md
+    and asserts its body names the re-baselined ceiling ("30k token budget"),
+    not the stale ("22k token budget"). Block-scoped so unrelated occurrences
+    of "22k" elsewhere in ARCHITECTURE.md cannot mask drift here.
+    """
+    arch = (CAIRN_ROOT / "docs" / "ARCHITECTURE.md").read_text()
+    lines = arch.splitlines()
+
+    start = next(
+        (
+            i
+            for i, line in enumerate(lines)
+            if line.strip() == "```invariant-check INV-004"
+        ),
+        None,
+    )
+    assert start is not None, (
+        "invariant-check INV-004 opening fence not found in docs/ARCHITECTURE.md"
+    )
+
+    end = next(
+        (
+            i
+            for i, line in enumerate(lines[start + 1 :], start=start + 1)
+            if line.strip() == "```"
+        ),
+        None,
+    )
+    assert end is not None, (
+        "invariant-check INV-004 closing fence not found in docs/ARCHITECTURE.md"
+    )
+    block = "\n".join(lines[start : end + 1])
+
+    assert "machine-checks the 30k token budget" in block, (
+        "INV-004 invariant-check block missing re-baselined description "
+        "'machine-checks the 30k token budget'.\n"
+        f"Block: {block!r}"
+    )
+    assert "machine-checks the 22k token budget" not in block, (
+        "INV-004 invariant-check block still contains stale description "
+        "'machine-checks the 22k token budget'.\n"
+        f"Block: {block!r}"
+    )
+
+
+def test_inv004_turn1_token_budget_docstring_rebaselined():
+    """test_inv004_turn1_token_budget docstring reflects the 30,000 ceiling.
+
+    Text-level scan of test_context_budget.py (not __doc__ attribute) to avoid
+    importing the module, which would trigger the `claude` CLI skip fixture.
+    Locates the ``def test_inv004_turn1_token_budget`` line and inspects the
+    first non-blank line after it — that is, the function's docstring.
+    """
+    src = Path(__file__).read_text()
+    lines = src.splitlines()
+
+    def_index = next(
+        (
+            i
+            for i, line in enumerate(lines)
+            if line.lstrip().startswith("def test_inv004_turn1_token_budget(")
+        ),
+        None,
+    )
+    assert def_index is not None, (
+        "def test_inv004_turn1_token_budget(...) not found in this file"
+    )
+
+    docstring_line = next(
+        (line for line in lines[def_index + 1 :] if line.strip() != ""),
+        None,
+    )
+    assert docstring_line is not None, (
+        "no non-blank line after def test_inv004_turn1_token_budget"
+    )
+
+    assert "\u226430,000 tokens" in docstring_line, (
+        "test_inv004_turn1_token_budget docstring missing re-baselined "
+        "'\u226430,000 tokens' ceiling.\n"
+        f"Docstring line: {docstring_line!r}"
+    )
+    assert "\u226422,000 tokens" not in docstring_line, (
+        "test_inv004_turn1_token_budget docstring still contains stale "
+        "'\u226422,000 tokens' literal.\n"
+        f"Docstring line: {docstring_line!r}"
+    )
+
+
+def test_inv004_regression_guards_preserved():
+    """Three regression-guard lines in test_inv004_architecture_rebaselined stay.
+
+    These lines intentionally contain the stale ``\u226422,000`` literal as a
+    regression assertion / failure-message / docstring clause. A future cleanup
+    pass might remove them under the mistaken belief they are drift; this test
+    pins them so that mistake breaks the suite loudly.
+
+    Guardrail test — expected to pass today and keep passing. If it fails at
+    slice entry, the slice's premise is wrong.
+    """
+    src = Path(__file__).read_text()
+
+    required = [
+        "the stale ``\u226422,000`` literal is gone",
+        'assert "\u226422,000" not in paragraph',
+        "INV-004 still contains stale '\u226422,000' literal",
+    ]
+
+    missing = [s for s in required if s not in src]
+    assert not missing, (
+        "Regression-guard substring(s) removed from test_inv004_architecture_"
+        f"rebaselined: {missing!r}. These lines intentionally carry the stale "
+        "'\u226422,000' literal to guard against its return to ARCHITECTURE.md — "
+        "restore them verbatim."
+    )
