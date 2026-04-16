@@ -1,30 +1,29 @@
 ---
 slice: SLICE-018 (identifier-scheme/hook-relpath-bypass)
-phase: 2-validation
+phase: 3-implementation
 branch: slice/identifier-scheme-hook-relpath
-as-of: 2026-04-16 d0118bb
+as-of: 2026-04-16 90c0868
 ---
 
 ## State
-SLICE-018 Phase 1 intent committed at d0118bb. Envelope: `checks/reversibility-guard.sh`, `tests/unit/test_hook_relpath_bypass.py`. Invariants: INV-005. ADRs: `identifier-scheme` (cited; committed).
+Phase 2 validation complete. Test suite + approach.md committed; slice advanced to implementation. Envelope: `checks/reversibility-guard.sh`, `tests/unit/test_hook_relpath_bypass.py`. Invariants: INV-005. ADRs: `identifier-scheme`.
 
 ## Next
-Fresh session → `/catchup` → `/start-slice phase 2` to enter Validation (Skeptic).
+Fresh session → `/catchup` → `/start-slice phase 3` to implement canonical-form path normalization in `reversibility-guard.sh` so bare-relative and `.slice-system/`-prefixed ADR paths deny consistently.
 
 ## Blocked / Pending
-- Bypass reproduced pre-slice: bare-relative `docs/adr/<id>.md` Write/body-Edit both return exit 0 today; intent V1/V2 encode the target deny
-- V9 requires existing `tests/unit/test_hook_tolerance.py` suite to stay green unmodified
-- V11 no-crash contract requires running hook outside any git repo with `CLAUDE_PROJECT_DIR` unset
+- Phase 3 context isolation: intent.md + test file only; MUST NOT load `validation/approach.md`
+- V9 regression: `tests/unit/test_hook_tolerance.py` (25/25) must stay green unmodified
+- V11 no-crash: project-root derivation must be safe under `set -euo pipefail` with `CLAUDE_PROJECT_DIR` unset outside git
 
 ## Features
-- identifier-scheme: SLICE-018 in flight (phase 2); SLICE-015/016 closed
+- identifier-scheme: SLICE-018 in flight (phase 3); SLICE-015/016 closed
 - housekeeping: SLICE-017 closed
 - v1-defense-d2: SLICE-010/011 queued
 - v1-defense-d3: ADR landed; substrate slice pending post-sweep
 
 ## Pointers
-- `.claude/current-slice/intent.md` — sole Phase 2 input; V1–V12 verification list
-- `.claude/current-slice/slice.yaml` — slice id, status, envelope source of truth
-- `docs/adr/identifier-scheme.md` — INV-005 origin; D1/D2 schema
-- `tests/unit/test_hook_tolerance.py` — SLICE-016 regression suite; reuse helper patterns
-- `checks/scope-guard.sh:53` — project-root discovery pattern intent references
+- `.claude/current-slice/intent.md` — sole Phase 3 input paired with the test file
+- `tests/unit/test_hook_relpath_bypass.py` — validation suite Phase 3 must green
+- `checks/reversibility-guard.sh` — envelope; ADR case blocks at :51, :68
+- `checks/scope-guard.sh:53` — project-root derivation pattern intent references
