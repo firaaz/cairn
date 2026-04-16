@@ -60,8 +60,8 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "8c40392ca45f3535bad8a4091a493e5b6078b75301d12ae4f97019249cebc868",
-    "size": 17254
+    "hash": "e4874555a296ec706b0f55b230c6358074ce65905d53a9159eeb9266327c82ff",
+    "size": 17264
   },
   "docs/adr/001-bootstrap-exception.md": {
     "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
@@ -196,8 +196,8 @@
     "size": 5832
   },
   "scripts/validate_architecture.py": {
-    "hash": "bfa6cbf19fbeb78899eccebe1a6af20e15e41d528dc40535ae3ba050c6b99e1f",
-    "size": 14169
+    "hash": "77ac479e4d3d099d0b0b0dbbf6057f0a278e7bb810f744e2762c04075b905011",
+    "size": 16144
   },
   "tests/unit/test_context_budget.py": {
     "hash": "a03c360d9cfd1639f4e87713585d73b574ae751a879fa6c44232947f8cbe88d9",
@@ -268,7 +268,7 @@
     "size": 7341
   },
   "tests/unit/test_validate_architecture.py": {
-    "hash": "108ae32411762e9549f1eeb476173c07d9a8b994705829f103a20b16b851b04b",
-    "size": 11156
+    "hash": "02adf3fa2a09e1922806bc063fea4822fbf6b0451e39babbf5484ee10e525d29",
+    "size": 24480
   }
 }

@@ -1,9 +1,9 @@
 id: SLICE-018
 hierarchical-id: identifier-scheme/validator-flat-slug
 title: "identifier-scheme/validator-flat-slug — widen scripts/validate_architecture.py to recognize flat-slug ADR filenames alongside legacy NNN-slug.md"
-status: 4-integration
+status: complete
 started: 2026-04-16
-completed: null
+completed: 2026-04-16
 invariants-touched: [INV-005]
 adrs-referenced: [identifier-scheme]
 adrs-created: []
