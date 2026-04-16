@@ -111,3 +111,46 @@ def test_inv004_turn1_token_budget():
         f"{'PASS' if tokens <= BUDGET_ASPIRATIONAL else 'MISS'}. "
         f"CC: {version}"
     )
+
+
+def test_inv004_architecture_rebaselined():
+    """INV-004 paragraph in ARCHITECTURE.md reflects the SLICE-017 re-baseline.
+
+    Isolates the paragraph starting at ``**INV-004**`` and ending at the first
+    subsequent blank line, then asserts the re-baselined ceiling and provenance
+    citations are present while the stale ``≤22,000`` literal is gone.
+
+    Independent of the ``claude`` CLI; runs unconditionally.
+    """
+    arch = (CAIRN_ROOT / "docs" / "ARCHITECTURE.md").read_text()
+    lines = arch.splitlines()
+
+    start = next(
+        (i for i, line in enumerate(lines) if line.startswith("**INV-004**")),
+        None,
+    )
+    assert start is not None, "INV-004 marker not found in docs/ARCHITECTURE.md"
+
+    end = next(
+        (
+            i
+            for i, line in enumerate(lines[start + 1 :], start=start + 1)
+            if line.strip() == ""
+        ),
+        len(lines),
+    )
+    paragraph = "\n".join(lines[start:end])
+
+    assert "≤30,000 total tokens" in paragraph, (
+        f"INV-004 missing re-baselined ceiling '≤30,000 total tokens'.\n"
+        f"Paragraph: {paragraph!r}"
+    )
+    assert "≤22,000" not in paragraph, (
+        f"INV-004 still contains stale '≤22,000' literal.\nParagraph: {paragraph!r}"
+    )
+    assert "SLICE-017" in paragraph, (
+        f"INV-004 missing 'SLICE-017' provenance citation.\nParagraph: {paragraph!r}"
+    )
+    assert "2.1.110" in paragraph, (
+        f"INV-004 missing '2.1.110' provenance citation.\nParagraph: {paragraph!r}"
+    )
