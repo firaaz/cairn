@@ -60,8 +60,8 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "2c03a9ae8a60211aeb6ddb4dc4bac569f2934a0adba1739e46b5adb412597358",
-    "size": 16645
+    "hash": "8c40392ca45f3535bad8a4091a493e5b6078b75301d12ae4f97019249cebc868",
+    "size": 17254
   },
   "docs/adr/001-bootstrap-exception.md": {
     "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
@@ -99,21 +99,25 @@
     "hash": "345e3b2649cd3e4064a4af7f64f65fcb80fa56e1ca8dfda061b86af4f1a07763",
     "size": 9656
   },
+  "docs/adr/d3-bypass-classification.md": {
+    "hash": "8a0b12d802915a984ae9fecdca11a31435759974f9ba3d7f0d4760746c409e8a",
+    "size": 10249
+  },
   "docs/adr/identifier-scheme.md": {
     "hash": "48b773f1e259b4fc013e1dcde5415b8f20fa1e6128be07d57010c6c5e549aec3",
     "size": 15753
   },
   "docs/adr/index.md": {
-    "hash": "ee01691327446ac560687d4dacd986cc14e0827bd5d9464b032bf2e6c3bdfa47",
-    "size": 1090
+    "hash": "753eedc36db1f7cc36b8dac099661441b0c97504550081227c63a9efaf6f499d",
+    "size": 1244
   },
   "docs/dogfood-log.md": {
     "hash": "be243b422e2632df3da78b2ad84a81271ce4ace4e60678e286dc61df20193e01",
     "size": 292
   },
   "docs/lessons.md": {
-    "hash": "8b7a4df5adf7a1ba4cc795d48cd7ecfdfd58ee3eaaa8e447640c6ff5600dffb3",
-    "size": 12768
+    "hash": "cbdd95efbd5dc80d989ce29bf88f1a067b480ad1d8d8930f61cff70cff1330ea",
+    "size": 15396
   },
   "docs/operational-reference.md": {
     "hash": "341525e71da98370d6260bf0e552012cba4a2ae50fc362d2943f6ce50e5dd813",
@@ -196,8 +200,8 @@
     "size": 14169
   },
   "tests/unit/test_context_budget.py": {
-    "hash": "b07b72bdafdee09469b2ba4b49f81893a130904ef35ac34ad8df0db6809b38c2",
-    "size": 3591
+    "hash": "a03c360d9cfd1639f4e87713585d73b574ae751a879fa6c44232947f8cbe88d9",
+    "size": 5109
   },
   "tests/unit/test_context_discipline_protocol.py": {
     "hash": "812b37ea1cd0adcfd9a0ea132b45cb6a0332f25963b0831db611323df6f1bfbd",
