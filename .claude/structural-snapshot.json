@@ -211,6 +211,10 @@
     "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
     "size": 12100
   },
+  "tests/unit/test_d3_bypass_log_format.py": {
+    "hash": "ae0a6efa57e32f016588f2a4cf245d964d520427536643f024476d2f52703219",
+    "size": 3719
+  },
   "tests/unit/test_dogfood_evaluate.py": {
     "hash": "4ea558092094d18d7437892cdaaf7b167f89dfb56e10041c3ad5ef5cd8ee5f8e",
     "size": 20600
