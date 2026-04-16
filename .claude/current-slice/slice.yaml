@@ -1,8 +1,8 @@
 id: SLICE-018
 title: "housekeeping/stale-22k-cleanup — replace stale ≤22,000 wording in INV-004 description + test docstring; preserve regression-assertion literals"
-status: integration
+status: complete
 started: 2026-04-16
-completed: null
+completed: 2026-04-16
 invariants-touched: [INV-004]
 adrs-referenced: []
 adrs-created: []

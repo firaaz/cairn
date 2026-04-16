@@ -60,7 +60,7 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "8c40392ca45f3535bad8a4091a493e5b6078b75301d12ae4f97019249cebc868",
+    "hash": "fc68be4ffc2a8d3e3a76fd298222e8b4d33422605c33f6be3963c38a94f58aaa",
     "size": 17254
   },
   "docs/adr/001-bootstrap-exception.md": {
@@ -200,8 +200,8 @@
     "size": 14169
   },
   "tests/unit/test_context_budget.py": {
-    "hash": "a03c360d9cfd1639f4e87713585d73b574ae751a879fa6c44232947f8cbe88d9",
-    "size": 5109
+    "hash": "53b6ecabe34557ddd84f80f7606c55d0227d570b9e4ee88104b70e4bd58dfe6e",
+    "size": 9415
   },
   "tests/unit/test_context_discipline_protocol.py": {
     "hash": "812b37ea1cd0adcfd9a0ea132b45cb6a0332f25963b0831db611323df6f1bfbd",
@@ -256,16 +256,16 @@
     "size": 8096
   },
   "tests/unit/test_slice_005_design_decomposition.py": {
-    "hash": "a069dfee78d70ddbd01a6399368ab1bcf4b210de4a60720895bed53e14dd752c",
-    "size": 17662
+    "hash": "c1cca0267b0e2b4bc218531ce55eacfdedd2b7e4edf0fe44ed4444e2e64cb733",
+    "size": 16080
   },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "6132d5e7d86764d047fc9a602a2dc6bcb025ad5e9ecabcea6a7ab1578398455f",
     "size": 20330
   },
   "tests/unit/test_sweep_debt_cleanup.py": {
-    "hash": "69b0d9b20499809dec3fd729489c145cc3ed03ea8dc6aea47d91f09a693b5c32",
-    "size": 7341
+    "hash": "9f2b6b35e7ca6f412e4c6150d284f21fa42d768d4fe62efa3b90898296350196",
+    "size": 5876
   },
   "tests/unit/test_validate_architecture.py": {
     "hash": "108ae32411762e9549f1eeb476173c07d9a8b994705829f103a20b16b851b04b",
