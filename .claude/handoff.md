@@ -1,48 +1,34 @@
 ---
-slice: coord (manual Axis-B dogfood — all workers merged)
-phase: post-merge — coord sweep + refresh pending
+slice: none
+phase: n/a
 branch: feature/identifier-scheme
-as-of: 2026-04-16 — post D+B+A+C merge
+as-of: 2026-04-16 2bb8edd
 ---
 
 ## State
-All 4 dogfood workers merged into `feature/identifier-scheme`. ADR-007 D2 (parallel SLICE-ID + sweep-ID safe at merge) **confirmed** across all four branches. No content loss; per-merge reconciliation cost was ~minutes (handoff.md + sweep-13.md + slice.yaml + features-yaml text merges).
-
-| Worker | Branch | Merge commit |
-|---|---|---|
-| D hook-relpath | `slice/identifier-scheme-hook-relpath` | `e720e6a` |
-| B bypass-log-reclass | `slice/v1-defense-d3-log-reclass` | `d8bd246` |
-| A stale-22k | `slice/housekeeping-stale-22k` | `4d3d8f6` |
-| C validator-flat-slug | `slice/identifier-scheme-validator` | (this merge) |
-
-`sweep.yaml`: `last-sweep-at-slice: 18`. `.claude/sweep-results/2026-04-16-sweep-13.md` holds §D + §B + §A sections (C deferred its sweep to coord).
+Manual Axis-B parallel dogfood complete. 4 workers (A/B/C/D) merged into feature/identifier-scheme. `/refresh-architecture` at `3f6fb5c`, coord-level `/integration-sweep #14` at `fc27e6d` (PASS + 1 follow-up: test-brittleness finding), obs §8 + `docs/lessons.md` L-005 at `2bb8edd`. `sweep.yaml: last-sweep-at-slice: 18`. No active slice.
 
 ## Next
-1. Coord-level `/integration-sweep` on `feature/identifier-scheme` — covers C's deferred sweep + final post-merge validation of the combined tree.
-2. `/refresh-architecture` — reconcile `docs/ARCHITECTURE.md` with merged ADR/invariant changes (C's line 49 re-point, A's line 46 rebaseline wording, D/B substrate changes).
-3. Kill worker tmux windows (`cairn:2` A, `cairn:3` C) + `git worktree remove --force` (chronic measurement drift in both).
-4. End-of-dogfood writeup: append to `.claude/plans/2026-04-16-dogfood-observations.md` §8; copy closing note to `docs/lessons.md` as `L-005 — manual Axis-B dogfood findings`.
-5. ADR-007 graduation decision: provisional → accepted (D2 confirmed; other dimensions partially tested — merge-time reconciliation cost observed but low).
+Start slice to patch `tests/unit/test_d3_bypass_log_format.py::test_log_has_exactly_four_lines` to be merge-robust (count ≥4 or format-per-line, not hard 4).
 
 ## Blocked / Pending
-- Chronic uncommitted `docs/plans/measurements/2026-04-12-slice-003.txt` — user directive: ignore.
-- `scripts/snapshot_diff.py` classified-format parser — pending separate slice.
-- `commands/claude-code/start-slice.full.md:224` rolling-window rewrite (text still says "3+ bypasses" all-class; should say "false-positive only") — pending separate slice.
-- `d3-bypass-classification` Decision 2 `exempt:` syntax slice — pending (retires `.claude/slice-018-d3-oob.md`).
-- `docs/ARCHITECTURE.md:116` stale substrate-gap + ADR-006 proxy clauses (C flagged; `/refresh-architecture` target).
-- v1-defense-d2 SLICE-010/011 — queued.
-- v1-defense-d3 substrate slice — queued.
+- `/handoff` skill hardening (P2/P3/P4 side-effect gap on worker A) → `.claude/plans/2026-04-16-dogfood-observations.md` §6, §8.1 item 1
+- Bootstrap autonomous-handoff contract → §8.1 item 2
+- `start-slice.full.md:224` rolling-window text "3+ bypasses" → should say "false-positive only" (d3-bypass-classification)
+- `scripts/snapshot_diff.py` classified-log parser + `exempt:` support → d3-bypass-classification Decision 2 slice
+- ADR-007 graduation `provisional → accepted` after /handoff hardening + test fix → lessons L-005 mechanism
+- Chronic `docs/plans/measurements/2026-04-12-slice-003.txt` session-hook drift → ignore per directive
 
-## Features (post all-merged)
-- identifier-scheme: D (hook-relpath) + C (validator-flat-slug) landed; feature fully drained.
-- housekeeping: A (stale-22k-cleanup) landed on top of SLICE-017.
-- v1-defense-d3: B (bypass-log-reclass) landed; substrate slice still queued.
-- v1-defense-d2: SLICE-010/011 queued.
+## Features
+- identifier-scheme: drained Phase 1 (hook-tolerance + hook-relpath-bypass + validator-flat-slug all landed)
+- housekeeping: SLICE-017 + SLICE-018 (A stale-22k-cleanup) closed
+- v1-defense-d3: SLICE-018 (B bypass-log-reclass) landed; substrate slice pending
+- v1-defense-d2: SLICE-010/011 queued
 
 ## Pointers
-- `.claude/plans/2026-04-16-dogfood-observations.md` — obs log; §6 has `/handoff` side-effect divergence findings.
-- `.claude/plans/2026-04-16-manual-parallel-dogfood.md` §7/§8 — merge protocol + success criteria.
-- `.claude/sweep-results/2026-04-16-sweep-13.md` — §D + §B + §A sweep reconciliation; coord-level sweep supersedes.
-- `.claude/slice-018-d3-oob.md` — one-shot D3 bypass record (B); retirement tied to Decision 2 slice.
-- `docs/adr/007-parallelism-v1.md` — contract under test; dogfood graduation pending.
-- `/tmp/cairn-fleet/2026-04-16/[ABCD]-*.log` — durable transcripts.
+- `.claude/plans/2026-04-16-dogfood-observations.md` — full dogfood write-up; §6 /handoff findings, §8 closing note + pain-point catalogue
+- `.claude/sweep-results/2026-04-16-sweep-14.md` — coord-level post-merge sweep verdict + Finding #1 detail
+- `.claude/sweep-results/2026-04-16-sweep-13.md` — reconciled branch-level sweep (§D + §B + §A)
+- `docs/lessons.md` L-005 — transferable lesson from the dogfood
+- `docs/adr/007-parallelism-v1.md` — contract dogfooded; graduation candidate
+- `docs/plans/2026-04-16-manual-parallel-dogfood.md` §7/§8 — merge protocol + success criteria scorecard
