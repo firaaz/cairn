@@ -231,6 +231,10 @@
     "hash": "047248e256505fb68ee65022699ea6e35a7b8a10a79d581b92fe57bd09a85c1f",
     "size": 8808
   },
+  "tests/unit/test_hook_relpath_bypass.py": {
+    "hash": "f12d9c95633f777fb922fa67a447852424c47b3b386112a016cb5f54c0159d2e",
+    "size": 22003
+  },
   "tests/unit/test_hook_tolerance.py": {
     "hash": "683d57c6f2de5bab757ed4788b0b45e66c41961cf5b57b826be29123bcca4ebb",
     "size": 15180
