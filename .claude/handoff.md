@@ -1,29 +1,29 @@
 ---
-slice: none (SLICE-015 complete)
-phase: n/a
+slice: SLICE-016 (identifier-scheme/hook-tolerance)
+phase: 1-intent
 branch: feature/identifier-scheme
-as-of: 2026-04-15 d8c1809
+as-of: 2026-04-16 5ec141f
 ---
 
 ## State
-SLICE-015 (identifier-scheme/scheme-adr) closed. Governing ADR `identifier-scheme` authored, ADR-005 superseded (frontmatter-only), integration sweep #10 PASS, D1/D3 gates green.
+SLICE-016 Phase 1 complete. Intent committed. Envelope: `checks/reversibility-guard.sh`, `checks/scope-guard.sh`, `checks/reality-check.sh`, `tests/unit/test_hook_tolerance.py`. Bootstrap-window gap remains open until Phase 3 lands.
 
 ## Next
-Fresh session → `/catchup` → start `identifier-scheme/hook-tolerance` (mandatory-next per bootstrap-window constraint; no other flat-slug ADRs until it lands).
+Fresh session → `/catchup` → `/start-slice phase 2` to enumerate ambiguities and write validation tests.
 
 ## Blocked / Pending
-- Bootstrap-window gap: `docs/adr/identifier-scheme.md` unprotected by `reversibility-guard.sh` until hook-tolerance widens globs → `.claude/features/identifier-scheme.yaml`
-- Validator substrate gap: regex parses only `ADR-(\d+)`; INV-005 uses ADR-006 proxy anchor → follow-on slice (NOT hook-tolerance)
-- Pre-existing red tests: `test_v7_envelope_compliance`, `test_v4_envelope_compliance` (×2) on `uv.lock` → housekeeping slice deferred
-- Pre-existing drift: `docs/plans/measurements/2026-04-12-slice-003.txt`, `uv.lock` → housekeeping slice
+- Bootstrap-window gap: `docs/adr/identifier-scheme.md` unprotected until this slice lands → intent.md §Specification Detail item 1
+- Phase 2 ambiguity: `scope-guard.sh` and `reality-check.sh` show no slice-id-shape matching on public surface scan → verify actual gaps or record absence
+- Validator substrate gap: `validate_architecture.py` does not recognize flat-slug ADR IDs → follow-on slice (NOT this one)
+- Pre-existing red tests: `test_v7_envelope_compliance`, `test_v4_envelope_compliance` (×2) on `uv.lock` → housekeeping slice
 - D3 bypass log 2/3 rolling window → one more triggers design review
 
 ## Features
-- identifier-scheme: SLICE-015 complete; hook-tolerance mandatory-next, bootstrap gap open until it lands
+- identifier-scheme: SLICE-016 Phase 1 done; hook-tolerance advancing, bootstrap gap still open
 - v1-defense-d2: complete (SLICE-010, SLICE-011)
 - v1-defense-d3: complete (SLICE-012, SLICE-013)
 
 ## Pointers
-- `.claude/features/identifier-scheme.yaml` — hook-tolerance intent + ordering constraint; load before next slice's Phase 1
-- `docs/adr/identifier-scheme.md` — governing ADR, read for hook-tolerance envelope framing
-- `docs/ARCHITECTURE.md` — INV-005 + Current Phase Constraints (Identifier scheme paragraph), cite for invariant framing
+- `.claude/current-slice/intent.md` — full envelope, spec detail, verification criteria; load at Phase 2 entry
+- `docs/adr/identifier-scheme.md` — governing ADR D7 Phase 1 scope; reference for ambiguity resolution
+- `checks/reversibility-guard.sh:51,68` — the two glob clauses to widen (bootstrap-critical)
