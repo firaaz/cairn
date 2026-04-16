@@ -2,28 +2,27 @@
 slice: SLICE-018 (identifier-scheme/hook-relpath-bypass)
 phase: 4-integration
 branch: slice/identifier-scheme-hook-relpath
-as-of: 2026-04-16 3131096
+as-of: 2026-04-16 b6665ff
 ---
 
 ## State
-Phase 3 implementation committed. Canonical-form path normalization in `reversibility-guard.sh` closes the bare-relative + `.slice-system/`-prefixed ADR-protection bypass. Envelope: `checks/reversibility-guard.sh`. Invariants: INV-005. ADRs: identifier-scheme.
+Phase 4 audit PASS. Sweep-notes committed. INV-005 verified file:line against `checks/reversibility-guard.sh`. Full suite 290 passed / 1 skipped; validator ALL CHECKS PASSED; V1–V12 green; V9 regression guard unmodified; adjacent hooks untouched; code review PASS-with-notes, zero blocking.
 
 ## Next
-Fresh session → `/catchup` → `/start-slice phase 4` to verify INV-005, run full suite + validator, audit adjacent regressions.
+Fresh session → `/catchup` → `/start-slice complete` to mark slice.yaml `complete` and wipe `.claude/current-slice/`; then `/integration-sweep` for sweep #13.
 
 ## Blocked / Pending
-- Phase 4 context: load intent.md + envelope hook + ARCHITECTURE.md only; do NOT load `validation/approach.md` or `implementation/notes.md` reasoning unless auditing.
-- Two envelope-compliance tests fire only on uncommitted WIP — verified clean post-commit via stash.
-- Sweep due: `.claude/sweep.yaml` interval 1, last 17, current 18 → integration sweep #13 follows slice close.
+- Uncommitted unrelated delta: `docs/plans/measurements/2026-04-12-slice-003.txt` (INV-004 Turn-1 remeasurement 28743→28898) — land or revert before slice close.
+- Sweep #13 due: `.claude/sweep.yaml` interval 1, last 17, current 18.
+- v1-defense-d2 SLICE-010/011 and v1-defense-d3 substrate slice queued post-sweep.
 
 ## Features
-- identifier-scheme: SLICE-018 phase 4 (integration); SLICE-015/016 closed
+- identifier-scheme: SLICE-018 phase 4 PASS; SLICE-015/016 closed
 - housekeeping: SLICE-017 closed
 - v1-defense-d2: SLICE-010/011 queued
 - v1-defense-d3: ADR landed; substrate slice pending post-sweep
 
 ## Pointers
-- `.claude/current-slice/intent.md` — Phase 4 spec source; V1–V12 verification table
-- `checks/reversibility-guard.sh` — envelope; canonical-form normalization at top, ADR cases on `$CANONICAL`
-- `tests/unit/test_hook_relpath_bypass.py` — Phase 4 must run green
-- `tests/unit/test_hook_tolerance.py` — V9 regression guard, must stay green unmodified
+- `.claude/current-slice/integration/sweep-notes.md` — Phase 4 PASS verdict + V1–V12 evidence table + INV-005 citations; load before slice close.
+- `.claude/current-slice/slice.yaml` — status `integration`; `/start-slice complete` flips to `complete`.
+- `.claude/sweep.yaml` — sweep #13 admission criteria.
