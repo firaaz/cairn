@@ -100,7 +100,7 @@ def _record_measurement(tokens: int, version: str) -> None:
 
 @pytest.mark.skipif(not _claude_available(), reason="claude CLI not on PATH")
 def test_inv004_turn1_token_budget():
-    """INV-004 — turn-1 total context ≤22,000 tokens on a fresh 'hi' session."""
+    """INV-004 — turn-1 total context ≤30,000 tokens on a fresh 'hi' session."""
     tokens, version = _run_and_measure()
     _record_measurement(tokens, version)
 

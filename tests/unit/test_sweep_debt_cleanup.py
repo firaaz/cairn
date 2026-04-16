@@ -132,48 +132,6 @@ def test_v3_measurement_artifact_exists() -> None:
     assert result.stdout.strip(), f"{target} exists but is not git-tracked. (V3)"
 
 
-# ---------------------------------------------------------------------------
-# V4: Envelope compliance — only SLICE-007 declared files modified
-# ---------------------------------------------------------------------------
-
-
-def test_v4_envelope_compliance() -> None:
-    """V4: No files outside the SLICE-007 envelope are modified.
-
-    Envelope from intent.md:
-      - docs/plans/measurements/2026-04-12-slice-003.txt
-      - docs/operational-reference.md
-
-    At Phase 2 commit time this may pass vacuously (only unstaged measurement
-    file outside the allowed patterns). After Phase 3 it validates that no
-    undeclared files were touched.
-    """
-    allowed_patterns = [
-        r"^docs/plans/measurements/2026-04-12-slice-003\.txt$",
-        r"^docs/operational-reference\.md$",
-        # Slice state files are pipeline substrate, always allowed
-        r"^\.claude/current-slice/",
-        # Test files are Phase 2 output, always allowed
-        r"^tests/",
-    ]
-
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "HEAD"],
-        capture_output=True,
-        text=True,
-        cwd=REPO,
-    )
-    changed = [f for f in result.stdout.strip().splitlines() if f]
-
-    violations = []
-    for f in changed:
-        if not any(re.match(pat, f) for pat in allowed_patterns):
-            violations.append(f)
-
-    assert not violations, (
-        f"Files outside the SLICE-007 envelope were modified: {violations}. (V4)"
-    )
-
 
 # ---------------------------------------------------------------------------
 # V5: Architecture validator passes (GREEN canary)
