@@ -60,8 +60,8 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "c7065fd467c7f6711eb7b56ca1f0bb3dca1bf764a7d0f0f758c80b6b400e985f",
-    "size": 17264
+    "hash": "6110e0b9762d332849c171e0c07e05493a03d7e9ab15a5c6abdfb5a11f7bda35",
+    "size": 17317
   },
   "docs/adr/001-bootstrap-exception.md": {
     "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
