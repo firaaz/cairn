@@ -1,30 +1,29 @@
 ---
-slice: SLICE-018 (v1-defense-d3/bypass-log-reclass)
-phase: 4-integration → complete
+slice: none (SLICE-018 closed)
+phase: n/a
 branch: slice/v1-defense-d3-log-reclass
-as-of: 2026-04-16 306a1d1
+as-of: 2026-04-16 6f6fa75
 ---
 
 ## State
-SLICE-018 Phase 4 PASS at 306a1d1. All gates green: pytest 240/240, validator 7/7, integration_gate 3/4a/4b. One D3 finding surfaced (see sweep-notes); not loggable in-place without breaking Phase 2 contract.
+SLICE-018 complete at 6f6fa75. D1 PASS, D3 integration_gate PASS, D3 snapshot_diff bypassed out-of-band (option a) at `.claude/slice-018-d3-oob.md`. Sweep due: current-slice-number 18 >= last-sweep 17 + interval 1.
 
 ## Next
-Run `/start-slice complete` to close SLICE-018 and trigger sweep (interval 1, due).
+Run `/integration-sweep` in a fresh session (sweep is due).
 
 ## Blocked / Pending
-- SLICE-018 D3 finding → `tests/unit/test_d3_bypass_log_format.py` out-of-envelope; log-in-place blocked by Phase 2 line-count pin
-- `.claude/features/v1-defense-d3.yaml` — add SLICE-018 entry (coordinator)
-- `scripts/snapshot_diff.py` — classified-format parser (separate slice)
-- `commands/claude-code/start-slice.full.md:224` — rolling-window rewrite (separate slice)
-- `d3-bypass-classification` ADR Decision 2 — envelope `exempt:` list (separate slice)
+- Out-of-envelope dirty file `docs/plans/measurements/2026-04-12-slice-003.txt` → pre-existing, not this slice; triage next session
+- `.claude/features/v1-defense-d3.yaml` → needs SLICE-018 entry (coordinator input)
+- `scripts/snapshot_diff.py` → classified-format parser (separate slice)
+- `commands/claude-code/start-slice.full.md:224` → rolling-window rewrite (separate slice)
+- `d3-bypass-classification` ADR Decision 2 → envelope `exempt:` syntax; delivers, this slice makes `.claude/slice-018-d3-oob.md` removable
 
 ## Features
-- v1-defense-d3: SLICE-018 Phase 4 complete; ready to close
+- v1-defense-d3: SLICE-018 closed; follow-up slices tracked above
 - housekeeping: SLICE-017 closed
-- identifier-scheme: closed
 - v1-defense-d2: SLICE-010/011 queued
 
 ## Pointers
-- `.claude/current-slice/integration/sweep-notes.md` — verdict + evidence + D3 follow-up framing; read before `/start-slice complete`
-- `.claude/sweep.yaml` — sweep-interval 1; sweep due on close
+- `.claude/slice-018-d3-oob.md` — one-shot bypass record; removable after Decision 2 slice lands
+- `.claude/sweep.yaml` — current 18, last-sweep 17, interval 1; sweep due this session
 - `docs/adr/d3-bypass-classification.md` — Decision 2 context for follow-up slices
