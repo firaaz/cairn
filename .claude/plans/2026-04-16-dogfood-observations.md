@@ -148,4 +148,58 @@ String-matching ground-truth samples for future harness automation:
 
 ## 8. Closing note
 
-_(To be written at end of dogfood — will be copied to `docs/lessons.md` as `L-005 — manual Axis-B dogfood findings` per plan §8.)_
+**Dogfood outcome:** 4 workers (A/B/C/D) launched concurrently from `87ea8b5`, each ran a full Phase 1→4 pipeline, each closed with sweep #13, all four merged into `feature/identifier-scheme` (merges `e720e6a`, `d8bd246`, `4d3d8f6`, `b5a853e`). Coord-level `/refresh-architecture` (`3f6fb5c`) + `/integration-sweep #14` (`fc27e6d`) passed with one follow-up finding (test brittleness).
+
+**Plan §8 success criteria evaluation:**
+
+Minimum:
+- [x] At least 2 concurrent workers reached Phase 4 without unresolved interference. (All 4 did.)
+- [x] No file-level merge conflict required manual resolution that lost content. (All conflicts resolved with reconciled content.)
+- [x] Observation log captured ≥5 distinct transition events. (Dozens captured in §2 per-slice timelines.)
+
+Stretch:
+- [x] All 4 workers ran concurrently for at least one phase boundary. (All four in Phase 2 simultaneously at 13:41.)
+- [x] At least one precondition identified as autonomous-eligible. (Read-only `awk` / `sed` / `cat` / `pytest` approvals — could be pre-allowed via settings.)
+- [ ] Coordinator overhead ≤30% of total operator messages. (Not instrumented; rough eyeball: coord + user combined made ~2× the individual-worker message count when including all approvals and merges. Ballpark 40–50%. Miss.)
+
+**ADR-007 graduation evidence:** D2 (parallel SLICE-ID collision safe-at-merge) CONFIRMED across 4 branches. Reconciliation cost measured at ~5–10 minutes per merge, bounded to 4–6 pipeline-substrate files per merge. Code auto-merges cleanly. **Recommendation:** amend ADR-007 firmness `provisional → accepted`, conditional on the test-brittleness follow-up slice (sweep #14 Finding #1) and the `/handoff` skill hardening slice (§6 of this doc).
+
+### 8.1 Pain points (consolidated, by category)
+
+#### Skill-level (blocks autonomy)
+1. **`/handoff` side-effect divergence on worker A (HIGH).** A's `/handoff` at P2, P3, P4 all produced partial execution: committed `handoff.md` + handoff-commit, but skipped `slice.yaml` status flip AND skipped writing `handoff-phase-N.md` archive. B's, C's, D's `/handoff` did both correctly. Reproducible, branch-specific — not stochastic. Root cause hypothesis: skill prose makes side-effects look optional.
+2. **Autonomous /handoff-before-stop broken (HIGH).** Workers A (P2), B (P3), D (P2) each stopped after the phase-commit and *recommended* `/handoff` verbally rather than running it. 3 of 8 boundaries needed a manual nudge. Human-touch cost the bootstrap was supposed to zero out.
+3. **A's 28-min subagent stall (HIGH, undiagnosed).** A's "D1 refresh + D3 gates (parallel)" subagent dispatch blocked for 28 minutes. No visible progress, no timeout. Recovered only via manual nudges. No subagent-progress signal at coord level.
+
+#### Parallelism reconciliation costs (ADR-007)
+4. **4–6 conflict files per merge (MEDIUM).** Every merge conflicted on `handoff.md`, `slice.yaml`, `sweep-results/<date>-sweep-13.md`. Most also on `d3-bypasses.log`, `features/<id>.yaml`, `structural-snapshot.json`. ~5–10 min hand-merge per merge × 4 = 20–40 min of coord overhead.
+5. **sweep.yaml parallel-bump near-miss (LATENT).** D, B, A each independently bumped `last-sweep-at-slice: 17 → 18`. Auto-merge worked only because target values coincided. If cadence had differed, real conflict.
+6. **Cross-slice test brittleness (NEW, caught by sweep #14).** B's `test_log_has_exactly_four_lines` hard-coded 4 lines. Merge of A's + C's SLICE-018 bypass entries → 6 lines → test fails. Textbook integration finding; exactly what sweep is for.
+7. **No "active batch" handoff concept (MEDIUM).** `handoff.md` is single-slice. Mid-merge state ("D merged, B/C/A pending") has no blessed format. Coord invented one ad-hoc each merge.
+
+#### Substrate / session-hook noise
+8. **Measurement-hook auto-drift in every worker (LOW, chronic).** `docs/plans/measurements/2026-04-12-slice-003.txt` rewritten by session-start hook. Shows `M` in all 4 worktrees. Per-worker "ignore" is workable; aggregate pollution of `git status` is not.
+9. **Legacy envelope tests trip every slice (MEDIUM).** `test_v7_envelope_compliance` + `test_v4_envelope_compliance` fire on any cross-envelope diff. A (delete) and B (defer) made different judgment calls on the identical fork, with no shared policy.
+10. **Permission prompts for routine read-only ops (MEDIUM).** Dozens of `1` Enter clicks across `awk`, `sed`, `cat`, `pytest`, `grep`. Trust config did not cover the test matrix. Autonomous-eligible: pre-allow these globally or per-worker.
+
+#### Process / schema drift
+11. **Status-label format divergence (LOW).** C used `status: 2-validation` / `3-implementation` / `4-integration` (numbered). A/B/D used bare names. Both work; no spec pins which.
+12. **`hierarchical-id:` field appeared only in C's slice.yaml (LOW).** New field introduced mid-dogfood without ADR or schema update.
+13. **Worker pace variance (informational).** B fastest (P3 done in ~60 min); C slowest (~90 min on Phase 2 RED tests). Bound by approval latency, fork frequency, think time. Hard to schedule.
+
+#### Coord / observability
+14. **Per-turn polling token burn (identified mid-dogfood).** Full `capture-pane` across 4 workers cost 4–8k tokens per poll. User flagged as wasteful. Adopted cheap-polling protocol mid-run (§5b). Works. Shouldn't have had to be invented under pressure.
+15. **tmux base-index plan error + renumbering on kill (LOW).** Plan assumed base-index 0; actual is 1. tmux renumbers on kill (cairn:5 → cairn:4 after cairn:4 kill). Surprising for automation scripts.
+
+#### Known follow-ups surfaced
+16. `commands/claude-code/start-slice.full.md:224` rolling-window rule text says "3+ bypasses" all-class; should say "false-positive only" per `d3-bypass-classification` ADR.
+17. `scripts/snapshot_diff.py` doesn't parse the classified `d3-bypasses.log` format.
+18. `d3-bypass-classification` Decision 2 `exempt:` syntax slice pending (retires `.claude/slice-018-d3-oob.md`).
+19. Sweep #14 Finding #1: patch `test_log_has_exactly_four_lines` to be merge-robust.
+
+### 8.2 Net read
+- **Parallelism substrate (branches, worktrees, tmux, send-keys, cheap-polling, merge-reconciliation pattern) works.**
+- **Skill-level coordination (`/handoff` completeness, bootstrap autonomy, subagent visibility) is the real tax.**
+- **Human-touch cost is dominated by permission prompts + mid-phase decision forks**, not by coordination itself.
+
+The supporting skills are the bottleneck, not the branching model. ADR-007 has a clean graduation path conditional on the three HIGH items getting their follow-up slices.
