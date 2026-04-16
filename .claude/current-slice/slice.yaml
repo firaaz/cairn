@@ -1,6 +1,6 @@
 id: SLICE-016
 title: "identifier-scheme/hook-tolerance — widen hook patterns to accept legacy and flat-slug formats"
-status: intent
+status: validation
 started: 2026-04-15
 completed: null
 invariants-touched: [INV-005]
