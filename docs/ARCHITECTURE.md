@@ -38,7 +38,7 @@ expect: match
 description: "Verifies the four-phase pipeline definition exists in operational reference"
 ```
 
-**INV-004** Session-start context on a fresh prompt in cairn uses ≤22,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. (ADR-002; dedicated ADR pending after 2+ slices of progressive-disclosure use)
+**INV-004** Session-start context on a fresh prompt in cairn uses ≤30,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. Re-baselined by SLICE-017 (2026-04-16) for Claude Code 2.1.110, which added ~8k tokens of system-prompt overhead outside cairn's control. (ADR-002; dedicated ADR pending after 2+ slices of progressive-disclosure use)
 
 ```invariant-check INV-004
 type: test-ref
