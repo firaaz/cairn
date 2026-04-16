@@ -1,30 +1,30 @@
 ---
-slice: none (SLICE-017 closed at d746476)
-phase: complete
+slice: none
+phase: n/a
 branch: feature/identifier-scheme
-as-of: 2026-04-16 d746476
+as-of: 2026-04-16 87ea8b5
 ---
 
 ## State
-SLICE-017 closed. Phase 4 PASS. Close-gates: D1 PASS, D3-A PASS, D3-B FAIL→bypassed `pre-existing` (3 paths predate d65e50c, false-positive count 0/10). Integration sweep due.
+Sweep #12 PASS committed at `87ea8b5`. Plan: manual Axis-B parallel dogfood of fleet-coordinator epic. Next Claude session plays coordinator in tmux; human (firaaz) is fleet operator.
 
 ## Next
-Fresh session → `/catchup` → `/integration-sweep` (current=17, last=16, interval=1).
+Read `.claude/plans/2026-04-16-manual-parallel-dogfood.md`; set up 2–4 worktrees for disjoint queue items (start with A+C); dispatch one `claude -p` worker per worktree; observe transitions to feed ADR-007 graduation and `transitions.yaml` v0.
 
 ## Blocked / Pending
-- d3-bypass-classification Decision 1: legacy log entries SLICE-012/014/016 still need one-time reclassification to `<class>: <reason>` format
-- `docs/ARCHITECTURE.md:46` INV-004 invariant-check description stale "22k token budget" → cleanup candidate
-- `tests/unit/test_context_budget.py:103` docstring stale "≤22,000 tokens" → cleanup candidate
-- identifier-scheme follow-ons: `scripts/validate_architecture.py` flat-slug widening + `reversibility-guard.sh` relative-path bypass
-- d3-bypass-classification substrate implementation slice → queued post-sweep
+- Feature 2 (phase-automation ADR) blocked until Feature 1 follow-ons close → dogfood surfaces data for it
+- d3-bypass legacy log reclassification (SLICE-012/014/016 lines) → manual candidate B
+- d3-bypass substrate slice → keep serial (overlaps with D on `reversibility-guard.sh`)
+- State-taxonomy feature (separate from identifier-scheme) → queued post-dogfood
 
 ## Features
-- housekeeping: SLICE-017 closed
-- identifier-scheme: SLICE-016 closed; follow-ons queued
-- v1-defense-d2: SLICE-010/011 queued
-- v1-defense-d3: ADR landed; substrate implementation slice pending post-sweep
+- identifier-scheme: SLICE-015/016 closed; 2 follow-ons (C, D) open → parallel candidates
+- housekeeping: SLICE-017 closed; stale-22k cleanup (A) queued
+- v1-defense-d3: ADR landed; substrate slice pending
+- v1-defense-d2: queued
 
 ## Pointers
-- `.claude/d3-bypasses.log` — SLICE-017 entry uses new `<class>:` format; legacy three lines still in old format
-- `docs/adr/d3-bypass-classification.md` — load before d3 substrate slice
-- `.claude/sweep.yaml` — sweep cadence state
+- `.claude/plans/2026-04-16-manual-parallel-dogfood.md` — coordinator plan; read before setting up worktrees
+- `docs/plans/2026-04-15-fleet-coordinator-design.md` — epic design; load for Axis-A/B framing
+- `docs/adr/007-parallelism-v1.md` — provisional ADR; dogfood feeds graduation
+- `.claude/sweep-results/2026-04-16-sweep-12.md` — surfaces the four disjoint queue items
