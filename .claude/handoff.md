@@ -1,28 +1,31 @@
 ---
 slice: none
-phase: complete
+phase: n/a
 branch: slice/identifier-scheme-hook-relpath
-as-of: 2026-04-16 19b31c1
+as-of: 2026-04-16 0eb16d4
 ---
 
 ## State
-SLICE-018 closed at 19b31c1. D1 validator + D3 integration_gate + snapshot_diff all PASS; baseline snapshot refreshed. `.claude/current-slice/` wiped (only slice.yaml retained). Sweep #13 is due (interval 1, last 17, current 18).
+SLICE-018 closed (`19b31c1`); sweep #13 PASS (`0eb16d4`). integration_gate + snapshot_diff clean. identifier-scheme feature drained. Next sweep due at slice 19 (interval 1).
 
 ## Next
-Fresh session → `/catchup` → `/integration-sweep` for sweep #13.
+Fresh session → `/catchup` → `/start-slice` for next queued work (cleanup or v1-defense-d2).
 
 ## Blocked / Pending
-- Uncommitted unrelated delta: `docs/plans/measurements/2026-04-12-slice-003.txt` (INV-004 Turn-1 remeasurement) — chronic leftover, user directive: ignore.
-- v1-defense-d2: SLICE-010/011 queued post-sweep.
-- v1-defense-d3: substrate slice pending post-sweep.
+- `docs/ARCHITECTURE.md:46` + `tests/unit/test_context_budget.py:103` — 22k→30k rebaseline cleanup (carry from sweep #12).
+- Legacy d3-bypass log reclassification (SLICE-012/014/016 entries) — d3-bypass-classification ADR Decision 1.
+- d3-bypass-classification substrate slice — implement schema + envelope exemptions.
+- `scripts/validate_architecture.py` flat-slug ADR recognition — last identifier-scheme follow-on.
+- v1-defense-d2 SLICE-010/011 queued.
+- Chronic uncommitted `docs/plans/measurements/2026-04-12-slice-003.txt` — user directive: ignore.
 
 ## Features
-- identifier-scheme: SLICE-018 complete; SLICE-015/016 closed. Feature drained of queued work.
-- housekeeping: SLICE-017 closed.
+- identifier-scheme: drained (all slices complete).
+- housekeeping: SLICE-017 closed; 22k-cleanup candidate for next entry.
 - v1-defense-d2: SLICE-010/011 queued.
 - v1-defense-d3: ADR landed; substrate slice pending.
 
 ## Pointers
-- `.claude/sweep.yaml` — sweep #13 admission criteria; read at start of sweep session.
-- `docs/ARCHITECTURE.md` — INV-001…INV-007 reference for sweep per-invariant evidence.
-- `.claude/structural-snapshot.json` — updated baseline for post-sweep drift checks.
+- `.claude/sweep-results/2026-04-16-sweep-13.md` — sweep #13 verdict, carry-over staleness table, prioritized next-slice queue.
+- `.claude/sweep.yaml` — `last-sweep-at-slice: 18`, next sweep at slice 19.
+- `docs/adr/d3-bypass-classification.md` — source of legacy-bypass reclassification decision.
