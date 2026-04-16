@@ -27,8 +27,8 @@ Coordinator Claude (next session, after `/clear`) runs **in this worktree** (`/U
 
 **Coordinator DOES:**
 - Set up N worktrees under `/Users/mohammed.farook/Developer/lab/cairn/.worktrees/<slice-id>/`.
-- Create a new tmux window per worker; run `claude -p` (or interactive `claude`) in each with a slice-bootstrap prompt.
-- Periodically (every few operator messages) read each worker's `slice.yaml` to detect state transitions.
+- Create a new tmux window per worker; run interactive `claude` in each and inject the slice-bootstrap prompt via `send-keys` (see `docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md` — decisions D1 and D6).
+- Periodically (every few operator messages) read each worker's `slice.yaml` **and** `tmux capture-pane` output to detect state transitions, permission prompts, and hung states.
 - Surface gate moments to the human (firaaz) with one-line asks — "SLICE-X reached Phase-1 intent boundary; approve?".
 - Append observations to `.claude/plans/2026-04-16-dogfood-observations.md` (create on first observation).
 
@@ -46,23 +46,17 @@ Coordinator Claude (next session, after `/clear`) runs **in this worktree** (`/U
 
 ## 3. tmux topology
 
-Existing: tmux session `cairn`, one window `zsh`.
+Detailed spec: `docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md`. Summary:
 
-Coordinator should create:
-```
-session: cairn
-├── window 0 (zsh)      — coordinator Claude session runs here
-├── window 1 (slice-A)  — worker for queue item A
-├── window 2 (slice-C)  — worker for queue item C
-├── window 3 (slice-B)  — optional: worker for queue item B
-└── window 4 (slice-D)  — optional: worker for queue item D
-```
+| Window | Name | Role |
+|---|---|---|
+| `cairn:0` | `coord` | Coordinator Claude session (this-session after `/clear`) |
+| `cairn:1` | `A:stale22k` | Worker — housekeeping/stale-22k-cleanup |
+| `cairn:2` | `C:validator` | Worker — identifier-scheme/validator-flat-slug |
+| `cairn:3` | `B:d3log` | Optional — v1-defense-d3/bypass-log-reclass |
+| `cairn:4` | `D:hookbypass` | Optional — identifier-scheme/hook-relpath-bypass |
 
-Recommended commands (issued from window 0):
-- `tmux new-window -n slice-A -c <worktree-A-path>`
-- Then `tmux send-keys -t cairn:slice-A 'claude -p "<bootstrap>"' Enter`
-
-The human can `Ctrl-b <N>` to attach to any worker window directly.
+Human stays attached in `cairn:0` and flips to any worker with `Ctrl-b <N>`. Worker output is pipe-paned to `/tmp/cairn-fleet/2026-04-16/<slice>.log`. Full spawn sequence (worktree → window → `remain-on-exit` → `pipe-pane` → `claude` → bootstrap injection via `send-keys -l`) is in the topology design §3.
 
 ---
 
@@ -162,11 +156,18 @@ On completion (success or informative failure), coordinator writes a closing not
 
 1. `/catchup` to load handoff.
 2. Read this file top-to-bottom.
-3. Read `docs/plans/2026-04-15-fleet-coordinator-design.md` §3–6 for framing.
-4. Read `docs/adr/007-parallelism-v1.md` end-to-end (it's the contract being tested).
-5. Confirm with firaaz: "start with A+C only, or include B/D?"
-6. Create `.claude/plans/2026-04-16-dogfood-observations.md` with empty section headers.
-7. Create worktree A: `git worktree add ../stale-22k-cleanup 87ea8b5 -b slice/housekeeping-stale-22k`.
-8. Create worktree C: `git worktree add ../validator-flat-slug 87ea8b5 -b slice/identifier-scheme-validator`.
-9. Open tmux window per worker with `claude -p '<bootstrap>'` using the §5 template.
-10. Begin the monitoring loop: poll slice.yaml on each worker at every human turn.
+3. Read `docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md` — the topology spec you're about to execute.
+4. Read `docs/plans/2026-04-15-fleet-coordinator-design.md` §3–6 for framing.
+5. Read `docs/adr/007-parallelism-v1.md` end-to-end (it's the contract being tested).
+6. Confirm with firaaz: "start with A+C only, or include B/D?"
+7. Prep session once: `tmux rename-window -t cairn:0 coord` and `mkdir -p /tmp/cairn-fleet/2026-04-16`.
+8. Create `.claude/plans/2026-04-16-dogfood-observations.md` with empty section headers (per §6 of this doc).
+9. Spawn worker A using the full sequence from topology design §3:
+   - `git worktree add ../stale-22k-cleanup 87ea8b5 -b slice/housekeeping-stale-22k`
+   - `tmux new-window -n 'A:stale22k' -c <worktree-A-path>`
+   - `tmux set-option -w -t cairn:1 remain-on-exit on`
+   - `tmux pipe-pane -o -t cairn:1 'tee -a /tmp/cairn-fleet/2026-04-16/A-stale22k.log'`
+   - `tmux send-keys -t cairn:1 'claude' Enter`, wait ~2s for claude boot
+   - `tmux send-keys -t cairn:1 -l '<rendered §5 bootstrap>'` then a separate `Enter`
+10. Spawn worker C by repeating step 9 with: worktree `../validator-flat-slug`, branch `slice/identifier-scheme-validator`, window `C:validator`, target `cairn:2`, log file `C-validator.log`.
+11. Begin the observability loop (topology design D8): every human turn, for each active worker, poll `slice.yaml`, `capture-pane -S -100`, and log-size-delta; surface state changes, permission prompts, and hung-state signals as a one-liner preamble before addressing the turn's ask.
