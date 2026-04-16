@@ -1,30 +1,29 @@
 ---
-slice: none (SLICE-017 closed at d746476)
-phase: complete
-branch: feature/identifier-scheme
-as-of: 2026-04-16 d746476
+slice: SLICE-018 (v1-defense-d3/bypass-log-reclass)
+phase: 2-validation
+branch: slice/v1-defense-d3-log-reclass
+as-of: 2026-04-16 61d2664
 ---
 
 ## State
-SLICE-017 closed. Phase 4 PASS. Close-gates: D1 PASS, D3-A PASS, D3-B FAIL→bypassed `pre-existing` (3 paths predate d65e50c, false-positive count 0/10). Integration sweep due.
+SLICE-018 Phase 1 complete. `intent.md` committed at 61d2664. Envelope: `.claude/d3-bypasses.log` only. ADR referenced: `d3-bypass-classification`. invariants-touched: [].
 
 ## Next
-Fresh session → `/catchup` → `/integration-sweep` (current=17, last=16, interval=1).
+Run `/catchup` then `/start-slice phase 2` to enter Validation (write tests for the three-line migration against the intent spec).
 
 ## Blocked / Pending
-- d3-bypass-classification Decision 1: legacy log entries SLICE-012/014/016 still need one-time reclassification to `<class>: <reason>` format
-- `docs/ARCHITECTURE.md:46` INV-004 invariant-check description stale "22k token budget" → cleanup candidate
-- `tests/unit/test_context_budget.py:103` docstring stale "≤22,000 tokens" → cleanup candidate
-- identifier-scheme follow-ons: `scripts/validate_architecture.py` flat-slug widening + `reversibility-guard.sh` relative-path bypass
-- d3-bypass-classification substrate implementation slice → queued post-sweep
+- `.claude/features/v1-defense-d3.yaml` — add SLICE-018 entry (coordinator owns; outside this slice's envelope)
+- Parser update `scripts/snapshot_diff.py` for new log format — deferred, separate slice
+- `commands/claude-code/start-slice.full.md:224` rolling-window rule rewrite — deferred, separate slice
+- Decision 2 of d3-bypass-classification ADR (envelope `exempt:` list) — separate slice
 
 ## Features
+- v1-defense-d3: SLICE-018 opened (log reclassification); substrate tasks (parser, rule-text, sweep-report) remain queued
 - housekeeping: SLICE-017 closed
-- identifier-scheme: SLICE-016 closed; follow-ons queued
+- identifier-scheme: closed
 - v1-defense-d2: SLICE-010/011 queued
-- v1-defense-d3: ADR landed; substrate implementation slice pending post-sweep
 
 ## Pointers
-- `.claude/d3-bypasses.log` — SLICE-017 entry uses new `<class>:` format; legacy three lines still in old format
-- `docs/adr/d3-bypass-classification.md` — load before d3 substrate slice
-- `.claude/sweep.yaml` — sweep cadence state
+- `.claude/current-slice/intent.md` — Phase 2 input; spec + verification rules
+- `docs/adr/d3-bypass-classification.md` — Decision 1 historical-reclassification paragraph
+- `.claude/d3-bypasses.log` — 4 lines; SLICE-017 already in new format, other 3 migrate to `pre-existing:`
