@@ -1,8 +1,8 @@
 id: SLICE-018
 title: "v1-defense-d3/bypass-log-reclass — one-time migration of SLICE-012/014/016 entries to classified format"
-status: integration
+status: complete
 started: 2026-04-16
-completed: null
+completed: 2026-04-16
 invariants-touched: []
 adrs-referenced: [d3-bypass-classification]
 adrs-created: []
