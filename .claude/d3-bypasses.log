@@ -2,3 +2,4 @@ SLICE-012 2026-04-14 pre-existing: ruff lint (E741, E402) in test_feature_cross_
 SLICE-014 2026-04-15 pre-existing: fleet-coordinator-design.md drift from parallel session (designing the automation for multi-slice work this slice's gates are catching)
 SLICE-016 2026-04-16 pre-existing: INV-004 turn-1 token budget failure — CC 2.1.107 → 2.1.110 drift, slice envelope does not load at session start; re-baseline queued as housekeeping
 SLICE-017 2026-04-16 pre-existing: snapshot_diff flags docs/adr/d3-bypass-classification.md (new), docs/adr/index.md, docs/lessons.md — all last-touched before phase-1 commit d65e50c; baseline refresh deferred to next integration sweep
+SLICE-018 2026-04-16 user-approved Phase 3 envelope expansion deleted two legacy live-diff envelope-compliance fixtures (test_slice_005_design_decomposition, test_sweep_debt_cleanup); snapshot_diff has no awareness of envelope-expansions.log — fail is structural, not regression

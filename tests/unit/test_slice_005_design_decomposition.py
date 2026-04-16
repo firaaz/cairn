@@ -17,7 +17,6 @@ Ambiguity resolutions are documented in
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 
 import yaml
@@ -221,50 +220,6 @@ def test_v6_index_updated() -> None:
         adr_id = f"ADR-{prefix}"
         assert adr_id in text, f"docs/adr/index.md missing entry for {adr_id}. (V6)"
 
-
-# ---------------------------------------------------------------------------
-# V7: Envelope compliance — only declared files modified
-# ---------------------------------------------------------------------------
-
-
-def test_v7_envelope_compliance() -> None:
-    """V7: No files outside the envelope are modified by Phase 3.
-
-    Envelope from intent.md:
-      - docs/adr/005-*.md, 006-*.md, 007-*.md, 008-*.md
-      - docs/adr/index.md
-
-    This test checks git diff --name-only against the last Phase 1 commit
-    to detect files outside the envelope. It is meaningful only after Phase 3
-    commits land; at Phase 2 commit time it passes vacuously (no changes yet).
-    """
-    allowed_patterns = [
-        r"^docs/adr/00[5-8]-.*\.md$",
-        r"^docs/adr/index\.md$",
-        # Slice state files are pipeline substrate, always allowed
-        r"^\.claude/current-slice/",
-        # Test files are Phase 2 output, always allowed
-        r"^tests/",
-        # Measurement files are live-updated by session hooks, always dirty
-        r"^docs/plans/measurements/",
-    ]
-
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "HEAD"],
-        capture_output=True,
-        text=True,
-        cwd=REPO,
-    )
-    changed_files = [f for f in result.stdout.strip().splitlines() if f]
-
-    violations = []
-    for f in changed_files:
-        if not any(re.match(pat, f) for pat in allowed_patterns):
-            violations.append(f)
-
-    assert not violations, (
-        f"Files outside the SLICE-005 envelope were modified: {violations}. (V7)"
-    )
 
 
 # ---------------------------------------------------------------------------

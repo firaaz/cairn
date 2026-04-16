@@ -6,3 +6,7 @@ slices:
     slice-yaml-id: SLICE-017
     added: 2026-04-16
     intent: "Raise INV-004 BUDGET_HARD from 22000 to 30000 for CC 2.1.110 drift; amend ARCHITECTURE.md invariant text; commit uv.lock (requires-python ≥3.11 sync) and measurement file carry-overs. Greens the integration gate."
+  - id: housekeeping/stale-22k-cleanup
+    slice-yaml-id: SLICE-018
+    added: 2026-04-16
+    intent: "Replace stale 22k reference in docs/ARCHITECTURE.md:46 invariant-check description and tests/unit/test_context_budget.py:103 docstring with 30k/30,000; preserve regression-assertion literals on lines 121/148/149 that intentionally guard against the stale value."
