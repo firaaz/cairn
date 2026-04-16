@@ -1,36 +1,43 @@
 ---
-slice: coord (manual Axis-B dogfood in flight)
-phase: observability-loop (see obs §5b for cheap-polling protocol)
+slice: coord (manual Axis-B dogfood — mid-merge)
+phase: merge-queue
 branch: feature/identifier-scheme
-as-of: 2026-04-16 13:41 — coord uncommitted aside from this file; workers at ac4bd8e/5f48721/87e9ede/90c0868
+as-of: 2026-04-16 — post D merge, pre B/C/A merge
 ---
 
 ## State
-Four workers dispatched 13:15–13:19 from `87ea8b5` into separate worktrees + tmux windows of session `cairn`. All four reached Phase 1 boundary cleanly (autonomous commit + `/handoff` + stop per bootstrap protocol). All four completed Phase 1→2 transition via handoff→`/clear`→`/catchup`→`/start-slice phase 2`. Fleet is active in Phase 2 validation. Per-phase `/clear+/catchup` cycle drops worker token cost by ~52% (65k → 31k) — strong signal for ADR-007 branch-local handoff sufficiency.
+Dogfood fleet (4 workers) reached Phase 4 at staggered rates. Per-worker closes + sweeps landed on slice branches; merges into `feature/identifier-scheme` under way.
 
-| Worker | Worktree | Branch | tmux | Last commit | Phase state |
-|---|---|---|---|---|---|
-| A stale-22k | `../stale-22k-cleanup` | `slice/housekeeping-stale-22k` | `cairn:2` | `ac4bd8e` | **P2 committed → P2/3 boundary** |
-| B d3-log-reclass | `../d3-log-reclass` | `slice/v1-defense-d3-log-reclass` | `cairn:4` | `5f48721` | P2 in progress |
-| C validator | `../validator-flat-slug` | `slice/identifier-scheme-validator` | `cairn:3` | `87e9ede` | P2 — **awaiting approval on awk read** |
-| D hook-relpath | `../hook-relpath-bypass` | `slice/identifier-scheme-hook-relpath` | `cairn:5` | `90c0868` | P2 in progress |
+| Worker | Branch | State | Merge status |
+|---|---|---|---|
+| A stale-22k | `slice/housekeeping-stale-22k` | Phase 4 gates running (28 min parallel subagent — investigate) | not yet close-committed |
+| B d3-log-reclass | `slice/v1-defense-d3-log-reclass` | SLICE-018 closed (`3c57afb` sweep-due handoff); `/integration-sweep` fired | pending sweep commit → then merge |
+| C validator | `slice/identifier-scheme-validator` | Phase 3 impl complete; `/handoff phase` running for P3→P4 transition | not yet close-committed |
+| D hook-relpath | `slice/identifier-scheme-hook-relpath` | CLOSED + sweep #13 PASS + post-sweep handoff | **being merged now** |
+
+Sweep #13 semantics: D ran /integration-sweep on its branch, bumped `sweep.yaml last-sweep-at-slice: 17 → 18`. After D's merge, feature branch carries sweep #13 state. B's pending /integration-sweep will produce a conflicting sweep.yaml bump; resolve by taking higher value (both are semantically "post-SLICE-018" sweep).
 
 ## Next
-1. Approve C's awk gate (read-only): `tmux send-keys -t cairn:3 '1' Enter`.
-2. A needs P2→3 dance: verify handoff artifacts in `../stale-22k-cleanup/` (expect Phase 2 handoff after A re-hits boundary) → `/clear` cairn:2 → `/catchup` cairn:2 → confirm Mode A orientation → `/start-slice phase 3` cairn:2. If A hasn't yet written a Phase 2 handoff, let it finish that before clearing.
-3. Continue cheap-polling per obs §5b: `slice.yaml` + log-size delta + marker grep on last ~4KB of each worker log (never full `capture-pane` unless a prompt marker hits or user asks).
-4. When B/D reach P2/3 boundary, same dance.
+1. Finish D merge (resolve this handoff.md conflict, commit).
+2. `git worktree remove ../hook-relpath-bypass` (keep branch `slice/identifier-scheme-hook-relpath` for audit per plan §7).
+3. Wait on B's /integration-sweep to complete → merge B. Expect conflicts on `sweep.yaml` + `handoff.md`; resolve handoff.md per same pattern.
+4. Unstick A if still at 28-minute parallel-gate stall.
+5. When C reaches Phase 4 PASS → close + sweep + merge (or batch with A).
+6. End-of-dogfood: ADR-007 graduation note + `docs/lessons.md` L-005 entry (plan §8).
 
 ## Blocked / Pending
-- Merges (plan §7 `/integration-sweep` → `git merge --no-ff` into `feature/identifier-scheme`) — per worker at Phase 4.
-- ADR-007 graduation note + `docs/lessons.md` L-005 entry (plan §8) — end-of-dogfood.
-- tmux window-index note: base-index is 1, so coord is `cairn:1` and workers live at `cairn:2..5` (plan assumed 0-indexed).
+- A: parallel subagent run way over budget (`integration_gate` + `snapshot_diff`) — suspect one subagent hung.
+- Chronic uncommitted `docs/plans/measurements/2026-04-12-slice-003.txt` — user directive: ignore.
+
+## Features (post-D merge, pre remaining merges)
+- identifier-scheme: D's slice landed (SLICE-018 hook-relpath-bypass); C's slice (SLICE-018 validator-flat-slug) still in flight.
+- housekeeping: A's SLICE-018 (stale-22k-cleanup) still in flight; SLICE-017 already closed.
+- v1-defense-d3: B's SLICE-018 (bypass-log-reclass) close-committed, merge pending.
+- v1-defense-d2: SLICE-010/011 queued.
 
 ## Pointers
-- `.claude/plans/2026-04-16-dogfood-observations.md` — live obs log; §5b is the adopted cheap-polling protocol (slice.yaml + log-delta + marker grep). Load before resuming observability loop.
-- `.claude/plans/2026-04-16-manual-parallel-dogfood.md` §5/§7/§8 — bootstrap template, merge protocol, success criteria.
-- `docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md` D6/D8/D9 — send-keys, observability-loop, permission handling.
-- `docs/adr/007-parallelism-v1.md` — contract under test (provisional — dogfood graduates or reverts).
-- `/tmp/cairn-fleet/2026-04-16/[ABCD]-*.log` — durable worker transcripts; retain until end-of-dogfood.
-- `/tmp/cairn-fleet/2026-04-16/bootstrap-[ABCD].txt` — rendered worker bootstraps; reference if re-spawning.
-- Memory: `coordinator_polling_must_be_cheap.md` — firaaz feedback (token burn) — load before re-entering observability loop.
+- `.claude/plans/2026-04-16-dogfood-observations.md` — obs log (§6 has `/handoff` side-effect divergence findings; A-specific pattern at P2/P3/P4).
+- `.claude/plans/2026-04-16-manual-parallel-dogfood.md` §7 — merge protocol (sweep → merge --no-ff → worktree remove).
+- `.claude/sweep-results/2026-04-16-sweep-13.md` — D's sweep verdict; carry-over queue.
+- `docs/adr/007-parallelism-v1.md` — contract under test.
+- `/tmp/cairn-fleet/2026-04-16/[ABCD]-*.log` — durable transcripts.

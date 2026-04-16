@@ -37,8 +37,15 @@ if [ "$TOOL" = "Bash" ]; then
   fi
 fi
 
+# Canonicalize tool-input paths to a project-root-relative form so bare-relative,
+# absolute, and .slice-system/-prefixed shapes produce one deny/allow verdict
+# per tool semantics. Mirrors scope-guard.sh's PROJECT_ROOT derivation.
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+
 if [ "$TOOL" = "Write" ]; then
   FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path')
+  CANONICAL="${FILE#$PROJECT_ROOT/}"
+  CANONICAL="${CANONICAL#.slice-system/}"
   case "$FILE" in
     *.env|*.env.*)
       jq -n --arg reason "REVERSIBILITY GUARD: blocked write to env file — update .env.example instead" \
@@ -48,9 +55,11 @@ if [ "$TOOL" = "Write" ]; then
       jq -n --arg reason "REVERSIBILITY GUARD: lock files are auto-generated — use uv add / npm install" \
         '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$reason}}'
       exit 2 ;;
-    */docs/adr/index.md) ;;
-    */docs/adr/*.md)
-      if [ -f "$FILE" ]; then
+  esac
+  case "$CANONICAL" in
+    docs/adr/index.md) ;;
+    docs/adr/*.md)
+      if [ -f "$PROJECT_ROOT/$CANONICAL" ]; then
         jq -n --arg reason "REVERSIBILITY GUARD: ADRs are append-only. To change a decision, use /new-adr supersede ADR-NNN. Only frontmatter updates (status, superseded-by) are permitted via Edit." \
           '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$reason}}'
         exit 2
@@ -63,9 +72,11 @@ fi
 # Block body modifications — use /new-adr supersede instead
 if [ "$TOOL" = "Edit" ]; then
   FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path')
-  case "$FILE" in
-    */docs/adr/index.md) ;;
-    */docs/adr/*.md)
+  CANONICAL="${FILE#$PROJECT_ROOT/}"
+  CANONICAL="${CANONICAL#.slice-system/}"
+  case "$CANONICAL" in
+    docs/adr/index.md) ;;
+    docs/adr/*.md)
       # Allow editorial fixes (typos, formatting, broken links) when explicitly flagged
       if [ "${ADR_EDITORIAL_FIX:-}" = "1" ]; then
         echo "ADR_EDITORIAL_FIX: allowing edit to $FILE" >> .claude/adr-editorial-fixes.log 2>/dev/null || true
