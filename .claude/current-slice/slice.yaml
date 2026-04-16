@@ -1,6 +1,6 @@
 id: SLICE-018
 title: "identifier-scheme/hook-relpath-bypass — normalize tool-input paths in reversibility-guard.sh so bare-relative and .slice-system/-prefixed forms cannot bypass ADR append-only protection"
-status: implementation
+status: integration
 started: 2026-04-16
 completed: null
 invariants-touched: [INV-005]
