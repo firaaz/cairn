@@ -1,30 +1,31 @@
 ---
-slice: none
-phase: n/a
+slice: identifier-scheme/template-updates
+phase: 1-intent→2-validation
 branch: feature/identifier-scheme
-as-of: 2026-04-17 7765547
+as-of: 2026-04-17 d1cdb55
 ---
 
 ## State
-Coord↔worker communication protocol design landed at `7765547` (509 lines). No active slice. `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted (chronic session-hook drift per obs §8.1 #8).
+Phase 1 intent committed at `d1cdb55`; 10-file envelope declared (four command pairs + CLAUDE.md + operational-reference.md). D3 gate for Phase 2 satisfied — ADR `identifier-scheme` already committed.
 
 ## Next
-Start slice `identifier-scheme/template-updates` — CLAUDE.md `name:` rule + operational-reference elaboration + slice/ADR/feature/handoff template updates.
+Run `/catchup` then `/start-slice phase 2` to enter Validation (Skeptic).
 
 ## Blocked / Pending
-- Feature 1 migration remainder: template-updates → adr-rename-sweep → slice-and-feature-rename → doc-sweep → identifier-scheme design §8
-- Feature 2 ADR (phase automation) unblocks after template-updates + adr-rename-sweep land → coord design §9
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted session-hook drift → obs §8.1 #8
+- Feature 1 migration remainder: adr-rename-sweep → slice-and-feature-rename → doc-sweep (serial) → design §7
+- Feature 2 ADR (phase automation) unblocks after Feature 1 drain → coord design §9
 - `/handoff` skill hardening (worker A P2/P3/P4 side-effect gap) → obs §6, §8.1
-- Test fix `test_log_has_exactly_four_lines` merge-robustness + ADR-007 graduation → sweep #14, obs §8.2
+- Test fix `test_log_has_exactly_four_lines` + ADR-007 graduation → sweep #14, obs §8.2
 
 ## Features
-- identifier-scheme: 4 slices drained; 4 migration slices remain before Feature 2 unblocks
-- housekeeping: SLICE-017/018 closed
-- v1-defense-d3: SLICE-018 landed; substrate queued
-- v1-defense-d2: SLICE-010/011 queued
+- identifier-scheme: template-updates Phase 1→2; 3 rename sweeps remain before Feature 2 unblocks.
+- housekeeping: complete (SLICE-017/018).
+- v1-defense-d2: SLICE-010/011 queued.
+- v1-defense-d3: SLICE-018 landed; substrate queued.
 
 ## Pointers
-- `docs/plans/2026-04-17-coordinator-worker-communication-design.md` — this session's output; input to Feature 2 ADR + Feature 6 harness
-- `docs/plans/2026-04-15-identifier-scheme-design.md` — migration §7, slice breakdown §8; read before template-updates
-- `docs/plans/2026-04-15-fleet-coordinator-design.md` §9 — epic ordering; Feature 2 blocks on Feature 1 drain
-- `.claude/plans/2026-04-16-dogfood-observations.md` §8.1 — dogfood pain points addressed by new design
+- `.claude/current-slice/intent.md` — Phase 2 Skeptic input: envelope, spec, verification, boundary.
+- `.claude/current-slice/handoff-phase-1.md` — phase-gate state and Skeptic ambiguity list.
+- `docs/adr/identifier-scheme.md` §D7 — migration shape; Skeptic resolves `title:`→`name:` question.
+- `docs/plans/2026-04-15-identifier-scheme-design.md` §7/§8 — feature-level ordering.
