@@ -22,7 +22,7 @@ CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
 LOG = CAIRN_ROOT / ".claude" / "d3-bypasses.log"
 
 CLASSIFIED_LINE_RE = re.compile(
-    r"^SLICE-\d+ \d{4}-\d{2}-\d{2} (slice-caused|pre-existing|false-positive): .+$"
+    r"^SLICE-\d+ \d{4}-\d{2}-\d{2} (slice-caused|pre-existing|false-positive)(?: \([A-D]\))?: .+$"
 )
 
 SLICE_012_REASON = (
