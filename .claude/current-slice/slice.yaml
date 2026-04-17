@@ -1,8 +1,8 @@
-id: identifier-scheme/adr-rename-sweep
-name: "ADR rename sweep — NNN-slug.md → <id>.md plus live cross-reference sweep (Phase 2 Part 1)"
-status: complete
+id: identifier-scheme/slice-and-feature-rename
+name: "Slice-and-feature rename + sweep.yaml retirement (Phase 2 Part 2)"
+status: intent
 started: 2026-04-17
-completed: 2026-04-17
-invariants-touched: [INV-005]
-adrs-referenced: [identifier-scheme]
+completed: null
+invariants-touched: [INV-005, INV-006]
+adrs-referenced: [identifier-scheme, feature-slice-model]
 adrs-created: []
