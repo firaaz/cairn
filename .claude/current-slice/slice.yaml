@@ -1,8 +1,8 @@
 id: v1-defense-d3/bypass-log-test-resilience
 name: "D3 bypass-log test resilience — remove hardcoded count + widen regex for class-qualifier"
-status: integration
+status: complete
 started: 2026-04-17
-completed: null
+completed: 2026-04-17
 invariants-touched: []
 adrs-referenced: [d3-bypass-classification]
 adrs-created: []
