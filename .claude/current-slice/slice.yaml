@@ -1,6 +1,6 @@
 id: integration-gate/configurable-pytest-timeout
 name: "Integration gate — configurable pytest + ruff timeouts via env vars"
-status: validation
+status: implementation
 started: 2026-04-17
 completed: null
 invariants-touched: []
