@@ -1,31 +1,31 @@
 ---
 slice: identifier-scheme/template-updates
-phase: 3-implementation→4-integration
+phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-17 c0bbd92
+as-of: 2026-04-17 f1f8cf6
 ---
 
 ## State
-Phase 3 GREEN suite committed at `c0bbd92`. 20/20 tests pass on `tests/unit/test_identifier_scheme_templates.py`. Full suite: 325 passed, 1 skipped, 4 pre-existing failures (test_d3_bypass_log_format.py — carry-over).
+Slice closed at `f1f8cf6` with Phase 4 PASS verdict. D1 + both D3 gates clean; structural-snapshot baseline refreshed. Sweep #15 now due (current-slice 19, last-sweep 18).
 
 ## Next
-Run `/catchup` then `/start-slice phase 4` in a fresh session to enter Integration (Auditor).
+Run `/catchup` then `/integration-sweep` in a fresh session before starting Feature 1's next slice (`adr-rename-sweep`).
 
 ## Blocked / Pending
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted drift → obs §8.1 #8.
-- Feature 1 migration remainder: adr-rename-sweep → slice-and-feature-rename → doc-sweep (serial) → design §7.
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted drift → carry-over from prior slice; obs §8.1 #8.
+- Light `.md` variants (`new-adr.md`, `handoff.md`, `decision.md`, `start-slice.md`) need pointer-text touch-ups acknowledging new template surfaces → close commit `f1f8cf6` body, follow-ups list.
+- Test fix `test_log_has_exactly_four_lines` + ADR-007 graduation → sweep #14, obs §8.2 (4 carry-over failures).
+- Feature 1 migration remainder: adr-rename-sweep → slice-and-feature-rename → doc-sweep (serial) → identifier-scheme ADR §D7.
 - Feature 2 ADR (phase automation) unblocks after Feature 1 drain → coord design §9.
-- `/handoff` skill hardening (worker A P2/P3/P4 side-effect gap) → obs §6, §8.1.
-- Test fix `test_log_has_exactly_four_lines` + ADR-007 graduation → sweep #14, obs §8.2.
 
 ## Features
-- identifier-scheme: template-updates Phase 3→4; 3 rename sweeps remain before Feature 2 unblocks.
-- housekeeping: complete (SLICE-017/018).
-- v1-defense-d2: SLICE-010/011 queued.
-- v1-defense-d3: SLICE-018 landed; substrate queued.
+- identifier-scheme: template-updates complete; 3 rename sweeps queued (adr-rename-sweep next)
+- housekeeping: complete (SLICE-017/018)
+- v1-defense-d2: SLICE-010/011 queued
+- v1-defense-d3: SLICE-018 landed; substrate queued
 
 ## Pointers
-- `.claude/current-slice/handoff-phase-3.md` — Phase 4 Auditor entry state.
-- `.claude/current-slice/intent.md` — Phase 4 input alongside ARCHITECTURE.md and source.
-- `.claude/current-slice/implementation/notes.md` — decisions not pinned by intent.md.
-- `tests/unit/test_identifier_scheme_templates.py` — the GREEN suite Phase 4 re-runs.
+- `f1f8cf6` close commit body — full Phase 4 verdict + V1-V12 disposition + follow-ups.
+- `.claude/sweep.yaml` — sweep cadence (sweep #15 due now).
+- `docs/adr/identifier-scheme.md` — §D7 Phase 1 substrate complete; Phase 2 rename sweeps next.
+- `.claude/features/identifier-scheme.yaml` — append `adr-rename-sweep` slice entry on next `/start-slice`.
