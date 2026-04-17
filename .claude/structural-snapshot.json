@@ -8,16 +8,16 @@
     "size": 1642
   },
   "commands/claude-code/decision.full.md": {
-    "hash": "256fc5e170080616915f5e6456c6af8aadfc684a434124ab2cec9f3bd8a81568",
-    "size": 7622
+    "hash": "2c5d03ea9fb7dc9960793ec97168e83b49ad9499f019daddd0ee347458f2ef39",
+    "size": 8113
   },
   "commands/claude-code/decision.md": {
     "hash": "33e3e668f9bea83ecfa2bc889ef48c0df3f5f27775aa100e0bc108177ef2b1c7",
     "size": 1601
   },
   "commands/claude-code/handoff.full.md": {
-    "hash": "d365224bbf43d36a3f3654d09befd50f8aba80fbf2063c941f26497cfc3a2399",
-    "size": 6086
+    "hash": "99acb663dc91872938a5c62704bfa181f4d05aa41daddef47325a8c59c0f0fe5",
+    "size": 6536
   },
   "commands/claude-code/handoff.md": {
     "hash": "28d982c5f2fceccc491cbf28c338dc2a12c198f14f0afe117716544944db9d04",
@@ -32,8 +32,8 @@
     "size": 1677
   },
   "commands/claude-code/new-adr.full.md": {
-    "hash": "93f0c78c2611497abebcf3d1cb63fd38783a82714e3b0847ddbcb48acb834454",
-    "size": 3576
+    "hash": "64c1eb9c7883f68a4c21baa4b652562d61712ba6538b6431f78e849acac4d3d6",
+    "size": 5187
   },
   "commands/claude-code/new-adr.md": {
     "hash": "1aab0801554bb36c0052c7e1a3789efd06fb543bc1f2324ab900d04688271b6b",
@@ -48,8 +48,8 @@
     "size": 1308
   },
   "commands/claude-code/start-slice.full.md": {
-    "hash": "09c4c72602dad11827a58e33e5a989c326f6275209a23fdb747e6c75e78d6cb1",
-    "size": 18276
+    "hash": "270d36577db8216acc526b09e04ed2108eda54fab4d30bce9ae2390289d8a187",
+    "size": 19581
   },
   "commands/claude-code/start-slice.md": {
     "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
@@ -116,12 +116,12 @@
     "size": 292
   },
   "docs/lessons.md": {
-    "hash": "cbdd95efbd5dc80d989ce29bf88f1a067b480ad1d8d8930f61cff70cff1330ea",
-    "size": 15396
+    "hash": "013b2321808a28a3da0543f9391103c9c7b321232fc824c259c4f5fd7ae1c3f7",
+    "size": 20051
   },
   "docs/operational-reference.md": {
-    "hash": "341525e71da98370d6260bf0e552012cba4a2ae50fc362d2943f6ce50e5dd813",
-    "size": 25729
+    "hash": "9a6c0ac6bcfbc6b5c0b99494551c4a56b41b3620a6b177990d848f93604fe805",
+    "size": 27894
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -170,6 +170,10 @@
   "docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md": {
     "hash": "8292aad178c519eedf0eb026ab821b4a63439f7a7c14833a8b91ba902dbee6c2",
     "size": 9890
+  },
+  "docs/plans/2026-04-17-coordinator-worker-communication-design.md": {
+    "hash": "9f36731891c8253cbea626a58f61c904a6c869a39bcd36a5ae5f1464f5c43af3",
+    "size": 26101
   },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
@@ -246,6 +250,10 @@
   "tests/unit/test_hook_tolerance.py": {
     "hash": "683d57c6f2de5bab757ed4788b0b45e66c41961cf5b57b826be29123bcca4ebb",
     "size": 15180
+  },
+  "tests/unit/test_identifier_scheme_templates.py": {
+    "hash": "c8bc6ff540c8488fa07e8ab193b5ae28312eff38fed93f5a816603da7953421b",
+    "size": 14117
   },
   "tests/unit/test_integration_gate.py": {
     "hash": "c12ab97d3b12fb42fbeff3ca02a98c1e1cc9c4ef3e82a8b391b9a16ebb4ef394",
