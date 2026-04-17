@@ -1,9 +1,8 @@
-id: identifier-scheme/template-updates
-slice-yaml-id: SLICE-019
-name: "Identifier scheme — templates, prompt rule, and operational-reference elaboration"
-status: complete
+id: integration-gate/configurable-pytest-timeout
+name: "Integration gate — configurable pytest + ruff timeouts via env vars"
+status: intent
 started: 2026-04-17
-completed: 2026-04-17
+completed: null
 invariants-touched: []
-adrs-referenced: [identifier-scheme]
+adrs-referenced: []
 adrs-created: []
