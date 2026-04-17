@@ -196,8 +196,8 @@
     "size": 8138
   },
   "scripts/integration_gate.py": {
-    "hash": "cb2a5717c8b3f1a1a7246fc42144a3f36b4c0008f19a3ce1f84b89d587f3483a",
-    "size": 4552
+    "hash": "1f7c9562cb3cec07632bac7c004cb65c4b0f3366235bb868bb6a0dd732d1c294",
+    "size": 5014
   },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
@@ -258,6 +258,10 @@
   "tests/unit/test_integration_gate.py": {
     "hash": "c12ab97d3b12fb42fbeff3ca02a98c1e1cc9c4ef3e82a8b391b9a16ebb4ef394",
     "size": 16527
+  },
+  "tests/unit/test_integration_gate_timeout.py": {
+    "hash": "9ee716bb31cbf0719cf49dd155bdda3627a30f9a3c8c0c2702ef8bb710fa9ea5",
+    "size": 6971
   },
   "tests/unit/test_invariant_assertions.py": {
     "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
