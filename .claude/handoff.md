@@ -6,7 +6,7 @@ as-of: 2026-04-17 7b5ed12
 ---
 
 ## State
-Slice 21 (`v1-defense-d3/bypass-log-test-resilience`) closed at 7b5ed12 — Phase 4 PASS, D1+D3 gates PASS. `.claude/current-slice/` wiped except `slice.yaml`. Integration sweep #16 due (last=20, interval=1, current=21).
+Slice 21 (`v1-defense-d3/bypass-log-test-resilience`) closed at 7b5ed12 — Phase 4 PASS, D1+D3 gates PASS, `.claude/current-slice/` wiped. Integration sweep #16 due (last=20, interval=1, current=21).
 
 ## Next
 Run `/integration-sweep` in a fresh session.
