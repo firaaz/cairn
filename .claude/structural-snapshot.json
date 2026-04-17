@@ -1,11 +1,11 @@
 {
   "commands/claude-code/catchup.full.md": {
-    "hash": "872634658541a2c4506b60e3934842618ccf561869259e961e75a492290f130d",
-    "size": 9748
+    "hash": "f3fadb3e43f6e5ecf2ddfc34dff5fb447dcd69948acfa4d624a2fac147ea000b",
+    "size": 9792
   },
   "commands/claude-code/catchup.md": {
-    "hash": "17bde2975798490c1bd581cd21cef0ac4f55c631fb697bf4fe2f3a4f8f8f9c98",
-    "size": 1642
+    "hash": "138cfd3e1127dcfd8bdef00819d109f520e53340f199e64014046095319550b0",
+    "size": 1662
   },
   "commands/claude-code/decision.full.md": {
     "hash": "2c5d03ea9fb7dc9960793ec97168e83b49ad9499f019daddd0ee347458f2ef39",
@@ -16,8 +16,8 @@
     "size": 1601
   },
   "commands/claude-code/handoff.full.md": {
-    "hash": "99acb663dc91872938a5c62704bfa181f4d05aa41daddef47325a8c59c0f0fe5",
-    "size": 6536
+    "hash": "1d12218859d8360206d3667df4c5d61f14e2a978f876b1a5be7ccc6a7f1d8222",
+    "size": 6556
   },
   "commands/claude-code/handoff.md": {
     "hash": "28d982c5f2fceccc491cbf28c338dc2a12c198f14f0afe117716544944db9d04",
@@ -32,24 +32,24 @@
     "size": 1677
   },
   "commands/claude-code/new-adr.full.md": {
-    "hash": "64c1eb9c7883f68a4c21baa4b652562d61712ba6538b6431f78e849acac4d3d6",
-    "size": 5187
+    "hash": "6ce7c2994c09053b349a25575a8b9c0f5be01a34b9bb060850af31b7176c6ea8",
+    "size": 5194
   },
   "commands/claude-code/new-adr.md": {
     "hash": "1aab0801554bb36c0052c7e1a3789efd06fb543bc1f2324ab900d04688271b6b",
     "size": 1254
   },
   "commands/claude-code/refresh-architecture.full.md": {
-    "hash": "b5930edfe9d9312b55de8891e4204c5e7bf3bc2a9c1865d94b80acff15487f9b",
-    "size": 2959
+    "hash": "db10f5f96208ce018d6180fdf80300345aed7f781823c882d66ac030d5c7adbf",
+    "size": 2979
   },
   "commands/claude-code/refresh-architecture.md": {
     "hash": "3c59e7dd067cad282accc7c27a010b4f5d5035cf85a672b7c8421005137a70b5",
     "size": 1308
   },
   "commands/claude-code/start-slice.full.md": {
-    "hash": "270d36577db8216acc526b09e04ed2108eda54fab4d30bce9ae2390289d8a187",
-    "size": 19581
+    "hash": "eb1d478d8466e2ce45c8b0c83cf5738681a6cc87638691d33e767b318655fa67",
+    "size": 19748
   },
   "commands/claude-code/start-slice.md": {
     "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
@@ -60,68 +60,68 @@
     "size": 849
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "6110e0b9762d332849c171e0c07e05493a03d7e9ab15a5c6abdfb5a11f7bda35",
-    "size": 17317
+    "hash": "034abea2ec414cc83882e069234abe0b33de07b16c8bee97963248735be1409b",
+    "size": 18281
   },
-  "docs/adr/001-bootstrap-exception.md": {
-    "hash": "657c28728dddca2e21d1c418aec48626bf1b422f85fd9850f1569ce714d01f9c",
-    "size": 4795
+  "docs/adr/bootstrap-exception.md": {
+    "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
+    "size": 4843
   },
-  "docs/adr/002-context-discipline-protocol.md": {
-    "hash": "a20ba4fa027bc54c8062c7c0eb87afa23cd06b3c158c7f415b9d458a441e5a8f",
-    "size": 10783
+  "docs/adr/cliff-failure-mode-and-v1-defenses.md": {
+    "hash": "9b459cc0047621c1e21d742c2a20c4285de1592624d1d7ae90a038b3966d80c9",
+    "size": 25138
   },
-  "docs/adr/003-cliff-failure-mode-and-v1-defenses.md": {
-    "hash": "050c1b1b7c1866e9a1472fd72d2560b458e283b5c06d9b81d4140f905e28cebf",
-    "size": 24852
+  "docs/adr/context-discipline-protocol.md": {
+    "hash": "bfd8f90f64c43a11a4d5b32a60646fcda6cddd8ecb4a248ebeaea91a24e288bf",
+    "size": 10823
   },
-  "docs/adr/004-phase-lock-and-role-declaration.md": {
-    "hash": "7be1f9cb355291065af96320f511c7c4eeb3ad962f6893c3953d1f259a1dba9d",
-    "size": 31838
-  },
-  "docs/adr/005-semantic-identity.md": {
-    "hash": "f03be39f43ccb485ec41aadb35e5a95a8ba34ba51449ba691bd7315651644c12",
-    "size": 5463
-  },
-  "docs/adr/006-feature-slice-model.md": {
-    "hash": "a486908a891c8fe0d3c217b04a5da9782f09a7de25ad18d4aaae460bc6c62a64",
-    "size": 7713
-  },
-  "docs/adr/007-parallelism-v1.md": {
-    "hash": "e4e5856308d5231ea4220f4871beffc0084284d7523265728510acfcb21629eb",
-    "size": 9288
-  },
-  "docs/adr/008-context-tiers-integration.md": {
-    "hash": "7a49d0da7f0f270bad1e845fb73ec034770ed8bafa2f7c3e487e79e6a728fc58",
-    "size": 6089
-  },
-  "docs/adr/009-phase-pipeline-evaluation.md": {
-    "hash": "345e3b2649cd3e4064a4af7f64f65fcb80fa56e1ca8dfda061b86af4f1a07763",
-    "size": 9656
+  "docs/adr/context-tiers-integration.md": {
+    "hash": "51525533fc3e6fbfea83c86bd4a116a6f9ea8c5192b1e8878185a8b321911aa1",
+    "size": 6437
   },
   "docs/adr/d3-bypass-classification.md": {
-    "hash": "8a0b12d802915a984ae9fecdca11a31435759974f9ba3d7f0d4760746c409e8a",
-    "size": 10249
+    "hash": "605caf24442978b34d3919d3bccc9e6952a68555682a53fb650498aeb46daf97",
+    "size": 10465
+  },
+  "docs/adr/feature-slice-model.md": {
+    "hash": "464c700201b9fb7b85eadb59144d1738c818731d1d2cfe24f2d940249468f2f7",
+    "size": 7842
   },
   "docs/adr/identifier-scheme.md": {
-    "hash": "48b773f1e259b4fc013e1dcde5415b8f20fa1e6128be07d57010c6c5e549aec3",
-    "size": 15753
+    "hash": "60d96434a8776a1e82d034893d7116f98d222b32d6a5d6eb8c9f057cdf28a192",
+    "size": 15964
   },
   "docs/adr/index.md": {
-    "hash": "753eedc36db1f7cc36b8dac099661441b0c97504550081227c63a9efaf6f499d",
-    "size": 1244
+    "hash": "09a292bad5e338d6018414c1a25246bfb7b42aae588021cbce0a5dc11c83863d",
+    "size": 1392
+  },
+  "docs/adr/parallelism-v1.md": {
+    "hash": "f86951edf42f2a310804341a56a95e174c24577b82cfbab2aed034e69cc96f7c",
+    "size": 9948
+  },
+  "docs/adr/phase-lock-and-role-declaration.md": {
+    "hash": "7a69c177b957686cfeaee918fbcc984f6b4a7ba04a77b4316a2f6eb43713d4e8",
+    "size": 32560
+  },
+  "docs/adr/phase-pipeline-evaluation.md": {
+    "hash": "10f535a54a9da95272677c62199ec9d544c3b90a4d6d2b7a1ac198fc754f87b1",
+    "size": 10155
+  },
+  "docs/adr/semantic-identity.md": {
+    "hash": "480dff8cf37db816409c48abafe7b3c8aedadf7b36017641888f787f949a34aa",
+    "size": 5551
   },
   "docs/dogfood-log.md": {
     "hash": "be243b422e2632df3da78b2ad84a81271ce4ace4e60678e286dc61df20193e01",
     "size": 292
   },
   "docs/lessons.md": {
-    "hash": "013b2321808a28a3da0543f9391103c9c7b321232fc824c259c4f5fd7ae1c3f7",
-    "size": 20051
+    "hash": "1b0d8f53e1470e8fd3b2ee62f47b9b89cc550a9d851f562f0cfef8656646e791",
+    "size": 20348
   },
   "docs/operational-reference.md": {
-    "hash": "9a6c0ac6bcfbc6b5c0b99494551c4a56b41b3620a6b177990d848f93604fe805",
-    "size": 27894
+    "hash": "39860d6d783c9a8bb798f141a9da54ca6b729e495ff48385d9f6d2e87b6fbcac",
+    "size": 28052
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -184,16 +184,16 @@
     "size": 3239
   },
   "docs/spec-v1.md": {
-    "hash": "c366e3476a23424b42922f7e6fc6cdf4329e8b8c5c8dd64f0962409cf7049bd4",
-    "size": 49110
+    "hash": "e6faac49c6ccd6dc372e1f18bad3edbd7b3cfa78ee2230d62c7414bac79b7700",
+    "size": 49128
   },
   "docs/vision.md": {
     "hash": "7d96b65a52a27271ce8194a8e1e2fd7ea3ae6d683188453f20d8ec6db8af3dff",
     "size": 3959
   },
   "scripts/dogfood_evaluate.py": {
-    "hash": "7e27e088bf6e89c07716385ab23386e7d79ca9a9593d029615fa042c43dc8b47",
-    "size": 8138
+    "hash": "f6af9f7bdf21035b73bb259fd14489b24826a68dc8196d119faaced69518680f",
+    "size": 8273
   },
   "scripts/integration_gate.py": {
     "hash": "1f7c9562cb3cec07632bac7c004cb65c4b0f3366235bb868bb6a0dd732d1c294",
@@ -204,16 +204,20 @@
     "size": 5832
   },
   "scripts/validate_architecture.py": {
-    "hash": "77ac479e4d3d099d0b0b0dbbf6057f0a278e7bb810f744e2762c04075b905011",
-    "size": 16144
+    "hash": "ba0743516eed8453418a088cdb86218875348deaf84e4153ea320fbdc6141e8d",
+    "size": 16162
+  },
+  "tests/unit/test_adr_rename_sweep.py": {
+    "hash": "82af52d3bac2d06beec4752865107f4d399cef9a019a5fea54ec52f1c92db768",
+    "size": 18255
   },
   "tests/unit/test_context_budget.py": {
     "hash": "53b6ecabe34557ddd84f80f7606c55d0227d570b9e4ee88104b70e4bd58dfe6e",
     "size": 9415
   },
   "tests/unit/test_context_discipline_protocol.py": {
-    "hash": "812b37ea1cd0adcfd9a0ea132b45cb6a0332f25963b0831db611323df6f1bfbd",
-    "size": 12863
+    "hash": "69ffb9a4a81f96d9285026eb3fe14f5341f64a8557a1c1d1a0379565cb4672af",
+    "size": 12903
   },
   "tests/unit/test_d1_gate.py": {
     "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
@@ -224,40 +228,40 @@
     "size": 5289
   },
   "tests/unit/test_dogfood_evaluate.py": {
-    "hash": "4ea558092094d18d7437892cdaaf7b167f89dfb56e10041c3ad5ef5cd8ee5f8e",
-    "size": 20600
+    "hash": "90c4e56ea2b76d1b7a9c44b6c51e37d8e1a58dd067de5e420a50261d91d2ba7f",
+    "size": 20735
   },
   "tests/unit/test_feature_cross_index.py": {
-    "hash": "7a2492de7d34526bcaf04d94faf6e0dce077e1c40ea15c75542870889f1ae61f",
-    "size": 5110
+    "hash": "d69b597bcac5506012f96ce826f773a9275f197ba05407ae7d5c752231a3efc5",
+    "size": 5210
   },
   "tests/unit/test_feature_file_schema.py": {
-    "hash": "a79b829d7d6eac538a160f2d6ea80aea39bf7b3e07ed12a61ae735ee8bb60b23",
-    "size": 11808
+    "hash": "bda0e8af8fd1e06c423ffb2335dd0c8fbd20d9f24d9f2f8890fa1f16f2a14105",
+    "size": 11856
   },
   "tests/unit/test_feature_scope_guard.py": {
     "hash": "03e332b72972d8fb70820d1fa2360ce334012efc56a8d61c3774efda24bc497c",
     "size": 3239
   },
   "tests/unit/test_feature_skill_conformance.py": {
-    "hash": "047248e256505fb68ee65022699ea6e35a7b8a10a79d581b92fe57bd09a85c1f",
-    "size": 8808
+    "hash": "0ffec1b22a38e96242548959bcf0759d4f36066ec469e3a523a9c31c777100db",
+    "size": 8976
   },
   "tests/unit/test_hook_relpath_bypass.py": {
-    "hash": "f12d9c95633f777fb922fa67a447852424c47b3b386112a016cb5f54c0159d2e",
-    "size": 22003
+    "hash": "4deb6402c26aaeb9768ba49ee34961106b8f9a78bbfb164ac4e9dbc285075c31",
+    "size": 24585
   },
   "tests/unit/test_hook_tolerance.py": {
-    "hash": "683d57c6f2de5bab757ed4788b0b45e66c41961cf5b57b826be29123bcca4ebb",
-    "size": 15180
+    "hash": "d1f9fdd7d94d8f1655aec32c904c452c10d3d8f9fe8044f174d57312f8920015",
+    "size": 17240
   },
   "tests/unit/test_identifier_scheme_templates.py": {
     "hash": "c8bc6ff540c8488fa07e8ab193b5ae28312eff38fed93f5a816603da7953421b",
     "size": 14117
   },
   "tests/unit/test_integration_gate.py": {
-    "hash": "c12ab97d3b12fb42fbeff3ca02a98c1e1cc9c4ef3e82a8b391b9a16ebb4ef394",
-    "size": 16527
+    "hash": "83499175d1caafb89acf9b580a32d052d365945678d250db0f962dbb8b31ab81",
+    "size": 16635
   },
   "tests/unit/test_integration_gate_timeout.py": {
     "hash": "9ee716bb31cbf0719cf49dd155bdda3627a30f9a3c8c0c2702ef8bb710fa9ea5",
@@ -268,31 +272,31 @@
     "size": 50807
   },
   "tests/unit/test_phase_rethink.py": {
-    "hash": "98bc52810c6053315134ba1f114516711fbbe0ba06c12ef634ab09f0d4f4bbd6",
-    "size": 10841
+    "hash": "71382a7e3f914d85d9ddd120667ee43c249a6bb361bb9c9a5cd2481c9cdf7a01",
+    "size": 10991
   },
   "tests/unit/test_progressive_disclosure.py": {
     "hash": "5c3d15082eb9b343ab15828041f8d194f7707b1b7179d6581a25e26639bf3477",
     "size": 9115
   },
   "tests/unit/test_slice_003_precursor.py": {
-    "hash": "31fd1f1c832dd6035ac348afb7b79942998d525347166e669411556fb4d58788",
-    "size": 8096
+    "hash": "32b73f194510ebc54a8f3cbab374026042869b0519bfbc9ee22aef19e3035b83",
+    "size": 8312
   },
   "tests/unit/test_slice_005_design_decomposition.py": {
-    "hash": "c1cca0267b0e2b4bc218531ce55eacfdedd2b7e4edf0fe44ed4444e2e64cb733",
-    "size": 16080
+    "hash": "4925964d367989e830f00553e76b59ea0c7bf01ce1f1c3fe7cf2185c0d8960cd",
+    "size": 17472
   },
   "tests/unit/test_snapshot_diff.py": {
-    "hash": "6132d5e7d86764d047fc9a602a2dc6bcb025ad5e9ecabcea6a7ab1578398455f",
-    "size": 20330
+    "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
+    "size": 20429
   },
   "tests/unit/test_sweep_debt_cleanup.py": {
-    "hash": "9f2b6b35e7ca6f412e4c6150d284f21fa42d768d4fe62efa3b90898296350196",
-    "size": 5876
+    "hash": "44b5d2998f6d2fc39f0b0dac5b225e3345896edb2a1ca822bf02d8fd63e86f12",
+    "size": 5890
   },
   "tests/unit/test_validate_architecture.py": {
-    "hash": "02adf3fa2a09e1922806bc063fea4822fbf6b0451e39babbf5484ee10e525d29",
-    "size": 24480
+    "hash": "63b918c4a3eb3bbf5db4668bf9b4972b9e9956f66ac1613039e3c075e980642a",
+    "size": 24662
   }
 }
