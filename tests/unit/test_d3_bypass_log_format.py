@@ -1,13 +1,13 @@
-"""Phase 2 validation tests for SLICE-018 — d3-bypasses.log one-time
-reclassification (ADR d3-bypass-classification, Decision 1).
+"""Phase 2 validation tests for d3-bypasses.log schema (ADR d3-bypass-classification).
 
-Asserts the post-migration shape of .claude/d3-bypasses.log:
-- 4 lines, chronological SLICE-012/014/016/017 order
-- every line matches the classified <slice> <date> <class>: <reason> regex
-- all four lines classified `pre-existing`
-- the three migrated reason substrings are byte-identical to the pins
-  in intent.md's Specification Detail table
-- SLICE-017's line is byte-identical to its pre-migration content
+Schema-driven (not count-driven): tolerates append-only growth while pinning
+migration anchors byte-identically.
+
+- >=4 lines; migration anchors SLICE-012/014/016/017 are a permanent floor
+- every line matches the classified `<slice> <date> <class>[ (<letter>)]: <reason>` regex
+- first four lines are classified `pre-existing` (migration-anchor contract)
+- id-suffixes and dates are both monotonically non-decreasing (chronological order)
+- SLICE-012/014/016 reasons and SLICE-017 full line are byte-identical to pre-migration pins
 - exactly one trailing newline
 
 Pytest + stdlib only.
@@ -15,6 +15,8 @@ Pytest + stdlib only.
 
 import re
 from pathlib import Path
+
+import pytest
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
 LOG = CAIRN_ROOT / ".claude" / "d3-bypasses.log"
@@ -60,8 +62,11 @@ def test_log_file_exists():
     assert LOG.exists(), f"{LOG} must exist"
 
 
-def test_log_has_exactly_four_lines():
-    assert len(_lines()) == 4
+def test_log_has_at_least_four_lines():
+    lines = _lines()
+    assert len(lines) >= 4, (
+        f"expected >=4 lines (migration-anchor floor), got {len(lines)}"
+    )
 
 
 def test_every_line_matches_classified_regex():
@@ -71,18 +76,32 @@ def test_every_line_matches_classified_regex():
         )
 
 
-def test_all_lines_classified_pre_existing():
-    counts = {"slice-caused": 0, "pre-existing": 0, "false-positive": 0}
-    for line in _lines():
+def test_first_four_lines_classified_pre_existing():
+    lines = _lines()
+    for i, line in enumerate(lines[:4]):
         m = CLASSIFIED_LINE_RE.match(line)
-        assert m, f"line does not match regex: {line!r}"
-        counts[m.group(1)] += 1
-    assert counts == {"slice-caused": 0, "pre-existing": 4, "false-positive": 0}
+        assert m, f"migration-anchor line {i + 1} does not match regex: {line!r}"
+        assert m.group(1) == "pre-existing", (
+            f"migration-anchor line {i + 1} class is {m.group(1)!r}, expected 'pre-existing'"
+        )
 
 
 def test_line_order_is_chronological():
-    ids = [line.split(" ", 1)[0] for line in _lines()]
-    assert ids == ["SLICE-012", "SLICE-014", "SLICE-016", "SLICE-017"]
+    lines = _lines()
+    ids = [line.split(" ", 1)[0] for line in lines]
+    assert ids[:4] == ["SLICE-012", "SLICE-014", "SLICE-016", "SLICE-017"], (
+        f"first four ids must match migration anchors, got {ids[:4]}"
+    )
+    suffixes = [int(id_.split("-")[1]) for id_ in ids]
+    for i in range(len(suffixes) - 1):
+        assert suffixes[i] <= suffixes[i + 1], (
+            f"id suffix not non-decreasing at line {i + 2}: {suffixes}"
+        )
+    dates = [line.split(" ")[1] for line in lines]
+    for i in range(len(dates) - 1):
+        assert dates[i] <= dates[i + 1], (
+            f"date not non-decreasing at line {i + 2}: {dates}"
+        )
 
 
 def test_slice_012_reason_preserved():
@@ -114,3 +133,27 @@ def test_trailing_newline_exactly_one():
     content = _read_log()
     assert content.endswith("\n")
     assert not content.endswith("\n\n")
+
+
+@pytest.mark.parametrize(
+    "line,expected_match",
+    [
+        ("SLICE-020 2026-04-17 pre-existing: reason text", True),
+        ("SLICE-018 2026-04-16 slice-caused (A): reason text", True),
+        ("SLICE-018 2026-04-16 slice-caused(A): reason text", False),
+        ("SLICE-018 2026-04-16 slice-caused (AC): reason text", False),
+        ("SLICE-018 2026-04-16 bogus-class: reason text", False),
+    ],
+    ids=[
+        "no-qualifier",
+        "with-qualifier",
+        "missing-space",
+        "multi-letter",
+        "bogus-class",
+    ],
+)
+def test_classified_line_regex_schema(line: str, expected_match: bool):
+    match = CLASSIFIED_LINE_RE.match(line)
+    assert bool(match) == expected_match, (
+        f"regex match={bool(match)} for line {line!r}, expected {expected_match}"
+    )

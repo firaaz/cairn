@@ -1,6 +1,6 @@
 id: v1-defense-d3/bypass-log-test-resilience
 name: "D3 bypass-log test resilience — remove hardcoded count + widen regex for class-qualifier"
-status: validation
+status: implementation
 started: 2026-04-17
 completed: null
 invariants-touched: []
