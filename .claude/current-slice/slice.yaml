@@ -1,6 +1,6 @@
 id: identifier-scheme/adr-rename-sweep
 name: "ADR rename sweep — NNN-slug.md → <id>.md plus live cross-reference sweep (Phase 2 Part 1)"
-status: intent
+status: validation
 started: 2026-04-17
 completed: null
 invariants-touched: [INV-005]

@@ -1,30 +1,30 @@
 ---
-slice: none
-phase: n/a
+slice: identifier-scheme/adr-rename-sweep
+phase: 1-intent
 branch: feature/identifier-scheme
-as-of: 2026-04-17 7b5ed12
+as-of: 2026-04-17 0a63f39
 ---
 
 ## State
-Slice 21 (`v1-defense-d3/bypass-log-test-resilience`) closed at 7b5ed12 — Phase 4 PASS, D1+D3 gates PASS, `.claude/current-slice/` wiped. Integration sweep #16 due (last=20, interval=1, current=21).
+Phase 1 intent committed at 0a63f39 (slice #22). Broad-read scope: rename 9 numeric-prefix ADRs to flat-slug filenames + id: frontmatter migration + live cross-reference sweep in one slice.
 
 ## Next
-Run `/integration-sweep` in a fresh session.
+Close session; run `/catchup` then `/start-slice phase 2` in a fresh session.
 
 ## Blocked / Pending
-- Sweep #16 — resolve `d3-bypass Decision 2 exempt: substrate + snapshot_diff.py classified parser` (carried sweeps #14/#15).
-- Reviewer suggestions (7: 5 SLICE-020 + 2 SLICE-021) → `docs/lessons.md`.
-- Feature 1 rename queue: `adr-rename-sweep → slice-and-feature-rename → doc-sweep`.
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted — hook drift, ignore per operator directive.
+- Sweep #16 — carries d3-bypass Decision 2 substrate; run `/integration-sweep` after this slice closes.
+- Reviewer suggestions (7) → `docs/lessons.md`.
+- Rename queue remaining: `slice-and-feature-rename → doc-sweep`.
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted — ignore per operator directive.
 
 ## Features
-- integration-gate: complete (configurable-pytest-timeout)
-- identifier-scheme: Phase 1 complete; rename sweeps queued
+- identifier-scheme: adr-rename-sweep Phase 1→2; slice-and-feature-rename + doc-sweep queued
+- integration-gate: complete
 - housekeeping: complete (SLICE-017/018)
-- v1-defense-d2: complete (SLICE-010/011 on dev)
-- v1-defense-d3: bypass-log-test-resilience complete; Decision 2 substrate still queued
+- v1-defense-d2: complete (SLICE-010/011)
+- v1-defense-d3: bypass-log-test-resilience complete; Decision 2 substrate queued
 
 ## Pointers
-- `.claude/sweep.yaml` — sweep cadence state.
-- `docs/spec-v1.md` §13 — sweep protocol.
-- `docs/lessons.md` — destination for deferred reviewer suggestions.
+- `.claude/current-slice/intent.md` — Phase 2 Skeptic's sole input (plus `docs/adr/identifier-scheme.md`).
+- `.claude/current-slice/handoff-phase-1.md` — phase-gate status and Skeptic-resolvable ambiguities.
+- `.claude/sweep.yaml` — cadence state (last=20, current=22).
