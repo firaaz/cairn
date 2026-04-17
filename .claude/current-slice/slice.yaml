@@ -1,7 +1,7 @@
 id: identifier-scheme/template-updates
 slice-yaml-id: SLICE-019
 name: "Identifier scheme — templates, prompt rule, and operational-reference elaboration"
-status: validation
+status: implementation
 started: 2026-04-17
 completed: null
 invariants-touched: []
