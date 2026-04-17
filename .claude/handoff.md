@@ -1,31 +1,32 @@
 ---
-slice: identifier-scheme/template-updates
-phase: complete
+slice: integration-gate/configurable-pytest-timeout
+phase: 1-intent
 branch: feature/identifier-scheme
-as-of: 2026-04-17 d9f71be
+as-of: 2026-04-17 cd70929
 ---
 
 ## State
-Slice closed at `f1f8cf6` (Phase 4 PASS, all gates clean, snapshot baseline refreshed). Sweep #15 due but deferred behind a hardcoded-timeout bug in `scripts/integration_gate.py:112` causing 5/10 recent D3 bypasses.
+Slice `integration-gate/configurable-pytest-timeout` Phase 1 intent committed at `cd70929`. `adrs-referenced: []` → D3 gate trivially passes.
 
 ## Next
-Run `/catchup` in a fresh session, then `/start-slice` for `integration-gate/configurable-pytest-timeout` — env-var override (default 120 preserves cairn-self behavior). Sweep #15 runs after.
+Fresh session: run `/catchup`, then `/start-slice phase 2` to enter Validation (Skeptic).
 
 ## Blocked / Pending
-- `scripts/integration_gate.py:112` hardcodes pytest `timeout=120` — false-fails consumer suites (complex-rag-analysis ~917s); 5/10 D3 bypasses. Same pattern likely on ruff timeout (line 90, 60s). Fix via env var, not raised default.
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted drift → carry-over; obs §8.1 #8.
-- Light `.md` variants need pointer-text touch-ups → `f1f8cf6` follow-ups list.
-- `test_log_has_exactly_four_lines` fix + ADR-007 graduation → sweep #14 obs §8.2 (4 carry-over failures, also short-circuit integration_gate via pytest `-x`).
-- Feature 1 remainder: adr-rename-sweep → slice-and-feature-rename → doc-sweep → identifier-scheme ADR §D7.
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → carry-over from prior handoff obs §8.1 #8.
+- Step 3 validator timeout (`scripts/integration_gate.py:65`, 60s) out of scope this slice.
+- pytest `-x` short-circuit flag → sweep #14 obs §8.2; separate slice.
+- Sweep #15 still deferred behind this fix.
+- Feature 1 rename sweeps (adr-rename-sweep → slice-and-feature-rename → doc-sweep) queued behind integration-gate.
 
 ## Features
-- identifier-scheme: template-updates complete; 3 rename sweeps queued
+- integration-gate: configurable-pytest-timeout Phase 1→2
+- identifier-scheme: Phase 1 complete; rename sweeps queued
 - housekeeping: complete (SLICE-017/018)
 - v1-defense-d2: SLICE-010/011 queued
 - v1-defense-d3: SLICE-018 landed; substrate queued
 
 ## Pointers
-- `f1f8cf6` close commit body — Phase 4 verdict + V1-V12 + follow-ups.
-- `scripts/integration_gate.py:104-121` — `_run_step4b`: timeout + `-x` flag.
-- `.claude/sweep.yaml` — sweep #15 cadence (deferred).
-- `docs/adr/identifier-scheme.md` — §D7 Phase 2 rename sweeps queued behind gate fix.
+- `.claude/current-slice/intent.md` — envelope, spec, 10 verification checks; Phase 2 sole input.
+- `.claude/current-slice/handoff-phase-1.md` — phase-to-phase handoff.
+- `scripts/integration_gate.py:82-121` — `_run_step4a` / `_run_step4b`; timeout lines 90 and 112.
+- `tests/unit/test_integration_gate.py` — existing suite; Phase 2 extends it.
