@@ -34,3 +34,8 @@ slices:
     added: 2026-04-17
     after: identifier-scheme/validator-flat-slug
     intent: "Final ADR identifier-scheme §D7 Phase 1 substrate. Update /start-slice, /new-adr, /handoff, /decision command templates to emit the two-field (id + name) model for new entities; add a one-sentence prompt rule to CLAUDE.md; elaborate the per-entity id-shape table in docs/operational-reference.md. No renames, no hook/validator/test code changes, no edits to existing ADR/slice/feature files."
+  - id: identifier-scheme/adr-rename-sweep
+    slice-yaml-id: SLICE-022
+    added: 2026-04-17
+    after: identifier-scheme/template-updates
+    intent: "ADR identifier-scheme §D7 Phase 2 Part 1. Rename 9 numeric-prefix ADR files docs/adr/NNN-slug.md → docs/adr/<id>.md; migrate each ADR's id: frontmatter from ADR-NNN to its flat semantic slug; sweep all live cross-references (frontmatter adrs-referenced/supersedes, docs/adr/index.md, docs/ARCHITECTURE.md, docs/operational-reference.md, docs/spec-v1.md, docs/lessons.md, commands/claude-code/*.md, scripts/validate_architecture.py, scripts/dogfood_evaluate.py, live tests under tests/unit/, .claude/features/*.yaml, CLAUDE.md, CHANGELOG.md). Historical/frozen sites (.claude/completed-slices/, .claude/sweep-results/, docs/plans/, .claude/plans/, docs/reviews/) are out of scope. Slice-and-feature renames and residual prose sweep land in subsequent slices."
