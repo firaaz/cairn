@@ -220,8 +220,8 @@
     "size": 12100
   },
   "tests/unit/test_d3_bypass_log_format.py": {
-    "hash": "ae0a6efa57e32f016588f2a4cf245d964d520427536643f024476d2f52703219",
-    "size": 3719
+    "hash": "25deccd9be3afb8f886ed76aef7f4606369daa1d8adaf072b3bbe66e5e3e30be",
+    "size": 5289
   },
   "tests/unit/test_dogfood_evaluate.py": {
     "hash": "4ea558092094d18d7437892cdaaf7b167f89dfb56e10041c3ad5ef5cd8ee5f8e",
