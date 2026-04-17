@@ -112,8 +112,8 @@ Create the directory structure:
 
 Write `slice.yaml`:
 ```yaml
-id: SLICE-<NNN>
-title: "<ask user or derive from $ARGUMENTS>"
+id: <feature-id>/<slice-slug>
+name: "<human label>"
 status: intent
 started: <today's date YYYY-MM-DD>
 completed: null
@@ -122,7 +122,9 @@ adrs-referenced: []
 adrs-created: []
 ```
 
-Update `.claude/sweep.yaml` → `current-slice-number` to the new number.
+The hierarchical `<feature-id>/<slice-slug>` form is the default for new slices per ADR `identifier-scheme` D2. Legacy `SLICE-NNN` form remains accepted by hooks and validator during the Phase 1 transition (ADR `identifier-scheme` D7); both coexist until the rename-sweep slices land in Phase 2. When `<feature-id>` is not yet known, pick the feature-slug now — `/start-slice` also writes the feature file in the next block, so the feature id is resolved together with the slice id.
+
+Update `.claude/sweep.yaml` → `current-slice-number` to the new number. The numeric suffix remains useful for sweep cadence even after slice ids go hierarchical; retirement of `current-slice-number` is an ADR `identifier-scheme` D7 Phase 2 cleanup.
 
 ### Feature file (ADR-006 D3 always-create)
 
@@ -131,6 +133,21 @@ Every slice belongs to a feature. Before guiding intent writing, create or updat
 **If no feature file exists** for the current feature: create one with the required fields (`id`, `intent`, `created`) and a `slices` list containing the new slice entry (with `id` and `added` fields). Even single-slice features get a feature file — there is no "too small" exemption.
 
 **If a feature file already exists**: add a new slice entry to its `slices` list. Existing entries (including any with `status: dropped`) must be preserved — append only.
+
+Feature YAML shape (ADR `identifier-scheme` D1/D5):
+
+```yaml
+id: <feature-id>
+name: "<human label>"
+intent: "<one short prose statement>"
+shaped-from: "<path-or-url-or-null>"
+created: <YYYY-MM-DD>
+slices:
+  - id: <feature-id>/<slice-slug>
+    added: <YYYY-MM-DD>
+```
+
+Each slice-list entry uses the hierarchical `id: <feature-id>/<slice-slug>` form. The `slice-yaml-id: SLICE-NNN` bridge is permitted during transition for entries whose slice.yaml still uses the legacy flat form, but new slices using hierarchical `id:` do not require it. `shaped-from:` records the feature's provenance — a design-doc path, a URL, or `null` for unshaped features.
 
 Then guide intent writing (Step 5).
 

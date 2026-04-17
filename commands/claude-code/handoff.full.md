@@ -51,7 +51,18 @@ If you feel an urge to explain, that is a signal the explanation belongs in a co
 
 ## Step 3b: Cross-Feature Index
 
-If any feature files exist under `.claude/features/`, write a `## Features` section in the handoff note containing one line per active feature in the cross-feature index format: `- <feature-id>: <status-summary>`. If no features are active, omit the section.
+Per ADR `identifier-scheme` D8, the `## Features` section is a normative one-line-per-feature cross-feature index. Each active feature gets one line using the feature's `name:` where available (with `id:` as fallback) plus a short status phrase. Only the structural shape is normative — prose within each line is author judgment.
+
+If any feature files exist under `.claude/features/`, write a `## Features` section in the handoff note. Worked example (ADR `identifier-scheme` D8):
+
+```markdown
+## Features
+- identifier-scheme: template-updates Phase 2→3; rename sweeps queued
+- housekeeping: complete (SLICE-017/018)
+- v1-defense-d2: SLICE-010/011 queued
+```
+
+If no features are active, omit the section.
 
 If decomposition changed during the session (slices added, reordered, or dropped), prompt the operator to update the feature file before finishing the handoff.
 

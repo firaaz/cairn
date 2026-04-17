@@ -8,9 +8,11 @@ Usage: `/new-adr` (new decision) or `/new-adr supersede ADR-NNN` (supersede exis
 
 ADRs are the system's memory of decisions. Every invariant in ARCHITECTURE.md traces back to an ADR. The append-only property is what makes ARCHITECTURE.md trustworthy as a derived view — if old ADRs could be silently edited, the synthesis would be unreliable. This skill enforces the creation protocol: proper frontmatter, append-only discipline, and automatic index/architecture refresh.
 
-## Step 1: Determine the ADR Number
+## Step 1: Determine the ADR Id
 
-Read `docs/adr/index.md` to find the highest existing ADR number. The new ADR is that number + 1.
+Read `docs/adr/index.md` and pick a new `id:` for the ADR. Per ADR `identifier-scheme` D2, an ADR `id:` is a **flat semantic slug** — lowercase, hyphen-separated, no numeric prefix. Examples: `identifier-scheme`, `parallelism-v1`, `phase-lock-and-role-declaration`. The filename on disk takes the shape `docs/adr/<NNN>-<slug>.md` where `<NNN>` is a monotonically increasing numeric prefix used purely for filesystem ordering; the `<slug>` tail is the ADR `id:` and is what hooks, cross-references, and the validator consume.
+
+When superseding a prior decision, the successor ADR's `id:` follows the `-v1` → `-v2` versioning pattern (ADR `identifier-scheme` D3), e.g., `parallelism-v1` superseded by `parallelism-v2`.
 
 ## Step 2: Gather Decision Context
 
@@ -29,17 +31,23 @@ Create the file at `docs/adr/<NNN>-<slug>.md` using this structure:
 
 ```yaml
 ---
-id: ADR-<NNN>
+id: <flat-semantic-slug>
+name: "<human label>"
 status: accepted
 firmness: provisional
-supersedes: []           # or [ADR-NNN] if superseding
+supersedes: []           # list of ADR id values (e.g., [feature-slice-model]), not filenames
 supersedes-sections: []  # for partial supersession, e.g. [A1-A3]
 superseded-by: null
 topic: <topic>
+adrs-referenced: []      # list of ADR id values (e.g., [identifier-scheme]), not filenames
 invariants-touched: [INV-NNN]
 date: <today YYYY-MM-DD>
 ---
 ```
+
+Per ADR `identifier-scheme` D9, `supersedes:` and `adrs-referenced:` each hold a list of target ADR `id:` values — the flat slugs from Step 1, **not** filenames and **not** numeric prefixes like `ADR-007`. Example: an ADR that supersedes `feature-slice-model` writes `supersedes: [feature-slice-model]`. The validator and `/refresh-architecture` resolve these slugs against `docs/adr/index.md` at load time.
+
+Within an ADR body, decision points are numbered `D1`, `D2`, `D3`, … and are freely cited bare from the same ADR. When citing a decision point from a *different* ADR, use the hierarchical form `<adr-id>/<decision-slug>` (e.g., `identifier-scheme/flat-slug-id`) — the `<decision-slug>` identifies the decision within its owning ADR and is stable across supersession only if the successor explicitly preserves it.
 
 ```markdown
 # ADR-<NNN>: <Title>

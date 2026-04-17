@@ -91,6 +91,8 @@ Write the decision as a formal ADR using `/new-adr`. The ADR should include:
 - **Alternatives Considered**: The full enumeration from Phase 2 with reasons for rejection
 - **Risk Register**: The pre-mortem failure scenarios and how the chosen approach handles each
 
+**Cross-ADR citation form.** When this decision cites a decision point from a *different* ADR, use the hierarchical form `<adr-id>/<decision-slug>` (e.g., `identifier-scheme/flat-slug-id`). Bare `D1`, `D2`, `D3`, … remains acceptable shorthand within the same ADR. Per ADR `identifier-scheme` D2, `<adr-id>` is a flat semantic slug and `<decision-slug>` identifies the decision within its owning ADR. Filenames and numeric ADR prefixes (e.g., `007-…`) are **not** valid citation forms.
+
 ## Phase 5: Independent Verification (for firm decisions)
 
 If this decision will have `firmness: firm` — meaning it requires ceremony to change later — run an independent verification:

@@ -165,6 +165,25 @@ out-of-scope:
 <Specific checks. Not "test it" — concrete assertions.>
 ```
 
+## Identifier scheme
+
+Every ADR, slice, feature, and decision point carries two fields: `id:` (immutable mechanical identifier) and `name:` (mutable human/LLM-facing label). Cross-references, filenames, and hook inputs use `id:`; prose uses `name:`. Full theory and firmness live in ADR `identifier-scheme` (`docs/adr/identifier-scheme.md`); this section is the operational quick reference.
+
+**Per-entity `id:` shape** (from ADR `identifier-scheme` D2):
+
+| Entity | id: shape | Example | Hierarchy |
+|--------|-----------|---------|-----------|
+| ADR | flat semantic slug | `identifier-scheme`, `parallelism-v1` | — (flat; versioning via `-v1`→`-v2` on supersession, D3) |
+| Decision point | `<adr-id>/<decision-slug>` | `identifier-scheme/flat-slug-id` | hierarchical under the owning ADR |
+| Slice | `<feature-id>/<slice-slug>` | `identifier-scheme/template-updates` | hierarchical under the owning feature |
+| Feature | flat feature slug | `identifier-scheme`, `coordinator` | — (flat) |
+
+**`name:` is a frontmatter slot**, not reach-into-prose text. Each entity's YAML/frontmatter block carries `name:` explicitly and that is the canonical surface any tool or renderer reads. Prose inside an entity's body freely uses `name:` but does not redefine it — frontmatter is authoritative.
+
+**`shaped-from:` is the feature-provenance field** (ADR `identifier-scheme` D5). Each feature file records in `shaped-from:` either a path (e.g., `docs/plans/2026-04-15-fleet-coordinator-design.md`), a URL, or `null` for unshaped features. The field is append-only to the feature file at creation; rewriting it later requires the same discipline as ADR frontmatter edits.
+
+**Legacy transition.** During ADR `identifier-scheme` D7 Phase 1, hooks and the validator accept both the hierarchical new forms above and the legacy flat `SLICE-NNN` slice form and `ADR-NNN` ADR filename references. The Phase 2 rename-sweep slices (`adr-rename-sweep`, `slice-and-feature-rename`, `doc-sweep`) migrate existing entities; after those land, legacy forms are retired. Until then, newly-born entities emit the new scheme and existing entities retain their legacy `id:` until swept.
+
 ## Phase Gate Enforcement
 
 Phase transitions are enforced by git, not by session state:
