@@ -2,21 +2,21 @@
 slice: integration-gate/configurable-pytest-timeout
 phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-17 c6d07d5
+as-of: 2026-04-17 d0a946f
 ---
 
 ## State
-Slice `integration-gate/configurable-pytest-timeout` complete at c6d07d5. Phase 4 audit PASS, code-reviewer verdict: merge. `CAIRN_PYTEST_TIMEOUT` / `CAIRN_RUFF_TIMEOUT` live with cairn-self defaults preserved. Four pre-existing `test_d3_bypass_log_format.py` failures outside envelope.
+Slice closed at d0a946f. D1 PASS (7 invariants, 11 ADRs); D3 Subagent B PASS; Subagent A bypassed class `pre-existing` (SLICE-020 log entry) for documented SLICE-018 pytest failures. `.claude/current-slice/` wiped; slice.yaml retains `status: complete`.
 
 ## Next
-Decide merge strategy for `feature/identifier-scheme` via `/finishing-a-development-branch`; unblocks identifier-scheme rename queue and sweep #15.
+Run `/integration-sweep` in a fresh session — sweep due at slice 20 (last 18, interval 1).
 
 ## Blocked / Pending
-- 4 pre-existing failures in `tests/unit/test_d3_bypass_log_format.py` → separate slice (SLICE-018 regex mismatch).
-- Reviewer's 5 minor suggestions → lessons-log / follow-up (CAIRN_DEBUG flag, whitespace comment, shared `_env.py` when 2nd knob lands, float-rejection comment, integration-style timeout test).
-- Carry-over: `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → handoff obs §8.1 #8.
-- Sweep #15 deferred behind this fix (now unblocked).
-- Feature 1 rename sweeps (adr-rename-sweep → slice-and-feature-rename → doc-sweep) queued.
+- Sweep due → `/integration-sweep` first.
+- SLICE-018 — 4 pre-existing `test_d3_bypass_log_format.py` regex failures; separate slice before dev merge.
+- Feature 1 rename queue: `adr-rename-sweep → slice-and-feature-rename → doc-sweep` (queued after sweep).
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → carry-over obs §8.1 #8.
+- 5 reviewer suggestions (CAIRN_DEBUG, whitespace comment, shared `_env.py`, float-rejection comment, integration-style timeout test) → lessons-log.
 
 ## Features
 - integration-gate: complete (configurable-pytest-timeout)
@@ -26,6 +26,6 @@ Decide merge strategy for `feature/identifier-scheme` via `/finishing-a-developm
 - v1-defense-d3: SLICE-018 landed; substrate queued
 
 ## Pointers
-- `.claude/current-slice/handoff-phase-4.md` — Phase 4 audit record.
-- `.claude/current-slice/intent.md` — 10 acceptance checks.
-- `scripts/integration_gate.py:82-91` — `_positive_int_env` helper + call-sites.
+- `.claude/d3-bypasses.log` — SLICE-020 entry (`pre-existing` class).
+- `scripts/integration_gate.py:82-91` — `_positive_int_env` + `CAIRN_PYTEST_TIMEOUT` / `CAIRN_RUFF_TIMEOUT` call-sites.
+- `.claude/sweep.yaml` — sweep state; bump `last-sweep-at-slice` on next sweep.
