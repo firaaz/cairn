@@ -1,32 +1,31 @@
 ---
 slice: integration-gate/configurable-pytest-timeout
-phase: 2-validation complete
+phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-17 9e3ef4b
+as-of: 2026-04-17 c6d07d5
 ---
 
 ## State
-Slice `integration-gate/configurable-pytest-timeout` Phase 2 complete at 9e3ef4b. 20 tests committed under `tests/unit/test_integration_gate_timeout.py`; `scripts/integration_gate.py` untouched. `adrs-referenced: []` → no Phase 3 D3 gate concerns.
+Slice `integration-gate/configurable-pytest-timeout` complete at c6d07d5. Phase 4 audit PASS, code-reviewer verdict: merge. `CAIRN_PYTEST_TIMEOUT` / `CAIRN_RUFF_TIMEOUT` live with cairn-self defaults preserved. Four pre-existing `test_d3_bypass_log_format.py` failures outside envelope.
 
 ## Next
-Fresh session: run `/catchup phase 3` to enter Implementation (Builder).
+Decide merge strategy for `feature/identifier-scheme` via `/finishing-a-development-branch`; unblocks identifier-scheme rename queue and sweep #15.
 
 ## Blocked / Pending
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → handoff obs §8.1 #8 carry-over.
-- Step 3 validator timeout (`scripts/integration_gate.py:65`) out of scope this slice.
-- pytest `-x` short-circuit flag → sweep #14 obs §8.2; separate slice.
-- Sweep #15 still deferred behind this fix.
-- Feature 1 rename sweeps (adr-rename-sweep → slice-and-feature-rename → doc-sweep) queued behind integration-gate.
+- 4 pre-existing failures in `tests/unit/test_d3_bypass_log_format.py` → separate slice (SLICE-018 regex mismatch).
+- Reviewer's 5 minor suggestions → lessons-log / follow-up (CAIRN_DEBUG flag, whitespace comment, shared `_env.py` when 2nd knob lands, float-rejection comment, integration-style timeout test).
+- Carry-over: `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted → handoff obs §8.1 #8.
+- Sweep #15 deferred behind this fix (now unblocked).
+- Feature 1 rename sweeps (adr-rename-sweep → slice-and-feature-rename → doc-sweep) queued.
 
 ## Features
-- integration-gate: configurable-pytest-timeout Phase 2→3
+- integration-gate: complete (configurable-pytest-timeout)
 - identifier-scheme: Phase 1 complete; rename sweeps queued
 - housekeeping: complete (SLICE-017/018)
 - v1-defense-d2: SLICE-010/011 queued
 - v1-defense-d3: SLICE-018 landed; substrate queued
 
 ## Pointers
-- `.claude/current-slice/handoff-phase-2.md` — phase-to-phase handoff.
-- `.claude/current-slice/intent.md` — envelope, spec, 10 checks; Phase 3 sole spec input.
-- `tests/unit/test_integration_gate_timeout.py` — RED suite to pass.
-- `scripts/integration_gate.py:82-121` — hardcoded timeouts at lines 90 / 112.
+- `.claude/current-slice/handoff-phase-4.md` — Phase 4 audit record.
+- `.claude/current-slice/intent.md` — 10 acceptance checks.
+- `scripts/integration_gate.py:82-91` — `_positive_int_env` helper + call-sites.
