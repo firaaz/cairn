@@ -1,8 +1,9 @@
-id: SLICE-018
-title: "SLICE-018 dogfood batch — 4 parallel worker slices closed and merged into feature/identifier-scheme (D hook-relpath, B bypass-log-reclass, A stale-22k, C validator-flat-slug)"
-status: complete
-started: 2026-04-16
-completed: 2026-04-16
-invariants-touched: [INV-004, INV-005]
-adrs-referenced: [identifier-scheme, d3-bypass-classification]
+id: identifier-scheme/template-updates
+slice-yaml-id: SLICE-019
+name: "Identifier scheme — templates, prompt rule, and operational-reference elaboration"
+status: intent
+started: 2026-04-17
+completed: null
+invariants-touched: []
+adrs-referenced: [identifier-scheme]
 adrs-created: []

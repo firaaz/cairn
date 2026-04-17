@@ -29,3 +29,8 @@ slices:
     added: 2026-04-16
     after: identifier-scheme/hook-tolerance
     intent: "Widen scripts/validate_architecture.py to recognize flat-slug ADR filenames (docs/adr/<id>.md) and flat-slug IDs in ARCHITECTURE.md invariant references, alongside legacy NNN-slug.md. Closes the substrate gap named in ARCHITECTURE.md's 'Current Phase Constraints § Identifier scheme' paragraph so INV-005 can cite `identifier-scheme` directly instead of via the ADR-006 proxy."
+  - id: identifier-scheme/template-updates
+    slice-yaml-id: SLICE-019
+    added: 2026-04-17
+    after: identifier-scheme/validator-flat-slug
+    intent: "Final ADR identifier-scheme §D7 Phase 1 substrate. Update /start-slice, /new-adr, /handoff, /decision command templates to emit the two-field (id + name) model for new entities; add a one-sentence prompt rule to CLAUDE.md; elaborate the per-entity id-shape table in docs/operational-reference.md. No renames, no hook/validator/test code changes, no edits to existing ADR/slice/feature files."
