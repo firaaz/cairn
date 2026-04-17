@@ -157,10 +157,10 @@ def _assert_evaluator_ran(result: subprocess.CompletedProcess) -> None:
 
 
 class TestV1InsufficientData:
-    """V1 — evaluator exits 2 when log has zero entries and < 10 post-ADR-003 slices."""
+    """V1 — evaluator exits 2 when log has zero entries and < 10 post-cliff-failure-mode-and-v1-defenses slices."""
 
     def test_empty_log_under_threshold_exits_2(self, tmp_path):
-        """Zero entries, current-slice-number=4, baseline=2 → 2 post-ADR-003 slices → exit 2."""
+        """Zero entries, current-slice-number=4, baseline=2 → 2 post-cliff-failure-mode-and-v1-defenses slices → exit 2."""
         _make_empty_log(tmp_path, baseline=2)
         _write_sweep_yaml(tmp_path, current_slice_number=4)
 
@@ -273,10 +273,10 @@ class TestV3FalsePositiveThreshold:
 
 
 class TestV4NoAutomatedCatch:
-    """V4 — evaluator exits 1 when 10+ post-ADR-003 slices but no confirmed automated catch."""
+    """V4 — evaluator exits 1 when 10+ post-cliff-failure-mode-and-v1-defenses slices but no confirmed automated catch."""
 
     def test_ten_slices_no_catch_exits_1(self, tmp_path):
-        """current-slice-number=12, baseline=2 → 10 post-ADR-003 slices, zero catches → exit 1."""
+        """current-slice-number=12, baseline=2 → 10 post-cliff-failure-mode-and-v1-defenses slices, zero catches → exit 1."""
         _make_empty_log(tmp_path, baseline=2)
         _write_sweep_yaml(tmp_path, current_slice_number=12)
 
@@ -528,7 +528,7 @@ class TestAmbiguityBaselineFromFrontmatter:
     """Evaluator reads adr-003-landed-at-slice from dogfood-log.md frontmatter."""
 
     def test_baseline_read_from_log_frontmatter(self, tmp_path):
-        """baseline=5, current-slice-number=14 → 9 post-ADR-003 slices → insufficient (< 10).
+        """baseline=5, current-slice-number=14 → 9 post-cliff-failure-mode-and-v1-defenses slices → insufficient (< 10).
         If evaluator hardcodes baseline=2, it would compute 12 slices and behave differently."""
         _make_empty_log(tmp_path, baseline=5)
         _write_sweep_yaml(tmp_path, current_slice_number=14)

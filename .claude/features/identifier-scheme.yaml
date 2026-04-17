@@ -1,5 +1,5 @@
 id: identifier-scheme
-intent: "Establish ID + Name schema across ADRs/slices/decisions/features. Supersede ADR-005. Migrate existing entities. Fleet-coordinator Feature 1 (IDs + Names combined; state taxonomy deferred to its own feature)."
+intent: "Establish ID + Name schema across ADRs/slices/decisions/features. Supersede semantic-identity. Migrate existing entities. Fleet-coordinator Feature 1 (IDs + Names combined; state taxonomy deferred to its own feature)."
 created: 2026-04-15
 shaped-from: docs/plans/2026-04-15-identifier-scheme-design.md
 
@@ -28,7 +28,7 @@ slices:
     slice-yaml-id: SLICE-018
     added: 2026-04-16
     after: identifier-scheme/hook-tolerance
-    intent: "Widen scripts/validate_architecture.py to recognize flat-slug ADR filenames (docs/adr/<id>.md) and flat-slug IDs in ARCHITECTURE.md invariant references, alongside legacy NNN-slug.md. Closes the substrate gap named in ARCHITECTURE.md's 'Current Phase Constraints § Identifier scheme' paragraph so INV-005 can cite `identifier-scheme` directly instead of via the ADR-006 proxy."
+    intent: "Widen scripts/validate_architecture.py to recognize flat-slug ADR filenames (docs/adr/<id>.md) and flat-slug IDs in ARCHITECTURE.md invariant references, alongside legacy NNN-slug.md. Closes the substrate gap named in ARCHITECTURE.md's 'Current Phase Constraints § Identifier scheme' paragraph so INV-005 can cite `identifier-scheme` directly instead of via the feature-slice-model proxy."
   - id: identifier-scheme/template-updates
     slice-yaml-id: SLICE-019
     added: 2026-04-17

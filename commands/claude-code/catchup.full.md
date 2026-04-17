@@ -8,7 +8,7 @@ Usage: `/catchup` (auto-detect) or `/catchup phase 2|3|4` (enter specific pipeli
 
 Every new session starts with zero context. Without orientation, you waste time rediscovering what was already known, or worse — you make different assumptions than the last session and silently diverge. The naive fix is to read every file mentioned in the handoff note up front — which pushes a fresh session to ~47k tokens before the user has asked for anything.
 
-ADR-002 (context discipline protocol) replaces eager reads with a tiered model: a strictly bounded Tier 1 pass orients, a Tier 2 subagent (if dispatched at all) answers specific questions with a small return, and Tier 3 is simply the absence of catchup — once the user gives a direct imperative, normal file reading resumes.
+context-discipline-protocol (context discipline protocol) replaces eager reads with a tiered model: a strictly bounded Tier 1 pass orients, a Tier 2 subagent (if dispatched at all) answers specific questions with a small return, and Tier 3 is simply the absence of catchup — once the user gives a direct imperative, normal file reading resumes.
 
 ## Tier 1 — Strictly Bounded
 
@@ -117,7 +117,7 @@ When `/catchup phase N` is used and the handoff pointers explicitly list files f
 - Subagent loads: `.claude/current-slice/intent.md`, `docs/ARCHITECTURE.md`, the implementation (source files in envelope)
 - Excludes: Phase 3's `implementation/notes.md` — check the code, not the reasoning
 
-Before finalising the orientation report, read `docs/operational-reference.md § Phase Skill Guide` and surface the target phase's **role name**, **primary anti-behavior**, **secondary anti-behaviors**, and **primary + supporting skills**. This surfacing is the ADR-004 D4 commitment: roles and skills are echoed at every phase entry. For Phase 1 specifically, the primary-skills column is an em-dash (no primary fit) — still print the row so the operator sees the explicit absence rather than inferring a missing assignment. The Phase Skill Guide is a living registry; if an entry looks stale, the registry is the source to update, not this skill.
+Before finalising the orientation report, read `docs/operational-reference.md § Phase Skill Guide` and surface the target phase's **role name**, **primary anti-behavior**, **secondary anti-behaviors**, and **primary + supporting skills**. This surfacing is the phase-lock-and-role-declaration D4 commitment: roles and skills are echoed at every phase entry. For Phase 1 specifically, the primary-skills column is an em-dash (no primary fit) — still print the row so the operator sees the explicit absence rather than inferring a missing assignment. The Phase Skill Guide is a living registry; if an entry looks stale, the registry is the source to update, not this skill.
 
 ### Mode B — Continuing non-slice work
 

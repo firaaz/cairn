@@ -5,7 +5,7 @@ Tests cover:
 - Step 4 gate: runs ruff check + pytest in sequence, gates on result
 - Exit codes: 0 (all pass), 1 (one or more fail), 2 (missing prerequisites)
 - No short-circuit: all checks run even if early checks fail (A2)
-- Falsification: planted invariant violation must be caught (ADR-003 D3)
+- Falsification: planted invariant violation must be caught (cliff-failure-mode-and-v1-defenses D3)
 
 Tests are mechanism-agnostic — any Phase 3 implementation satisfying the
 intent.md specification passes.  Tests exercise the script through subprocess
@@ -403,13 +403,13 @@ class TestPrerequisites:
         )
 
 
-# --- Falsification test (ADR-003 D3 requirement) ---------------------------
+# --- Falsification test (cliff-failure-mode-and-v1-defenses D3 requirement) ---------------------------
 
 
 class TestFalsification:
     """D3 falsification: planted invariant violation that integration gate MUST catch.
 
-    ADR-003 requires a pre-specified calibration case that, if the check
+    cliff-failure-mode-and-v1-defenses requires a pre-specified calibration case that, if the check
     does not flag, causes D3 to be rejected at Phase 4.
     """
 
@@ -424,7 +424,7 @@ class TestFalsification:
         Expected: integration_gate.py exits 1 with the failing invariant
         named in the output.
 
-        If this test does not pass, D3 is rejected per ADR-003.
+        If this test does not pass, D3 is rejected per cliff-failure-mode-and-v1-defenses.
         """
         _make_project(
             tmp_path,

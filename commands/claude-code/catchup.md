@@ -1,6 +1,6 @@
 # /catchup
 
-Orient a new session using the tiered context discipline protocol (ADR-002).
+Orient a new session using the tiered context discipline protocol (context-discipline-protocol).
 
 Usage: `/catchup` (auto-detect) or `/catchup phase 2|3|4` (enter pipeline phase)
 

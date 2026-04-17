@@ -3,7 +3,7 @@ id: identifier-scheme
 name: "Identifier scheme — id + name two-field model"
 status: accepted
 firmness: firm
-supersedes: [ADR-005]
+supersedes: [semantic-identity]
 supersedes-sections: []
 superseded-by: null
 topic: naming
@@ -14,20 +14,20 @@ date: 2026-04-15
 # Identifier scheme — id + name two-field model
 
 ## Status
-Accepted. Supersedes ADR-005.
+Accepted. Supersedes semantic-identity.
 
 ## Date
 2026-04-15
 
 ## Context
 
-ADR-005 (Semantic Identity for Slices and ADRs) committed to a single semantic identifier per entity: one kebab-case string serving as both the immutable cross-reference key and the human-facing label. That single-field model has since proven inadequate on three counts:
+semantic-identity (Semantic Identity for Slices and ADRs) committed to a single semantic identifier per entity: one kebab-case string serving as both the immutable cross-reference key and the human-facing label. That single-field model has since proven inadequate on three counts:
 
 1. **Conflation of mechanical and human concerns.** The same string must remain stable for hooks, glob patterns, and `adrs-referenced` lists *and* must read well for humans skimming `handoff.md`. These two forces pull in opposite directions: cross-reference stability rewards short opaque slugs that never change; human readability rewards descriptive phrases that may be revised as the team's understanding sharpens. A single field cannot serve both without one role degrading the other.
 
 2. **Reach-into-prose anti-pattern.** Without a dedicated label field, callers wanting a readable name reach into `title:` (ADRs) or `intent:` (slices/features). Those fields were never specified as the canonical label — they're documentation prose — and the implicit promotion creates silent coupling: editing the title to clarify a thought breaks anything that grepped for it as a name.
 
-3. **Decision points and features absent from the model.** ADR-005 addressed slices and ADRs only. Decision points (introduced as ADR-007 D-prefix entities) and features (ADR-006) now exist as first-class entities with their own cross-reference needs. ADR-005 has no opinion on either, so each entity type was inventing its own conventions.
+3. **Decision points and features absent from the model.** semantic-identity addressed slices and ADRs only. Decision points (introduced as parallelism-v1 D-prefix entities) and features (feature-slice-model) now exist as first-class entities with their own cross-reference needs. semantic-identity has no opinion on either, so each entity type was inventing its own conventions.
 
 This ADR introduces a two-field identity model — `id:` (immutable mechanical) plus `name:` (mutable human/LLM-facing) — and extends coverage to all four current entity types: ADRs, decision points, slices, features.
 
@@ -65,7 +65,7 @@ When an ADR is superseded by a new ADR that re-decides on the same topic, the ne
 - Old IDs are never reused; they remain in the superseded ADR's frontmatter forever.
 - The new ADR re-states the decisions it carries forward under its own `id:` namespace; cross-references that should follow the new commitment are updated to point at `parallelism-v2`.
 
-**Decisions survive across ADR states via amendment.** A decision recorded in one ADR can be amended by a later ADR without superseding the whole parent. ADR-007 amending ADR-003 D4 is the worked example: ADR-007 took D4's time-box scope and refined it, but ADR-003 remained `accepted` because its other decisions (D1–D3) were not touched. The amended decision is identified by the original ADR's `id:` plus the decision slug — no version suffix is needed at the decision level because the amending ADR explicitly states which prior decision it amends.
+**Decisions survive across ADR states via amendment.** A decision recorded in one ADR can be amended by a later ADR without superseding the whole parent. parallelism-v1 amending cliff-failure-mode-and-v1-defenses D4 is the worked example: parallelism-v1 took D4's time-box scope and refined it, but cliff-failure-mode-and-v1-defenses remained `accepted` because its other decisions (D1–D3) were not touched. The amended decision is identified by the original ADR's `id:` plus the decision slug — no version suffix is needed at the decision level because the amending ADR explicitly states which prior decision it amends.
 
 Versioning at the ADR level is the only versioning. Slices, features, and decision points do not version — they get superseded by deletion (slice marked failed, feature retired) or by direct edit of the parent ADR.
 
@@ -103,7 +103,7 @@ The only structural enforcement is the standing total-YAML-size check that catch
 
 ### D7 — Migration shape (three-phase, normative)
 
-The transition from the ADR-005 single-field model to this ADR's two-field model is structured into three phases. The phase shape is normative; the per-slice envelope decisions inside each phase are not (subsequent slices may split or merge work as appropriate).
+The transition from the semantic-identity single-field model to this ADR's two-field model is structured into three phases. The phase shape is normative; the per-slice envelope decisions inside each phase are not (subsequent slices may split or merge work as appropriate).
 
 - **Phase 1 — additive, no renames.**
   - Schema: introduce `name:` field on all entity templates (ADR, slice, feature, decision-point references in ADR frontmatter).
@@ -135,7 +135,7 @@ The following questions were raised during the design phase and are resolved her
 
 - **Handoff cross-feature index format.** Resolution: the `## Features` section in `.claude/handoff.md` lists each active feature on one line, with the latest slice-id and a one-sentence status. Before/after example:
 
-  Before (single-feature, ADR-005 era):
+  Before (single-feature, semantic-identity era):
   ```
   ## Features
   - identifier-scheme: design committed, no slices yet (first: scheme-adr)
@@ -157,7 +157,7 @@ Within ADR frontmatter, fields that point at other ADRs (`adrs-referenced`, `sup
 
 File references in prose use `docs/adr/<id>.md`. Example: `see docs/adr/feature-slice-model.md § D3`.
 
-ADR-005's D2 (cross-reference format) stays in spirit — references use the `id:` field, not the filename — but is re-stated here under the two-field model rather than being inherited by reference. The new ADR is the canonical statement; ADR-005's body remains as the prior commitment record but is no longer the source of truth for cross-reference semantics.
+semantic-identity's D2 (cross-reference format) stays in spirit — references use the `id:` field, not the filename — but is re-stated here under the two-field model rather than being inherited by reference. The new ADR is the canonical statement; semantic-identity's body remains as the prior commitment record but is no longer the source of truth for cross-reference semantics.
 
 ## Consequences
 
@@ -167,7 +167,7 @@ ADR-005's D2 (cross-reference format) stays in spirit — references use the `id
 
 **Rejected alternatives.**
 
-- **Hash-suffixed IDs** (`auth-redesign-a3f9`). Rejected: a hash is unreadable, defeats the human-facing benefit of semantic IDs, and solves a collision problem (D1 of ADR-005) that doesn't exist in practice — semantic names are naturally unique because they describe different things.
+- **Hash-suffixed IDs** (`auth-redesign-a3f9`). Rejected: a hash is unreadable, defeats the human-facing benefit of semantic IDs, and solves a collision problem (D1 of semantic-identity) that doesn't exist in practice — semantic names are naturally unique because they describe different things.
 - **Date-prefixed IDs** (`2026-04-15-identifier-scheme`). Rejected: date prefixes leak a creation-time accident into the cross-reference key, force renames if the file is committed late, and create false ordering signal (a date-prefixed ID looks like it should sort meaningfully, but ADRs are read by `id:` not by date).
 - **Epic entities as first-class** (`.claude/epics/`). Rejected: see D5. Shape Up planning model has no epic concept; grouping is a query, not an entity.
 
@@ -178,5 +178,5 @@ ADR-005's D2 (cross-reference format) stays in spirit — references use the `id
 
 **Unaffected.**
 
-- ADR-004 INV-003 (four-phase pipeline lock) is unchanged. Phase names are not entity IDs.
+- phase-lock-and-role-declaration INV-003 (four-phase pipeline lock) is unchanged. Phase names are not entity IDs.
 - Existing slice envelopes and ongoing work are not affected — Phase 1 of migration is purely additive, and renames don't happen until Phase 2.

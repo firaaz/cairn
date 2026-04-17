@@ -8,7 +8,7 @@ Usage: `/handoff` (end of any session) or `/handoff phase` (end of a pipeline ph
 
 Every session accumulates context that is invisible to the next session. The naive fix is to write a long narrative — what happened, what was discovered, what to watch out for. That narrative smuggles mental state across a boundary the pipeline deliberately erected: the next session is supposed to load a *fresh* perspective on the artifacts, not inherit the previous session's framing. It also costs ~3k tokens per catchup, which the session then pays for every subsequent turn.
 
-ADR-002 (context discipline protocol) replaces the narrative with a bounded pointer. The handoff note is the team interface: it tells the next session where to look, not what to think.
+context-discipline-protocol (context discipline protocol) replaces the narrative with a bounded pointer. The handoff note is the team interface: it tells the next session where to look, not what to think.
 
 ## Target format
 

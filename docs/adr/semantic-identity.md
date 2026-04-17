@@ -1,5 +1,5 @@
 ---
-id: ADR-005
+id: semantic-identity
 title: Semantic Identity for Slices and ADRs
 status: superseded
 firmness: firm
@@ -11,7 +11,7 @@ invariants-touched: []
 date: 2026-04-12
 ---
 
-# ADR-005: Semantic Identity for Slices and ADRs
+# semantic-identity: Semantic Identity for Slices and ADRs
 
 ## Status
 Accepted
@@ -21,7 +21,7 @@ Accepted
 
 ## Context
 
-Cairn's current naming convention uses sequential numeric prefixes for both slices (SLICE-001, SLICE-002) and ADRs (ADR-001, ADR-002). This convention was inherited from early bootstrapping (ADR-001) and never revisited.
+Cairn's current naming convention uses sequential numeric prefixes for both slices (SLICE-001, SLICE-002) and ADRs (bootstrap-exception, context-discipline-protocol). This convention was inherited from early bootstrapping (bootstrap-exception) and never revisited.
 
 Sequential numbering creates three concrete problems:
 
@@ -87,4 +87,4 @@ Slice IDs in `slice.yaml` and feature files use kebab-case: `id: context-discipl
 
 - **Transition period requires tolerance of both formats.** Until the migration slice lands, the codebase contains both `003-cliff-failure-mode-and-v1-defenses.md` and any new semantic-only ADRs. Tools and hooks must accept both during this window.
 
-- **ADR-004 INV-003 is unaffected.** The four-phase pipeline lock references phase names, not slice IDs. Phase names remain unchanged.
+- **phase-lock-and-role-declaration INV-003 is unaffected.** The four-phase pipeline lock references phase names, not slice IDs. Phase names remain unchanged.

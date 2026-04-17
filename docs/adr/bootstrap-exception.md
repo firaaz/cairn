@@ -1,5 +1,5 @@
 ---
-id: ADR-001
+id: bootstrap-exception
 status: accepted
 firmness: firm
 supersedes: []
@@ -10,7 +10,7 @@ invariants-touched: [INV-001]
 date: 2026-04-11
 ---
 
-# ADR-001: Bootstrap Exception
+# bootstrap-exception: Bootstrap Exception
 
 ## Status
 Accepted
@@ -43,7 +43,7 @@ After this commit lands, all cairn development flows through `/decision` or `/st
 - **INV-001 becomes enforceable from slice #1 onward.** The invariant that all post-bootstrap work goes through the pipeline is now machine-checkable in spirit (via `/status`, code review, and the commit-history audit), though not yet by any automated hook.
 - **The substrate validator's Check B is satisfied on commit #1.** This ADR is `firmness: firm` and is paired with INV-001 in `docs/ARCHITECTURE.md`, so `scripts/validate_architecture.py` reports `ALL CHECKS PASSED` from the bootstrap forward. A green validator from day one is a feature — it means `/status` has a truthful signal to report.
 - **v1 commitment #4 is honored with an explicit footnote rather than a silent workaround.** Readers of cairn's ADR corpus encounter the bootstrap exception first, before any architectural decision. The exception is visible, attributed, and bounded.
-- **Every future "can't we just…" shortcut has a precedent to point at.** The answer is: no, because ADR-001 is the only exception, and it was written because the pipeline physically could not run. Your shortcut is not that case.
+- **Every future "can't we just…" shortcut has a precedent to point at.** The answer is: no, because bootstrap-exception is the only exception, and it was written because the pipeline physically could not run. Your shortcut is not that case.
 
 ## Alternatives Considered
 
@@ -51,7 +51,7 @@ After this commit lands, all cairn development flows through `/decision` or `/st
 
 **Leave `docs/adr/` empty and accept a red validator until slice #1.** Rejected because `/status` is the primary operator-facing signal for system health, and starting in a known-red state desensitizes readers to validator output. A validator that is sometimes broken for "good reasons" is indistinguishable from one that is broken for bad reasons.
 
-**Ship the bootstrap under ADR-001 `firmness: provisional`.** Rejected because the bootstrap decision is not provisional — there is no realistic future state where this ADR is revisited or replaced. Provisional firmness should mean "we may revisit this as we learn more." The bootstrap exception is a fact, not a hypothesis.
+**Ship the bootstrap under bootstrap-exception `firmness: provisional`.** Rejected because the bootstrap decision is not provisional — there is no realistic future state where this ADR is revisited or replaced. Provisional firmness should mean "we may revisit this as we learn more." The bootstrap exception is a fact, not a hypothesis.
 
 ## Risk Register
 

@@ -4,7 +4,7 @@ Tests cover:
 - Snapshot creation: file scanning, JSON structure, SHA-256 hashing
 - Diff mode: detecting new/deleted/changed files, envelope cross-referencing
 - Exit codes: 0 (clean), 1 (out-of-envelope changes), 2 (no prior snapshot)
-- Falsification: planted out-of-envelope change must be caught (ADR-003 D3)
+- Falsification: planted out-of-envelope change must be caught (cliff-failure-mode-and-v1-defenses D3)
 
 Tests are mechanism-agnostic — any Phase 3 implementation satisfying the
 intent.md specification passes.  Tests exercise the script through subprocess
@@ -26,7 +26,6 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
-
 
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -182,7 +181,7 @@ class TestSnapshotCreation:
             tmp_path,
             {
                 "docs/operational-reference.md": "# ops",
-                "docs/adr/003-cliff.md": "# cliff",
+                "docs/adr/cliff.md": "# cliff",
             },
         )
         result = _run(tmp_path, "--snapshot")
@@ -191,7 +190,7 @@ class TestSnapshotCreation:
             (tmp_path / ".claude" / "structural-snapshot.json").read_text()
         )
         assert "docs/operational-reference.md" in snapshot
-        assert "docs/adr/003-cliff.md" in snapshot
+        assert "docs/adr/cliff.md" in snapshot
 
     def test_snapshot_recursive_under_subdirs(self, tmp_path):
         """Snapshot scans recursively — files in nested subdirs are included (A3)."""
@@ -473,13 +472,13 @@ class TestDiffMode:
         assert "scripts/unrelated.py" in result.stdout
 
 
-# --- Falsification test (ADR-003 D3 requirement) ---------------------------
+# --- Falsification test (cliff-failure-mode-and-v1-defenses D3 requirement) ---------------------------
 
 
 class TestFalsification:
     """D3 falsification: planted violation that snapshot-diff MUST catch.
 
-    ADR-003 requires a pre-specified calibration case that, if the check
+    cliff-failure-mode-and-v1-defenses requires a pre-specified calibration case that, if the check
     does not flag, causes D3 to be rejected at Phase 4.
     """
 
@@ -493,7 +492,7 @@ class TestFalsification:
           - Modify validate_architecture.py
 
         Expected: snapshot_diff --diff exits 1 and names the file.
-        If this test does not pass, D3 is rejected per ADR-003.
+        If this test does not pass, D3 is rejected per cliff-failure-mode-and-v1-defenses.
         """
         _make_project(
             tmp_path,

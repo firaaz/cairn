@@ -1,5 +1,5 @@
 id: v1-defense-d2
-intent: "ADR-003 D2 — code↔invariant binding: every firm invariant carries a machine-checkable assertion run by the architecture validator"
+intent: "cliff-failure-mode-and-v1-defenses D2 — code↔invariant binding: every firm invariant carries a machine-checkable assertion run by the architecture validator"
 created: 2026-04-14
 slices:
   - id: SLICE-010

@@ -31,9 +31,9 @@ COMPLETED_SLICES = {"SLICE-001", "SLICE-002", "SLICE-003", "SLICE-004", "SLICE-0
 
 
 def _find_phase_adr() -> Path | None:
-    """Find the SLICE-006 output ADR matching docs/adr/*-phase-*.md, excluding ADR-004."""
-    matches = sorted(ADR_DIR.glob("*-phase-*.md"))
-    return next((p for p in matches if not p.name.startswith("004-")), None)
+    """Find the SLICE-006 output ADR (phase-pipeline-evaluation) at its flat-slug path."""
+    path = ADR_DIR / "phase-pipeline-evaluation.md"
+    return path if path.is_file() else None
 
 
 def _read(p: Path) -> str:
@@ -71,11 +71,13 @@ def _extract_section(body: str, heading: str) -> str | None:
 
 
 def _adr_supersedes_004(fm: dict) -> bool:
-    """Check if ADR supersedes ADR-004 (fully or by section)."""
+    """Check if ADR supersedes phase-lock-and-role-declaration (fully or by section)."""
     supersedes = fm.get("supersedes", []) or []
     supersedes_sections = fm.get("supersedes-sections", []) or []
     all_refs = [str(s) for s in supersedes + supersedes_sections]
-    return any("ADR-004" in ref or "004" in ref for ref in all_refs)
+    return any(
+        "phase-lock-and-role-declaration" in ref or "004" in ref for ref in all_refs
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -197,7 +199,7 @@ def test_v2_cites_three_slices():
 
 
 def test_v3_supersession_file_enumeration():
-    """V3: If superseding ADR-004, Consequences names every phase-name-matching
+    """V3: If superseding phase-lock-and-role-declaration, Consequences names every phase-name-matching
     file and declares a migration path for each."""
     path = _find_phase_adr()
     assert path is not None, "Phase ADR not found. (V3 pre-req)"
@@ -243,7 +245,7 @@ def test_v3_supersession_file_enumeration():
 
 
 def test_v4_confirmation_justification():
-    """V4: If confirming ADR-004, the ADR explains what changed since the
+    """V4: If confirming phase-lock-and-role-declaration, the ADR explains what changed since the
     original decision to justify re-confirmation (not just 'it still works')."""
     path = _find_phase_adr()
     assert path is not None, "Phase ADR not found. (V4 pre-req)"
@@ -268,7 +270,7 @@ def test_v4_confirmation_justification():
     found = any(re.search(p, text, re.IGNORECASE) for p in change_patterns)
     assert found, (
         "Confirming ADR must explain what changed since the original "
-        "ADR-004 decision to justify re-confirmation — not just "
+        "phase-lock-and-role-declaration decision to justify re-confirmation — not just "
         "'it still works'. (V4)"
     )
 
@@ -279,14 +281,14 @@ def test_v4_confirmation_justification():
 
 
 def test_v5_a2_tripwire_evaluation():
-    """V5: The A2 tripwire status (ADR-004 Risk Register) is evaluated
+    """V5: The A2 tripwire status (phase-lock-and-role-declaration Risk Register) is evaluated
     against available evidence and the finding is recorded."""
     path = _find_phase_adr()
     assert path is not None, "Phase ADR not found. (V5 pre-req)"
     text = _read(path)
 
     assert "A2" in text, (
-        "ADR must evaluate the A2 tripwire status from ADR-004's "
+        "ADR must evaluate the A2 tripwire status from phase-lock-and-role-declaration's "
         "Risk Register. No 'A2' reference found. (V5)"
     )
 

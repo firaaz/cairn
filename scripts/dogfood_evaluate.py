@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Evaluate dogfood instrumentation log against ADR-003 gate criteria.
+"""Evaluate dogfood instrumentation log against cliff-failure-mode-and-v1-defenses gate criteria.
 
 Reads docs/dogfood-log.md and .claude/sweep.yaml, evaluates:
   1. Catch-rate: >=1 confirmed automated catch where manual would not have caught
   2. False-positive: no defense has >=3 confirmed false positives (muting threshold)
-  3. Gate status: pass/fail/insufficient-data based on post-ADR-003 slice count
+  3. Gate status: pass/fail/insufficient-data based on post-cliff-failure-mode-and-v1-defenses slice count
 
 Exit codes:
     0 — pass
     1 — fail (FP threshold breached, unresolved unclear entries, or 10+ slices no catch)
-    2 — insufficient data (< 10 post-ADR-003 slices, missing files)
+    2 — insufficient data (< 10 post-cliff-failure-mode-and-v1-defenses slices, missing files)
 """
 
 import os
@@ -215,7 +215,7 @@ def _evaluate(
     )
 
     # Report
-    print(f"Dogfood evaluation — {post_adr003_slices} post-ADR-003 slices")
+    print(f"Dogfood evaluation — {post_adr003_slices} post-cliff-failure-mode-and-v1-defenses slices")
     print(f"  Entries: {len(valid)} valid, {len(entries) - len(valid)} skipped")
     print(f"  Automated catches (would-manual=no): {'yes' if has_catch else 'none'}")
     for defense in sorted(fp_counts):
@@ -238,7 +238,7 @@ def _evaluate(
         return 0
 
     if post_adr003_slices >= SLICE_THRESHOLD:
-        print("FAIL: 10+ post-ADR-003 slices with no confirmed automated catch")
+        print("FAIL: 10+ post-cliff-failure-mode-and-v1-defenses slices with no confirmed automated catch")
         return 1
 
     print("INSUFFICIENT DATA: awaiting more slices or entries")

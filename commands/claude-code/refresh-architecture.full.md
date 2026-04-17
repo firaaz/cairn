@@ -26,7 +26,7 @@ Rewrite `docs/ARCHITECTURE.md` preserving this structure:
 # Architecture
 
 System: Multi-tenant RAG for structured visa/border configuration data
-Phase: <derive from ADR-002 or current state>
+Phase: <derive from context-discipline-protocol or current state>
 
 ## Invariants
 

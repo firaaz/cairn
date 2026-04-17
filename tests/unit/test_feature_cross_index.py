@@ -14,7 +14,7 @@ import re
 
 # --- Index line format -------------------------------------------------------
 
-# ADR-008 D0: one line per active feature in handoff.md ## Features section.
+# context-tiers-integration D0: one line per active feature in handoff.md ## Features section.
 # Format: "- <feature-id>: <status-summary>"
 # Each line ~15–25 tokens.
 
@@ -27,7 +27,7 @@ def validate_index_line(line: str) -> bool:
 
 
 def approximate_tokens(text: str) -> float:
-    """Approximate token count at ~5 chars per token (ADR-008 convention)."""
+    """Approximate token count at ~5 chars per token (context-tiers-integration convention)."""
     return len(text) / 5
 
 
@@ -69,7 +69,7 @@ class TestIndexLineFormat:
         assert not validate_index_line("- feature-slice-model:")
 
     def test_rejects_uppercase_id(self):
-        """Feature IDs are semantic kebab-case (ADR-005) — lowercase."""
+        """Feature IDs are semantic kebab-case (semantic-identity) — lowercase."""
         assert not validate_index_line("- Feature-Slice-Model: SLICE-009 active")
 
     def test_all_sample_lines_valid(self):
@@ -104,7 +104,7 @@ class TestEmptyIndex:
 
 class TestTokenBudget:
     def test_single_line_within_per_line_budget(self):
-        """Each feature line should be ~15–25 tokens (ADR-008 D0)."""
+        """Each feature line should be ~15–25 tokens (context-tiers-integration D0)."""
         for line in SAMPLE_LINES:
             tokens = approximate_tokens(line)
             assert tokens <= 30, (
@@ -114,7 +114,7 @@ class TestTokenBudget:
 
     def test_five_feature_index_under_125_tokens(self):
         """Cross-feature index with 5 features must stay under 125 tokens
-        (intent.md V9, ADR-008 D0)."""
+        (intent.md V9, context-tiers-integration D0)."""
         tokens = approximate_tokens(SAMPLE_INDEX)
         assert tokens <= 125, (
             f"5-feature index ≈{tokens:.0f} tokens, exceeds 125-token ceiling"
@@ -130,7 +130,7 @@ class TestTokenBudget:
     def test_index_fits_within_handoff_400_token_budget(self):
         """The index must leave room in handoff.md's 400-token ceiling.
         With ~275 tokens for other handoff sections (State, Next, Blocked,
-        Pointers), 125 tokens for the index = 400 total (ADR-008 D3)."""
+        Pointers), 125 tokens for the index = 400 total (context-tiers-integration D3)."""
         index_tokens = approximate_tokens(SAMPLE_INDEX)
         remaining_budget = 400 - index_tokens
         assert remaining_budget >= 200, (

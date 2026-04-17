@@ -52,9 +52,19 @@ FLAT_SLUG_ABS = str(CAIRN_ROOT / "docs/adr/identifier-scheme.md")
 FLAT_SLUG_REL = "docs/adr/identifier-scheme.md"
 FLAT_SLUG_SS = ".slice-system/docs/adr/identifier-scheme.md"
 
+# LEGACY_* names refer to a hypothetical `docs/adr/NNN-slug.md` shape for
+# Edit-branch tests (V4 frontmatter, V7 editorial-fix), where the
+# reversibility-guard only pattern-matches the path and does not check file
+# existence. The Write-branch tests (TestV2*, V3 legacy case) need a real
+# file on disk and route through the `legacy_adr_mirror` fixture instead —
+# no legacy-shape file survives in the live `docs/adr/` tree after ADR
+# identifier-scheme D7 Phase 2 Part 1.
 LEGACY_ABS = str(CAIRN_ROOT / "docs/adr/006-feature-slice-model.md")
 LEGACY_REL = "docs/adr/006-feature-slice-model.md"
 LEGACY_SS = ".slice-system/docs/adr/006-feature-slice-model.md"
+
+LEGACY_MIRROR_REL = "docs/adr/999-tolerance-sentinel.md"
+LEGACY_MIRROR_SS = ".slice-system/docs/adr/999-tolerance-sentinel.md"
 
 NEW_FLAT_ABS = str(CAIRN_ROOT / "docs/adr/future-unused.md")
 NEW_FLAT_REL = "docs/adr/future-unused.md"
@@ -108,6 +118,30 @@ def _run_hook(
     )
 
 
+@pytest.fixture
+def legacy_adr_mirror(tmp_path: Path) -> tuple[Path, Path]:
+    """Synthetic legacy-shape ADR inside a tmp project-root mirror.
+
+    After ADR `identifier-scheme` D7 Phase 2 Part 1 no `docs/adr/NNN-slug.md`
+    file lives in the live tree. Write-branch tolerance tests need a real
+    legacy-shape file for the reversibility-guard's `[ -f ... ]` existence
+    check to fire; this fixture synthesizes one inside `tmp_path` and points
+    `CLAUDE_PROJECT_DIR` at that mirror. Dual-format Write-blocked coverage
+    survives without a legacy file in the live `docs/adr/` tree.
+    """
+    adr_dir = tmp_path / "docs" / "adr"
+    adr_dir.mkdir(parents=True)
+    legacy_adr = adr_dir / "999-tolerance-sentinel.md"
+    legacy_adr.write_text(
+        "---\n"
+        "id: ADR-999\n"
+        'name: "Legacy-shape sentinel for hook tolerance tests"\n'
+        "status: accepted\n"
+        "---\n"
+    )
+    return tmp_path, legacy_adr
+
+
 # ---------------------------------------------------------------------------
 # V1 — Bare-relative flat-slug ADR bypass closes
 # ---------------------------------------------------------------------------
@@ -153,12 +187,21 @@ class TestV1BareRelativeFlatSlugBlocked:
 
 
 class TestV2BareRelativeLegacyBlocked:
-    """RED: bare-relative `docs/adr/NNN-<slug>.md` must deny Write + body Edit."""
+    """RED: bare-relative `docs/adr/NNN-<slug>.md` must deny Write + body Edit.
 
-    def test_write_bare_relative_legacy_blocked(self):
+    Write case uses `legacy_adr_mirror` because the reversibility-guard checks
+    file existence before denying Write; no legacy file lives in the live tree
+    after Phase 2 Part 1. Body-Edit case does not check existence and can
+    continue referencing the (now-absent) legacy path directly.
+    """
+
+    def test_write_bare_relative_legacy_blocked(self, legacy_adr_mirror):
+        project_root, _ = legacy_adr_mirror
         result = _run_hook(
             "Write",
-            {"file_path": LEGACY_REL, "content": "overwrite"},
+            {"file_path": LEGACY_MIRROR_REL, "content": "overwrite"},
+            env_override={"CLAUDE_PROJECT_DIR": str(project_root)},
+            cwd=str(project_root),
         )
         assert result.returncode == 2, (
             f"bypass still open: Write bare-relative legacy ADR returned "
@@ -192,26 +235,37 @@ class TestV2BareRelativeLegacyBlocked:
 
 
 class TestV3SliceSystemPrefixedDeniesConsistently:
-    """GREEN: `.slice-system/` symlink-shape must continue to deny."""
+    """GREEN: `.slice-system/` symlink-shape must continue to deny.
 
-    @pytest.mark.parametrize(
-        "path, expected_msg",
-        [
-            (FLAT_SLUG_SS, WRITE_BLOCK_MSG),
-            (LEGACY_SS, WRITE_BLOCK_MSG),
-        ],
-        ids=["flat_slug", "legacy"],
-    )
-    def test_write_slice_system_prefixed_blocked(self, path, expected_msg):
+    Flat-slug case uses the live `identifier-scheme.md`. Legacy case routes
+    through `legacy_adr_mirror` because no legacy-shape file lives in the
+    live tree after Phase 2 Part 1.
+    """
+
+    def test_write_slice_system_flat_slug_blocked(self):
         result = _run_hook(
             "Write",
-            {"file_path": path, "content": "overwrite"},
+            {"file_path": FLAT_SLUG_SS, "content": "overwrite"},
         )
         assert result.returncode == 2, (
-            f"Write {path} returned exit {result.returncode} (expected 2); "
-            f"stdout={result.stdout!r}"
+            f"Write {FLAT_SLUG_SS} returned exit {result.returncode} "
+            f"(expected 2); stdout={result.stdout!r}"
         )
-        assert expected_msg in result.stdout
+        assert WRITE_BLOCK_MSG in result.stdout
+
+    def test_write_slice_system_legacy_blocked(self, legacy_adr_mirror):
+        project_root, _ = legacy_adr_mirror
+        result = _run_hook(
+            "Write",
+            {"file_path": LEGACY_MIRROR_SS, "content": "overwrite"},
+            env_override={"CLAUDE_PROJECT_DIR": str(project_root)},
+            cwd=str(project_root),
+        )
+        assert result.returncode == 2, (
+            f"Write {LEGACY_MIRROR_SS} returned exit {result.returncode} "
+            f"(expected 2); stdout={result.stdout!r}"
+        )
+        assert WRITE_BLOCK_MSG in result.stdout
 
     def test_edit_body_slice_system_flat_slug_blocked(self):
         result = _run_hook(

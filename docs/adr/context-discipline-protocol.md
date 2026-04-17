@@ -1,5 +1,5 @@
 ---
-id: ADR-002
+id: context-discipline-protocol
 status: accepted
 firmness: firm
 supersedes: []
@@ -10,7 +10,7 @@ invariants-touched: [INV-002]
 date: 2026-04-11
 ---
 
-# ADR-002: Context Discipline Protocol
+# context-discipline-protocol: Context Discipline Protocol
 
 ## Status
 Accepted

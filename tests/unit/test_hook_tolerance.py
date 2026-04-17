@@ -39,6 +39,12 @@ SCOPE_GUARD = CAIRN_ROOT / "checks" / "scope-guard.sh"
 REALITY_CHECK = CAIRN_ROOT / "checks" / "reality-check.sh"
 
 FLAT_SLUG_ADR = str(CAIRN_ROOT / "docs/adr/identifier-scheme.md")
+# LEGACY_ADR refers to a hypothetical `docs/adr/NNN-slug.md` shape for Edit-branch
+# tests (frontmatter / body / editorial-fix) where the reversibility-guard only
+# pattern-matches the path and does not check file existence. The Write-branch
+# tests (TestV2*) need a real file on disk and route through the
+# `legacy_adr_mirror` fixture instead — no legacy-shape file survives in the
+# live `docs/adr/` tree after ADR identifier-scheme D7 Phase 2 Part 1.
 LEGACY_ADR = str(CAIRN_ROOT / "docs/adr/006-feature-slice-model.md")
 NEW_FLAT_SLUG_ADR = str(CAIRN_ROOT / "docs/adr/future-flat-slug.md")
 NEW_LEGACY_ADR = str(CAIRN_ROOT / "docs/adr/100-future-slug.md")
@@ -49,6 +55,31 @@ FLAT_SLUG_ADR_REL = "docs/adr/identifier-scheme.md"
 WRITE_BLOCK_MSG = "REVERSIBILITY GUARD: ADRs are append-only"
 EDIT_BLOCK_MSG = "REVERSIBILITY GUARD: ADR body is append-only"
 EDITORIAL_LOG = ".claude/adr-editorial-fixes.log"
+
+
+@pytest.fixture
+def legacy_adr_mirror(tmp_path: Path) -> tuple[Path, Path]:
+    """Synthetic legacy-shape ADR inside a tmp project-root mirror.
+
+    After ADR `identifier-scheme` D7 Phase 2 Part 1 no `docs/adr/NNN-slug.md`
+    file lives in the live tree. Tests that exercise the reversibility-guard's
+    file-existence branch on a legacy-shape path need a file to point at —
+    this fixture synthesizes one inside `tmp_path` and points
+    `CLAUDE_PROJECT_DIR` at that mirror so the hook's PROJECT_ROOT resolution
+    lands on the sentinel. Dual-format Write-blocked coverage survives without
+    re-introducing a legacy NNN-slug file in the live `docs/adr/` tree.
+    """
+    adr_dir = tmp_path / "docs" / "adr"
+    adr_dir.mkdir(parents=True)
+    legacy_adr = adr_dir / "999-tolerance-sentinel.md"
+    legacy_adr.write_text(
+        "---\n"
+        "id: ADR-999\n"
+        'name: "Legacy-shape sentinel for hook tolerance tests"\n'
+        "status: accepted\n"
+        "---\n"
+    )
+    return tmp_path, legacy_adr
 
 
 def _run_hook(
@@ -116,22 +147,32 @@ class TestV1BootstrapWindowGapCloses:
 
 
 class TestV2LegacyAdrProtectionUnchanged:
-    """GREEN: Write to existing legacy ADR still blocked."""
+    """GREEN: Write to existing legacy ADR still blocked.
 
-    def test_write_existing_legacy_adr_blocked(self):
+    Uses the `legacy_adr_mirror` fixture — no legacy-shape ADR lives in the
+    live tree after the Phase 2 Part 1 rename sweep, so we synthesize one
+    inside `tmp_path` and set `CLAUDE_PROJECT_DIR` to that mirror to exercise
+    the reversibility-guard's file-existence branch.
+    """
+
+    def test_write_existing_legacy_adr_blocked(self, legacy_adr_mirror):
+        project_root, legacy_adr = legacy_adr_mirror
         result = _run_reversibility_guard(
             "Write",
-            {"file_path": LEGACY_ADR, "content": "overwrite attempt"},
+            {"file_path": str(legacy_adr), "content": "overwrite attempt"},
+            env_override={"CLAUDE_PROJECT_DIR": str(project_root)},
         )
         assert result.returncode == 2, (
             f"Write to existing legacy ADR was not blocked "
             f"(exit {result.returncode}, expected 2)"
         )
 
-    def test_write_block_message_matches(self):
+    def test_write_block_message_matches(self, legacy_adr_mirror):
+        project_root, legacy_adr = legacy_adr_mirror
         result = _run_reversibility_guard(
             "Write",
-            {"file_path": LEGACY_ADR, "content": "overwrite attempt"},
+            {"file_path": str(legacy_adr), "content": "overwrite attempt"},
+            env_override={"CLAUDE_PROJECT_DIR": str(project_root)},
         )
         assert WRITE_BLOCK_MSG in result.stdout, (
             f"Expected '{WRITE_BLOCK_MSG}' in stdout deny JSON for legacy ADR, "

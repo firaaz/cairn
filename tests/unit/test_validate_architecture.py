@@ -332,8 +332,8 @@ def test_v6_resolution_failure_no_viable_root(tmp_path):
 # §Verification V2–V6 and V10. V1 (legacy + commentary parity on live
 # corpus) is covered by test_v1_cairn_self_dogfood_baseline above: the
 # current ARCHITECTURE.md includes commentary inside invariant
-# parentheticals (e.g. `(ADR-004; confirmed by ADR-009)` on INV-003,
-# `(ADR-002; dedicated ADR pending ...)` on INV-004), so that test is the
+# parentheticals (e.g. `(phase-lock-and-role-declaration; confirmed by phase-pipeline-evaluation)` on INV-003,
+# `(context-discipline-protocol; dedicated ADR pending ...)` on INV-004), so that test is the
 # whole-corpus regression guard for intent's "at parity with current
 # behavior" clause on commentary handling. V7 (project-root resolution
 # unchanged) is covered by V1–V6. V8/V9 are Phase 3 run-time checks, not
@@ -474,7 +474,7 @@ def test_flat_slug_accepted_firm_without_invariant_fails_check_b(tmp_path):
         tmp_path,
         adrs=[
             {
-                "id": "ADR-001",
+                "id": "bootstrap-exception",
                 "filename": "001-legacy.md",
                 "invariants_touched": ["INV-001"],
             },
@@ -484,7 +484,7 @@ def test_flat_slug_accepted_firm_without_invariant_fails_check_b(tmp_path):
                 # intentionally NOT referenced by any invariant
             },
         ],
-        invariants=[{"id": "INV-001", "refs": "ADR-001"}],
+        invariants=[{"id": "INV-001", "refs": "bootstrap-exception"}],
     )
     result = _run_in(tmp_path)
     assert result.returncode != 0, (
@@ -503,7 +503,7 @@ def test_flat_slug_soft_without_invariant_no_check_b(tmp_path):
         tmp_path,
         adrs=[
             {
-                "id": "ADR-001",
+                "id": "bootstrap-exception",
                 "filename": "001-legacy.md",
                 "invariants_touched": ["INV-001"],
             },
@@ -513,7 +513,7 @@ def test_flat_slug_soft_without_invariant_no_check_b(tmp_path):
                 "firmness": "soft",
             },
         ],
-        invariants=[{"id": "INV-001", "refs": "ADR-001"}],
+        invariants=[{"id": "INV-001", "refs": "bootstrap-exception"}],
     )
     result = _run_in(tmp_path)
     assert result.returncode == 0, (
@@ -523,7 +523,7 @@ def test_flat_slug_soft_without_invariant_no_check_b(tmp_path):
     assert "ALL CHECKS PASSED" in result.stdout
     # Anti-vacuous-pass guard: the soft-scheme flat-slug file must actually
     # be discovered by the validator for this test's negative claim (no
-    # Check B) to have semantic content. A count of 1 (only legacy ADR-001
+    # Check B) to have semantic content. A count of 1 (only legacy bootstrap-exception
     # discovered) means this test was passing for the wrong reason.
     assert "ADR files checked: 2" in result.stdout, (
         f"Both legacy and flat-slug ADRs must be discovered.\nstdout:\n{result.stdout}"
@@ -580,14 +580,14 @@ def test_unknown_flat_slug_token_fails_check_a(tmp_path):
         tmp_path,
         adrs=[
             {
-                "id": "ADR-001",
+                "id": "bootstrap-exception",
                 "filename": "001-legacy.md",
                 "invariants_touched": ["INV-002"],
             },
         ],
         invariants=[
             {"id": "INV-001", "refs": "no-such-adr"},
-            {"id": "INV-002", "refs": "ADR-001"},
+            {"id": "INV-002", "refs": "bootstrap-exception"},
         ],
     )
     result = _run_in(tmp_path)
@@ -637,7 +637,7 @@ def test_assertion_blocks_run_on_mixed_corpus(tmp_path):
         tmp_path,
         adrs=[
             {
-                "id": "ADR-001",
+                "id": "bootstrap-exception",
                 "filename": "001-legacy.md",
                 "invariants_touched": ["INV-001"],
             },
@@ -648,7 +648,7 @@ def test_assertion_blocks_run_on_mixed_corpus(tmp_path):
             },
         ],
         invariants=[
-            {"id": "INV-001", "refs": "ADR-001"},
+            {"id": "INV-001", "refs": "bootstrap-exception"},
             {"id": "INV-002", "refs": "foo-scheme"},
         ],
     )
@@ -676,7 +676,7 @@ def test_assertion_blocks_run_on_mixed_corpus(tmp_path):
 
 
 def test_inv005_style_identifier_scheme_parenthetical_fixture(tmp_path):
-    """V10 — Fixture rewrites INV-005's parenthetical from `(ADR-006)` to `(identifier-scheme)`.
+    """V10 — Fixture rewrites INV-005's parenthetical from `(feature-slice-model)` to `(identifier-scheme)`.
 
     Proves the validator accepts the INV-005 re-point path before
     ARCHITECTURE.md itself is edited — that edit is out of this slice's

@@ -3,7 +3,7 @@
 Verifies intent.md V1–V7: the rewritten handoff/catchup/start-slice skill
 templates, the new templates/handoff.md pointer template, the
 .claude/learning.md staging ground, and the docs/operational-reference.md
-Context Discipline Protocol section collectively satisfy ADR-002's
+Context Discipline Protocol section collectively satisfy context-discipline-protocol's
 three-layer context discipline commitment (INV-002).
 
 These are contract-conformance tests — static artifacts must match
@@ -285,7 +285,7 @@ def test_v4_start_slice_closure_wipes_current_slice():
     text = path.read_text()
 
     assert ".claude/archive/" not in text, (
-        "`.claude/archive/` appears in start-slice.md (ADR-002 rejected the archive alternative)"
+        "`.claude/archive/` appears in start-slice.md (context-discipline-protocol rejected the archive alternative)"
     )
 
     step7 = slice_section(text, "## Step 7")

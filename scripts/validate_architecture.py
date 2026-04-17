@@ -150,7 +150,7 @@ def _extract_refs(text: str) -> list[str]:
     """Extract ADR reference tokens from an invariant's text.
 
     Legacy `ADR-NNN` tokens are recognized anywhere in the text (preserves
-    current tolerance for commentary like `confirmed by ADR-009`). Flat-slug
+    current tolerance for commentary like `confirmed by phase-pipeline-evaluation`). Flat-slug
     tokens are recognized only as top-level `;`/`,`-separated fragments
     inside the trailing parenthetical.
     """

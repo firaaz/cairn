@@ -48,7 +48,7 @@ def _extract_section(text: str, heading: str) -> str | None:
 def test_v1_worktrees_in_phase3_supporting() -> None:
     """V1: using-git-worktrees appears in the Phase 3 (Builder) supporting skills.
 
-    Intent verification #2. ADR-007 D3 returns using-git-worktrees as a
+    Intent verification #2. parallelism-v1 D3 returns using-git-worktrees as a
     conditional Phase 3 supporting skill.
     """
     text = _read(OPREF)
@@ -104,7 +104,7 @@ def test_v2_worktrees_not_in_exclusions() -> None:
 
     assert "using-git-worktrees" not in exclusions, (
         "'using-git-worktrees' still appears in the Explicit exclusions section. "
-        "It should have been moved to Phase 3 supporting skills per ADR-007 D3. (V2)"
+        "It should have been moved to Phase 3 supporting skills per parallelism-v1 D3. (V2)"
     )
 
 

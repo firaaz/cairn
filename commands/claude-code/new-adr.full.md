@@ -45,7 +45,7 @@ date: <today YYYY-MM-DD>
 ---
 ```
 
-Per ADR `identifier-scheme` D9, `supersedes:` and `adrs-referenced:` each hold a list of target ADR `id:` values — the flat slugs from Step 1, **not** filenames and **not** numeric prefixes like `ADR-007`. Example: an ADR that supersedes `feature-slice-model` writes `supersedes: [feature-slice-model]`. The validator and `/refresh-architecture` resolve these slugs against `docs/adr/index.md` at load time.
+Per ADR `identifier-scheme` D9, `supersedes:` and `adrs-referenced:` each hold a list of target ADR `id:` values — the flat slugs from Step 1, **not** filenames and **not** numeric prefixes like `parallelism-v1`. Example: an ADR that supersedes `feature-slice-model` writes `supersedes: [feature-slice-model]`. The validator and `/refresh-architecture` resolve these slugs against `docs/adr/index.md` at load time.
 
 Within an ADR body, decision points are numbered `D1`, `D2`, `D3`, … and are freely cited bare from the same ADR. When citing a decision point from a *different* ADR, use the hierarchical form `<adr-id>/<decision-slug>` (e.g., `identifier-scheme/flat-slug-id`) — the `<decision-slug>` identifies the decision within its owning ADR and is stable across supersession only if the successor explicitly preserves it.
 

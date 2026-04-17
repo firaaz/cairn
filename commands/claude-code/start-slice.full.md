@@ -30,17 +30,17 @@ Each phase's artifact must be committed to git before advancing. This isn't bure
 
 | Target Phase | Required Artifact | Verification |
 |-------------|-------------------|-------------|
-| Phase 2 (Validation) | `intent.md` committed AND every ADR named in its `adrs-referenced` YAML field already exists as a committed file in `docs/adr/` (D3 gate, ADR-004) | `git log --oneline -- .claude/current-slice/intent.md` returns at least one line; AND for each slug in `adrs-referenced`, `git log --oneline -- docs/adr/<NNN>-*.md` (where `<NNN>` is the slug's numeric suffix) returns at least one commit |
+| Phase 2 (Validation) | `intent.md` committed AND every ADR named in its `adrs-referenced` YAML field already exists as a committed file in `docs/adr/` (D3 gate, phase-lock-and-role-declaration) | `git log --oneline -- .claude/current-slice/intent.md` returns at least one line; AND for each slug in `adrs-referenced`, `git log --oneline -- docs/adr/<slug>.md` returns at least one commit |
 | Phase 3 (Implementation) | Validation tests committed | `git log --oneline -- tests/` returns commits for test files matching the envelope's test patterns |
 | Phase 4 (Integration) | Source files committed | `git status --short` shows no uncommitted changes in envelope files |
 
-**D3 gate semantics (Phase 2 row).** Every ADR slug named in `intent.md`'s `adrs-referenced` field MUST already exist as a committed file in `docs/adr/` before Phase 2 starts. This enforces `docs/spec-v1.md` §6's Decision→Intent immutability rule structurally: intent cannot reference a decision that has not yet been made. Slug resolution is filename-glob based — for a slug like `ADR-004`, check `git log --oneline -- docs/adr/004-*.md` (the numeric suffix is the key; the descriptive tail of the filename is not part of the slug contract). An **empty** `adrs-referenced` field **passes the gate trivially** — cleanup slices, pure-implementation slices, and other low-consequence slices are not forced to cite ADRs they do not depend on, per ADR-004 D3.
+**D3 gate semantics (Phase 2 row).** Every ADR slug named in `intent.md`'s `adrs-referenced` field MUST already exist as a committed file in `docs/adr/` before Phase 2 starts. This enforces `docs/spec-v1.md` §6's Decision→Intent immutability rule structurally: intent cannot reference a decision that has not yet been made. Slug resolution is direct filename match — for a slug like `phase-lock-and-role-declaration`, check `git log --oneline -- docs/adr/phase-lock-and-role-declaration.md` (filename is `<slug>.md`, per ADR `identifier-scheme` D2). An **empty** `adrs-referenced` field **passes the gate trivially** — cleanup slices, pure-implementation slices, and other low-consequence slices are not forced to cite ADRs they do not depend on, per phase-lock-and-role-declaration D3.
 
-**D3 gate failure path.** When one or more ADRs are missing from `docs/adr/`, the gate MUST fail and the failure message MUST name **every** missing ADR slug, not just the first. Example: `Gate FAILED: missing ADR files for slugs [ADR-004, ADR-007]. intent.md references ADRs that are not yet committed to docs/adr/. Either commit the missing ADRs first (via /decision or /new-adr), or remove them from adrs-referenced in intent.md.` The plurality commitment matters because silent truncation ("missing ADR: ADR-004") would let a slice drift past a second unresolved decision on retry. List all missing slugs in every failure message.
+**D3 gate failure path.** When one or more ADRs are missing from `docs/adr/`, the gate MUST fail and the failure message MUST name **every** missing ADR slug, not just the first. Example: `Gate FAILED: missing ADR files for slugs [phase-lock-and-role-declaration, parallelism-v1]. intent.md references ADRs that are not yet committed to docs/adr/. Either commit the missing ADRs first (via /decision or /new-adr), or remove them from adrs-referenced in intent.md.` The plurality commitment matters because silent truncation ("missing ADR: phase-lock-and-role-declaration") would let a slice drift past a second unresolved decision on retry. List all missing slugs in every failure message.
 
 **If the gate fails:** Explain what's missing and give the exact git commands to fix it. Do not proceed — this gate is what makes the whole system work.
 
-**If the gate passes:** Update `slice.yaml` status field. Then — before advancing into the phase-specific guidance below — read `docs/operational-reference.md § Phase Skill Guide` and print the target phase's **role name**, **primary anti-behavior**, **secondary anti-behaviors**, and **primary + supporting skills** to the operator. This is the ADR-004 D4 surfacing commitment: roles and skills are not dead text, they are echoed at every phase entry. For Phase 1, the primary-skills column is an em-dash (no primary fit) — still print the row so the operator sees the explicit absence rather than inferring a missing assignment. The Phase Skill Guide is a living registry; if an entry looks stale, the registry is the source to update, not this skill.
+**If the gate passes:** Update `slice.yaml` status field. Then — before advancing into the phase-specific guidance below — read `docs/operational-reference.md § Phase Skill Guide` and print the target phase's **role name**, **primary anti-behavior**, **secondary anti-behaviors**, and **primary + supporting skills** to the operator. This is the phase-lock-and-role-declaration D4 surfacing commitment: roles and skills are not dead text, they are echoed at every phase entry. For Phase 1, the primary-skills column is an em-dash (no primary fit) — still print the row so the operator sees the explicit absence rather than inferring a missing assignment. The Phase Skill Guide is a living registry; if an entry looks stale, the registry is the source to update, not this skill.
 
 ### Phase 2: Validation
 
@@ -126,7 +126,7 @@ The hierarchical `<feature-id>/<slice-slug>` form is the default for new slices 
 
 Update `.claude/sweep.yaml` → `current-slice-number` to the new number. The numeric suffix remains useful for sweep cadence even after slice ids go hierarchical; retirement of `current-slice-number` is an ADR `identifier-scheme` D7 Phase 2 cleanup.
 
-### Feature file (ADR-006 D3 always-create)
+### Feature file (feature-slice-model D3 always-create)
 
 Every slice belongs to a feature. Before guiding intent writing, create or update the feature file at `.claude/features/<feature-id>.yaml`:
 
@@ -206,7 +206,7 @@ The fresh session matters — context isolation is what makes the external check
 
 ## Step 7: Complete a Slice
 
-When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory for successful slices — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Per ADR-002, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
+When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory for successful slices — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Per context-discipline-protocol, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
 
 ### D1 + D3 Gates
 
@@ -214,7 +214,7 @@ Before the wipe sequence begins, run D1 and D3 gates. D1 runs first (it modifies
 
 #### D1 Refresh Gate (sequential, first)
 
-1. Run `/refresh-architecture` logic. The refresh loads only `docs/adr/*.md` (excluding `index.md` and files with status: superseded) plus the prior `docs/ARCHITECTURE.md`. It does NOT load `.claude/current-slice/` artifacts or phase-role context — this is the session isolation contract from ADR-003 D1 and ADR-002 INV-002.
+1. Run `/refresh-architecture` logic. The refresh loads only `docs/adr/*.md` (excluding `index.md` and files with status: superseded) plus the prior `docs/ARCHITECTURE.md`. It does NOT load `.claude/current-slice/` artifacts or phase-role context — this is the session isolation contract from cliff-failure-mode-and-v1-defenses D1 and context-discipline-protocol INV-002.
 2. Run `uv run python .slice-system/scripts/validate_architecture.py`. If the validator exits non-zero and `ADR_D1_BYPASS` is not set, the slice MUST NOT transition to `status: complete`. Print the validator output and instruct the operator to either fix the ADR/architecture inconsistency or set `ADR_D1_BYPASS=1` to bypass.
 3. **Bypass escape hatch.** If `ADR_D1_BYPASS=1` is set and the validator fails, completion proceeds. Append a line to `.claude/d1-bypasses.log` in the format: `<slice-id> <YYYY-MM-DD> <one-line-reason>`. The log is append-only and does not exist until the first bypass.
 4. **Rolling-window check.** After logging a bypass, count entries in `.claude/d1-bypasses.log` whose slice-id numeric suffix falls within the last 10 slices. If 3 or more bypasses exist in that window, print a warning: "D1 design review recommended — three bypasses in the last 10 slices suggests the validator is producing more noise than signal."

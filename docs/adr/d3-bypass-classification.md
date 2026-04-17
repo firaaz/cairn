@@ -21,7 +21,7 @@ Accepted.
 
 ## Context
 
-[ADR-003 D3](003-cliff-failure-mode-and-v1-defenses.md) established an automated unknown-unknown backstop with a bypass escape hatch (`D3_GATE_BYPASS=1`). The bypass mechanism was elaborated in `commands/claude-code/start-slice.full.md:224` using a rolling-window rule inherited from D1: three bypasses in the last ten slices triggers a warning that "the gates are producing more noise than signal" and a design review is recommended.
+[cliff-failure-mode-and-v1-defenses D3](003-cliff-failure-mode-and-v1-defenses.md) established an automated unknown-unknown backstop with a bypass escape hatch (`D3_GATE_BYPASS=1`). The bypass mechanism was elaborated in `commands/claude-code/start-slice.full.md:224` using a rolling-window rule inherited from D1: three bypasses in the last ten slices triggers a warning that "the gates are producing more noise than signal" and a design review is recommended.
 
 The threshold fired on 2026-04-16 at the close of SLICE-016. Integration sweep #11 (`.claude/sweep-results/2026-04-16-sweep.md`) surfaced the three bypasses:
 
@@ -63,7 +63,7 @@ Where `<class>` is exactly one of:
 - `pre-existing` — the check-firing path predates this slice's start commit. Git-verifiable.
 - `false-positive` — D3 fired on a change that should not have tripped it (no semantic drift, or drift was legitimate and covered by a named mechanism). Requires operator judgment.
 
-**Rolling-window rule change.** The `3-in-10 → design-review-recommended` threshold counts only `false-positive` entries. `slice-caused` and `pre-existing` entries are logged but not counted against D3's noise budget. This aligns the counter with the dogfood criterion in ADR-003:136 ("no D1/D2/D3 false-positive rate is high enough that a check is muted").
+**Rolling-window rule change.** The `3-in-10 → design-review-recommended` threshold counts only `false-positive` entries. `slice-caused` and `pre-existing` entries are logged but not counted against D3's noise budget. This aligns the counter with the dogfood criterion in cliff-failure-mode-and-v1-defenses:136 ("no D1/D2/D3 false-positive rate is high enough that a check is muted").
 
 **Pre-existing carry-over surfacing.** `pre-existing` entries appear in each integration sweep's "Handoff Staleness Check" section as named debt items. They do not trigger D3 review, but they do force visibility of what the project has deferred.
 
@@ -92,9 +92,9 @@ Intent-time exemption is the preferred path for *anticipated* drift. The bypass-
 
 ### Scope of this ADR
 
-- **This ADR does not supersede ADR-003 D3.** The defense itself, its falsification commitment (ADR-003:108), and the dogfood criterion remain intact.
+- **This ADR does not supersede cliff-failure-mode-and-v1-defenses D3.** The defense itself, its falsification commitment (cliff-failure-mode-and-v1-defenses:108), and the dogfood criterion remain intact.
 - **This ADR does not modify D1's bypass log.** D1's domain (validator false-positives) is naturally single-class; no classification is needed. The D1/D3 log format asymmetry reflects real semantic difference.
-- **False-negative invisibility** — bypass logs cannot measure D3 coverage. This limitation is not addressable by classification alone and remains a concern for ADR-003:108's falsification-test commitment to resolve.
+- **False-negative invisibility** — bypass logs cannot measure D3 coverage. This limitation is not addressable by classification alone and remains a concern for cliff-failure-mode-and-v1-defenses:108's falsification-test commitment to resolve.
 
 ## Consequences
 
@@ -116,7 +116,7 @@ Intent-time exemption is the preferred path for *anticipated* drift. The bypass-
 
 **Invariant impact:**
 - No existing invariant is changed. The three-class schema and exempt list are both operational substrate below the invariant layer.
-- ADR-003's dogfood criterion (at ADR-003:136) becomes more precisely testable once `false-positive` is a distinct signal.
+- cliff-failure-mode-and-v1-defenses's dogfood criterion (at cliff-failure-mode-and-v1-defenses:136) becomes more precisely testable once `false-positive` is a distinct signal.
 
 ## Alternatives Considered
 
@@ -136,6 +136,6 @@ Intent-time exemption is the preferred path for *anticipated* drift. The bypass-
 
 - **Risk:** Three classes prove non-exhaustive as cairn encounters new failure modes. **Mitigation:** schema is extendable; this ADR is provisional; the v0 reset is an explicit sunset horizon. Adding a fourth class is an in-scope supersession.
 
-- **Risk:** Bypass logs cannot measure D3 false-negatives — blind spots that never trigger a bypass. **Mitigation:** named explicitly in the scope note; remains the responsibility of ADR-003:108's falsification-test commitment. This ADR does not claim to solve coverage; it refines the noise signal only.
+- **Risk:** Bypass logs cannot measure D3 false-negatives — blind spots that never trigger a bypass. **Mitigation:** named explicitly in the scope note; remains the responsibility of cliff-failure-mode-and-v1-defenses:108's falsification-test commitment. This ADR does not claim to solve coverage; it refines the noise signal only.
 
 - **Risk:** End-of-v0 vision reset supersedes this ADR's substrate. **Mitigation:** `firmness: provisional` with zero new substrate files (only format extension on an existing log + parser extension on an existing script). Amendment cost is a format migration, not a substrate tear-down.
