@@ -1,15 +1,15 @@
 ---
 slice: identifier-scheme/doc-sweep
-phase: 2-validation
+phase: 3-implementation
 branch: feature/identifier-scheme
-as-of: 2026-04-18 a0bee9d
+as-of: 2026-04-18 2661e0b
 ---
 
 ## State
-Phase 1 intent committed at a0bee9d; slice.yaml advanced to `validation`. Envelope: 7 active prose files + docs/adr/*.md body prose. D3 gate passes (`identifier-scheme` ADR exists).
+Phase 2 validation committed at 2661e0b; slice.yaml advanced to `implementation`. 3 tests (2 RED + 1 GREEN canary) encode verification items 1-2 + the PRESERVE allowlist. User decisions locked in `validation/approach.md`.
 
 ## Next
-In a fresh session: `/catchup phase 2` then `/start-slice phase 2` — Skeptic enumerates per-occurrence migrate-vs-preserve calls, writes failing tests against the verification block.
+In a fresh session: `/catchup phase 3` then `/start-slice phase 3` — Builder executes the sweep per intent + approach.md.
 
 ## Blocked / Pending
 - Merge `feature/identifier-scheme` → `dev` when doc-sweep closes
@@ -18,11 +18,11 @@ In a fresh session: `/catchup phase 2` then `/start-slice phase 2` — Skeptic e
 - Integration sweep 2-overdue → gates on identifier-scheme tail closure
 
 ## Features
-- identifier-scheme: doc-sweep Phase 1→2 (residual `SLICE-NNN`/`ADR-NNN` prose, §D7 Phase 2 Part 3)
+- identifier-scheme: doc-sweep Phase 2→3 (sweep execution pending)
 - compression: branch + worktree ready at `.worktrees/compression/`; not yet started
 
 ## Pointers
-- `.claude/current-slice/intent.md` — sole Phase 2 input; envelope, discussion-of-legacy-format exception, `ADR_EDITORIAL_FIX=1` requirement
-- `.claude/current-slice/handoff-phase-1.md` — phase gate state for `/catchup phase 2`
+- `.claude/current-slice/handoff-phase-2.md` — phase gate state for `/catchup phase 3`
+- `.claude/current-slice/validation/approach.md` — classification, Phase 4 checklist, known-issue for `operational-reference.md:257`
+- `tests/unit/test_identifier_scheme_sweep.py` — RED contract
 - `docs/adr/identifier-scheme.md` §D7 — scope authority
-- `.claude/features/identifier-scheme.yaml` — doc-sweep slice entry just added
