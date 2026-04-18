@@ -2,23 +2,28 @@
 slice: none
 phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-18 92a7b15
+as-of: 2026-04-18 eb5be11
 ---
 
 ## State
-Slice `efficiency-program-afternoon-wins/all-seven` closed at `92a7b15` (1-hr single-session 4-phase compression via orchestrator + subagents). Independent audit found 6 correlated-error shapes; 3 HIGH severity (envelope amended mid-Phase-3, Phase-4 sweep-notes never committed, D3 rolling-window warning unsurfaced — 8 bypasses in last 10 slices). Findings preserved in `docs/plans/2026-04-18-session-compression-audit.md`.
+Slice-compression protocol brainstorm complete; design + 13-task forward plan committed (`9a770c8`, `eb5be11`). `feature/compression` worktree created at `.worktrees/compression/` branched off identifier-scheme tip, ready for `executing-plans` in a fresh session once identifier-scheme tail closes.
 
 ## Next
-Brainstorm the compression-pattern protocol: read audit doc, decide whether single-session subagent compression is a sanctioned mode and under what orchestrator constraints — this blocks Part 0 and every subsequent ADR-class slice.
+Start `identifier-scheme/slice-and-feature-rename` via `/start-slice` (tail closure, serial; blocks compression work).
 
 ## Blocked / Pending
-- Three follow-up slices before next `/integration-sweep`: `envelope-immutability-guard`, `phase-4-sweepnotes-required`, `d3-rolling-window-surfacing` → audit §Actionable.
-- One ADR for Part 0: `phase-artifact-immutability-and-evidence-persistence` → audit §Actionable.
-- Integration sweep 2-overdue (interval=1; 2 slice-completes since `identifier-scheme/adr-rename-sweep`) — gate on follow-up slices above.
-- `chmod +x` post-merge on 3 hooks (sandbox denied during P3): `role-cheatsheet.sh`, `verify_handoff.sh`, `prepare-commit-msg.sh`.
-- `identifier-scheme/doc-sweep` (Phase 2 Part 3) still queued.
+- `identifier-scheme/doc-sweep` → queued after slice-and-feature-rename (§D7 Phase 2 Part 3).
+- Merge `feature/identifier-scheme` → `dev` when tail closes.
+- Audit follow-ups (`envelope-immutability-guard`, `phase-4-sweepnotes-required`, `d3-rolling-window-surfacing`) → absorb into `compression` feature as mechanical D1/D2/D3 enforcement.
+- Part 0 ADR (P1–P6 + D1/D2/D3) → compression feature Slice B, compressed dogfood.
+- Integration sweep 2-overdue → gate on identifier-scheme tail closure.
+
+## Features
+- `identifier-scheme`: 2 slices queued; close + merge before compression executes.
+- `compression`: branch + worktree ready at `.worktrees/compression`; feature file not yet written; plan prepares Slice A (serial infrastructure) + Slice B (compressed Part 0 ADR).
 
 ## Pointers
-- `docs/plans/2026-04-18-session-compression-audit.md` — read FIRST next session; full findings + brainstorm seeds + fleet-coordinator implication.
-- `docs/plans/2026-04-18-efficiency-program/02-part-0-adr-principles.md` — Part 0 scope; consumes the audit's ADR proposal.
-- `docs/plans/2026-04-15-fleet-coordinator-design.md` — orchestrator-holds-all pattern critiqued here composes with F6 coordinator contract.
+- `docs/plans/2026-04-18-slice-compression-protocol-design.md` — architecture, principles, disposition. Read before executing-plans.
+- `docs/plans/2026-04-18-slice-compression-protocol-plan.md` — 13-task TDD plan. Pre-Task 0 probe of `claude -p --agent` is load-bearing.
+- `docs/plans/2026-04-18-session-compression-audit.md` — root context for D1/D2/D3.
+- `.worktrees/compression/` — compression feature worktree; next session's home.
