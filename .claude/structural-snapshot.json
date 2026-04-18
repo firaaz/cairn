@@ -16,12 +16,12 @@
     "size": 1601
   },
   "commands/claude-code/handoff.full.md": {
-    "hash": "1d12218859d8360206d3667df4c5d61f14e2a978f876b1a5be7ccc6a7f1d8222",
-    "size": 6556
+    "hash": "757d725be9f19f8a08b6bfbb6e29e51e60d1c1d62ec5b8415eea2d3f4595b794",
+    "size": 9325
   },
   "commands/claude-code/handoff.md": {
-    "hash": "28d982c5f2fceccc491cbf28c338dc2a12c198f14f0afe117716544944db9d04",
-    "size": 1155
+    "hash": "1d046242da35464b211e30b8344fd43b15c105342a96ab6596e502c9cf9a8a1f",
+    "size": 1329
   },
   "commands/claude-code/integration-sweep.full.md": {
     "hash": "678598fa5c2a7d9ffcedacc05d72815f5653b61e2b4b9429c3e42e00978c539a",
@@ -48,48 +48,52 @@
     "size": 1308
   },
   "commands/claude-code/start-slice.full.md": {
-    "hash": "ad3d1edb940af34611f3908e3ccab6708f5fd62a6342f335829a653d30e904df",
-    "size": 20317
+    "hash": "09c142a76ac6717fc7bad30dee68b4a6ed6e95817fa946803000db8fa8d99cac",
+    "size": 20443
   },
   "commands/claude-code/start-slice.md": {
     "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
     "size": 1903
   },
+  "commands/claude-code/status.full.md": {
+    "hash": "3e7ed7c5f843b358357447b293e317e8f47db6278941bbe495a22a8b3acaf69d",
+    "size": 2278
+  },
   "commands/claude-code/status.md": {
-    "hash": "f650a63b5dd63f010267ecaadbd6d0a5f0ea61e701d84267e05cab4b33f92ac1",
-    "size": 849
+    "hash": "7dc0462095f56c4baf0fa2eee22db9134419f31e405268c712986ef87880f883",
+    "size": 1339
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "034abea2ec414cc83882e069234abe0b33de07b16c8bee97963248735be1409b",
-    "size": 18281
+    "hash": "045228aa737c657792f71fce425f92235d69c764115972e8a2b90b54f3ad0b24",
+    "size": 18357
   },
   "docs/adr/bootstrap-exception.md": {
     "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
     "size": 4843
   },
   "docs/adr/cliff-failure-mode-and-v1-defenses.md": {
-    "hash": "9b459cc0047621c1e21d742c2a20c4285de1592624d1d7ae90a038b3966d80c9",
-    "size": 25138
+    "hash": "749b0a252b696eaf6db948cb07431618ab5cf198a0b8242d670fccf1a546a165",
+    "size": 25505
   },
   "docs/adr/context-discipline-protocol.md": {
-    "hash": "bfd8f90f64c43a11a4d5b32a60646fcda6cddd8ecb4a248ebeaea91a24e288bf",
-    "size": 10823
+    "hash": "a35f2aafa25f381e40dcdd60eba382b7e9b1c30458da88732c11d515d7096c2b",
+    "size": 11398
   },
   "docs/adr/context-tiers-integration.md": {
     "hash": "51525533fc3e6fbfea83c86bd4a116a6f9ea8c5192b1e8878185a8b321911aa1",
     "size": 6437
   },
   "docs/adr/d3-bypass-classification.md": {
-    "hash": "605caf24442978b34d3919d3bccc9e6952a68555682a53fb650498aeb46daf97",
-    "size": 10465
+    "hash": "d9cc707c7190ec908d67c139a46fed549e9117fbe09ba7e12ce05fce1d82dde3",
+    "size": 10645
   },
   "docs/adr/feature-slice-model.md": {
-    "hash": "464c700201b9fb7b85eadb59144d1738c818731d1d2cfe24f2d940249468f2f7",
-    "size": 7842
+    "hash": "194400340f3dafded111fe88017eda64100730b3f433998a04338d8cac9b248c",
+    "size": 7891
   },
   "docs/adr/identifier-scheme.md": {
-    "hash": "60d96434a8776a1e82d034893d7116f98d222b32d6a5d6eb8c9f057cdf28a192",
-    "size": 15964
+    "hash": "c488af602cbb52f061076e6bc8d641de45aefe154c2b649ef1fe3014016cadbf",
+    "size": 16093
   },
   "docs/adr/index.md": {
     "hash": "09a292bad5e338d6018414c1a25246bfb7b42aae588021cbce0a5dc11c83863d",
@@ -100,12 +104,12 @@
     "size": 9948
   },
   "docs/adr/phase-lock-and-role-declaration.md": {
-    "hash": "7a69c177b957686cfeaee918fbcc984f6b4a7ba04a77b4316a2f6eb43713d4e8",
-    "size": 32560
+    "hash": "3f0ee10b2c1ca3720bda5de1dfd551b6b9d27cc25ba45550769e2a6030b9608d",
+    "size": 33257
   },
   "docs/adr/phase-pipeline-evaluation.md": {
-    "hash": "10f535a54a9da95272677c62199ec9d544c3b90a4d6d2b7a1ac198fc754f87b1",
-    "size": 10155
+    "hash": "85ae982174f6bdb90ba8014bcae4f0782286215b6b9a3a700edda69c2f6c72cf",
+    "size": 10928
   },
   "docs/adr/semantic-identity.md": {
     "hash": "480dff8cf37db816409c48abafe7b3c8aedadf7b36017641888f787f949a34aa",
@@ -116,12 +120,12 @@
     "size": 292
   },
   "docs/lessons.md": {
-    "hash": "1b0d8f53e1470e8fd3b2ee62f47b9b89cc550a9d851f562f0cfef8656646e791",
-    "size": 20348
+    "hash": "6b10f4fcc7ad92150a86cbb00a066fcbdf1bd8f82b1bd781d01fe5bdde01e2f9",
+    "size": 20493
   },
   "docs/operational-reference.md": {
-    "hash": "58574fde24b4b8535f517fd234af773bba2335e05a5ea9d3efd24861b4e3ce16",
-    "size": 28160
+    "hash": "62d3e2a0f719e87ae686c3caa737a7aef4e8fb30ab694c69c855cf85fb6fff45",
+    "size": 28176
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -175,6 +179,58 @@
     "hash": "9f36731891c8253cbea626a58f61c904a6c869a39bcd36a5ae5f1464f5c43af3",
     "size": 26101
   },
+  "docs/plans/2026-04-18-efficiency-program/00-program.md": {
+    "hash": "659e894f798b3eb2796947b3996ca72faef0e628ab30da9ebdf8e9ba24d4c02d",
+    "size": 9462
+  },
+  "docs/plans/2026-04-18-efficiency-program/01-part-minus-1-afternoon-wins.md": {
+    "hash": "57bba20ac163c7d298998611106efee3ad30e686bdcad4c40b10de06fea38242",
+    "size": 7323
+  },
+  "docs/plans/2026-04-18-efficiency-program/02-part-0-adr-principles.md": {
+    "hash": "624d855f46fdd69a271c093f9bf8c49a2e079eb455a7d54e6fe28df02c4a88e2",
+    "size": 8250
+  },
+  "docs/plans/2026-04-18-efficiency-program/03-part-1-distillation-verification.md": {
+    "hash": "b958e35c5b6e4313aab6531a639407ebcc4ee72af59b80e6ee98f72266144e2d",
+    "size": 9281
+  },
+  "docs/plans/2026-04-18-efficiency-program/04-part-2-ergonomics-speed.md": {
+    "hash": "c2d2d05af7df8273f90ad47648063b5ef9699c0d3dcac99d17021d71d50a4caf",
+    "size": 9565
+  },
+  "docs/plans/2026-04-18-efficiency-program/05-part-3-phase-role-agents.md": {
+    "hash": "22c178e6909deb287c9638d9ca54319507885ed64e4e6baf4267b6951132d10d",
+    "size": 11916
+  },
+  "docs/plans/2026-04-18-efficiency-program/06-part-4-maintenance.md": {
+    "hash": "b9f510adc5c1dfc60a66e7c2f439eeea8a1a319c00e52cc488e99d93841279bf",
+    "size": 8245
+  },
+  "docs/plans/2026-04-18-efficiency-program/07-part-5-meta-evolution.md": {
+    "hash": "96dde32a99bbbb61fb20bef061447f945b9302d82030a055fdbfe8b578fe3a39",
+    "size": 9372
+  },
+  "docs/plans/2026-04-18-efficiency-program/08-streamlining-crosscuts.md": {
+    "hash": "eb47fa6fda811a3be3c9091def67b64724a89d9c3afb47b54760a1f87f377b5a",
+    "size": 11866
+  },
+  "docs/plans/2026-04-18-efficiency-program/09-part-6-auto-advance.md": {
+    "hash": "e0057bd272c33db4ae8d2e5a7334f63dac7e53241ffe72fd95f8189298535ec2",
+    "size": 13505
+  },
+  "docs/plans/2026-04-18-session-compression-audit.md": {
+    "hash": "60171be6e5421dc2080021894cb24f94ae96823918e890417f85de05955051f3",
+    "size": 8574
+  },
+  "docs/plans/2026-04-18-slice-compression-protocol-design.md": {
+    "hash": "a48d82e5f4cb0033cabf0a400aad2be356e69316034084f21d1eff5262dfface",
+    "size": 28540
+  },
+  "docs/plans/2026-04-18-slice-compression-protocol-plan.md": {
+    "hash": "6b52708d52a91ffe443308710df3b9298fed0e66dbe6276b22b9a0da31134dd4",
+    "size": 58150
+  },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
     "size": 13864
@@ -207,17 +263,53 @@
     "hash": "ba0743516eed8453418a088cdb86218875348deaf84e4153ea320fbdc6141e8d",
     "size": 16162
   },
+  "tests/unit/efficiency_program/__init__.py": {
+    "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size": 0
+  },
+  "tests/unit/efficiency_program/test_invariants_evidence.py": {
+    "hash": "6125b0cd816f2af8184ab66dcec1cf37009d73810e153b7cdd315dbbe5d8d595",
+    "size": 10544
+  },
+  "tests/unit/efficiency_program/test_item_01_role_cheatsheet.py": {
+    "hash": "08122cd61ac390913d93dbc944b8216c9890cc6b99cc4c69f57da3e2aac816b7",
+    "size": 8871
+  },
+  "tests/unit/efficiency_program/test_item_02_measurements_idempotency.py": {
+    "hash": "496b817b8526d057425dec6ad632dc9936e0437566d86fab845ab3b2146dca93",
+    "size": 5814
+  },
+  "tests/unit/efficiency_program/test_item_03_read_before_write_prose.py": {
+    "hash": "5e9ecbffd2c4dd60bc83ee4bda39c087b7adae8d5befe9bd9dad84b93c6e40bd",
+    "size": 2987
+  },
+  "tests/unit/efficiency_program/test_item_04_handoff_verifier.py": {
+    "hash": "8fbd4b5fcfe1d742df5b9e379cb2e28113bc755423c7751b209a0a82a7b16723",
+    "size": 8172
+  },
+  "tests/unit/efficiency_program/test_item_05_allowlist.py": {
+    "hash": "213ff8d6117126f2ba18edf56acb81308209deacdeb324f93cf9dbdd6da61c5f",
+    "size": 2741
+  },
+  "tests/unit/efficiency_program/test_item_06_commit_templates.py": {
+    "hash": "9982349c3d796b3c7838febfdc242d4e17909b7e112177a460a133fa445e3b4c",
+    "size": 6598
+  },
+  "tests/unit/efficiency_program/test_item_07_status_dashboard.py": {
+    "hash": "2fc975c32d20c763dacb4b3355352d7834e45a2b2b58c3bac710c3449d2c364c",
+    "size": 8746
+  },
   "tests/unit/test_adr_rename_sweep.py": {
     "hash": "82af52d3bac2d06beec4752865107f4d399cef9a019a5fea54ec52f1c92db768",
     "size": 18255
   },
   "tests/unit/test_context_budget.py": {
-    "hash": "53b6ecabe34557ddd84f80f7606c55d0227d570b9e4ee88104b70e4bd58dfe6e",
-    "size": 9415
+    "hash": "b162e0c3292b5946e8c536f7a4b7c5d596737b4c8864eda07feffebc8a691bae",
+    "size": 9480
   },
   "tests/unit/test_context_discipline_protocol.py": {
-    "hash": "69ffb9a4a81f96d9285026eb3fe14f5341f64a8557a1c1d1a0379565cb4672af",
-    "size": 12903
+    "hash": "96a847111618f7f5364f70faf2bcc834f87db4cf1a231173a605ed257eccbf64",
+    "size": 13016
   },
   "tests/unit/test_d1_gate.py": {
     "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
@@ -228,8 +320,8 @@
     "size": 5289
   },
   "tests/unit/test_dogfood_evaluate.py": {
-    "hash": "aa94655e4a19da1e2378b88d3b74b28091df8030333fa37a31361f53e5f01e5c",
-    "size": 27498
+    "hash": "655a927b0dffdd78efeef0e94a5b25f2d68f1e6205766dd1c94c4a67109f48af",
+    "size": 27516
   },
   "tests/unit/test_feature_cross_index.py": {
     "hash": "d69b597bcac5506012f96ce826f773a9275f197ba05407ae7d5c752231a3efc5",
@@ -255,6 +347,10 @@
     "hash": "d1f9fdd7d94d8f1655aec32c904c452c10d3d8f9fe8044f174d57312f8920015",
     "size": 17240
   },
+  "tests/unit/test_identifier_scheme_sweep.py": {
+    "hash": "86380c2920a45ba008ad86a60938d63f91b8fa95f27f49cff85a74030bfb6baa",
+    "size": 4422
+  },
   "tests/unit/test_identifier_scheme_templates.py": {
     "hash": "c8bc6ff540c8488fa07e8ab193b5ae28312eff38fed93f5a816603da7953421b",
     "size": 14117
@@ -272,8 +368,8 @@
     "size": 50807
   },
   "tests/unit/test_phase_rethink.py": {
-    "hash": "71382a7e3f914d85d9ddd120667ee43c249a6bb361bb9c9a5cd2481c9cdf7a01",
-    "size": 10991
+    "hash": "2d8aa1ce650c398fd3c8bf9df9ffb57cf99c4f7f834cddf364634b56fb61dbf1",
+    "size": 11133
   },
   "tests/unit/test_progressive_disclosure.py": {
     "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",
