@@ -1,4 +1,0 @@
-tests/unit/test_context_budget.py
-tests/unit/test_context_discipline_protocol.py
-tests/unit/test_phase_rethink.py
-.claude/d3-bypasses.log  # Phase 4 Auditor accounting: append pre-existing classification per d3-bypass-classification ADR for Item 5 carry-over

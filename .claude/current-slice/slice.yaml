@@ -1,8 +1,8 @@
 id: identifier-scheme/doc-sweep
 name: "Identifier scheme — residual prose sweep"
-status: integration
+status: complete
 started: 2026-04-18
-completed: null
+completed: 2026-04-18
 invariants-touched: []
 adrs-referenced:
   - identifier-scheme
