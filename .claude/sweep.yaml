@@ -1,3 +1,2 @@
-last-sweep-at-slice: 22
+last-sweep-at-slice-id: identifier-scheme/adr-rename-sweep
 sweep-interval: 1
-current-slice-number: 23

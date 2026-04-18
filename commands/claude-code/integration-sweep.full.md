@@ -116,4 +116,4 @@ git add .claude/sweep-results/ .claude/current-slice/integration/ && git commit 
 
 ## Step 7: Update Sweep Tracking
 
-Read `.claude/sweep.yaml` and update `last-sweep-at-slice` to the current `current-slice-number`.
+Read `.claude/sweep.yaml` and update `last-sweep-at-slice-id:` to the id of the slice whose completion triggered this sweep (the slice named in the most recent `^slice: .* — complete$` commit on the current branch).

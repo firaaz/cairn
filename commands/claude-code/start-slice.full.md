@@ -90,15 +90,14 @@ Use `grep` and file reads — assertions must be backed by what you actually fou
 
 ## Step 4: Initialize New Slice
 
-Determine the next slice number by checking `.claude/sweep.yaml` → `current-slice-number` (increment by 1).
+Pick the hierarchical slice id (`<feature-id>/<slice-slug>`) for the new slice. There is no numeric counter to increment — the hierarchical id is self-identifying and `.claude/sweep.yaml`'s `current-slice-number:` field has been retired (ADR `identifier-scheme` D7 Phase 2 Part 2, complete).
 
 If `.claude/sweep.yaml` does not exist, create it with defaults:
 ```yaml
-last-sweep-at-slice: 0
+last-sweep-at-slice-id: null
 sweep-interval: 1
-current-slice-number: 0
 ```
-Then proceed — the first slice will be SLICE-001.
+Then proceed — `last-sweep-at-slice-id:` will be populated by `/integration-sweep` at the first sweep close.
 
 Create the directory structure:
 ```
@@ -122,9 +121,9 @@ adrs-referenced: []
 adrs-created: []
 ```
 
-The hierarchical `<feature-id>/<slice-slug>` form is the default for new slices per ADR `identifier-scheme` D2. Legacy `SLICE-NNN` form remains accepted by hooks and validator during the Phase 1 transition (ADR `identifier-scheme` D7); both coexist until the rename-sweep slices land in Phase 2. When `<feature-id>` is not yet known, pick the feature-slug now — `/start-slice` also writes the feature file in the next block, so the feature id is resolved together with the slice id.
+The hierarchical `<feature-id>/<slice-slug>` form is the only form for new slices per ADR `identifier-scheme` D2. Legacy `SLICE-NNN` identifiers survive only in archived `.claude/completed-slices/` fixtures and historical test data; hooks and the validator retain mixed-window tolerance for that read-only history per ADR `identifier-scheme` D7 Phase 1 (Phase 3 retirement deferred indefinitely). When `<feature-id>` is not yet known, pick the feature-slug now — `/start-slice` also writes the feature file in the next block, so the feature id is resolved together with the slice id.
 
-Update `.claude/sweep.yaml` → `current-slice-number` to the new number. The numeric suffix remains useful for sweep cadence even after slice ids go hierarchical; retirement of `current-slice-number` is an ADR `identifier-scheme` D7 Phase 2 cleanup.
+No per-slice `.claude/sweep.yaml` write is needed at slice creation. The file is only updated by `/integration-sweep` at sweep close, when it writes the triggering slice's id into `last-sweep-at-slice-id:`. Retirement of the old `current-slice-number` counter is complete (ADR `identifier-scheme` D7 Phase 2 Part 2).
 
 ### Feature file (feature-slice-model D3 always-create)
 
@@ -147,7 +146,7 @@ slices:
     added: <YYYY-MM-DD>
 ```
 
-Each slice-list entry uses the hierarchical `id: <feature-id>/<slice-slug>` form. The `slice-yaml-id: SLICE-NNN` bridge is permitted during transition for entries whose slice.yaml still uses the legacy flat form, but new slices using hierarchical `id:` do not require it. `shaped-from:` records the feature's provenance — a design-doc path, a URL, or `null` for unshaped features.
+Each slice-list entry uses the hierarchical `id: <feature-id>/<slice-slug>` form. `shaped-from:` records the feature's provenance — a design-doc path, a URL, or `null` for unshaped features.
 
 Then guide intent writing (Step 5).
 
@@ -243,7 +242,7 @@ Each subagent returns a short pass/fail report (≤200 words). If either D3 gate
 ### Completion Sequence
 
 1. Update `slice.yaml`: set `status: complete`, `completed: <today>`
-2. Check if an integration sweep is due: read `.claude/sweep.yaml` and compare `current-slice-number` against `last-sweep-at-slice + sweep-interval`. If `sweep.yaml` is missing, create it with defaults (same as Step 4) before checking.
+2. Check if an integration sweep is due: read `.claude/sweep.yaml` and count `^slice: .* — complete$` commits on the current branch since the commit that completed the slice named in `last-sweep-at-slice-id:` (exclusive of that commit). A sweep is due when that count is ≥ `sweep-interval`. If `last-sweep-at-slice-id:` is `null` or its completion commit cannot be located in git history, fall back to "sweep due" and emit a one-line stderr diagnostic — conservative default so sweeps are not silently skipped. If `sweep.yaml` is missing, create it with defaults (same as Step 4) before checking.
 3. If sweep is due, suggest: "This is slice N — an integration sweep is due. Run `/integration-sweep` in a fresh session."
 4. Stage the completion state AND the removal of every file under `.claude/current-slice/` in a single commit. The cleanest form is one commit that both updates `slice.yaml` → `status: complete` and removes the rest of the directory:
    ```

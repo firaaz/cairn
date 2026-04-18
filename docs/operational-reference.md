@@ -129,8 +129,8 @@ These Superpowers skills are not in the primary mapping above, each for a specif
 ### slice.yaml Format
 
 ```yaml
-id: SLICE-NNN
-title: "Short description"
+id: <feature-id>/<slice-slug>
+name: "Short human label"
 status: intent | validation | implementation | integration | complete | failed
 started: YYYY-MM-DD
 completed: null
@@ -182,7 +182,7 @@ Every ADR, slice, feature, and decision point carries two fields: `id:` (immutab
 
 **`shaped-from:` is the feature-provenance field** (ADR `identifier-scheme` D5). Each feature file records in `shaped-from:` either a path (e.g., `docs/plans/2026-04-15-fleet-coordinator-design.md`), a URL, or `null` for unshaped features. The field is append-only to the feature file at creation; rewriting it later requires the same discipline as ADR frontmatter edits.
 
-**Legacy transition.** During ADR `identifier-scheme` D7 Phase 1, hooks and the validator accept both the hierarchical new forms above and the legacy flat `SLICE-NNN` slice form and `ADR-NNN` ADR filename references. The Phase 2 rename-sweep slices (`adr-rename-sweep`, `slice-and-feature-rename`, `doc-sweep`) migrate existing entities; after those land, legacy forms are retired. Until then, newly-born entities emit the new scheme and existing entities retain their legacy `id:` until swept.
+**Legacy transition.** ADR `identifier-scheme` D7 Phase 1 (mixed-window tolerance) and Phase 2 Parts 1-2 (ADR renames; slice/feature renames; `sweep.yaml` `current-slice-number` retirement) are complete. Residual prose references to `SLICE-NNN` and `ADR-NNN` in long-form docs (`docs/spec-v1.md`, `docs/lessons.md`, `CLAUDE.md`, handoff examples, ADR body prose) are the remaining scope for the Part 3 slice `identifier-scheme/doc-sweep`. Hooks and the validator retain mixed-window tolerance indefinitely — Phase 3 of migration (drop legacy-format tolerance) is deferred per ADR `identifier-scheme` D7.
 
 ## Phase Gate Enforcement
 
@@ -281,9 +281,8 @@ If a sweep finds failures, create new slices to fix them through the normal 4-ph
 
 ```yaml
 # .claude/sweep.yaml
-last-sweep-at-slice: 0
+last-sweep-at-slice-id: null
 sweep-interval: 3
-current-slice-number: 0
 ```
 
 ## ADR Rules During a Slice
