@@ -7,3 +7,6 @@ slices:
   - id: compression/doc-cleanup-tail
     added: 2026-04-18
     intent: "Slice A (reshaped): close identifier-scheme carry-over debt. F1 — audit 7 sweep-#17 ADRs for factually-stale legacy-identifier residue and rewrite via ADR_EDITORIAL_FIX=1 where found; leave pedagogical/historical prose alone. F2 — rekey COMPLETED_SLICES in tests/unit/test_phase_rethink.py to canonical slice-names and make the matcher wording-agnostic. Out of scope: Part 0 ADR (Slice B), orchestrator infrastructure (later slice), any ADR outside the sweep-#17 set."
+  - id: compression/infrastructure
+    added: 2026-04-19
+    intent: "Slice A of the compression program proper: ship scripts/slice_orchestrator.py (Python state machine), four phase-role agents + issue-triager, checks/role_guard.py PreToolUse hook, thin /start-slice refactor with --legacy escape hatch, and settings.json hook registration. Closes under legacy serial protocol; the compressed dispatch path it installs becomes the dogfood target for Slice B (Part 0 ADR). Audit-finding F1/F3/F4/F5 prevention mechanisms are present-by-construction but exercised only by Slice B's compressed execution. Authorized by compression-infrastructure-bootstrap; Part 0 ratification deferred to Slice B."

@@ -1,8 +1,8 @@
-id: compression/doc-cleanup-tail
-name: "Compression doc-cleanup tail — F1 ADR audit + F2 test_phase_rethink rekey"
-status: complete
-started: 2026-04-18
-completed: 2026-04-19
-invariants-touched: []
-adrs-referenced: []
+id: compression/infrastructure
+name: "Compression infrastructure — orchestrator, role agents, role_guard hook, thin /start-slice"
+status: intent
+started: 2026-04-19
+completed: null
+invariants-touched: [INV-003]
+adrs-referenced: [compression-infrastructure-bootstrap, phase-lock-and-role-declaration, parallelism-v1]
 adrs-created: []
