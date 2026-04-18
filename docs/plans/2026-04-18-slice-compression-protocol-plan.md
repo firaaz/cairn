@@ -18,7 +18,7 @@ This plan implements Slice A. The broader program sequence:
 
 | Phase | Work | Execution |
 |---|---|---|
-| **Prerequisite** | Close `identifier-scheme/slice-and-feature-rename` + `identifier-scheme/doc-sweep` on `feature/identifier-scheme`. Merge feature to `dev`. | Serial, on this branch |
+| **Prerequisite** | Close `identifier-scheme/doc-sweep` on `feature/identifier-scheme`. Merge feature to `dev`. | Serial, on this branch |
 | **Feature creation** | New feature `compression` on `feature/compression` branch (worktree). | — |
 | **Slice A** (this plan) | Compression infrastructure. | Serial (bootstrap) |
 | **Slice B** | Part 0 ADR with P1-P6 + D1/D2/D3. | **Compressed (dogfood)** |
@@ -33,10 +33,9 @@ This plan implements Slice A. The broader program sequence:
 
 ## Prerequisite — Close identifier-scheme feature first
 
-Before starting this plan, the following slices on `feature/identifier-scheme` must close:
+Before starting this plan, the following slice on `feature/identifier-scheme` must close:
 
-- `identifier-scheme/slice-and-feature-rename` — queued
-- `identifier-scheme/doc-sweep` — queued after above
+- `identifier-scheme/doc-sweep` — queued (absorbs residual prose cleanup from the dropped `slice-and-feature-rename` slice; see feature file for drop reason)
 
 Merge `feature/identifier-scheme` to `dev`. **Only then** create the worktree for compression work.
 

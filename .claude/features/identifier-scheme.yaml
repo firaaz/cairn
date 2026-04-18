@@ -37,4 +37,7 @@ slices:
   - id: identifier-scheme/slice-and-feature-rename
     added: 2026-04-17
     after: identifier-scheme/adr-rename-sweep
+    status: dropped
+    dropped: 2026-04-18
+    dropped-reason: "Phase 2 Part 2 substrate work absorbed by prior slices (template-updates, adr-rename-sweep): all active feature files already carry D5 name:/shaped-from:, all slice IDs already hierarchical, sweep.yaml already dropped current-slice-number, scripts/dogfood_evaluate.py and /integration-sweep templates already re-plumbed. Residual ~10-line prose cleanup in commands/claude-code/start-slice.full.md, commands/claude-code/handoff.full.md, tests/unit/test_dogfood_evaluate.py folded into identifier-scheme/doc-sweep scope rather than running a 4-phase pipeline."
     intent: "ADR identifier-scheme §D7 Phase 2 Part 2. Rename legacy SLICE-NNN slice IDs to hierarchical <feature>/<slice> form in active feature files, annotate every feature file with the name:/shaped-from: fields required by D5, drop slice-yaml-id: bridges, and retire .claude/sweep.yaml's current-slice-number field (re-plumbing scripts/dogfood_evaluate.py and its tests, plus /start-slice and /integration-sweep command templates, to the successor substrate). Historical archives (.claude/completed-slices/, .claude/sweep-results/, docs/plans/, CHANGELOG.md) and ADR/prose mentions are out of scope — residual prose sweep lands in identifier-scheme/doc-sweep (Phase 2 Part 3)."
