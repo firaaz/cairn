@@ -1,15 +1,15 @@
 ---
 slice: identifier-scheme/slice-and-feature-rename
-phase: 2-validation
+phase: 3-implementation
 branch: feature/identifier-scheme
-as-of: 2026-04-18 170fa90
+as-of: 2026-04-18 aa60dd1
 ---
 
 ## State
-Phase 2 validation committed at `170fa90`. Envelope collapsed to `test_dogfood_evaluate.py` (14 RED + 6 GREEN); 9 of 10 intent verification items redirected to Phase 4 Auditor. §9 resolved as drop; §8 encoded as in-envelope analog.
+Phase 3 implementation committed at `aa60dd1`. 20/20 dogfood evaluator tests GREEN; full suite 380/382 (1 out-of-scope operator CLAUDE.md failure, 1 skipped). Envelope closed.
 
 ## Next
-Close this session. In the next, run `/catchup` then `/start-slice phase 3`.
+Close this session. In the next, run `/catchup` then `/start-slice phase 4`.
 
 ## Blocked / Pending
 - `CLAUDE.md` uncommitted (terseness rule removed) — operator change, out of slice scope.
@@ -19,13 +19,13 @@ Close this session. In the next, run `/catchup` then `/start-slice phase 3`.
 - 5 SLICE-020 reviewer suggestions → `docs/lessons.md`; `start-slice.full.md:220` rolling-window wording — low-priority carry-overs.
 
 ## Features
-- identifier-scheme: slice-and-feature-rename Phase 2→3; doc-sweep queued (Phase 2 Part 3)
+- identifier-scheme: slice-and-feature-rename Phase 3→4; doc-sweep queued (Phase 2 Part 3)
 - integration-gate: complete
-- housekeeping: complete (SLICE-017/018)
-- v1-defense-d2: complete (SLICE-010/011)
+- housekeeping: complete (inv004-rebaseline, stale-22k-cleanup)
+- v1-defense-d2: complete (code-invariant-binding, assertion-block-migration)
 - v1-defense-d3: bypass-log-test-resilience complete; Decision 2 substrate queued
 
 ## Pointers
-- `.claude/current-slice/handoff-phase-2.md` — phase gate state + Phase 3 implementation constraints.
-- `.claude/current-slice/intent.md` — envelope + normative migration tables (§§3, 5, 6, 7).
-- `.claude/current-slice/validation/approach.md` — §9/§8 dispositions recorded.
+- `.claude/current-slice/handoff-phase-3.md` — phase gate + Phase 4 Auditor constraints.
+- `.claude/current-slice/intent.md` — verification items §§1-10 (Phase 4 territory).
+- `.claude/current-slice/implementation/notes.md` — Builder decisions recorded.
