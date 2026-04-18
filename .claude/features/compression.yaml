@@ -1,0 +1,9 @@
+id: compression
+name: "Slice compression — orchestrator-driven phase dispatch"
+intent: "Ship compression protocol: orchestrator (Python state machine) dispatches role-scoped phase agents via claude -p; two-layer enforcement (allowed-tools + role_guard.py); D1/D2/D3 universal phase-artifact discipline. Subsumes efficiency-program Part 3 S1+S2; supersedes Part 2 E2 in original form; implements Part 2 E6. Slice A reshaped at kickoff to absorb identifier-scheme carry-over debt (F1 ADR prose audit + F2 test_phase_rethink rekey); infrastructure scope moves to a later slice."
+shaped-from: docs/plans/2026-04-18-slice-compression-protocol-design.md
+created: 2026-04-18
+slices:
+  - id: compression/doc-cleanup-tail
+    added: 2026-04-18
+    intent: "Slice A (reshaped): close identifier-scheme carry-over debt. F1 — audit 7 sweep-#17 ADRs for factually-stale legacy-identifier residue and rewrite via ADR_EDITORIAL_FIX=1 where found; leave pedagogical/historical prose alone. F2 — rekey COMPLETED_SLICES in tests/unit/test_phase_rethink.py to canonical slice-names and make the matcher wording-agnostic. Out of scope: Part 0 ADR (Slice B), orchestrator infrastructure (later slice), any ADR outside the sweep-#17 set."

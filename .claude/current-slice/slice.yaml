@@ -1,3 +1,8 @@
-id: none
-name: "No active slice"
-status: none
+id: compression/doc-cleanup-tail
+name: "Compression doc-cleanup tail — F1 ADR audit + F2 test_phase_rethink rekey"
+status: intent
+started: 2026-04-18
+completed: null
+invariants-touched: []
+adrs-referenced: []
+adrs-created: []
