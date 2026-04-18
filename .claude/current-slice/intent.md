@@ -47,7 +47,7 @@ This is the last identifier-scheme tail; closing it unblocks compression Slice B
 
 **F2 — `test_phase_rethink.py:30-36` rekey.**
 
-- `COMPLETED_SLICES` is rewritten so each key is a canonical slice-name token (no stray backtick, no " operationalization" suffix). The canonical names are the bare ADR slugs (or bare slice slugs) that the historical slices were about, e.g. `"context-discipline-protocol"`, `"phase-lock-and-role-declaration"`, `"validator-symlink-fix"`, `"dogfood-evaluator"`, `"4-ADR design"`.
+- `COMPLETED_SLICES` is rewritten so each key is a canonical slice-name token (no stray backtick, no " operationalization" suffix). The canonical names are the bare ADR slugs (or bare slice slugs) that the historical slices were about, e.g. `"context-discipline-protocol"`, `"phase-lock-and-role-declaration"`, `"validator-symlink-fix"`, `"dogfood-evaluator"`, `"4-ADR design slice"`. V4 (no backticks, no " operationalization") is the authoritative floor; keys not matched by V4's rewrite rules retain their current shape (Phase 2 resolution A4).
 - `test_v2_cites_three_slices` is rewritten to be **wording-agnostic**: a citation counts as present if the canonical key appears as a word-boundary substring in the ADR text, regardless of what surrounds it (backticks, trailing " operationalization slice", trailing " slice", etc.). Whitespace normalization is applied before matching so line-wrap differences do not break the match. The "substantive context" check (>10 chars beyond the key, as today) is preserved.
 - No change to the V2 contract (≥3 slices cited with substantive context) and no change to the ADR text that the test reads. The test's file `SLICE-006` docstring on lines 1-8 is left alone — it's historical self-reference.
 - Ruff on the modified test file must remain clean.
@@ -68,4 +68,4 @@ This is the last identifier-scheme tail; closing it unblocks compression Slice B
 - **V5** — `uv run pytest tests/unit/test_phase_rethink.py -v` passes (all tests green, including `test_v2_cites_three_slices` with the new matcher).
 - **V6** — `uv run pytest` (full suite) exits 0 (no regression outside the envelope).
 - **V7** — `uv run python .slice-system/scripts/validate_architecture.py` exits 0 (ADR corpus still self-consistent; no new ARCHITECTURE.md churn expected).
-- **V8** — `git diff HEAD~..HEAD -- docs/plans/2026-04-18-slice-compression-protocol-*.md` is empty — the pre-existing design/plan docs were not touched by this slice.
+- **V8** — `git diff 635f2e7^..HEAD -- docs/plans/2026-04-18-slice-compression-protocol-*.md` is empty — the pre-existing design/plan docs were not touched by this slice. Diff base is pinned to the parent of the Phase 1 intent commit (`635f2e7`) so the check covers every slice commit inclusively rather than only the last (Phase 2 resolution A8).

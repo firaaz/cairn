@@ -29,11 +29,27 @@ PHASE_NAME_REFERENCES = [
 
 COMPLETED_SLICES = {
     "validator-symlink-fix",
-    "context-discipline-protocol` operationalization",
-    "phase-lock-and-role-declaration` operationalization",
+    "context-discipline-protocol",
+    "phase-lock-and-role-declaration",
     "dogfood-evaluator",
     "4-ADR design slice",
 }
+
+
+def _slice_cited(slice_id: str, text: str) -> bool:
+    # Match as a word-boundary substring with hyphen treated as a word character,
+    # so the key matches across backticks and space-adjacent trailing words
+    # (e.g. "... slice", "... operationalization slice") but not inside
+    # hyphen-compound tokens (e.g. "pre-<slug>", "<slug>-follow-up").
+    # Whitespace-normalize each line before matching so line-wrap differences
+    # do not break a match. Substantive-context check: the matching line must
+    # carry >10 characters beyond the key itself.
+    pattern = re.compile(r"(?<![\w-])" + re.escape(slice_id) + r"(?![\w-])")
+    for line in text.splitlines():
+        normalized = " ".join(line.split())
+        if pattern.search(normalized) and len(normalized) > len(slice_id) + 10:
+            return True
+    return False
 
 
 def _find_phase_adr() -> Path | None:
@@ -179,19 +195,7 @@ def test_v2_cites_three_slices():
     assert path is not None, "Phase ADR not found. (V2 pre-req)"
     text = _read(path)
 
-    cited = set()
-    for slice_id in COMPLETED_SLICES:
-        if slice_id not in text:
-            continue
-        # Require at least one line with the slice ID that has substantive
-        # surrounding context (more than just a bare reference in a list)
-        lines_with_ref = [
-            line
-            for line in text.splitlines()
-            if slice_id in line and len(line.strip()) > len(slice_id) + 10
-        ]
-        if lines_with_ref:
-            cited.add(slice_id)
+    cited = {slice_id for slice_id in COMPLETED_SLICES if _slice_cited(slice_id, text)}
 
     assert len(cited) >= 3, (
         f"ADR must cite ≥3 completed slices with substantive context. "
