@@ -22,7 +22,7 @@ CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
 LOG = CAIRN_ROOT / ".claude" / "d3-bypasses.log"
 
 CLASSIFIED_LINE_RE = re.compile(
-    r"^SLICE-\d+ \d{4}-\d{2}-\d{2} (slice-caused|pre-existing|false-positive)(?: \([A-D]\))?: .+$"
+    r"^(?:SLICE-\d+|[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9-]*) \d{4}-\d{2}-\d{2} (slice-caused|pre-existing|false-positive)(?: \([A-D]\))?: .+$"
 )
 
 SLICE_012_REASON = (
@@ -92,10 +92,11 @@ def test_line_order_is_chronological():
     assert ids[:4] == ["SLICE-012", "SLICE-014", "SLICE-016", "SLICE-017"], (
         f"first four ids must match migration anchors, got {ids[:4]}"
     )
-    suffixes = [int(id_.split("-")[1]) for id_ in ids]
+    numeric_ids = [id_ for id_ in ids if id_.startswith("SLICE-")]
+    suffixes = [int(id_.split("-")[1]) for id_ in numeric_ids]
     for i in range(len(suffixes) - 1):
         assert suffixes[i] <= suffixes[i + 1], (
-            f"id suffix not non-decreasing at line {i + 2}: {suffixes}"
+            f"SLICE-NNN suffix not non-decreasing at position {i + 1}: {suffixes}"
         )
     dates = [line.split(" ")[1] for line in lines]
     for i in range(len(dates) - 1):
