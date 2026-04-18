@@ -2,7 +2,7 @@
 slice: none
 phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-18 41c4c57
+as-of: 2026-04-18 4953f09
 ---
 
 ## State
@@ -26,6 +26,6 @@ In a fresh session: `/catchup` then `/integration-sweep`.
 - `housekeeping`: dormant
 
 ## Pointers
-- `.claude/current-slice/efficiency-spec/` — operator-preserved untracked folder; outside every slice envelope; do not delete
+- `docs/plans/2026-04-18-efficiency-program/` — 10-part efficiency program spec, brainstorm output awaiting `/decision` + `/start-slice` runs; read `00-program.md` first for scope
 - `.claude/d3-bypasses.log` — fresh entry `identifier-scheme/slice-and-feature-rename 2026-04-18 operator Option C` authorizing chore commit `9797d60` out-of-envelope
 - `.claude/features/identifier-scheme.yaml` — read before starting `identifier-scheme/doc-sweep`
