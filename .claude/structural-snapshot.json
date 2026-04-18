@@ -84,8 +84,8 @@
     "size": 6437
   },
   "docs/adr/d3-bypass-classification.md": {
-    "hash": "d9cc707c7190ec908d67c139a46fed549e9117fbe09ba7e12ce05fce1d82dde3",
-    "size": 10645
+    "hash": "8f537442317ddf08a0f695293110dfdbb0bbbbe40ea14a907c7baba4d580b29d",
+    "size": 10641
   },
   "docs/adr/feature-slice-model.md": {
     "hash": "194400340f3dafded111fe88017eda64100730b3f433998a04338d8cac9b248c",
@@ -116,12 +116,16 @@
     "size": 5551
   },
   "docs/dogfood-log.md": {
-    "hash": "be243b422e2632df3da78b2ad84a81271ce4ace4e60678e286dc61df20193e01",
-    "size": 292
+    "hash": "c79a5883d8047de98943d7cdf9e979f514782bacec5333e206d7cc0aba9d963b",
+    "size": 319
+  },
+  "docs/features/identifier-scheme.md": {
+    "hash": "390de86f6771dc3e8cde6325efccfcbde5e3a3e75be5b34ad3d83258a0c2bad7",
+    "size": 3516
   },
   "docs/lessons.md": {
-    "hash": "6b10f4fcc7ad92150a86cbb00a066fcbdf1bd8f82b1bd781d01fe5bdde01e2f9",
-    "size": 20493
+    "hash": "658f27e380b5004e4402d786b2a91748d3fe5c9ba731b2073b0a81c81db5ca09",
+    "size": 22709
   },
   "docs/operational-reference.md": {
     "hash": "62d3e2a0f719e87ae686c3caa737a7aef4e8fb30ab694c69c855cf85fb6fff45",
@@ -171,9 +175,21 @@
     "hash": "1c69d233750e5979c98589d070d8d2afb79949af101c0477b6e200bf49c6582f",
     "size": 13700
   },
+  "docs/plans/2026-04-16-dogfood-observations.md": {
+    "hash": "c2c1f0398dcea673a422ed61d9c5cac54cfd1d691c85141d787ea582efb54530",
+    "size": 20840
+  },
   "docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md": {
     "hash": "8292aad178c519eedf0eb026ab821b4a63439f7a7c14833a8b91ba902dbee6c2",
     "size": 9890
+  },
+  "docs/plans/2026-04-16-manual-parallel-dogfood.md": {
+    "hash": "a2d13a4fc2e4ee62bdc223b6f2f27015fff3ebeca69126f8e36191942fb02181",
+    "size": 10237
+  },
+  "docs/plans/2026-04-16-slice-018-d3-oob.md": {
+    "hash": "eaf327e5ec0669500ad96667d42be68afadd141776f82fa1a1b1af06d0bfae74",
+    "size": 1775
   },
   "docs/plans/2026-04-17-coordinator-worker-communication-design.md": {
     "hash": "9f36731891c8253cbea626a58f61c904a6c869a39bcd36a5ae5f1464f5c43af3",
@@ -218,6 +234,14 @@
   "docs/plans/2026-04-18-efficiency-program/09-part-6-auto-advance.md": {
     "hash": "e0057bd272c33db4ae8d2e5a7334f63dac7e53241ffe72fd95f8189298535ec2",
     "size": 13505
+  },
+  "docs/plans/2026-04-18-feature-to-dev-merge-protocol-design.md": {
+    "hash": "e438e557d48aa031f0bbca37eaf1f911727f9629f28a353b9af0f20ca17fc945",
+    "size": 18378
+  },
+  "docs/plans/2026-04-18-feature-to-dev-merge-protocol-plan.md": {
+    "hash": "c29b281204f70a5df69de4963dd57dffb5b72c3624636a446cef47ff9e0585e2",
+    "size": 32493
   },
   "docs/plans/2026-04-18-session-compression-audit.md": {
     "hash": "60171be6e5421dc2080021894cb24f94ae96823918e890417f85de05955051f3",
@@ -316,8 +340,8 @@
     "size": 12100
   },
   "tests/unit/test_d3_bypass_log_format.py": {
-    "hash": "25deccd9be3afb8f886ed76aef7f4606369daa1d8adaf072b3bbe66e5e3e30be",
-    "size": 5289
+    "hash": "a503d29a8ec6f90b6c0af51b0b97989db8106c2bae48d0b290bbf8e67c04e76d",
+    "size": 5417
   },
   "tests/unit/test_dogfood_evaluate.py": {
     "hash": "655a927b0dffdd78efeef0e94a5b25f2d68f1e6205766dd1c94c4a67109f48af",
@@ -368,8 +392,8 @@
     "size": 50807
   },
   "tests/unit/test_phase_rethink.py": {
-    "hash": "2d8aa1ce650c398fd3c8bf9df9ffb57cf99c4f7f834cddf364634b56fb61dbf1",
-    "size": 11133
+    "hash": "a1daec1cd0d44c0d99f79b63443cf992bbcb4332136363445e5f1e9d3eb5c935",
+    "size": 11529
   },
   "tests/unit/test_progressive_disclosure.py": {
     "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",
