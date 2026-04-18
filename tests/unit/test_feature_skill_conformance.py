@@ -5,7 +5,7 @@ feature update), V4 (cross-feature index in handoff), V5 (Tier 2 gating in
 catchup), V8 (trigger discipline).
 
 Static artifact checks — reads slash command files and templates, verifies
-they contain feature-model instructions per ADR-006 D5 and ADR-008 D0/D1.
+they contain feature-model instructions per feature-slice-model D5 and context-tiers-integration D0/D1.
 
 These tests FAIL until Phase 3 modifies the skill files.
 
@@ -69,7 +69,7 @@ class TestStartSliceFeatureCreation:
 
     def test_references_feature_file_path(self):
         """start-slice.full.md must reference .claude/features/ as the
-        feature file location (ADR-006 D1)."""
+        feature file location (feature-slice-model D1)."""
         text = self._read_start_slice_full()
         assert ".claude/features/" in text, (
             "start-slice.full.md does not reference .claude/features/ path"
@@ -77,7 +77,7 @@ class TestStartSliceFeatureCreation:
 
     def test_references_feature_file_creation(self):
         """start-slice.full.md must contain instructions for creating a
-        feature file when one does not exist (ADR-006 D3 always-create)."""
+        feature file when one does not exist (feature-slice-model D3 always-create)."""
         text = self._read_start_slice_full()
         assert contains_any(
             text,
@@ -122,7 +122,7 @@ class TestStartSliceFeatureCreation:
 class TestHandoffCrossFeatureIndex:
     def test_handoff_full_references_cross_feature_index(self):
         """handoff.full.md must contain instructions for writing a
-        cross-feature index section (ADR-008 D0/D1)."""
+        cross-feature index section (context-tiers-integration D0/D1)."""
         path = CAIRN_ROOT / "commands" / "claude-code" / "handoff.full.md"
         assert path.is_file(), f"{path} does not exist"
         text = path.read_text()
@@ -134,7 +134,7 @@ class TestHandoffCrossFeatureIndex:
 
     def test_handoff_template_has_features_section(self):
         """templates/handoff.md must contain a ## Features section
-        (ADR-008 D0 — handoff.md gains a cross-feature index)."""
+        (context-tiers-integration D0 — handoff.md gains a cross-feature index)."""
         path = CAIRN_ROOT / "templates" / "handoff.md"
         assert path.is_file(), f"{path} does not exist"
         text = path.read_text()
@@ -144,7 +144,7 @@ class TestHandoffCrossFeatureIndex:
 
     def test_handoff_features_section_describes_per_feature_line(self):
         """The ## Features section in the handoff template must describe
-        the one-line-per-active-feature format (ADR-008 D0)."""
+        the one-line-per-active-feature format (context-tiers-integration D0)."""
         path = CAIRN_ROOT / "templates" / "handoff.md"
         text = path.read_text()
         features_section = slice_section(text, "## Features")
@@ -170,7 +170,7 @@ class TestCatchupTierGating:
 
     def test_tier1_references_cross_feature_index(self):
         """catchup.full.md Tier 1 must reference the cross-feature index
-        from handoff.md (ADR-008 D1)."""
+        from handoff.md (context-tiers-integration D1)."""
         text = self._read_catchup_full()
         assert contains_any(
             text,
@@ -180,7 +180,7 @@ class TestCatchupTierGating:
 
     def test_tier1_does_not_load_feature_files(self):
         """catchup.full.md must explicitly state that feature files are NOT
-        loaded at Tier 1 — they are Tier 2 on-demand reads (ADR-008 D0)."""
+        loaded at Tier 1 — they are Tier 2 on-demand reads (context-tiers-integration D0)."""
         text = self._read_catchup_full()
         # Must contain language about feature files being Tier 2 / not Tier 1
         has_tier2_reference = contains_any(
@@ -205,7 +205,7 @@ class TestCatchupTierGating:
 class TestTriggerDiscipline:
     def test_start_slice_is_a_trigger_event(self):
         """start-slice.full.md must contain feature file update logic,
-        confirming it is a trigger event per ADR-006 D5."""
+        confirming it is a trigger event per feature-slice-model D5."""
         path = CAIRN_ROOT / "commands" / "claude-code" / "start-slice.full.md"
         text = path.read_text()
         assert contains_any(
@@ -216,7 +216,7 @@ class TestTriggerDiscipline:
 
     def test_handoff_is_a_trigger_event(self):
         """handoff.full.md must contain cross-feature index update logic,
-        confirming it is a trigger event per ADR-006 D5."""
+        confirming it is a trigger event per feature-slice-model D5."""
         path = CAIRN_ROOT / "commands" / "claude-code" / "handoff.full.md"
         text = path.read_text()
         assert contains_any(

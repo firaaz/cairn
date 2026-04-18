@@ -1,0 +1,205 @@
+# Manual Axis-B Dogfood — Observations
+
+**Date:** 2026-04-16
+**Coordinator session:** `cairn:1` (coord)
+**Starting commit:** `87ea8b5`
+**Workers launched:** A (housekeeping/stale-22k), C (identifier-scheme/validator-flat-slug), B (v1-defense-d3/log-reclass), D (identifier-scheme/hook-relpath-bypass)
+**Companion plan:** `.claude/plans/2026-04-16-manual-parallel-dogfood.md`
+**Topology design:** `docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md`
+**ADR under test:** `docs/adr/007-parallelism-v1.md` (firmness: provisional)
+
+---
+
+## 1. Setup log
+
+| Timestamp (local) | Event | Notes |
+|---|---|---|
+| 2026-04-16 13:15:03 +04 | coord window renamed (`cairn:1` → `coord`), `/tmp/cairn-fleet/2026-04-16/` created, observations file opened | Base-index is 1 (not 0 as plan assumed) — workers will spawn at `cairn:2..5` |
+| 2026-04-16 13:17 +04 | Worker A spawned — worktree, window, pipe-pane, `claude` launch, bootstrap injected | Boot time ~5s (plan's `sleep 2` was too short; the capture was visible only by ~5s mark). Bootstrap injected via `tmux send-keys -l "$(cat bootstrap-A.txt)"` then separate `Enter`. Worked cleanly. |
+| 2026-04-16 13:18 +04 | Worker A reached first permission prompt (single-line `rm slice.yaml && rmdir … && mkdir -p …`) as part of `/start-slice` cleanup | Reading the capture revealed the prior attempt had been `rm -rf` which `reversibility-guard.sh` blocked; worker adapted to explicit-path form and then asked for approval — so the prompt was already the recovered form. |
+| 2026-04-16 13:19 +04 | Workers C, B, D spawned concurrently (batched worktree adds then tmux window+claude launches) | Initial `capture-pane` showed blank because the TUI pads empty-prompt lines with spaces; `awk 'NF>0'` reveals the content. Log-file tail with ANSI stripping is a reliable fallback. |
+| 2026-04-16 13:20 +04 | Approved A (`send-keys '1' Enter` to `cairn:2`); `rev-guard` had already caught and reshaped the original `rm -rf`; explicit-path `rm` ran; `rmdir` failed (`.gitkeep` present); worker recovered with `mkdir -p` separately | Worker A now **writing Phase 1 intent** (`◼ Phase 1: Write intent.md`). Functioning as designed: guard blocked, worker adapted, human approved the adapted form. C/B/D still reading context files in `/start-slice` exploration; no permission prompts yet. |
+
+---
+
+## 2. Per-slice timeline
+
+### Worker A — housekeeping/stale-22k-cleanup
+
+| Timestamp | Phase | State change | Human-touch count |
+|---|---|---|---|
+| 2026-04-16 13:17 +04 | bootstrap | spawn complete | 0 |
+| 2026-04-16 13:18 +04 | Phase 1 pre | `/start-slice` skill loaded; requested Bash permission | 0 |
+| 2026-04-16 13:20 +04 | Phase 1 pre | approved (1); `rm -rf` originally proposed was rev-guard-blocked; adapted + resumed | 1 |
+| 2026-04-16 13:20 +04 | Phase 1 | writing intent.md | 1 |
+| 2026-04-16 13:24 +04 | Phase 1 | Write(intent.md 103 lines) approved; Update(sweep.yaml) hit read-before-write error; recovered | 2 |
+| 2026-04-16 13:29 +04 | Phase 1 boundary | 2 commits (`5a85197` intent, `cf4519a` handoff); handoff-phase-1.md present; stopped per protocol | 2 |
+| 2026-04-16 13:32 +04 | Phase 1→2 transition | `/clear` + `/catchup` → 30.6k tokens (Mode A orientation clean) | 2 |
+| 2026-04-16 13:34 +04 | Phase 2 advance | `/start-slice phase 2` → loaded start-slice skill, reading operational-reference.md | 3 |
+| 2026-04-16 13:39 +04 | Phase 2 boundary | validation suite committed at `ac4bd8e`; slice.yaml unchanged (status: validation) — autonomous pre-commit without new handoff yet | 3 |
+
+### Worker C — identifier-scheme/validator-flat-slug
+
+| Timestamp | Phase | State change | Human-touch count |
+|---|---|---|---|
+| 2026-04-16 13:19 +04 | bootstrap | spawn complete | 0 |
+| 2026-04-16 13:22 +04 | Phase 1 pre | mkdir permission prompt (sensitive-path wording) | 0 |
+| 2026-04-16 13:24 +04 | Phase 1 pre | approved mkdir; read-before-write errors on slice.yaml/sweep.yaml; recovered | 1 |
+| 2026-04-16 13:26 +04 | Phase 1 | Edit(identifier-scheme.yaml feature file — added slice entry per ADR-006) approved | 2 |
+| 2026-04-16 13:33 +04 | Phase 1 boundary | 2 commits (`c670b58` intent, `87e9ede` handoff); handoff-phase-1.md present; stopped per protocol | 2 |
+| 2026-04-16 13:37 +04 | Phase 1→2 transition | `/clear` + `/catchup` → 30.5k tokens (Mode A orientation clean) | 2 |
+| 2026-04-16 13:37 +04 | Phase 2 advance | `/start-slice phase 2` | 3 |
+| 2026-04-16 13:41 +04 | Phase 2 | Gate: awk signature-extraction command (read-only exploration); pending approval | 3 |
+
+**Note:** C's slice.yaml `status:` is `2-validation` (prefixed form); A/B/D wrote just `validation`. Inconsistency in cairn's `/handoff` output — worth a consistency pass.
+
+### Worker B — v1-defense-d3/bypass-log-reclass
+
+| Timestamp | Phase | State change | Human-touch count |
+|---|---|---|---|
+| 2026-04-16 13:19 +04 | bootstrap | spawn complete | 0 |
+| 2026-04-16 13:22 +04 | Phase 1 pre | `/start-slice` exploration; read-before-write errors recovered autonomously | 0 |
+| 2026-04-16 13:23 +04 | Phase 1 | Write(intent.md 6.0k), Write(slice.yaml) approved | 1 |
+| 2026-04-16 13:26 +04 | Phase 1 boundary | two commits (61d2664 intent, 5f48721 handoff); slice.yaml→validation; handoff-phase-1.md (952 chars); stopped per protocol | 1 |
+| 2026-04-16 13:29 +04 | Phase 1→2 transition | `/clear` + `/catchup` cycle: 65.8k → 31.4k tokens (−52%). Tier 1 discipline held (read only handoff+slice+sweep+git). Mode A orientation produced. Waiting on `/start-slice phase 2`. | 1 |
+
+### Worker D — identifier-scheme/hook-relpath-bypass
+
+| Timestamp | Phase | State change | Human-touch count |
+|---|---|---|---|
+| 2026-04-16 13:19 +04 | bootstrap | spawn complete | 0 |
+| 2026-04-16 13:22 +04 | Phase 1 pre | ls + git log permission prompt (benign reads) | 0 |
+| 2026-04-16 13:24 +04 | Phase 1 pre | approved reads; heavy context exploration — ARCHITECTURE.md, completed-slices, test_hook_tolerance.py (409 lines); token load climbed to 67k | 1 |
+| 2026-04-16 13:30 +04 | Phase 1 boundary | 2 commits (`d0118bb` intent, `90c0868` handoff); handoff-phase-1.md present; stopped per protocol | 1 |
+| 2026-04-16 13:32 +04 | Phase 1→2 transition | `/clear` + `/catchup` → 30.6k tokens; accept-edits mode auto-enabled in D only (not A) | 1 |
+| 2026-04-16 13:34 +04 | Phase 2 advance | `/start-slice phase 2` | 2 |
+
+---
+
+## 3. Coordinator overhead
+
+Operator messages spent on coordination (surfacing gates, answering status questions) vs. actual slice work:
+
+| Turn # | Coord-only | Slice-work | Notes |
+|---|---|---|---|
+| | | | |
+
+---
+
+## 4. Gate candidacy
+
+For each observed transition, classify: *autonomous-eligible* (could a precondition script verify this?) or *human-gated-only*. Feeds Feature 2 ADR.
+
+| Slice | Transition | Classification | Evidence / precondition shape |
+|---|---|---|---|
+| | | | |
+
+---
+
+## 5. Failures / near-misses
+
+Any merge conflict, invariant violation, scope-guard denial, `send-keys` race, hung worker, or surprise.
+
+| Timestamp | Slice | Failure mode | Resolution |
+|---|---|---|---|
+| 2026-04-16 13:20 +04 | A | `reversibility-guard.sh` blocked `rm -rf .claude/current-slice` on a cleanup path used by `/start-slice` | Worker auto-adapted to explicit `rm <path> && rmdir …`; `rmdir` then failed because `.gitkeep` was present; worker recovered with `mkdir -p` separately. Net: 2 extra tool calls, guard fired correctly. Signals that `/start-slice` scaffolding logic assumes an empty `.claude/current-slice/` directory but encounters `.gitkeep`. |
+| 2026-04-16 13:22–24 +04 | A, B, C (repeated) | CC 2.1.110 Write tool now enforces "File has not been read yet. Read it first before writing to it." on any Write without a prior Read (new behavior vs older CC versions) | Every worker hit this at least once when authoring `slice.yaml` and/or `sweep.yaml`. Auto-recovered with a Read then Write. Adds ~1–2 extra tool calls per affected Write. Candidate **autonomous-eligible precondition** for Feature 2: "before Write, ensure Read of same path has occurred this session." |
+
+---
+
+## 5b. Coordinator design feedback (in-flight, not end-of-dogfood)
+
+**Per-turn full `capture-pane` polling is wasteful.** The topology design §D8 prescribes: on every human turn, for each active worker, `tmux capture-pane -p -t cairn:<N> -S -100`. With 4 workers this dumps ~400 lines of raw ANSI-laden terminal output into coordinator context every turn — most of it repeats unchanged content and the non-text markers. Real cost: large context bump per turn, token burn on every coordinator reply, and context switching between four disjoint state trees degrades the coordinator's synthesis quality.
+
+**User feedback (firaaz, 2026-04-16 ~13:26 +04):** "We need a better way than this polling. This adds context switching and is wasteful of tokens." Record this as a load-bearing constraint for Feature 6 harness design.
+
+**Better shapes to evaluate:**
+1. **Tiered polling.** Poll `slice.yaml` every turn (tiny, structured, detects phase transitions cleanly). Poll log-file *size delta* every turn (one `ls -la` call). Only `capture-pane` when a signal fires (new prompt marker, log growth without slice.yaml change, or user asks).
+2. **Prompt-marker grep on log tail.** Instead of dumping the full pane, grep just the last ~40 non-whitespace lines of each worker log for known markers (`Do you want to proceed?`, `Do you want to create`, `which is a sensitive file`). Returns a single line per worker-with-pending-gate.
+3. **Worker-side marker files.** Not feasible for permission prompts (worker is blocked waiting), but useful for phase transitions: worker writes `.claude/current-slice/.state` with `phase=N; awaiting=yes` on reaching each boundary. Coordinator reads four small files, no `capture-pane` needed for phase state.
+4. **User-driven polling only.** Drop per-turn polling entirely; only poll when the user asks for status or when the coordinator needs to answer an explicit question. Trade-off: phase transitions may go unnoticed for a turn or two. Acceptable given conversation cadence.
+
+**Decision for remainder of this dogfood:** Adopt shapes 1 + 2. Per turn: check `slice.yaml` + log-size delta for all four workers (cheap). Only dump `capture-pane` output when log-tail grep finds a new prompt marker. Continue recording observations in this file. Shape 3 (marker files) is deferred to Feature 6 harness ADR.
+
+---
+
+## 6. ADR-007 signals
+
+- Does the `after`-dependency model hold? _(pending — no cross-branch dependency exercised yet)_
+- State corruption between concurrent branches? _(none so far — each worker's slice.yaml is clean and independent; branch-local state working as designed)_
+- Stale handoff pointers across merges (Risk Register #2)? _(pending — no merges yet)_
+- Any need to tighten concurrency constraints? _(no — all four started concurrently without contention; rev-guard and Write-read-before-write preconditions each fired independently per worker)_
+- **Parallel-branch SLICE-ID collision:** all four workers independently picked SLICE-018. Expected per ADR-007 D2 (no global pointer). At merge time, slice-ID becomes a branch-local label only; commit graph + feature-file `slice-yaml-id` pointers are the cross-branch identity. Confirms the model.
+- **Clear+catchup between phases works cleanly:** B's Phase 1→2 transition via `/clear` + `/catchup` produced correct Mode A orientation from handoff+slice.yaml+sweep alone, with no leak of Phase 1 context. Token cost dropped 52%. Strong signal that branch-local handoff artifacts are sufficient context for phase continuity under parallelism.
+- **`/handoff` skill divergence at P2 boundary (A vs B):** Under identical bootstrap framing, A's `/handoff` (manually nudged by coord after A stopped at boundary without running it autonomously) committed handoff.md and printed "advance to implementation" — but did **not** flip `slice.yaml` status (stayed `validation`) and did **not** write `handoff-phase-2.md` archive. B's `/handoff` (same context, autonomous) correctly flipped status to `implementation` and wrote the phase-2 archive (948 chars). Both produced valid handoff.md content; the side-effect divergence is non-deterministic execution of the same skill on parallel branches. _Conclusion:_ `/handoff` is stochastically incomplete — architecture of the skill should make slice.yaml transition + archive write non-skippable (not prose instructions). Worker A also failed the bootstrap "autonomous /handoff before stop" contract; recommended `/handoff` verbally then stopped. This is a real human-touch cost the bootstrap was supposed to eliminate.
+- **A-specific pattern confirmed at P3:** A's P3 `/handoff` (again manually nudged after A stopped at boundary) repeated the exact same gap: committed handoff commit, no status flip (`implementation` → `integration` missed, stayed `implementation`), no `handoff-phase-3.md` archive written. So A's context produces partially-executed `/handoff` at BOTH boundaries; B's and D's context does not. **This is not stochastic — it is reproducibly A-context-specific.** Hypothesis: some priming in A's slice (housekeeping/stale-22k-cleanup) or intent.md interacts with the `/handoff` skill's optional-looking prose to make it skip both side-effects consistently. Worth reproducing post-dogfood by re-spawning A's worktree against a fresh session and running /handoff with instrumentation.
+
+---
+
+## 7. Permission-prompt detection markers (topology §4 OQ4)
+
+String-matching ground-truth samples for future harness automation:
+
+| Slice | Prompt text (verbatim) | Coordinator detection signal |
+|---|---|---|
+| A | `Bash command\n  rm .claude/current-slice/slice.yaml && rmdir .claude/current-slice && mkdir -p .claude/current-slice/validation .claude/current-slice/implementation .claude/current-slice/integration && ls -la .claude/current-slice/\n  Recreate current-slice dir structure\nDo you want to proceed?\n❯ 1. Yes\n  2. Yes, and don't ask again for similar commands in <worktree>\n  3. No` | `capture-pane` contained the literal line `Do you want to proceed?` and the numbered choices — reliable grep targets for future automation. |
+
+---
+
+## 8. Closing note
+
+**Dogfood outcome:** 4 workers (A/B/C/D) launched concurrently from `87ea8b5`, each ran a full Phase 1→4 pipeline, each closed with sweep #13, all four merged into `feature/identifier-scheme` (merges `e720e6a`, `d8bd246`, `4d3d8f6`, `b5a853e`). Coord-level `/refresh-architecture` (`3f6fb5c`) + `/integration-sweep #14` (`fc27e6d`) passed with one follow-up finding (test brittleness).
+
+**Plan §8 success criteria evaluation:**
+
+Minimum:
+- [x] At least 2 concurrent workers reached Phase 4 without unresolved interference. (All 4 did.)
+- [x] No file-level merge conflict required manual resolution that lost content. (All conflicts resolved with reconciled content.)
+- [x] Observation log captured ≥5 distinct transition events. (Dozens captured in §2 per-slice timelines.)
+
+Stretch:
+- [x] All 4 workers ran concurrently for at least one phase boundary. (All four in Phase 2 simultaneously at 13:41.)
+- [x] At least one precondition identified as autonomous-eligible. (Read-only `awk` / `sed` / `cat` / `pytest` approvals — could be pre-allowed via settings.)
+- [ ] Coordinator overhead ≤30% of total operator messages. (Not instrumented; rough eyeball: coord + user combined made ~2× the individual-worker message count when including all approvals and merges. Ballpark 40–50%. Miss.)
+
+**ADR-007 graduation evidence:** D2 (parallel SLICE-ID collision safe-at-merge) CONFIRMED across 4 branches. Reconciliation cost measured at ~5–10 minutes per merge, bounded to 4–6 pipeline-substrate files per merge. Code auto-merges cleanly. **Recommendation:** amend ADR-007 firmness `provisional → accepted`, conditional on the test-brittleness follow-up slice (sweep #14 Finding #1) and the `/handoff` skill hardening slice (§6 of this doc).
+
+### 8.1 Pain points (consolidated, by category)
+
+#### Skill-level (blocks autonomy)
+1. **`/handoff` side-effect divergence on worker A (HIGH).** A's `/handoff` at P2, P3, P4 all produced partial execution: committed `handoff.md` + handoff-commit, but skipped `slice.yaml` status flip AND skipped writing `handoff-phase-N.md` archive. B's, C's, D's `/handoff` did both correctly. Reproducible, branch-specific — not stochastic. Root cause hypothesis: skill prose makes side-effects look optional.
+2. **Autonomous /handoff-before-stop broken (HIGH).** Workers A (P2), B (P3), D (P2) each stopped after the phase-commit and *recommended* `/handoff` verbally rather than running it. 3 of 8 boundaries needed a manual nudge. Human-touch cost the bootstrap was supposed to zero out.
+3. **A's 28-min subagent stall (HIGH, undiagnosed).** A's "D1 refresh + D3 gates (parallel)" subagent dispatch blocked for 28 minutes. No visible progress, no timeout. Recovered only via manual nudges. No subagent-progress signal at coord level.
+
+#### Parallelism reconciliation costs (ADR-007)
+4. **4–6 conflict files per merge (MEDIUM).** Every merge conflicted on `handoff.md`, `slice.yaml`, `sweep-results/<date>-sweep-13.md`. Most also on `d3-bypasses.log`, `features/<id>.yaml`, `structural-snapshot.json`. ~5–10 min hand-merge per merge × 4 = 20–40 min of coord overhead.
+5. **sweep.yaml parallel-bump near-miss (LATENT).** D, B, A each independently bumped `last-sweep-at-slice: 17 → 18`. Auto-merge worked only because target values coincided. If cadence had differed, real conflict.
+6. **Cross-slice test brittleness (NEW, caught by sweep #14).** B's `test_log_has_exactly_four_lines` hard-coded 4 lines. Merge of A's + C's SLICE-018 bypass entries → 6 lines → test fails. Textbook integration finding; exactly what sweep is for.
+7. **No "active batch" handoff concept (MEDIUM).** `handoff.md` is single-slice. Mid-merge state ("D merged, B/C/A pending") has no blessed format. Coord invented one ad-hoc each merge.
+
+#### Substrate / session-hook noise
+8. **Measurement-hook auto-drift in every worker (LOW, chronic).** `docs/plans/measurements/2026-04-12-slice-003.txt` rewritten by session-start hook. Shows `M` in all 4 worktrees. Per-worker "ignore" is workable; aggregate pollution of `git status` is not.
+9. **Legacy envelope tests trip every slice (MEDIUM).** `test_v7_envelope_compliance` + `test_v4_envelope_compliance` fire on any cross-envelope diff. A (delete) and B (defer) made different judgment calls on the identical fork, with no shared policy.
+10. **Permission prompts for routine read-only ops (MEDIUM).** Dozens of `1` Enter clicks across `awk`, `sed`, `cat`, `pytest`, `grep`. Trust config did not cover the test matrix. Autonomous-eligible: pre-allow these globally or per-worker.
+
+#### Process / schema drift
+11. **Status-label format divergence (LOW).** C used `status: 2-validation` / `3-implementation` / `4-integration` (numbered). A/B/D used bare names. Both work; no spec pins which.
+12. **`hierarchical-id:` field appeared only in C's slice.yaml (LOW).** New field introduced mid-dogfood without ADR or schema update.
+13. **Worker pace variance (informational).** B fastest (P3 done in ~60 min); C slowest (~90 min on Phase 2 RED tests). Bound by approval latency, fork frequency, think time. Hard to schedule.
+
+#### Coord / observability
+14. **Per-turn polling token burn (identified mid-dogfood).** Full `capture-pane` across 4 workers cost 4–8k tokens per poll. User flagged as wasteful. Adopted cheap-polling protocol mid-run (§5b). Works. Shouldn't have had to be invented under pressure.
+15. **tmux base-index plan error + renumbering on kill (LOW).** Plan assumed base-index 0; actual is 1. tmux renumbers on kill (cairn:5 → cairn:4 after cairn:4 kill). Surprising for automation scripts.
+
+#### Known follow-ups surfaced
+16. `commands/claude-code/start-slice.full.md:224` rolling-window rule text says "3+ bypasses" all-class; should say "false-positive only" per `d3-bypass-classification` ADR.
+17. `scripts/snapshot_diff.py` doesn't parse the classified `d3-bypasses.log` format.
+18. `d3-bypass-classification` Decision 2 `exempt:` syntax slice pending (retires `.claude/slice-018-d3-oob.md`).
+19. Sweep #14 Finding #1: patch `test_log_has_exactly_four_lines` to be merge-robust.
+
+### 8.2 Net read
+- **Parallelism substrate (branches, worktrees, tmux, send-keys, cheap-polling, merge-reconciliation pattern) works.**
+- **Skill-level coordination (`/handoff` completeness, bootstrap autonomy, subagent visibility) is the real tax.**
+- **Human-touch cost is dominated by permission prompts + mid-phase decision forks**, not by coordination itself.
+
+The supporting skills are the bottleneck, not the branching model. ADR-007 has a clean graduation path conditional on the three HIGH items getting their follow-up slices.

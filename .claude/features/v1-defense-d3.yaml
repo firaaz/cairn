@@ -1,10 +1,15 @@
 id: v1-defense-d3
-intent: "ADR-003 D3 — automated unknown-unknown backstop: promote integration-sweep Steps 3-4 to mechanical gates, add structural-snapshot-diff check"
+name: "v1 defense D3 — automated unknown-unknown backstop"
+intent: "cliff-failure-mode-and-v1-defenses D3 — automated unknown-unknown backstop: promote integration-sweep Steps 3-4 to mechanical gates, add structural-snapshot-diff check"
+shaped-from: docs/adr/cliff-failure-mode-and-v1-defenses.md
 created: 2026-04-14
 slices:
-  - id: SLICE-012
+  - id: v1-defense-d3/automated-backstop
     added: 2026-04-14
-  - id: SLICE-013
+  - id: v1-defense-d3/ruff-cleanup
     added: 2026-04-15
-    after: [SLICE-012]
-    note: "ruff-cleanup — clears 3 D3-bypassed lint errors from SLICE-012 (logged in .claude/d3-bypasses.log)"
+    after: [v1-defense-d3/automated-backstop]
+    note: "ruff-cleanup — clears 3 D3-bypassed lint errors from v1-defense-d3/automated-backstop (logged in .claude/d3-bypasses.log)"
+  - id: v1-defense-d3/bypass-log-test-resilience
+    added: 2026-04-17
+    intent: "Remove hardcoded 4-line count and widen CLASSIFIED_LINE_RE to accept optional (letter) class-qualifier in tests/unit/test_d3_bypass_log_format.py. Fix for Finding #1 carried since sweep #14."

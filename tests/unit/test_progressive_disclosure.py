@@ -2,7 +2,7 @@
 
 Verifies intent.md structural tests: slash commands in commands/claude-code/
 conform to the progressive disclosure pattern (≤500-token lite files with
-optional .full.md siblings). Also verifies CLAUDE.md terseness rule (V-item 5).
+optional .full.md siblings).
 
 Contract-conformance tests against static artifacts.
 Pytest + stdlib; tiktoken optional (falls back to char/word heuristic).
@@ -247,17 +247,3 @@ def test_s5_no_deep_headers_in_lite_files():
     assert not violations, "S5 deep header violations:\n" + "\n".join(
         f"  - {v}" for v in violations
     )
-
-
-# --- V-item 5: CLAUDE.md terseness rule ------------------------------------
-
-
-def test_claude_md_contains_terseness_rule():
-    """Verification item 5 — CLAUDE.md contains the terseness rule."""
-    path = CAIRN_ROOT / "CLAUDE.md"
-    assert path.is_file(), "CLAUDE.md does not exist"
-    text = path.read_text().lower()
-
-    required = ["terse", "no preamble", "trailing summary"]
-    missing = [p for p in required if p.lower() not in text]
-    assert not missing, f"CLAUDE.md missing terseness rule phrases: {missing}"

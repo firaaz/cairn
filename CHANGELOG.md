@@ -4,8 +4,30 @@ All notable changes to cairn. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### ADR identifier migration (Phase 2 Part 1)
+
+Per ADR `identifier-scheme` D7, the 9 numeric-prefix ADR files in `docs/adr/` have been renamed to flat-slug filenames; their frontmatter `id:` migrated from the legacy `ADR-NNN` form to the flat semantic slug (the filename tail after the `NNN-` prefix, preserved verbatim). Live-tree cross-references have been swept to the flat-slug form. `git mv` was used for each rename so `git log --follow` continues to track pre-rename history.
+
+The 9 renamed ADRs (all `firm/accepted`):
+
+| New filename | New `id:` | Title |
+|---|---|---|
+| `docs/adr/bootstrap-exception.md` | `bootstrap-exception` | Bootstrap Exception |
+| `docs/adr/context-discipline-protocol.md` | `context-discipline-protocol` | Context Discipline Protocol |
+| `docs/adr/cliff-failure-mode-and-v1-defenses.md` | `cliff-failure-mode-and-v1-defenses` | Cliff Failure Mode and V1 Defenses |
+| `docs/adr/phase-lock-and-role-declaration.md` | `phase-lock-and-role-declaration` | Four-Phase Pipeline Lock and Role Declaration |
+| `docs/adr/semantic-identity.md` | `semantic-identity` | Semantic Identity |
+| `docs/adr/feature-slice-model.md` | `feature-slice-model` | Feature-Slice Model |
+| `docs/adr/parallelism-v1.md` | `parallelism-v1` | Parallelism v1 |
+| `docs/adr/context-tiers-integration.md` | `context-tiers-integration` | Context Tiers Integration for Feature-Slice Model |
+| `docs/adr/phase-pipeline-evaluation.md` | `phase-pipeline-evaluation` | Phase Pipeline Evaluation — Confirmation of Four-Phase Structure |
+
+**Consumer impact.** No mechanical breakage: hook scripts, slash-command files, and helper scripts under `scripts/` keep their paths unchanged. Consumer repositories that cite cairn ADRs by the legacy numeric-prefix form (inline prose, doc links, or slug mentions) will not break mechanically but will drift — the old names no longer exist in cairn, so citations point at deleted files. A known downstream consumer is `complex-rag-analysis`; downstream repositories should run a self-directed grep for the legacy token pattern and update their own references. Cairn announces the rename via this CHANGELOG entry; the sweep does not extend to consumer repos.
+
+See ADR `identifier-scheme` D7 (the Phase 1 / Phase 2 migration plan) for context.
+
 ### Added
-- Bootstrap scaffolding for cairn self-consumption: `.slice-system → .` self-symlink, `.claude/commands → ../commands/claude-code` symlink, hooks wired in `.claude/settings.json`, `docs/ARCHITECTURE.md` with INV-001, ADR-001 (bootstrap exception, firm), `docs/adr/index.md`, `docs/lessons.md`, `.claude/sweep.yaml`, `tests/.gitkeep`.
+- Bootstrap scaffolding for cairn self-consumption: `.slice-system → .` self-symlink, `.claude/commands → ../commands/claude-code` symlink, hooks wired in `.claude/settings.json`, `docs/ARCHITECTURE.md` with INV-001, bootstrap-exception (bootstrap exception, firm), `docs/adr/index.md`, `docs/lessons.md`, `.claude/sweep.yaml`, `tests/.gitkeep`.
 - CLAUDE.md updated to describe self-consumption and the scope-guard `.slice-system/` path caveat.
 
 ### Fixed

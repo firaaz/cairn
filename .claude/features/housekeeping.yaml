@@ -1,0 +1,12 @@
+id: housekeeping
+name: "Housekeeping — cross-feature maintenance bucket"
+intent: "Cross-feature maintenance bucket — drift cleanup, invariant re-baselines, config sync, and other slices that don't fit a coherent feature."
+shaped-from: null
+created: 2026-04-16
+slices:
+  - id: housekeeping/inv004-rebaseline
+    added: 2026-04-16
+    intent: "Raise INV-004 BUDGET_HARD from 22000 to 30000 for CC 2.1.110 drift; amend ARCHITECTURE.md invariant text; commit uv.lock (requires-python ≥3.11 sync) and measurement file carry-overs. Greens the integration gate."
+  - id: housekeeping/stale-22k-cleanup
+    added: 2026-04-16
+    intent: "Replace stale 22k reference in docs/ARCHITECTURE.md:46 invariant-check description and tests/unit/test_context_budget.py:103 docstring with 30k/30,000; preserve regression-assertion literals on lines 121/148/149 that intentionally guard against the stale value."

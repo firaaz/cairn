@@ -1,6 +1,6 @@
 """SLICE-003-precursor Phase 2 validation suite.
 
-Verifies the three textual mechanisms ADR-004 commits to via intent.md S1-S6:
+Verifies the three textual mechanisms phase-lock-and-role-declaration commits to via intent.md S1-S6:
   - `docs/operational-reference.md § Phase Skill Guide` section (S1)
   - `/catchup` phase-entry surfacing (S2)
   - `/start-slice` phase-entry surfacing + D3 adrs-referenced gate (S3, S4)
@@ -8,12 +8,12 @@ Verifies the three textual mechanisms ADR-004 commits to via intent.md S1-S6:
 Tests V1-V6 map one-to-one to intent.md's structural assertions. They are
 designed to fail RED at Phase 2 commit time because the production code does
 not yet exist, and to flip GREEN at Phase 3 Builder's implementation commit.
-This is the direct TDD RED+Verify RED adaptation ADR-004 D4 names as the
+This is the direct TDD RED+Verify RED adaptation phase-lock-and-role-declaration D4 names as the
 Skeptic's primary skill, bisected by the Phase 2 -> Phase 3 session boundary.
 
 The INV-003 phase-order canary is the intentional exception: it is GREEN
 from the start and exists as a regression check against future rename drift
-against ADR-004 D1's load-bearing phase and role names.
+against phase-lock-and-role-declaration D1's load-bearing phase and role names.
 """
 
 from __future__ import annotations
@@ -89,12 +89,12 @@ def test_v2_phase_skill_guide_content() -> None:
     )
     assert any(s in section for s in primary_skills), (
         f"No primary superpowers skill found in Phase Skill Guide; "
-        f"expected >=1 of {primary_skills} per ADR-004 D4 table rows 2-4. (V2)"
+        f"expected >=1 of {primary_skills} per phase-lock-and-role-declaration D4 table rows 2-4. (V2)"
     )
     phase1_ok = ("no primary fit" in section.lower()) or ("—" in section)
     assert phase1_ok, (
         "Phase 1 row must carry 'no primary fit' note or an em-dash per "
-        "ADR-004 D4 Phase 1 row semantics. (V2)"
+        "phase-lock-and-role-declaration D4 Phase 1 row semantics. (V2)"
     )
     # A5 sub-check: S1.b explicit-exclusions list landed (>=1 excluded skill name)
     excluded = (
@@ -112,15 +112,15 @@ def test_v2_phase_skill_guide_content() -> None:
 
 
 def test_v3_living_registry_and_adr_citation() -> None:
-    """V3: S1.c 'living registry' note AND S1.d ADR-004 citation."""
+    """V3: S1.c 'living registry' note AND S1.d phase-lock-and-role-declaration citation."""
     body = _read(OPREF)
     section = _extract_section(body, "## Phase Skill Guide")
     assert section is not None, "Phase Skill Guide section not found. (V3)"
     assert "living registry" in section.lower(), (
         "S1.c: Phase Skill Guide must state it is a living registry. (V3)"
     )
-    assert "ADR-004" in section, (
-        "S1.d: Phase Skill Guide must cite ADR-004 as authoritative source. (V3)"
+    assert "phase-lock-and-role-declaration" in section, (
+        "S1.d: Phase Skill Guide must cite phase-lock-and-role-declaration as authoritative source. (V3)"
     )
 
 
@@ -177,7 +177,7 @@ def test_inv_003_four_phase_order_and_role_names() -> None:
     This test is GREEN from the start. It exists as a regression canary against
     future rename drift. INV-003 sub-claims (2), (3), (4) are covered by V1, V4+V5,
     and V6 respectively; this canary covers sub-claim (1) — the load-bearing
-    phase/role name lock per ADR-004 D1.
+    phase/role name lock per phase-lock-and-role-declaration D1.
     """
     body = _read(ARCH)
     inv_idx = body.find("INV-003")

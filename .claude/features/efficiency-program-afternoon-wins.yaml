@@ -1,0 +1,8 @@
+id: efficiency-program-afternoon-wins
+name: "Cairn Efficiency Program — Part -1 Afternoon Wins"
+intent: "Ship 7 low-risk, ungated improvements from efficiency-program Part -1 that deliver immediate daily-use relief while the structural program (Parts 0-6) is being planned."
+shaped-from: docs/plans/2026-04-18-efficiency-program/01-part-minus-1-afternoon-wins.md
+created: 2026-04-18
+slices:
+  - id: efficiency-program-afternoon-wins/all-seven
+    added: 2026-04-18

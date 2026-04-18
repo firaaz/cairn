@@ -1,6 +1,6 @@
 ---
 schema-version: 1
-adr-003-landed-at-slice: 2
+cliff-failure-mode-and-v1-defenses-landed-at-slice: 2
 ---
 
 # Dogfood Log

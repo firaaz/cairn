@@ -79,15 +79,28 @@ def _run_step3(root: Path) -> tuple[bool, str]:
         return False, f"Step 3 (invariant check): FAIL\n{detail}"
 
 
+def _positive_int_env(name: str, default: int) -> int:
+    """Return env var as a positive int, else default. Silent on invalid."""
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        parsed = int(raw)
+    except ValueError:
+        return default
+    return parsed if parsed > 0 else default
+
+
 def _run_step4a(root: Path) -> tuple[bool, str]:
     """Step 4a: run ruff check on all Python files."""
+    timeout = _positive_int_env("CAIRN_RUFF_TIMEOUT", 60)
     try:
         result = subprocess.run(
             ["ruff", "check", "."],
             cwd=str(root),
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=timeout,
         )
     except FileNotFoundError:
         return False, "Step 4a (ruff check): FAIL — ruff not found"
@@ -103,13 +116,14 @@ def _run_step4a(root: Path) -> tuple[bool, str]:
 
 def _run_step4b(root: Path) -> tuple[bool, str]:
     """Step 4b: run pytest test suite."""
+    timeout = _positive_int_env("CAIRN_PYTEST_TIMEOUT", 120)
     try:
         result = subprocess.run(
             [sys.executable, "-m", "pytest", "tests/", "-x", "--tb=short"],
             cwd=str(root),
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=timeout,
         )
     except subprocess.TimeoutExpired:
         return False, "Step 4b (pytest): FAIL — timed out"

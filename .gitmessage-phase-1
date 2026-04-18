@@ -1,0 +1,5 @@
+phase-1: <slice-id> — intent
+
+<envelope summary: files/globs this slice will touch>
+<ambiguities enumerated: open questions surfaced by Phase 1>
+Next: /handoff → phase 2

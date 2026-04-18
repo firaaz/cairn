@@ -3,7 +3,7 @@
 Verifies intent.md V1 (feature file creation), V2 (always-create),
 V3 (existing feature update), V7 (dropped slices).
 
-Defines a validate_feature_file() function matching ADR-006 D2 schema,
+Defines a validate_feature_file() function matching feature-slice-model D2 schema,
 then tests it against valid and invalid synthetic data.
 
 Pytest + stdlib + pyyaml.
@@ -19,7 +19,7 @@ import yaml
 
 
 def validate_feature_file(data: dict, filename_stem: str) -> list[str]:
-    """Validate feature file YAML against ADR-006 D2 schema.
+    """Validate feature file YAML against feature-slice-model D2 schema.
 
     Returns a list of error strings. Empty list == valid.
     """
@@ -197,13 +197,13 @@ class TestRequiredFields:
 class TestAlwaysCreate:
     def test_single_slice_feature_accepted(self):
         """Even single-slice features produce a feature file — no 'too small'
-        rejection path (ADR-006 D3)."""
+        rejection path (feature-slice-model D3)."""
         errors = validate_feature_file(VALID_FEATURE, "feature-slice-model")
         assert errors == []
 
     def test_feature_without_slices_accepted(self):
         """Feature file without slices list is valid (e.g., during brainstorming
-        before first slice starts — ADR-006 D2)."""
+        before first slice starts — feature-slice-model D2)."""
         data = {
             "id": "brainstorm-only",
             "intent": "Exploring a new capability",

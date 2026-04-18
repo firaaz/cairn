@@ -1,5 +1,47 @@
 id: identifier-scheme
-intent: "Establish ID + Name schema across ADRs/slices/decisions/features. Supersede ADR-005. Migrate existing entities. Fleet-coordinator Feature 1 (IDs + Names combined; state taxonomy deferred to its own feature)."
-created: 2026-04-15
+name: "Identifier scheme — id + name two-field model"
+intent: "Establish ID + Name schema across ADRs/slices/decisions/features. Supersede semantic-identity. Migrate existing entities. Fleet-coordinator Feature 1 (IDs + Names combined; state taxonomy deferred to its own feature)."
 shaped-from: docs/plans/2026-04-15-identifier-scheme-design.md
-slices: []
+created: 2026-04-15
+
+# Bootstrap-window constraint (Phase 2 Skeptic finding, 2026-04-15):
+# scheme-adr writes the first flat-slug ADR (`docs/adr/identifier-scheme.md`).
+# `reversibility-guard.sh` clauses match only `*/docs/adr/[0-9]*`, so flat-slug
+# ADRs are unprotected by the append-only enforcement until hook-tolerance lands.
+# CONSTRAINT: hook-tolerance MUST be the immediately-next slice in this feature.
+# No other flat-slug ADRs may be authored between scheme-adr close and
+# hook-tolerance close.
+slices:
+  - id: identifier-scheme/scheme-adr
+    added: 2026-04-15
+  - id: identifier-scheme/hook-tolerance
+    added: 2026-04-15
+    after: identifier-scheme/scheme-adr
+    intent: "Update scope-guard.sh, reversibility-guard.sh, reality-check.sh to accept both legacy numeric-prefix and new flat-slug formats. Closes the bootstrap-window gap left by scheme-adr."
+  - id: identifier-scheme/hook-relpath-bypass
+    added: 2026-04-16
+    after: identifier-scheme/hook-tolerance
+    intent: "Normalize tool-input paths in reversibility-guard.sh so bare-relative (docs/adr/foo.md) and .slice-system/-prefixed forms cannot bypass ADR append-only protection. Follow-on to hook-tolerance: extends INV-005 tolerance from filename shape to input path shape."
+  - id: identifier-scheme/validator-flat-slug
+    added: 2026-04-16
+    after: identifier-scheme/hook-tolerance
+    intent: "Widen scripts/validate_architecture.py to recognize flat-slug ADR filenames (docs/adr/<id>.md) and flat-slug IDs in ARCHITECTURE.md invariant references, alongside legacy NNN-slug.md. Closes the substrate gap named in ARCHITECTURE.md's 'Current Phase Constraints § Identifier scheme' paragraph so INV-005 can cite `identifier-scheme` directly instead of via the feature-slice-model proxy."
+  - id: identifier-scheme/template-updates
+    added: 2026-04-17
+    after: identifier-scheme/validator-flat-slug
+    intent: "Final ADR identifier-scheme §D7 Phase 1 substrate. Update /start-slice, /new-adr, /handoff, /decision command templates to emit the two-field (id + name) model for new entities; add a one-sentence prompt rule to CLAUDE.md; elaborate the per-entity id-shape table in docs/operational-reference.md. No renames, no hook/validator/test code changes, no edits to existing ADR/slice/feature files."
+  - id: identifier-scheme/adr-rename-sweep
+    added: 2026-04-17
+    after: identifier-scheme/template-updates
+    intent: "ADR identifier-scheme §D7 Phase 2 Part 1. Rename 9 numeric-prefix ADR files docs/adr/NNN-slug.md → docs/adr/<id>.md; migrate each ADR's id: frontmatter from ADR-NNN to its flat semantic slug; sweep all live cross-references (frontmatter adrs-referenced/supersedes, docs/adr/index.md, docs/ARCHITECTURE.md, docs/operational-reference.md, docs/spec-v1.md, docs/lessons.md, commands/claude-code/*.md, scripts/validate_architecture.py, scripts/dogfood_evaluate.py, live tests under tests/unit/, .claude/features/*.yaml, CLAUDE.md, CHANGELOG.md). Historical/frozen sites (.claude/completed-slices/, .claude/sweep-results/, docs/plans/, .claude/plans/, docs/reviews/) are out of scope. Slice-and-feature renames and residual prose sweep land in subsequent slices."
+  - id: identifier-scheme/slice-and-feature-rename
+    added: 2026-04-17
+    after: identifier-scheme/adr-rename-sweep
+    status: dropped
+    dropped: 2026-04-18
+    dropped-reason: "Phase 2 Part 2 substrate work absorbed by prior slices (template-updates, adr-rename-sweep): all active feature files already carry D5 name:/shaped-from:, all slice IDs already hierarchical, sweep.yaml already dropped current-slice-number, scripts/dogfood_evaluate.py and /integration-sweep templates already re-plumbed. Residual ~10-line prose cleanup in commands/claude-code/start-slice.full.md, commands/claude-code/handoff.full.md, tests/unit/test_dogfood_evaluate.py folded into identifier-scheme/doc-sweep scope rather than running a 4-phase pipeline."
+    intent: "ADR identifier-scheme §D7 Phase 2 Part 2. Rename legacy SLICE-NNN slice IDs to hierarchical <feature>/<slice> form in active feature files, annotate every feature file with the name:/shaped-from: fields required by D5, drop slice-yaml-id: bridges, and retire .claude/sweep.yaml's current-slice-number field (re-plumbing scripts/dogfood_evaluate.py and its tests, plus /start-slice and /integration-sweep command templates, to the successor substrate). Historical archives (.claude/completed-slices/, .claude/sweep-results/, docs/plans/, CHANGELOG.md) and ADR/prose mentions are out of scope — residual prose sweep lands in identifier-scheme/doc-sweep (Phase 2 Part 3)."
+  - id: identifier-scheme/doc-sweep
+    added: 2026-04-18
+    after: identifier-scheme/adr-rename-sweep
+    intent: "ADR identifier-scheme §D7 Phase 2 Part 3 — final mechanical scope. Sweep residual SLICE-NNN/ADR-NNN prose references out of the active long-form corpus (commands/claude-code/handoff.full.md, docs/spec-v1.md, docs/lessons.md, docs/operational-reference.md, docs/ARCHITECTURE.md, CLAUDE.md, ADR body prose, tests/unit/test_dogfood_evaluate.py docstring). Replaces each with the entity's current canonical id. Historical archives, .claude/learning.md, hooks, validators, tolerance-test fixtures, and frontmatter cross-reference fields are out of scope. ADR body prose edits use ADR_EDITORIAL_FIX=1. Closes the identifier-scheme feature tail; unblocks merge to dev and 2-overdue integration sweep."

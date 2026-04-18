@@ -1,9 +1,11 @@
 id: v1-defense-d2
-intent: "ADR-003 D2 — code↔invariant binding: every firm invariant carries a machine-checkable assertion run by the architecture validator"
+name: "v1 defense D2 — code↔invariant binding"
+intent: "cliff-failure-mode-and-v1-defenses D2 — code↔invariant binding: every firm invariant carries a machine-checkable assertion run by the architecture validator"
+shaped-from: docs/adr/cliff-failure-mode-and-v1-defenses.md
 created: 2026-04-14
 slices:
-  - id: SLICE-010
+  - id: v1-defense-d2/code-invariant-binding
     added: 2026-04-14
-  - id: SLICE-011
+  - id: v1-defense-d2/assertion-block-migration
     added: 2026-04-14
-    after: [SLICE-010]
+    after: [v1-defense-d2/code-invariant-binding]

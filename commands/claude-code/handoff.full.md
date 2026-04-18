@@ -8,7 +8,7 @@ Usage: `/handoff` (end of any session) or `/handoff phase` (end of a pipeline ph
 
 Every session accumulates context that is invisible to the next session. The naive fix is to write a long narrative — what happened, what was discovered, what to watch out for. That narrative smuggles mental state across a boundary the pipeline deliberately erected: the next session is supposed to load a *fresh* perspective on the artifacts, not inherit the previous session's framing. It also costs ~3k tokens per catchup, which the session then pays for every subsequent turn.
 
-ADR-002 (context discipline protocol) replaces the narrative with a bounded pointer. The handoff note is the team interface: it tells the next session where to look, not what to think.
+context-discipline-protocol (context discipline protocol) replaces the narrative with a bounded pointer. The handoff note is the team interface: it tells the next session where to look, not what to think.
 
 ## Target format
 
@@ -28,9 +28,11 @@ If there are uncommitted changes, list them and ask whether to commit before han
 
 ## Step 2: Write the Handoff Note
 
+**Before writing `slice.yaml` / `sweep.yaml` / `handoff.md`, Read the file first (CC 2.1.110+ requires Read before Write).**
+
 Overwrite `.claude/handoff.md` with content that conforms to `templates/handoff.md`. The four body sections are fixed:
 
-- **`## State`** — 1–2 present-tense sentences. Current state, not history. "SLICE-002 Phase 3 complete at <sha>; V1–V7 all GREEN." Not "I finished implementing the seven envelope files and verified the tests pass."
+- **`## State`** — 1–2 present-tense sentences. Current state, not history. "identifier-scheme/doc-sweep Phase 3 complete at <sha>; sweep tests GREEN." Not "I finished implementing the seven envelope files and verified the tests pass."
 - **`## Next`** — one imperative, one line, specific. "Run `/start-slice phase 4` to enter Integration." Not "continue the slice."
 - **`## Blocked / Pending`** — up to five one-line items, each a pointer. No rationale. If something needs rationale, it belongs in a commit message or ADR.
 - **`## Pointers`** — one line per file the next session should read, with a short note on *when* to read it. The body of the pointed-at file carries the detail; the handoff only indexes.
@@ -51,7 +53,18 @@ If you feel an urge to explain, that is a signal the explanation belongs in a co
 
 ## Step 3b: Cross-Feature Index
 
-If any feature files exist under `.claude/features/`, write a `## Features` section in the handoff note containing one line per active feature in the cross-feature index format: `- <feature-id>: <status-summary>`. If no features are active, omit the section.
+Per ADR `identifier-scheme` D8, the `## Features` section is a normative one-line-per-feature cross-feature index. Each active feature gets one line using the feature's `name:` where available (with `id:` as fallback) plus a short status phrase. Only the structural shape is normative — prose within each line is author judgment.
+
+If any feature files exist under `.claude/features/`, write a `## Features` section in the handoff note. Worked example (ADR `identifier-scheme` D8):
+
+```markdown
+## Features
+- identifier-scheme: template-updates Phase 2→3; rename sweeps queued
+- housekeeping: inv004-rebaseline + stale-22k-cleanup complete
+- v1-defense-d2: code-invariant-binding + assertion-block-migration queued
+```
+
+If no features are active, omit the section.
 
 If decomposition changed during the session (slices added, reordered, or dropped), prompt the operator to update the feature file before finishing the handoff.
 
@@ -89,3 +102,49 @@ Next session: run `/catchup` to orient.
 ```
 
 The one piece of telemetry worth printing is the byte count — it surfaces budget compliance without the user having to check manually. Everything else the user can read from git and the handoff file itself.
+
+## Step 7: Run the Verifier
+
+As the final step of every `/handoff` invocation, run `bash scripts/verify_handoff.sh`. This closes L-005 — the failure mode where `/handoff` exits claiming success while `slice.yaml.status`, the phase-commit handoff file, and the git log diverge from one another.
+
+### Verifier contract
+
+The verifier performs three checks and exits non-zero on the first failure. Each failure prints a stderr line that names the check, the expected state, the observed state, and the remediation command.
+
+**Check (a) — status/commit alignment.** If the last commit subject is `phase-<N>: ...`, `.claude/current-slice/slice.yaml`'s `status:` field must reference phase `N` or `N+1` (or a terminal label like `complete`/`failed`). Divergence means `/handoff` updated the commit but not `slice.yaml`, or vice versa.
+
+**Check (b) — phase handoff existence.** If the last commit subject is `phase-<N>: ...`, the file `.claude/current-slice/handoff-phase-<N>.md` must exist. This catches the case where the phase-commit was made without first writing the phase handoff note Step 4 requires.
+
+**Check (c) — subject-prefix gate.** The last commit subject MUST begin with one of:
+- `handoff:` (generic session-end handoff)
+- `phase-<N>:` (pipeline phase-commit)
+- `slice: <name> — complete` (slice-close commit, em-dash separator)
+
+Any other prefix (`chore:`, `fix:`, `wip`, etc.) is a sign the handoff ran without the expected commit being made.
+
+### Exit codes
+
+| Exit code | Meaning |
+|-----------|---------|
+| `0` | All three checks pass. |
+| `1` | A check failed. Stderr names the failing check and remediation. |
+| `2` | Prerequisite missing (e.g., no commits in the repo yet). |
+
+### Error shape
+
+Stderr lines follow the pattern:
+
+```
+verify_handoff: check (<a|b|c>) FAILED — <one-line summary>
+  <expected-state description>
+  <observed-state description>
+  remediation: <concrete command to fix>
+```
+
+Stdout is always empty; the verifier's contract is pass/fail via exit code plus stderr diagnostics.
+
+### Failure modes the verifier catches
+
+- `slice.yaml.status` reads `3-implementation` but the last commit is `phase-2: validation complete` — `/handoff` wrote the commit but forgot to update `status:`.
+- Last commit is `phase-2: ...` but `.claude/current-slice/handoff-phase-2.md` does not exist — the phase handoff was never written.
+- Last commit is `chore: bump version` — `/handoff` ran on a session where the operator committed something unrelated immediately prior, so the verifier flags the non-handoff commit as the tip.

@@ -1,5 +1,5 @@
 ---
-id: ADR-003
+id: cliff-failure-mode-and-v1-defenses
 status: accepted
 firmness: provisional
 supersedes: []
@@ -10,7 +10,7 @@ invariants-touched: []
 date: 2026-04-11
 ---
 
-# ADR-003: Target Failure Mode and v1 Defense Commitments
+# cliff-failure-mode-and-v1-defenses: Target Failure Mode and v1 Defense Commitments
 
 ## Status
 Accepted
@@ -55,7 +55,7 @@ Cairn's working hypothesis is that this failure mode is preventable by combining
 
 ### Honest limits
 
-Cairn is currently two slices deep (SLICE-001 shipped, SLICE-002 stopped). The cliff has not been operationally observed in cairn itself. The target is theoretically grounded and derived from first-principles analysis of the failure mechanism above, but is not yet empirically validated in cairn. This ADR is therefore provisional and explicitly expects revalidation against the first dogfood cycle.
+Cairn is currently two slices deep (the `validator-symlink-fix` slice shipped, the `context-discipline-protocol` operationalization slice stopped). The cliff has not been operationally observed in cairn itself. The target is theoretically grounded and derived from first-principles analysis of the failure mechanism above, but is not yet empirically validated in cairn. This ADR is therefore provisional and explicitly expects revalidation against the first dogfood cycle.
 
 The `firmness: provisional` choice is load-bearing. It keeps the door open to reframing if dogfood evidence disagrees with the theoretical analysis, while still committing enough to give v1 a narrow, legible scope. spec-v1 §17 names this calibration gap explicitly; this ADR inherits that honesty.
 
@@ -77,7 +77,7 @@ The medium-scale AI-managed cliff is cairn's primary target failure mode. spec-v
 - Slice-close gates on `scripts/validate_architecture.py` passing — a slice cannot be marked `complete` if the refresh produces a validation failure.
 - The drift window between ADR write and architecture sync is zero.
 
-**D1 session-boundary contract.** `/refresh-architecture` reads the full ADR corpus into main context and therefore cannot run inside any phase session without violating ADR-002's session-isolation guarantee (Phase 4's auditor role would pollute with design-context reads, Phase 1's reader role would see downstream consequences, etc.). D1's post-slice hook therefore runs in a **dedicated refresh session** spawned after Phase 4 commits land and the slice is about to transition to `status: complete`. This session has no phase role and loads only the ADR corpus plus the prior `ARCHITECTURE.md`; it does not load slice artifacts. The commit it produces is a **pipeline-substrate commit** in the same class as integration-sweep commits per `docs/lessons.md` L-001 — a deliberate, named scar that is not a slice-phase commit and not a decision commit, but is authorized as pipeline substrate. INV-001 is honored by naming this class explicitly rather than via a quiet exception.
+**D1 session-boundary contract.** `/refresh-architecture` reads the full ADR corpus into main context and therefore cannot run inside any phase session without violating context-discipline-protocol's session-isolation guarantee (Phase 4's auditor role would pollute with design-context reads, Phase 1's reader role would see downstream consequences, etc.). D1's post-slice hook therefore runs in a **dedicated refresh session** spawned after Phase 4 commits land and the slice is about to transition to `status: complete`. This session has no phase role and loads only the ADR corpus plus the prior `ARCHITECTURE.md`; it does not load slice artifacts. The commit it produces is a **pipeline-substrate commit** in the same class as integration-sweep commits per `docs/lessons.md` L-001 — a deliberate, named scar that is not a slice-phase commit and not a decision commit, but is authorized as pipeline substrate. INV-001 is honored by naming this class explicitly rather than via a quiet exception.
 
 **D1 escape hatch.** If a validator failure is a known false positive (typically: a semantic equivalence the parser cannot see, or a transient failure in the check script itself), the developer may close the slice with an `ADR_D1_BYPASS=1` environment variable on the slice-close command, following the `ADR_EDITORIAL_FIX=1` precedent in `checks/reversibility-guard.sh`. Each bypass is logged to `.claude/d1-bypasses.log` with the bypassing slice ID and a one-line reason; a third bypass in a rolling 10-slice window is itself a trigger to revisit D1's design (the check is producing more noise than signal).
 
@@ -131,9 +131,9 @@ This ADR functions as a targeted supersession of the listed vision.md §Success 
 
 This ADR is `firmness: provisional`. It will be reassessed after the first dogfood cycle of v1 cairn.
 
-**Dogfood target.** The dogfood is cairn dogfooding itself against its own development: the target is **cairn reaching 10 completed slices post-ADR-003 land, OR by 2026-10-11 (six months after this ADR), whichever comes first.** Ten slices is the minimum sample size that can exhibit compound-drift behavior; six months is the hard deadline. If neither threshold is reachable by the deadline, that itself is the dogfood signal — the process is too heavy to operate at the intended scale, and the ADR is superseded by a lighter reframing.
+**Dogfood target.** The dogfood is cairn dogfooding itself against its own development: the target is **cairn reaching 10 completed slices post-cliff-failure-mode-and-v1-defenses land, OR by 2026-10-11 (six months after this ADR), whichever comes first.** Ten slices is the minimum sample size that can exhibit compound-drift behavior; six months is the hard deadline. If neither threshold is reachable by the deadline, that itself is the dogfood signal — the process is too heavy to operate at the intended scale, and the ADR is superseded by a lighter reframing.
 
-**Dogfood evidence shape.** Dogfood passes if D1/D2/D3 together catch **at least one class of drift** that integration-sweep Step 3's manual check would have missed in the same 10-slice window, AND no D1/D2/D3 false-positive rate is high enough that a check is muted by disabling it. Dogfood fails if either condition is violated. The D1 design slice is responsible for instrumenting the dogfood measurement; ADR-003 commits to the criterion, not the instrumentation.
+**Dogfood evidence shape.** Dogfood passes if D1/D2/D3 together catch **at least one class of drift** that integration-sweep Step 3's manual check would have missed in the same 10-slice window, AND no D1/D2/D3 false-positive rate is high enough that a check is muted by disabling it. Dogfood fails if either condition is violated. The D1 design slice is responsible for instrumenting the dogfood measurement; cliff-failure-mode-and-v1-defenses commits to the criterion, not the instrumentation.
 
 Three supersession outcomes are permitted:
 
@@ -153,9 +153,9 @@ All three paths are acceptable. None is failure. Supersession is the plan.
 
 - **vision.md §Success criteria is targeted-superseded for v1 scope.** The specific lines listed in D4 are superseded for v1 purposes; they return as v2 scope. The vision document itself is not edited; this ADR is the authoritative record of the supersession.
 
-- **The stopped SLICE-002 must be reviewed against this ADR before resuming.** SLICE-002's envelope is currently tied to the rewrite of `handoff.md` and `catchup.md` for INV-002 compliance. The review question is: does SLICE-002's envelope contribute to D1/D2/D3, or does the envelope need amendment? The review outcome is recorded either in a successor ADR or in an amendment to SLICE-002's `stopped-reason` field in `slice.yaml`.
+- **The stopped the `context-discipline-protocol` operationalization slice must be reviewed against this ADR before resuming.** the `context-discipline-protocol` operationalization slice's envelope is currently tied to the rewrite of `handoff.md` and `catchup.md` for INV-002 compliance. The review question is: does the `context-discipline-protocol` operationalization slice's envelope contribute to D1/D2/D3, or does the envelope need amendment? The review outcome is recorded either in a successor ADR or in an amendment to the `context-discipline-protocol` operationalization slice's `stopped-reason` field in `slice.yaml`.
 
-- **D1 interacts with ADR-002's session-isolation guarantee.** D1 is constrained to not pollute any phase session. The dedicated-refresh-session mechanism named in D1 above honors ADR-002; D1's design slice inherits this constraint and must verify the refresh session is spawned as specified.
+- **D1 interacts with context-discipline-protocol's session-isolation guarantee.** D1 is constrained to not pollute any phase session. The dedicated-refresh-session mechanism named in D1 above honors context-discipline-protocol; D1's design slice inherits this constraint and must verify the refresh session is spawned as specified.
 
 - **D1 commits are pipeline-substrate.** Per L-001, integration-sweep commits are not slice-phase commits and not decision commits, but are named as pipeline substrate. D1 auto-commits inherit the same class. INV-001 is honored by naming the class, not by creating a quiet exception.
 
@@ -167,15 +167,15 @@ All three paths are acceptable. None is failure. Supersession is the plan.
 
 **Name a different target failure mode.** Candidates considered: "SDD phase discipline decay" (too narrow — ignores invariant rot), "AI-code review degradation" (too narrow — ignores architecture drift), "general software entropy" (too broad — already addressed by conventional architecture tools at scales cairn does not target). The medium-scale AI-managed cliff is the narrowest target that covers the observed combinatorial failure while remaining specific enough to rule out solutions. Rejected alternatives are either too narrow to justify cairn's three-way defense combination or too broad to provide scoping criteria.
 
-**Split target-naming and defense commitments into two ADRs.** Considered during `/decision` stress test. ADR-003 would name only the cliff (D0); a separate ADR-004 would carry D1/D2/D3/D4. Clean supersession isolation and independent firmness (target firm, defenses provisional) are the upsides. Rejected because the cliff framing's durability is ultimately dogfood-dependent — independent firmness on D0 would overstate confidence. Single-ADR provisional firmness is more honest and halves the `/decision` cost.
+**Split target-naming and defense commitments into two ADRs.** Considered during `/decision` stress test. cliff-failure-mode-and-v1-defenses would name only the cliff (D0); a separate phase-lock-and-role-declaration would carry D1/D2/D3/D4. Clean supersession isolation and independent firmness (target firm, defenses provisional) are the upsides. Rejected because the cliff framing's durability is ultimately dogfood-dependent — independent firmness on D0 would overstate confidence. Single-ADR provisional firmness is more honest and halves the `/decision` cost.
 
-**Target-only, no defense commitments yet.** Considered during `/decision` stress test. ADR-003 would name only the cliff; D1/D2/D3 would be held as candidate defenses in working documents, committed only after dogfood. Safer epistemically — honors spec-v1 §17 calibration gap more strictly — and eliminates premature-defense-commitment failure scenarios. Rejected because the scoping problem this ADR exists to solve remains unsolved: pre-v1 slices still need a legibility criterion, and "we'll figure it out after dogfood" offers none. Indefinite delay is itself a failure mode.
+**Target-only, no defense commitments yet.** Considered during `/decision` stress test. cliff-failure-mode-and-v1-defenses would name only the cliff; D1/D2/D3 would be held as candidate defenses in working documents, committed only after dogfood. Safer epistemically — honors spec-v1 §17 calibration gap more strictly — and eliminates premature-defense-commitment failure scenarios. Rejected because the scoping problem this ADR exists to solve remains unsolved: pre-v1 slices still need a legibility criterion, and "we'll figure it out after dogfood" offers none. Indefinite delay is itself a failure mode.
 
 **Commit to more than three defenses.** Adding D5 (parallel slices), D6 (work-type routing), D7 (role mechanization), etc. was considered. Rejected because each additional defense roughly doubles the v1 scope without closing the three specific gaps in the cliff mechanism. Parallel slices, work-type routing, and role mechanization all address *velocity* and *usability*, not *cliff prevention*. They are time-boxed to v2+ via D4 and preserved in the roadmap.
 
 **Commit to firm ADR with immediate v1 release.** Rejected because cairn has not been operated at medium scale and the target failure mode has not been empirically observed in cairn itself. A firm commitment without empirical grounding would mask the "theoretical until validated" gap and remove the expected-supersession hedge. The provisional framing is honest about the calibration gap spec-v1 §17 names; a firm framing would not be.
 
-**Defer the target-naming until after SLICE-002 resumes and more slices land.** Rejected because the absence of a named primary target is precisely what prevents MVP scoping. SLICE-002 itself is currently stopped pending substrate decisions, and the substrate question is downstream of "what is v1 actually committed to building." Naming the target first unblocks everything downstream; deferring it extends the stopped state indefinitely.
+**Defer the target-naming until after the `context-discipline-protocol` operationalization slice resumes and more slices land.** Rejected because the absence of a named primary target is precisely what prevents MVP scoping. the `context-discipline-protocol` operationalization slice itself is currently stopped pending substrate decisions, and the substrate question is downstream of "what is v1 actually committed to building." Naming the target first unblocks everything downstream; deferring it extends the stopped state indefinitely.
 
 **Treat the cliff framing as working notes, not an ADR.** Rejected because the cliff framing is the load-bearing justification for every Tier 1 MVP item. If the framing lives only in working notes, it is a convention — any future slice that touches the working notes can silently revise it. ADR firmness forces supersession for any change, which is the exact property needed for a target-naming commitment.
 
@@ -199,4 +199,4 @@ All three paths are acceptable. None is failure. Supersession is the plan.
 
 - **Risk:** The 50-files / 5k-LOC / 6-months threshold is wrong and cairn targets a non-problem or misses the real problem. **Mitigation:** the threshold is explicitly marked as intuition, not empirical. Dogfood against cairn itself will surface whether the threshold is roughly right; a significant miss is a reframe trigger.
 
-- **Risk:** D1's dedicated-refresh-session mechanism violates ADR-002 in some subtle way not caught at design time (e.g., the hook inherits environment variables that leak phase context). **Mitigation:** the D1 design slice must explicitly verify ADR-002 compliance at Phase 4, with a named test that checks refresh-session isolation.
+- **Risk:** D1's dedicated-refresh-session mechanism violates context-discipline-protocol in some subtle way not caught at design time (e.g., the hook inherits environment variables that leak phase context). **Mitigation:** the D1 design slice must explicitly verify context-discipline-protocol compliance at Phase 4, with a named test that checks refresh-session isolation.

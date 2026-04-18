@@ -1,5 +1,5 @@
 ---
-id: ADR-006
+id: feature-slice-model
 title: Feature-Slice Model
 status: accepted
 firmness: firm
@@ -11,7 +11,7 @@ invariants-touched: []
 date: 2026-04-12
 ---
 
-# ADR-006: Feature-Slice Model
+# feature-slice-model: Feature-Slice Model
 
 ## Status
 Accepted
@@ -27,7 +27,7 @@ Dogfooding cairn in consumer projects revealed three structural problems in the 
 
 2. **Dependencies implicit in prose.** Slice-to-slice ordering lives in handoff prose ("do X before Y"), not in structured data. No tool can compute a dependency graph, detect blocked slices, or identify parallelizable work.
 
-3. **Single-responsibility violations.** `handoff.md` currently carries both cross-session pointers (its ADR-002 Layer 1 role) and implicit decomposition state (which slices exist, what order they run in). This dual role makes handoff fragile — a decomposition change forces a handoff rewrite even when the current session's state hasn't changed.
+3. **Single-responsibility violations.** `handoff.md` currently carries both cross-session pointers (its context-discipline-protocol Layer 1 role) and implicit decomposition state (which slices exist, what order they run in). This dual role makes handoff fragile — a decomposition change forces a handoff rewrite even when the current session's state hasn't changed.
 
 These problems share a root cause: the slice model doesn't represent decomposition. Work arrives as features (bugs, capabilities, experiments), gets decomposed into slices, and the decomposition evolves as slices complete. The model needs to capture this.
 
@@ -35,9 +35,9 @@ These problems share a root cause: the slice model doesn't represent decompositi
 
 ### D0 — Features are the unit of intent; slices are the unit of execution
 
-A **feature** is any reason you branch: a bug fix, a new capability, an experiment, a design/decision batch. Each feature has a semantic kebab-case ID (per ADR-005).
+A **feature** is any reason you branch: a bug fix, a new capability, an experiment, a design/decision batch. Each feature has a semantic kebab-case ID (per semantic-identity).
 
-A **slice** is a unit of execution within a feature. Each slice goes through the 4-phase cycle (Intent → Validation → Implementation → Integration, per ADR-004 / INV-003). Each slice has its own semantic kebab-case ID. A simple feature has exactly one slice.
+A **slice** is a unit of execution within a feature. Each slice goes through the 4-phase cycle (Intent → Validation → Implementation → Integration, per phase-lock-and-role-declaration / INV-003). Each slice has its own semantic kebab-case ID. A simple feature has exactly one slice.
 
 There is no type taxonomy for slices. Phase 3 produces the deliverable — code, ADRs, findings, whatever the intent specifies. The phase pipeline is type-agnostic.
 
@@ -109,7 +109,7 @@ When a slice discovers a missing prerequisite mid-work:
 4. Work on the prerequisite
 5. Resume the parked slice when prerequisite completes
 
-Branch and work-in-progress are preserved. Slice identity stays the same. The parked state is the structured replacement for the ad-hoc "stopped" state that SLICE-002 used.
+Branch and work-in-progress are preserved. Slice identity stays the same. The parked state is the structured replacement for the ad-hoc "stopped" state that the `context-discipline-protocol` operationalization slice used.
 
 ### D7 — Mid-work discovery protocol
 
@@ -125,12 +125,12 @@ All discoveries surface at handoff checkpoints. The `/handoff` skill prompts "De
 
 - **Multi-slice work has a decomposition artifact.** The feature file replaces the implicit mental model with a structured plan that tools and agents can reason about.
 
-- **Dependencies are machine-readable.** The `after` field in feature file slice entries enables dependency graph computation, blocked-slice detection, and parallelism identification (see ADR-007).
+- **Dependencies are machine-readable.** The `after` field in feature file slice entries enables dependency graph computation, blocked-slice detection, and parallelism identification (see parallelism-v1).
 
-- **Handoff returns to single responsibility.** `handoff.md` carries cross-session pointers (ADR-002 Layer 1) and a lightweight cross-feature index. Decomposition detail moves to the feature file.
+- **Handoff returns to single responsibility.** `handoff.md` carries cross-session pointers (context-discipline-protocol Layer 1) and a lightweight cross-feature index. Decomposition detail moves to the feature file.
 
 - **Implementation slices required.** This ADR describes the information model; implementation slices will create the `.claude/features/` directory, update `/start-slice` and `/handoff` to read/write feature files, and update scope-guard for the new paths.
 
-- **ADR-004 INV-003 is unaffected.** The 4-phase pipeline applies to each slice within a feature. Features add a grouping layer above slices; they do not modify the phase pipeline.
+- **phase-lock-and-role-declaration INV-003 is unaffected.** The 4-phase pipeline applies to each slice within a feature. Features add a grouping layer above slices; they do not modify the phase pipeline.
 
 - **Existing slices are not retroactively migrated.** Completed slices (SLICE-001 through current) retain their identities in git history. The feature file model applies to new work going forward.

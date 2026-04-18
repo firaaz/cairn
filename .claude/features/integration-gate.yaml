@@ -1,0 +1,8 @@
+id: integration-gate
+name: "Integration gate hardening"
+intent: "Remove hardcoded limits from scripts/integration_gate.py so downstream consumers with larger suites do not trigger false D3 bypasses."
+shaped-from: ".claude/handoff.md (d9f71be: redirect — integration-gate timeout fix before sweep #15)"
+created: 2026-04-17
+slices:
+  - id: integration-gate/configurable-pytest-timeout
+    added: 2026-04-17
