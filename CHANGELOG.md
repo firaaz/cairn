@@ -4,6 +4,25 @@ All notable changes to cairn. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### Identifier scheme merged to dev (2026-04-18)
+
+First feature→dev merge under the new merge protocol (`docs/plans/2026-04-18-feature-to-dev-merge-protocol-design.md`). Feature closeout: [`docs/features/identifier-scheme.md`](docs/features/identifier-scheme.md).
+
+#### Changed
+- Identifier scheme: every ADR, slice, feature, and decision point now carries both `id:` (immutable) and `name:` (mutable). Prose uses `name`; cross-references, filenames, and hook inputs use `id`. See `docs/features/identifier-scheme.md` for the full feature closeout.
+- ADR filenames migrated from `adr-NNN-<slug>.md` to `<semantic-slug>.md`.
+- Slice and feature namespaces adopt feature-scoped slugs (`<feature>/<slice-slug>`).
+
+#### Added
+- `docs/features/identifier-scheme.md` — first feature closeout under the new merge protocol.
+- `docs/plans/2026-04-18-feature-to-dev-merge-protocol-design.md` — feature→dev merge protocol (first-instance precedent).
+- `.gitmessage-phase-{1..4}` — commit-message templates for slice phases.
+- `docs/lessons.md` L-006 — identifier renames are feature-scoped.
+
+#### Deprecated / Internal
+- `.claude/handoff.md` and `.claude/adr-editorial-fixes.log` removed from tracking (`.gitignore` now authoritative).
+- `archive/identifier-scheme` will preserve the pre-squash feature-branch commits (rename pending in Dispatch E).
+
 ### ADR identifier migration (Phase 2 Part 1)
 
 Per ADR `identifier-scheme` D7, the 9 numeric-prefix ADR files in `docs/adr/` have been renamed to flat-slug filenames; their frontmatter `id:` migrated from the legacy `ADR-NNN` form to the flat semantic slug (the filename tail after the `NNN-` prefix, preserved verbatim). Live-tree cross-references have been swept to the flat-slug form. `git mv` was used for each rename so `git log --follow` continues to track pre-rename history.

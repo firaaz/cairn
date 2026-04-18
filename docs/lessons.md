@@ -100,3 +100,17 @@ Triage outputs **a sequence** of one or more flows. Examples: a code-local bug r
 **Anti-pattern signals**: "the skill description is clear about what to do," "the bootstrap prompt tells the worker to auto-run /handoff — it will," "the parallel-execution risk is merge conflicts," "we validated /handoff on a single slice, it works." All four were internally plausible going into the dogfood. None prevented the observed gaps.
 
 **Mechanism**: three follow-up slices drop out of this lesson — (a) harden `/handoff`: make `slice.yaml` status transition + phase-archive write non-skippable (code, not prose), covering `commands/claude-code/handoff.full.md`; (b) harden bootstrap-autonomy: either instruct "run /handoff before stop" more forcibly or wrap the worker lifecycle so `/handoff` fires on phase-commit detection; (c) add subagent-progress visibility so coord can detect stalls like the 28-minute A subagent block without needing to capture-pane. parallelism-v1 graduates `provisional → accepted` after (a) and (b) land; the "parallelism-native" vision (commitment #2) passes its first real execution gate with those hardenings in place. Full pain-point catalogue in `.claude/plans/2026-04-16-dogfood-observations.md` §8.
+
+## L-006: Identifier renames are feature-scoped, not slice-scoped
+
+**Discovered**: 2026-04-18, during the `feature/identifier-scheme` → `dev` merge protocol design (first feature→dev merge in cairn).
+
+**Pattern**: A scheme-change that spans multiple artifact classes (ADRs, slices, features, tests, prose, hooks) cannot be done as a single slice. The first pass finds one class of residue; the second pass finds residue from a class the first pass didn't cover; the third pass finds prose references both earlier passes missed. Each pass is a real slice — not ceremonial — but the feature boundary is where the pattern *as a whole* is governable.
+
+**Concrete instance**: identifier-scheme ran three sequential slices — `adr-rename-sweep` (ADR files), `slice-and-feature-rename` (slice + feature namespace), `doc-sweep` (residual prose). Each slice closed cleanly and its sweep found residue attributable to the next slice's scope. After `doc-sweep` closed, sweep #17 still flagged two test-schema residues, which motivated a queued fourth slice (`v1-defense-d3/bypass-log-hierarchical-slug`). Four passes, one feature.
+
+**Rule for future `/decision` and `/start-slice` triage**: when the proposed change is an identifier or terminology scheme that touches multiple artifact classes, the triage step routes to a **new feature definition** — not directly to `/start-slice`. The feature's sub-slices are framed by artifact class; a sweep between slices surfaces residue for the next slice; a dedicated doc-sweep slice is expected, not optional. Attempting a single-slice rename either under-scopes (leaves residue) or over-scopes (busts phase-4 invariants).
+
+**Anti-pattern signals**: "the rename is mechanical," "one slice will cover it," "it's just find/replace," "phase-4 integration can absorb the residue." All four were internally plausible before the work started; none prevented the three-slice cascade that actually happened.
+
+**Mechanism**: recorded here as a pattern; the concrete procedure (what a scheme-change feature's slice-sequencing looks like) can be promoted to `commands/claude-code/start-slice.md` or a new `/plan-feature` flow if a second scheme-change feature reproduces the shape.

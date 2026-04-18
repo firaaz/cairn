@@ -20,3 +20,11 @@ brew install jq && uv tool install ruff
 **ADRs are append-only.** `reversibility-guard.sh` allows `Write` on new ADRs and blocks overwriting existing ones. `Edit` is allowed only if `old_string`'s first line begins with `status:`, `superseded-by:`, `superseded_by:`, or `firmness:` (frontmatter-only edits). Typo escape hatch: `ADR_EDITORIAL_FIX=1`.
 
 **Force-push policy.** `git push --force` / `-f` is blocked; `--force-with-lease` is allowed.
+
+## New-code guidance
+
+**New code is Python, stdlib-only, function-based** — one-for-one Rust-mapping target for end-of-v1. Existing bash hooks stay until their own migration slices. No third-party deps, decorators, or metaprogramming.
+
+**No hardcoded timeouts/sizes in consumer-facing scripts.** Cairn is consumed downstream (e.g. complex-rag-analysis, ~917s pytest); use env-var override with cairn-friendly default (`int(os.environ.get("CAIRN_<KNOB>", <default>))`) and document the var in `docs/operational-reference.md`.
+
+**Within-slice parallel subagents are allowed.** `parallelism-v1` D4 v2+ time-box applies only to concurrent-worktree/split-agent slices, not in-session subagent dispatch.
