@@ -1,31 +1,31 @@
 ---
-slice: identifier-scheme/slice-and-feature-rename
-phase: 3-implementation
+slice: none
+phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-18 aa60dd1
+as-of: 2026-04-18 41c4c57
 ---
 
 ## State
-Phase 3 implementation committed at `aa60dd1`. 20/20 dogfood evaluator tests GREEN; full suite 380/382 (1 out-of-scope operator CLAUDE.md failure, 1 skipped). Envelope closed.
+Slice `identifier-scheme/slice-and-feature-rename` closed at `41c4c57`. Integration sweep due: 1 slice-complete commit since `last-sweep-at-slice-id: identifier-scheme/adr-rename-sweep`; `sweep-interval: 1`.
 
 ## Next
-Close this session. In the next, run `/catchup` then `/start-slice phase 4`.
+In a fresh session: `/catchup` then `/integration-sweep`.
 
 ## Blocked / Pending
-- `CLAUDE.md` uncommitted (terseness rule removed) — operator change, out of slice scope.
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted — ignore per operator.
-- `test_context_budget::test_inv004_turn1_token_budget` pre-existing CC-drift flake — ignore per operator.
-- d3-bypass-classification Decision 2 `exempt:` syntax + `snapshot_diff.py` classified-format parser — carried from sweep #14/#15/#16.
-- 5 SLICE-020 reviewer suggestions → `docs/lessons.md`; `start-slice.full.md:220` rolling-window wording — low-priority carry-overs.
+- `identifier-scheme/doc-sweep` (Phase 2 Part 3) queued — residual SLICE-NNN/ADR-NNN prose in `docs/spec-v1.md`, `docs/lessons.md`, `CLAUDE.md`, handoff.full example blocks, ADR bodies → `.claude/features/identifier-scheme.yaml`
+- `d3-bypass-classification` Decision 2 substrate (`exempt:` syntax + classified-format parser in `snapshot_diff.py`) — carry since sweep #14/#15/#16
+- `commands/claude-code/start-slice.full.md:219`/`:240` rolling-window wording: "slice-id numeric suffix" drifted post-D7 Phase 2 Part 2; next bypass-trigger count may misfire
+- 5 SLICE-020 reviewer suggestions → `docs/lessons.md` carry
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted — ignore per operator
 
 ## Features
-- identifier-scheme: slice-and-feature-rename Phase 3→4; doc-sweep queued (Phase 2 Part 3)
-- integration-gate: complete
-- housekeeping: complete (inv004-rebaseline, stale-22k-cleanup)
-- v1-defense-d2: complete (code-invariant-binding, assertion-block-migration)
-- v1-defense-d3: bypass-log-test-resilience complete; Decision 2 substrate queued
+- `identifier-scheme`: Phase 2 Part 2 complete; Part 3 `doc-sweep` queued
+- `v1-defense-d3`: `bypass-log-test-resilience` complete; Decision 2 substrate queued
+- `v1-defense-d2`: complete
+- `integration-gate`: complete
+- `housekeeping`: dormant
 
 ## Pointers
-- `.claude/current-slice/handoff-phase-3.md` — phase gate + Phase 4 Auditor constraints.
-- `.claude/current-slice/intent.md` — verification items §§1-10 (Phase 4 territory).
-- `.claude/current-slice/implementation/notes.md` — Builder decisions recorded.
+- `.claude/current-slice/efficiency-spec/` — operator-preserved untracked folder; outside every slice envelope; do not delete
+- `.claude/d3-bypasses.log` — fresh entry `identifier-scheme/slice-and-feature-rename 2026-04-18 operator Option C` authorizing chore commit `9797d60` out-of-envelope
+- `.claude/features/identifier-scheme.yaml` — read before starting `identifier-scheme/doc-sweep`
