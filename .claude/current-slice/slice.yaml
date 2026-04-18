@@ -1,8 +1,9 @@
-id: efficiency-program-afternoon-wins/all-seven
-name: "Part -1 Afternoon Wins — 7-item bundle shipment"
-status: complete
+id: identifier-scheme/doc-sweep
+name: "Identifier scheme — residual prose sweep"
+status: intent
 started: 2026-04-18
-completed: 2026-04-18
-invariants-touched: [INV-002, INV-003, INV-004]
-adrs-referenced: []
+completed: null
+invariants-touched: []
+adrs-referenced:
+  - identifier-scheme
 adrs-created: []
