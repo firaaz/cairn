@@ -8,6 +8,7 @@ adrs-referenced:
 envelope:
   - "commands/claude-code/handoff.full.md"
   - "tests/unit/test_dogfood_evaluate.py"
+  - "tests/unit/test_identifier_scheme_sweep.py"
   - "docs/spec-v1.md"
   - "docs/lessons.md"
   - "docs/operational-reference.md"
