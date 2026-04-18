@@ -38,7 +38,7 @@ expect: match
 description: "Verifies the four-phase pipeline definition exists in operational reference"
 ```
 
-**INV-004** Session-start context on a fresh prompt in cairn uses ≤30,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. Re-baselined by SLICE-017 (2026-04-16) for Claude Code 2.1.110, which added ~8k tokens of system-prompt overhead outside cairn's control. (context-discipline-protocol; dedicated ADR pending after 2+ slices of progressive-disclosure use)
+**INV-004** Session-start context on a fresh prompt in cairn uses ≤30,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. Re-baselined by `housekeeping/inv004-rebaseline` (2026-04-16) for Claude Code 2.1.110, which added ~8k tokens of system-prompt overhead outside cairn's control. (context-discipline-protocol; dedicated ADR pending after 2+ slices of progressive-disclosure use)
 
 ```invariant-check INV-004
 type: test-ref
@@ -93,7 +93,7 @@ Cairn has no runtime data. The substrate is files on disk: shell hooks in `check
 
 Two additional substrate files are reserved by cliff-failure-mode-and-v1-defenses as part of D1's operating envelope: `.claude/d1-bypasses.log` (append-only log of `ADR_D1_BYPASS=1` slice-close invocations, each with slice ID and one-line reason; three entries in a rolling 10-slice window triggers a D1 design review) and `.claude/learning.md` (append-only staging ground for post-slice learnings, per context-discipline-protocol Consequences). Neither exists until its owning slice lands.
 
-`docs/operational-reference.md § Phase Skill Guide` is the living registry of per-phase role anti-behaviors and recommended Superpowers skills, reserved by phase-lock-and-role-declaration D4. Created by SLICE-003; updated by normal documentation commits without ADR supersession.
+`docs/operational-reference.md § Phase Skill Guide` is the living registry of per-phase role anti-behaviors and recommended Superpowers skills, reserved by phase-lock-and-role-declaration D4. Created by the `phase-lock-and-role-declaration` operationalization slice; updated by normal documentation commits without ADR supersession.
 
 ## Current Phase Constraints
 

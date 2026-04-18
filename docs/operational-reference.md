@@ -254,7 +254,7 @@ There is **no archive directory** for successful slices. Git history plus `.clau
 
 ### Layer adjuncts — `.claude/learning.md`
 
-`.claude/learning.md` is the session-end learning staging ground. Append-only, free-form entries; the 3× promotion rule that moves stable patterns from `learning.md` into `CLAUDE.md` is **deferred to SLICE-003**. Until SLICE-003 lands, nothing in cairn writes to `learning.md` automatically — sessions may append by hand, but the skill-driven side of the capture loop does not yet exist.
+`.claude/learning.md` is the session-end learning staging ground. Append-only, free-form entries; the 3× promotion rule that moves stable patterns from `learning.md` into `CLAUDE.md` is specified in `context-discipline-protocol` but not yet automated. Nothing in cairn writes to `learning.md` automatically — sessions may append by hand, but the skill-driven side of the capture loop does not yet exist.
 
 ### Operator mental model
 

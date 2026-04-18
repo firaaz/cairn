@@ -1,6 +1,6 @@
 """Phase 2 validation tests for dogfood evaluation substrate.
 
-Originally SLICE-004 (V1-V6 + ambiguity resolutions). Rewritten for
+Originally the dogfood-evaluator slice (V1-V6 + ambiguity resolutions). Rewritten for
 identifier-scheme/slice-and-feature-rename (Phase 2 Part 2) per intent §12:
 
   - sweep.yaml fixture emits new shape: `sweep-interval` +

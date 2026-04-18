@@ -144,9 +144,9 @@ The following questions were raised during the design phase and are resolved her
   After (cross-feature index, this ADR's model):
   ```
   ## Features
-  - identifier-scheme: SLICE-015 Phase 2→3 (scheme-adr); hook-tolerance scheduled next; 4 design-illustrative slices remaining per design §8.
-  - v1-defense-d2: complete (SLICE-010, SLICE-011).
-  - v1-defense-d3: complete (SLICE-012, SLICE-013).
+  - identifier-scheme: `identifier-scheme/scheme-adr` Phase 2→3 (scheme-adr); hook-tolerance scheduled next; 4 design-illustrative slices remaining per design §8.
+  - v1-defense-d2: complete (`v1-defense-d2/code-invariant-binding`, `v1-defense-d2/assertion-block-migration`).
+  - v1-defense-d3: complete (`v1-defense-d3/automated-backstop`, the failed ruff-cleanup attempt).
   ```
 
   The format is normative; the prose inside each line is author judgment.

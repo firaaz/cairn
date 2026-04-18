@@ -55,7 +55,7 @@ Cairn's working hypothesis is that this failure mode is preventable by combining
 
 ### Honest limits
 
-Cairn is currently two slices deep (SLICE-001 shipped, SLICE-002 stopped). The cliff has not been operationally observed in cairn itself. The target is theoretically grounded and derived from first-principles analysis of the failure mechanism above, but is not yet empirically validated in cairn. This ADR is therefore provisional and explicitly expects revalidation against the first dogfood cycle.
+Cairn is currently two slices deep (the `validator-symlink-fix` slice shipped, the `context-discipline-protocol` operationalization slice stopped). The cliff has not been operationally observed in cairn itself. The target is theoretically grounded and derived from first-principles analysis of the failure mechanism above, but is not yet empirically validated in cairn. This ADR is therefore provisional and explicitly expects revalidation against the first dogfood cycle.
 
 The `firmness: provisional` choice is load-bearing. It keeps the door open to reframing if dogfood evidence disagrees with the theoretical analysis, while still committing enough to give v1 a narrow, legible scope. spec-v1 §17 names this calibration gap explicitly; this ADR inherits that honesty.
 
@@ -153,7 +153,7 @@ All three paths are acceptable. None is failure. Supersession is the plan.
 
 - **vision.md §Success criteria is targeted-superseded for v1 scope.** The specific lines listed in D4 are superseded for v1 purposes; they return as v2 scope. The vision document itself is not edited; this ADR is the authoritative record of the supersession.
 
-- **The stopped SLICE-002 must be reviewed against this ADR before resuming.** SLICE-002's envelope is currently tied to the rewrite of `handoff.md` and `catchup.md` for INV-002 compliance. The review question is: does SLICE-002's envelope contribute to D1/D2/D3, or does the envelope need amendment? The review outcome is recorded either in a successor ADR or in an amendment to SLICE-002's `stopped-reason` field in `slice.yaml`.
+- **The stopped the `context-discipline-protocol` operationalization slice must be reviewed against this ADR before resuming.** the `context-discipline-protocol` operationalization slice's envelope is currently tied to the rewrite of `handoff.md` and `catchup.md` for INV-002 compliance. The review question is: does the `context-discipline-protocol` operationalization slice's envelope contribute to D1/D2/D3, or does the envelope need amendment? The review outcome is recorded either in a successor ADR or in an amendment to the `context-discipline-protocol` operationalization slice's `stopped-reason` field in `slice.yaml`.
 
 - **D1 interacts with context-discipline-protocol's session-isolation guarantee.** D1 is constrained to not pollute any phase session. The dedicated-refresh-session mechanism named in D1 above honors context-discipline-protocol; D1's design slice inherits this constraint and must verify the refresh session is spawned as specified.
 
@@ -175,7 +175,7 @@ All three paths are acceptable. None is failure. Supersession is the plan.
 
 **Commit to firm ADR with immediate v1 release.** Rejected because cairn has not been operated at medium scale and the target failure mode has not been empirically observed in cairn itself. A firm commitment without empirical grounding would mask the "theoretical until validated" gap and remove the expected-supersession hedge. The provisional framing is honest about the calibration gap spec-v1 §17 names; a firm framing would not be.
 
-**Defer the target-naming until after SLICE-002 resumes and more slices land.** Rejected because the absence of a named primary target is precisely what prevents MVP scoping. SLICE-002 itself is currently stopped pending substrate decisions, and the substrate question is downstream of "what is v1 actually committed to building." Naming the target first unblocks everything downstream; deferring it extends the stopped state indefinitely.
+**Defer the target-naming until after the `context-discipline-protocol` operationalization slice resumes and more slices land.** Rejected because the absence of a named primary target is precisely what prevents MVP scoping. the `context-discipline-protocol` operationalization slice itself is currently stopped pending substrate decisions, and the substrate question is downstream of "what is v1 actually committed to building." Naming the target first unblocks everything downstream; deferring it extends the stopped state indefinitely.
 
 **Treat the cliff framing as working notes, not an ADR.** Rejected because the cliff framing is the load-bearing justification for every Tier 1 MVP item. If the framing lives only in working notes, it is a convention — any future slice that touches the working notes can silently revise it. ADR firmness forces supersession for any change, which is the exact property needed for a target-naming commitment.
 

@@ -23,11 +23,11 @@ Accepted.
 
 [cliff-failure-mode-and-v1-defenses D3](003-cliff-failure-mode-and-v1-defenses.md) established an automated unknown-unknown backstop with a bypass escape hatch (`D3_GATE_BYPASS=1`). The bypass mechanism was elaborated in `commands/claude-code/start-slice.full.md:224` using a rolling-window rule inherited from D1: three bypasses in the last ten slices triggers a warning that "the gates are producing more noise than signal" and a design review is recommended.
 
-The threshold fired on 2026-04-16 at the close of SLICE-016. Integration sweep #11 (`.claude/sweep-results/2026-04-16-sweep.md`) surfaced the three bypasses:
+The threshold fired on 2026-04-16 at the close of `housekeeping/inv004-rebaseline`. Integration sweep #11 (`.claude/sweep-results/2026-04-16-sweep.md`) surfaced the three bypasses:
 
-- **SLICE-012 (2026-04-14)** — three pre-existing ruff lint errors outside the slice envelope.
-- **SLICE-014 (2026-04-15)** — a fleet-coordinator design document committed outside any slice envelope during a parallel session.
-- **SLICE-016 (2026-04-16)** — INV-004 turn-1 token budget regression caused by Claude Code binary drift (2.1.107 → 2.1.110) between slice intent and Phase 4.
+- **`v1-defense-d3/automated-backstop` (2026-04-14)** — three pre-existing ruff lint errors outside the slice envelope.
+- **`v1-defense-d3/ruff-cleanup` (2026-04-15)** — a fleet-coordinator design document committed outside any slice envelope during a parallel session.
+- **`housekeeping/inv004-rebaseline` (2026-04-16)** — INV-004 turn-1 token budget regression caused by Claude Code binary drift (2.1.107 → 2.1.110) between slice intent and Phase 4.
 
 None of the three bypasses were D3 false positives. D3 correctly flagged real drift in every case. What the three share is that **none of the drift originated inside the bypassing slice's envelope** — each was either pre-existing debt, parallel-session artifact, or external-tool regression discovered after intent was written.
 
@@ -68,9 +68,9 @@ Where `<class>` is exactly one of:
 **Pre-existing carry-over surfacing.** `pre-existing` entries appear in each integration sweep's "Handoff Staleness Check" section as named debt items. They do not trigger D3 review, but they do force visibility of what the project has deferred.
 
 **Historical reclassification.** The three existing log lines are reclassified in a one-time substrate edit as part of this ADR's adoption:
-- SLICE-012 → `pre-existing`
-- SLICE-014 → `pre-existing`
-- SLICE-016 → `pre-existing`
+- `v1-defense-d3/automated-backstop` → `pre-existing`
+- `v1-defense-d3/ruff-cleanup` → `pre-existing`
+- `housekeeping/inv004-rebaseline` → `pre-existing`
 
 After reclassification, the rolling `false-positive` count is zero.
 
@@ -124,7 +124,7 @@ Intent-time exemption is the preferred path for *anticipated* drift. The bypass-
 
 - **Pre-log known-debt registry (`.claude/d3-known-debt.yaml` with lifecycle semantics).** Rejected because it adds a new substrate file with expiry/ownership rules on top of a provisional defense. The end-of-v0 vision reset makes lifecycle investment unattractive; the envelope-exempt route (Decision 2) gets most of the same benefit with zero new substrate surface.
 
-- **Decision 1 alone (classification only) or Decision 2 alone (exemption only).** Rejected in favor of both combined. Decision 1 alone doesn't exploit intent.md's natural discipline layer; Decision 2 alone doesn't handle post-intent discoveries like the SLICE-016 Claude Code binary drift. Combined, they cover both pre-intent and post-intent drift with minimal additional surface.
+- **Decision 1 alone (classification only) or Decision 2 alone (exemption only).** Rejected in favor of both combined. Decision 1 alone doesn't exploit intent.md's natural discipline layer; Decision 2 alone doesn't handle post-intent discoveries like the `housekeeping/inv004-rebaseline` Claude Code binary drift. Combined, they cover both pre-intent and post-intent drift with minimal additional surface.
 
 ## Risk Register
 

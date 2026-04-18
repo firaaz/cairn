@@ -32,7 +32,7 @@ If there are uncommitted changes, list them and ask whether to commit before han
 
 Overwrite `.claude/handoff.md` with content that conforms to `templates/handoff.md`. The four body sections are fixed:
 
-- **`## State`** — 1–2 present-tense sentences. Current state, not history. "SLICE-002 Phase 3 complete at <sha>; V1–V7 all GREEN." Not "I finished implementing the seven envelope files and verified the tests pass."
+- **`## State`** — 1–2 present-tense sentences. Current state, not history. "identifier-scheme/doc-sweep Phase 3 complete at <sha>; sweep tests GREEN." Not "I finished implementing the seven envelope files and verified the tests pass."
 - **`## Next`** — one imperative, one line, specific. "Run `/start-slice phase 4` to enter Integration." Not "continue the slice."
 - **`## Blocked / Pending`** — up to five one-line items, each a pointer. No rationale. If something needs rationale, it belongs in a commit message or ADR.
 - **`## Pointers`** — one line per file the next session should read, with a short note on *when* to read it. The body of the pointed-at file carries the detail; the handoff only indexes.
@@ -60,8 +60,8 @@ If any feature files exist under `.claude/features/`, write a `## Features` sect
 ```markdown
 ## Features
 - identifier-scheme: template-updates Phase 2→3; rename sweeps queued
-- housekeeping: complete (SLICE-017/018)
-- v1-defense-d2: SLICE-010/011 queued
+- housekeeping: inv004-rebaseline + stale-22k-cleanup complete
+- v1-defense-d2: code-invariant-binding + assertion-block-migration queued
 ```
 
 If no features are active, omit the section.

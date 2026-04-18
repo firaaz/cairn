@@ -27,7 +27,13 @@ PHASE_NAME_REFERENCES = [
     "slice.yaml",
 ]
 
-COMPLETED_SLICES = {"SLICE-001", "SLICE-002", "SLICE-003", "SLICE-004", "SLICE-005"}
+COMPLETED_SLICES = {
+    "validator-symlink-fix",
+    "context-discipline-protocol` operationalization",
+    "phase-lock-and-role-declaration` operationalization",
+    "dogfood-evaluator",
+    "4-ADR design slice",
+}
 
 
 def _find_phase_adr() -> Path | None:
@@ -168,7 +174,7 @@ class TestV1FourSpecItems:
 
 
 def test_v2_cites_three_slices():
-    """V2: ADR cites ≥3 of SLICE-001..005 with substantive context per citation."""
+    """V2: ADR cites ≥3 completed historical slices with substantive context per citation."""
     path = _find_phase_adr()
     assert path is not None, "Phase ADR not found. (V2 pre-req)"
     text = _read(path)

@@ -32,7 +32,7 @@ The design document at `docs/plans/2026-04-11-context-discipline-design.md` diag
 
 The design document proposed and validated a three-layer protocol fix: a pointer-format handoff, a tiered catchup with explicit admission criteria for main-context reads, and a wipe-on-close rule for `.claude/current-slice/`. Measured target: post-catchup context drops from ~47k → ~28–30k per session (~40% reduction).
 
-This ADR formalizes that protocol as an architectural commitment so that future slices (SLICE-003 first, every session-persisting slice thereafter) cannot silently regress it.
+This ADR formalizes that protocol as an architectural commitment so that future slices (the `phase-lock-and-role-declaration` operationalization slice first, every session-persisting slice thereafter) cannot silently regress it.
 
 ## Decision
 
@@ -78,7 +78,7 @@ The subagent is given a bounded contract (`CONTEXT`, `QUESTION`, `FILES AVAILABL
 
 ### Layer 3 — Slice closure wipes `.claude/current-slice/`
 
-On transition to `status: complete`, `/start-slice` removes every file under `.claude/current-slice/`. The commit carrying the status transition IS the sole git-history record of the slice's artifacts — nothing else is preserved in the working tree. No archive directory is introduced; `git log` plus `.claude/learning.md` (append-only staging, wired by SLICE-003) together cover the post-mortem use case.
+On transition to `status: complete`, `/start-slice` removes every file under `.claude/current-slice/`. The commit carrying the status transition IS the sole git-history record of the slice's artifacts — nothing else is preserved in the working tree. No archive directory is introduced; `git log` plus `.claude/learning.md` (append-only staging, wired by the `phase-lock-and-role-declaration` operationalization slice) together cover the post-mortem use case.
 
 Failed slices remain an exception: the existing `.claude/completed-slices/<ID>-failed/` path preserves debugging context that successful closure does not need.
 
@@ -88,13 +88,13 @@ Failed slices remain an exception: the existing `.claude/completed-slices/<ID>-f
 
 - **The four-phase pipeline's role-reset property is restored.** Each phase's fresh session receives only the declared artifact — intent.md, test files, source files — with no narrative residue from the prior phase's reasoning.
 
-- **SLICE-003 gains a stable interface to build against.** Self-learn automation depends on the handoff format existing as pointer-format and on `.claude/learning.md` existing as a staging ground. Because these are now an INV-002 commitment, SLICE-003's work cannot be silently broken by a future drive-by rewrite.
+- **the `phase-lock-and-role-declaration` operationalization slice gains a stable interface to build against.** Self-learn automation depends on the handoff format existing as pointer-format and on `.claude/learning.md` existing as a staging ground. Because these are now an INV-002 commitment, the `phase-lock-and-role-declaration` operationalization slice's work cannot be silently broken by a future drive-by rewrite.
 
 - **Cairn consumers inherit the protocol automatically.** Consumer projects mount cairn via `.slice-system → .` and invoke `/handoff` and `/catchup` through the symlinked skill templates. The protocol lands in consumers the moment they pull the updated cairn. No per-consumer migration is required.
 
 - **The ~16.6k stable CLI baseline remains untouched.** This ADR addresses only the addressable ~14k of turn-1 dynamic context plus the ~16k of catchup inflation.
 
-- **Measurement gate.** The design document commits to measuring post-catchup context after SLICE-002 lands and before SLICE-003 begins. If measurement misses the target by >30%, the decision is to stop and re-investigate. A measurement failure that exposes a structural flaw in the protocol is grounds for a superseding ADR, not silent drift.
+- **Measurement gate.** The design document commits to measuring post-catchup context after the `context-discipline-protocol` operationalization slice lands and before the `phase-lock-and-role-declaration` operationalization slice begins. If measurement misses the target by >30%, the decision is to stop and re-investigate. A measurement failure that exposes a structural flaw in the protocol is grounds for a superseding ADR, not silent drift.
 
 ## Alternatives Considered
 
@@ -104,16 +104,16 @@ Failed slices remain an exception: the existing `.claude/completed-slices/<ID>-f
 
 **Archive `.claude/current-slice/` to `.claude/archive/<slice-id>/` on close rather than wipe.** The design document originally proposed this. Rejected after review: the archive's stated use case — post-mortem lookup of "how did SLICE-N handle X" — is already covered by `git log` plus the `learning.md` staging ground. An archive directory is additional state to maintain, index, and retention-police, whereas git history is free and authoritative. This ADR supersedes the archive proposal with wipe-on-close.
 
-**Treat the protocol as operational-reference-only convention, no ADR.** Rejected because SLICE-003 is an immediate downstream dependency and the protocol will be referenced across every future slice that persists context between sessions. A convention in `operational-reference.md` can be rewritten by any future slice that touches that file; an ADR requires supersession. The firmness difference matches the load-bearing nature of the commitment.
+**Treat the protocol as operational-reference-only convention, no ADR.** Rejected because the `phase-lock-and-role-declaration` operationalization slice is an immediate downstream dependency and the protocol will be referenced across every future slice that persists context between sessions. A convention in `operational-reference.md` can be rewritten by any future slice that touches that file; an ADR requires supersession. The firmness difference matches the load-bearing nature of the commitment.
 
-**Write the ADR as `firmness: provisional`.** Rejected because SLICE-003 plans to build on this protocol within weeks and cannot take a dependency on a commitment formally marked "we may revisit this". The design document's measurement checkpoint is about whether the *implementation* achieved its savings target, not whether the *protocol direction* was correct — the protocol direction is settled.
+**Write the ADR as `firmness: provisional`.** Rejected because the `phase-lock-and-role-declaration` operationalization slice plans to build on this protocol within weeks and cannot take a dependency on a commitment formally marked "we may revisit this". The design document's measurement checkpoint is about whether the *implementation* achieved its savings target, not whether the *protocol direction* was correct — the protocol direction is settled.
 
 ## Risk Register
 
-- **Risk:** The 150–400 token handoff budget is too tight for complex session endings and forces users to omit load-bearing state. **Mitigation:** the `Pointers` section can reference any number of external files; the budget constrains prose, not the link set. If unworkable in practice, the measurement checkpoint after SLICE-002 surfaces it and a superseding ADR relaxes the bound with data.
+- **Risk:** The 150–400 token handoff budget is too tight for complex session endings and forces users to omit load-bearing state. **Mitigation:** the `Pointers` section can reference any number of external files; the budget constrains prose, not the link set. If unworkable in practice, the measurement checkpoint after the `context-discipline-protocol` operationalization slice surfaces it and a superseding ADR relaxes the bound with data.
 
 - **Risk:** The Tier 2 admission criteria are too restrictive and block legitimate main-context reads the user actually wanted. **Mitigation:** the user can always directly name a file in chat to force a read — Tier 2 governs the agent's self-initiated reads, not user-directed ones.
 
 - **Risk:** Wipe-on-close loses debugging context from cleanly-closed slices whose artifacts would have been useful later. **Mitigation:** `git log --all -- .claude/current-slice/` recovers the pre-wipe state; `git show <commit>:path` retrieves any historical file. The wipe is working-tree cleanup, not deletion from git history.
 
-- **Risk:** SLICE-003 turns out not to need the `learning.md` staging ground and the file becomes dead state. **Mitigation:** the file is four lines of header and costs nothing; if SLICE-003's design shifts, the file is removed as part of that slice's envelope.
+- **Risk:** the `phase-lock-and-role-declaration` operationalization slice turns out not to need the `learning.md` staging ground and the file becomes dead state. **Mitigation:** the file is four lines of header and costs nothing; if the `phase-lock-and-role-declaration` operationalization slice's design shifts, the file is removed as part of that slice's envelope.

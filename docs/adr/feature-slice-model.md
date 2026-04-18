@@ -109,7 +109,7 @@ When a slice discovers a missing prerequisite mid-work:
 4. Work on the prerequisite
 5. Resume the parked slice when prerequisite completes
 
-Branch and work-in-progress are preserved. Slice identity stays the same. The parked state is the structured replacement for the ad-hoc "stopped" state that SLICE-002 used.
+Branch and work-in-progress are preserved. Slice identity stays the same. The parked state is the structured replacement for the ad-hoc "stopped" state that the `context-discipline-protocol` operationalization slice used.
 
 ### D7 — Mid-work discovery protocol
 

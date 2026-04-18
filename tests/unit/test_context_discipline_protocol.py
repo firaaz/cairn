@@ -349,7 +349,15 @@ def test_v6_operational_reference_documents_protocol():
 
     missing = contains_all(
         section,
-        ["150", "400", "Tier 1", "Tier 2", "DISPATCH", "learning.md", "SLICE-003"],
+        [
+            "150",
+            "400",
+            "Tier 1",
+            "Tier 2",
+            "DISPATCH",
+            "learning.md",
+            "context-discipline-protocol",
+        ],
     )
     assert not missing, f"section missing required keywords: {missing}"
     assert "wipe" in section or "remove" in section, (

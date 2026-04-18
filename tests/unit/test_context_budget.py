@@ -114,7 +114,7 @@ def test_inv004_turn1_token_budget():
 
 
 def test_inv004_architecture_rebaselined():
-    """INV-004 paragraph in ARCHITECTURE.md reflects the SLICE-017 re-baseline.
+    """INV-004 paragraph in ARCHITECTURE.md reflects the `housekeeping/inv004-rebaseline` re-baseline.
 
     Isolates the paragraph starting at ``**INV-004**`` and ending at the first
     subsequent blank line, then asserts the re-baselined ceiling and provenance
@@ -148,8 +148,8 @@ def test_inv004_architecture_rebaselined():
     assert "≤22,000" not in paragraph, (
         f"INV-004 still contains stale '≤22,000' literal.\nParagraph: {paragraph!r}"
     )
-    assert "SLICE-017" in paragraph, (
-        f"INV-004 missing 'SLICE-017' provenance citation.\nParagraph: {paragraph!r}"
+    assert "housekeeping/inv004-rebaseline" in paragraph, (
+        f"INV-004 missing 'housekeeping/inv004-rebaseline' provenance citation.\nParagraph: {paragraph!r}"
     )
     assert "2.1.110" in paragraph, (
         f"INV-004 missing '2.1.110' provenance citation.\nParagraph: {paragraph!r}"
