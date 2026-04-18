@@ -20,5 +20,3 @@ brew install jq && uv tool install ruff
 **ADRs are append-only.** `reversibility-guard.sh` allows `Write` on new ADRs and blocks overwriting existing ones. `Edit` is allowed only if `old_string`'s first line begins with `status:`, `superseded-by:`, `superseded_by:`, or `firmness:` (frontmatter-only edits). Typo escape hatch: `ADR_EDITORIAL_FIX=1`.
 
 **Force-push policy.** `git push --force` / `-f` is blocked; `--force-with-lease` is allowed.
-
-Default to terse replies. No preamble, no trailing summary. One sentence between tool calls unless the work demands more.
