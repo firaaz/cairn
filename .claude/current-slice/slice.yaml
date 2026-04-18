@@ -1,8 +1,8 @@
-id: identifier-scheme/slice-and-feature-rename
-name: "Slice-and-feature rename + sweep.yaml retirement (Phase 2 Part 2)"
-status: complete
-started: 2026-04-17
-completed: 2026-04-18
-invariants-touched: [INV-005, INV-006]
-adrs-referenced: [identifier-scheme, feature-slice-model]
+id: efficiency-program-afternoon-wins/all-seven
+name: "Part -1 Afternoon Wins — 7-item bundle shipment"
+status: intent
+started: 2026-04-18
+completed: null
+invariants-touched: [INV-002, INV-003, INV-004]
+adrs-referenced: []
 adrs-created: []
