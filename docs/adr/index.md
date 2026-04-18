@@ -13,3 +13,4 @@
 | phase-pipeline-evaluation | Phase Pipeline Evaluation — Confirmation of Four-Phase Structure | accepted | firm | process | 2026-04-13 |
 | identifier-scheme | Identifier scheme — id + name two-field model | accepted | firm | naming | 2026-04-15 |
 | d3-bypass-classification | D3 bypass classification — three-class reason schema + envelope exemptions | accepted | provisional | scope | 2026-04-16 |
+| compression-infrastructure-bootstrap | Compression-infrastructure bootstrap — narrow authorization for role_guard.py hook | accepted | provisional | process | 2026-04-19 |
