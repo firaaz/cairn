@@ -1,18 +1,33 @@
 # /status
 
-Show the current state of the development system at a glance.
+One-stop pipeline dashboard. Five lines, ≤1500 chars (INV-004).
 
-Usage: `/status`
+Usage: `/status` (lite) · `/status full` loads the expanded view.
 
-## Rules
+## Dashboard output
 
-1. Read `.claude/current-slice/slice.yaml` — report slice ID, title, phase, started date, invariants, ADRs. If none, say so.
-2. Check phase artifacts: intent.md (exists + committed?), validation/ (has files + committed?), implementation (envelope source + uncommitted changes?), tests (`uv run python -m pytest tests/ -x --tb=line -q 2>/dev/null`).
-3. Read `.claude/sweep.yaml` — report current slice number, last sweep, interval, whether sweep is due.
-4. Run `uv run python .slice-system/scripts/validate_architecture.py` — report pass/fail. Note proposed or provisional-treated-as-firm ADRs.
-5. Report git: branch, uncommitted count, last commit message and date.
-6. Format as compact dashboard, not a report.
+```
+Slice: <id> · Phase: <N> <phase-name> · HEAD: <short-sha>
+Last test run: <YYYY-MM-DD HH:MM> <pass|fail|—>
+Sweep: <due|up-to-date> (<N> slice-complete since last)
+Features: <id:name, id:name, …>
+Next: <first non-empty line of handoff.md ## Next>
+```
+
+## Source contract
+
+1. **Slice** — `slice.yaml` `id:` + `status:`. Phase = status digit. HEAD = `git rev-parse --short` or `—`.
+2. **Last test run** — newest mtime under `current-slice/validation/` or `integration/`. Verdict from filename substring.
+3. **Sweep** — read `.claude/sweep.yaml`; count `^slice: .* — complete$` since `last-sweep-at-slice-id:`. `due` if count ≥ `sweep-interval`.
+4. **Features** — iterate `.claude/features/*.yaml`; emit `id:name`.
+5. **Next** — first non-empty line under `## Next` in `.claude/handoff.md`.
+
+Missing state degrades to `—` per field.
+
+## Rendering
+
+Invoke `scripts/render_status.sh` with `CLAUDE_PROJECT_DIR` pointing at the repo root. Bash, stdlib only.
 
 ## Load full
 
-No full form.
+Read status.full.md only when the user asks for the full registry view, debug dump, or expanded status. The lite dashboard above satisfies INV-004's progressive-disclosure budget.

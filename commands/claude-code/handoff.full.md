@@ -28,6 +28,8 @@ If there are uncommitted changes, list them and ask whether to commit before han
 
 ## Step 2: Write the Handoff Note
 
+**Before writing `slice.yaml` / `sweep.yaml` / `handoff.md`, Read the file first (CC 2.1.110+ requires Read before Write).**
+
 Overwrite `.claude/handoff.md` with content that conforms to `templates/handoff.md`. The four body sections are fixed:
 
 - **`## State`** — 1–2 present-tense sentences. Current state, not history. "SLICE-002 Phase 3 complete at <sha>; V1–V7 all GREEN." Not "I finished implementing the seven envelope files and verified the tests pass."
@@ -100,3 +102,49 @@ Next session: run `/catchup` to orient.
 ```
 
 The one piece of telemetry worth printing is the byte count — it surfaces budget compliance without the user having to check manually. Everything else the user can read from git and the handoff file itself.
+
+## Step 7: Run the Verifier
+
+As the final step of every `/handoff` invocation, run `bash scripts/verify_handoff.sh`. This closes L-005 — the failure mode where `/handoff` exits claiming success while `slice.yaml.status`, the phase-commit handoff file, and the git log diverge from one another.
+
+### Verifier contract
+
+The verifier performs three checks and exits non-zero on the first failure. Each failure prints a stderr line that names the check, the expected state, the observed state, and the remediation command.
+
+**Check (a) — status/commit alignment.** If the last commit subject is `phase-<N>: ...`, `.claude/current-slice/slice.yaml`'s `status:` field must reference phase `N` or `N+1` (or a terminal label like `complete`/`failed`). Divergence means `/handoff` updated the commit but not `slice.yaml`, or vice versa.
+
+**Check (b) — phase handoff existence.** If the last commit subject is `phase-<N>: ...`, the file `.claude/current-slice/handoff-phase-<N>.md` must exist. This catches the case where the phase-commit was made without first writing the phase handoff note Step 4 requires.
+
+**Check (c) — subject-prefix gate.** The last commit subject MUST begin with one of:
+- `handoff:` (generic session-end handoff)
+- `phase-<N>:` (pipeline phase-commit)
+- `slice: <name> — complete` (slice-close commit, em-dash separator)
+
+Any other prefix (`chore:`, `fix:`, `wip`, etc.) is a sign the handoff ran without the expected commit being made.
+
+### Exit codes
+
+| Exit code | Meaning |
+|-----------|---------|
+| `0` | All three checks pass. |
+| `1` | A check failed. Stderr names the failing check and remediation. |
+| `2` | Prerequisite missing (e.g., no commits in the repo yet). |
+
+### Error shape
+
+Stderr lines follow the pattern:
+
+```
+verify_handoff: check (<a|b|c>) FAILED — <one-line summary>
+  <expected-state description>
+  <observed-state description>
+  remediation: <concrete command to fix>
+```
+
+Stdout is always empty; the verifier's contract is pass/fail via exit code plus stderr diagnostics.
+
+### Failure modes the verifier catches
+
+- `slice.yaml.status` reads `3-implementation` but the last commit is `phase-2: validation complete` — `/handoff` wrote the commit but forgot to update `status:`.
+- Last commit is `phase-2: ...` but `.claude/current-slice/handoff-phase-2.md` does not exist — the phase handoff was never written.
+- Last commit is `chore: bump version` — `/handoff` ran on a session where the operator committed something unrelated immediately prior, so the verifier flags the non-handoff commit as the tip.

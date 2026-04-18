@@ -1,6 +1,6 @@
 id: efficiency-program-afternoon-wins/all-seven
 name: "Part -1 Afternoon Wins — 7-item bundle shipment"
-status: intent
+status: implementation
 started: 2026-04-18
 completed: null
 invariants-touched: [INV-002, INV-003, INV-004]

@@ -90,6 +90,8 @@ Use `grep` and file reads — assertions must be backed by what you actually fou
 
 ## Step 4: Initialize New Slice
 
+**Before writing `slice.yaml` / `sweep.yaml` / `handoff.md`, Read the file first (CC 2.1.110+ requires Read before Write).**
+
 Pick the hierarchical slice id (`<feature-id>/<slice-slug>`) for the new slice. There is no numeric counter to increment — the hierarchical id is self-identifying and `.claude/sweep.yaml`'s `current-slice-number:` field has been retired (ADR `identifier-scheme` D7 Phase 2 Part 2, complete).
 
 If `.claude/sweep.yaml` does not exist, create it with defaults:

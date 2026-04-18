@@ -3,7 +3,31 @@
     "superpowers@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true
   },
+  "permissions": {
+    "allow": [
+      "Bash(sed -n *)",
+      "Bash(awk *)",
+      "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git log *)",
+      "Bash(git status *)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff *)",
+      "Bash(shellcheck *)",
+      "Bash(jq *)"
+    ]
+  },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/.slice-system/checks/role-cheatsheet.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash|Edit|Write",

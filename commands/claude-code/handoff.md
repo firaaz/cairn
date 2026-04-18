@@ -14,6 +14,7 @@ Usage: `/handoff` (any session) or `/handoff phase` (pipeline phase end)
 6. If urge to explain — put it in a commit message, ADR, or docs/lessons.md.
 7. Check for uncommitted changes first. Surface before they rot.
 8. For `/handoff phase`: write phase handoff to `.claude/current-slice/handoff-phase-N.md`, update slice.yaml status, print context-isolation reminder.
+9. As the final step of every `/handoff` invocation, run `bash scripts/verify_handoff.sh` to catch L-005-class side-effect divergence (slice.yaml/commit/phase-handoff skew).
 
 ## Load full
 

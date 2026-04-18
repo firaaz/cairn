@@ -8,6 +8,7 @@ adrs-referenced: []
 envelope:
   - "checks/*.sh"
   - "scripts/verify_handoff.sh"
+  - "scripts/render_status.sh"
   - "commands/claude-code/handoff.md"
   - "commands/claude-code/handoff.full.md"
   - "commands/claude-code/start-slice.full.md"
