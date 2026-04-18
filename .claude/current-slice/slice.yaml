@@ -1,6 +1,6 @@
 id: compression/infrastructure
 name: "Compression infrastructure — orchestrator, role agents, role_guard hook, thin /start-slice"
-status: 2-validation
+status: 3-implementation
 started: 2026-04-19
 completed: null
 invariants-touched: [INV-003]
