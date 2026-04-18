@@ -2,30 +2,25 @@
 slice: none
 phase: complete
 branch: feature/identifier-scheme
-as-of: 2026-04-18 b844422
+as-of: 2026-04-18 92a7b15
 ---
 
 ## State
-Slice `identifier-scheme/slice-and-feature-rename` closed at `41c4c57`. Integration sweep protocol-due (1 slice-complete since `last-sweep-at-slice-id: identifier-scheme/adr-rename-sweep`; `sweep-interval: 1`); run-or-defer parked by operator.
+Slice `efficiency-program-afternoon-wins/all-seven` closed at `92a7b15`. Phase 4 PASS: INV-002/003/004 verified, validator clean, 455/458 pytest (2 pre-existing d3-bypass carries). Seven afternoon-win items shipped via 5 parallel Builder subagents + 1 orchestrator-landed renderer. Integration sweep now 2-overdue (interval=1, 2 slice-completes since `identifier-scheme/adr-rename-sweep`).
 
 ## Next
-In a fresh session: `/catchup`, then decide — run `/integration-sweep` or raise `sweep-interval` in `.claude/sweep.yaml` (sweep #16 ran 2026-04-17).
+Fresh session: `/catchup`, then decide — `/integration-sweep` (2-overdue), Part 0 ADR principles (efficiency-program), or `identifier-scheme/doc-sweep` still queued. Also consider `chmod +x` post-merge pass.
 
 ## Blocked / Pending
-- `identifier-scheme/doc-sweep` (Phase 2 Part 3) queued — residual SLICE-NNN/ADR-NNN prose in spec/lessons/CLAUDE/handoff/ADR bodies → `.claude/features/identifier-scheme.yaml`
-- `d3-bypass-classification` Decision 2 substrate (`exempt:` syntax + classified-format parser in `snapshot_diff.py`) — carry since sweep #14/#15/#16
-- `start-slice.full.md:219`/`:240` rolling-window wording: "slice-id numeric suffix" drifted post-D7 Phase 2 Part 2
-- 5 SLICE-020 reviewer suggestions → `docs/lessons.md` carry
-- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted — ignore per operator
-
-## Features
-- `identifier-scheme`: Phase 2 Part 2 complete; Part 3 `doc-sweep` queued
-- `v1-defense-d3`: `bypass-log-test-resilience` complete; Decision 2 substrate queued
-- `v1-defense-d2`: complete
-- `integration-gate`: complete
-- `housekeeping`: dormant
+- `chmod +x` needed on `checks/role-cheatsheet.sh`, `scripts/verify_handoff.sh`, `checks/prepare-commit-msg.sh` — sandbox denied during P3; tests pass via `bash <path>` but `core.hooksPath` activation needs the exec bit.
+- Measurements root cause: `tests/unit/test_context_budget.py::_record_measurement` is the real writer. Form A idempotency in `checks/role-cheatsheet.sh:23-33` is symptomatic — clean fix needs envelope expansion (follow-up slice).
+- Phase-status label drift: Item 1 hook accepts `1-intent` only; Item 6 hook accepts both. Harmonize in Part 0 or a focused slice.
+- `docs/plans/2026-04-18-efficiency-program/*.md` baseline not in snapshot.
+- `identifier-scheme/doc-sweep` (Phase 2 Part 3) still queued.
+- `d3-bypass-classification` Decision 2 substrate (carry since sweep #14/#15/#16).
+- `docs/plans/measurements/2026-04-12-slice-003.txt` uncommitted — ignore per operator.
 
 ## Pointers
-- `docs/plans/2026-04-18-efficiency-program/` — 10-part brainstorm spec awaiting `/decision` + `/start-slice`; read `00-program.md` first
-- `.claude/d3-bypasses.log` — fresh entry for `identifier-scheme/slice-and-feature-rename` authorizing chore `9797d60`
-- `.claude/features/identifier-scheme.yaml` — read before starting `identifier-scheme/doc-sweep`
+- `docs/plans/2026-04-18-efficiency-program/02-part-0-adr-principles.md` — Part 0 ADR principles (next feature in program, gates Parts 1–5).
+- `.claude/d3-bypasses.log` — 2 new pre-existing entries for this slice.
+- `.claude/features/efficiency-program-afternoon-wins.yaml` — feature closed (1-slice feature).
