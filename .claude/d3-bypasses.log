@@ -5,3 +5,4 @@ SLICE-017 2026-04-16 pre-existing: snapshot_diff flags docs/adr/d3-bypass-classi
 SLICE-018 2026-04-16 slice-caused (A): user-approved Phase 3 envelope expansion deleted two legacy live-diff envelope-compliance fixtures (test_slice_005_design_decomposition, test_sweep_debt_cleanup); snapshot_diff has no awareness of envelope-expansions.log — fail is structural, not regression
 SLICE-018 2026-04-16 slice-caused (C): INV-005 parenthetical re-pointed in Phase 3 as acknowledged scope deviation; /refresh-architecture deferred to coordinator level
 SLICE-020 2026-04-17 pre-existing: integration_gate pytest halts on test_d3_bypass_log_format.py regex mismatch — documented SLICE-018 failures, outside integration-gate/configurable-pytest-timeout envelope
+identifier-scheme/slice-and-feature-rename 2026-04-18 operator Option C: housekeeping commit 9797d60 removed stale CLAUDE.md terseness test out-of-envelope

@@ -1,8 +1,8 @@
 id: identifier-scheme/slice-and-feature-rename
 name: "Slice-and-feature rename + sweep.yaml retirement (Phase 2 Part 2)"
-status: integration
+status: complete
 started: 2026-04-17
-completed: null
+completed: 2026-04-18
 invariants-touched: [INV-005, INV-006]
 adrs-referenced: [identifier-scheme, feature-slice-model]
 adrs-created: []

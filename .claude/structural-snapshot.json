@@ -24,8 +24,8 @@
     "size": 1155
   },
   "commands/claude-code/integration-sweep.full.md": {
-    "hash": "eb5296378e79920ac591fdc66a59ffe537861fc861948eda889183b76704dc02",
-    "size": 5189
+    "hash": "678598fa5c2a7d9ffcedacc05d72815f5653b61e2b4b9429c3e42e00978c539a",
+    "size": 5309
   },
   "commands/claude-code/integration-sweep.md": {
     "hash": "a8f26708445e5ed95802164257845c9e8f440db88e8799940a39cde088abb41b",
@@ -48,8 +48,8 @@
     "size": 1308
   },
   "commands/claude-code/start-slice.full.md": {
-    "hash": "eb1d478d8466e2ce45c8b0c83cf5738681a6cc87638691d33e767b318655fa67",
-    "size": 19748
+    "hash": "ad3d1edb940af34611f3908e3ccab6708f5fd62a6342f335829a653d30e904df",
+    "size": 20317
   },
   "commands/claude-code/start-slice.md": {
     "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
@@ -120,8 +120,8 @@
     "size": 20348
   },
   "docs/operational-reference.md": {
-    "hash": "39860d6d783c9a8bb798f141a9da54ca6b729e495ff48385d9f6d2e87b6fbcac",
-    "size": 28052
+    "hash": "58574fde24b4b8535f517fd234af773bba2335e05a5ea9d3efd24861b4e3ce16",
+    "size": 28160
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -192,8 +192,8 @@
     "size": 3959
   },
   "scripts/dogfood_evaluate.py": {
-    "hash": "f6af9f7bdf21035b73bb259fd14489b24826a68dc8196d119faaced69518680f",
-    "size": 8273
+    "hash": "3ce8d72a101a5fd2880db695ee621a2e8faebcec5463b1404b82c6bb29a5ad05",
+    "size": 9248
   },
   "scripts/integration_gate.py": {
     "hash": "1f7c9562cb3cec07632bac7c004cb65c4b0f3366235bb868bb6a0dd732d1c294",
@@ -228,8 +228,8 @@
     "size": 5289
   },
   "tests/unit/test_dogfood_evaluate.py": {
-    "hash": "90c4e56ea2b76d1b7a9c44b6c51e37d8e1a58dd067de5e420a50261d91d2ba7f",
-    "size": 20735
+    "hash": "aa94655e4a19da1e2378b88d3b74b28091df8030333fa37a31361f53e5f01e5c",
+    "size": 27498
   },
   "tests/unit/test_feature_cross_index.py": {
     "hash": "d69b597bcac5506012f96ce826f773a9275f197ba05407ae7d5c752231a3efc5",
@@ -276,8 +276,8 @@
     "size": 10991
   },
   "tests/unit/test_progressive_disclosure.py": {
-    "hash": "5c3d15082eb9b343ab15828041f8d194f7707b1b7179d6581a25e26639bf3477",
-    "size": 9115
+    "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",
+    "size": 8536
   },
   "tests/unit/test_slice_003_precursor.py": {
     "hash": "32b73f194510ebc54a8f3cbab374026042869b0519bfbc9ee22aef19e3035b83",
