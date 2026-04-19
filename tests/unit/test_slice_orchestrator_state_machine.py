@@ -144,8 +144,6 @@ def test_v2_4_dispatch_agent_malformed_stdout_returns_failed(monkeypatch):
 def test_v2_5_run_phase_loop_ok_advances_phase(monkeypatch, tmp_path: Path):
     import slice_orchestrator as so
 
-    calls: list[dict] = []
-
     def stub_dispatch(role, inputs, envelope=None, timeout_hard=None):
         return {
             "status": "OK",
