@@ -1,6 +1,7 @@
 id: compression/orchestrator-hardening
 name: "Compression — orchestrator hardening (permission-mode, brief persistence, test isolation)"
-status: intent
+status: validation
+current_phase: 2
 started: 2026-04-19
 completed: null
 invariants-touched: []
