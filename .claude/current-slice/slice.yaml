@@ -1,9 +1,8 @@
-id: housekeeping/post-slice-a-tidy
-name: "Housekeeping — post-Slice-A tidy + first compressed-protocol dogfood"
-status: complete
-current_phase: 4
+id: compression/orchestrator-hardening
+name: "Compression — orchestrator hardening (permission-mode, brief persistence, test isolation)"
+status: intent
 started: 2026-04-19
-completed: 2026-04-19
+completed: null
 invariants-touched: []
-adrs-referenced: []
+adrs-referenced: [compression-infrastructure-bootstrap]
 adrs-created: []
