@@ -6,6 +6,7 @@ invariants-touched: []
 adrs-referenced: []
 envelope:
   - "tests/unit/test_slice_orchestrator_state_machine.py"
+  - "tests/unit/test_housekeeping_post_slice_a_tidy.py"
   - ".claude/platform-probe.md"
   - ".claude/current-slice/*"
 out-of-scope:
