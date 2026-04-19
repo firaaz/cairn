@@ -1,8 +1,8 @@
 id: compression/infrastructure
 name: "Compression infrastructure — orchestrator, role agents, role_guard hook, thin /start-slice"
-status: 4-integration
+status: complete
 started: 2026-04-19
-completed: null
+completed: 2026-04-19
 invariants-touched: [INV-003]
 adrs-referenced: [compression-infrastructure-bootstrap, phase-lock-and-role-declaration, parallelism-v1]
 adrs-created: []

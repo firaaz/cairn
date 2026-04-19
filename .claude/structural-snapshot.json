@@ -1,4 +1,8 @@
 {
+  "checks/role_guard.py": {
+    "hash": "d467ac86b286024bde7a89aca1943d7ef90d5c18c8f18e539f8e06fe54699466",
+    "size": 2597
+  },
   "commands/claude-code/catchup.full.md": {
     "hash": "f3fadb3e43f6e5ecf2ddfc34dff5fb447dcd69948acfa4d624a2fac147ea000b",
     "size": 9792
@@ -47,13 +51,17 @@
     "hash": "3c59e7dd067cad282accc7c27a010b4f5d5035cf85a672b7c8421005137a70b5",
     "size": 1308
   },
+  "commands/claude-code/start-slice-legacy.md": {
+    "hash": "7d077390ef818184796b7794b202899391c17d9aefbcf10d793bd61024a19e1e",
+    "size": 796
+  },
   "commands/claude-code/start-slice.full.md": {
     "hash": "09c142a76ac6717fc7bad30dee68b4a6ed6e95817fa946803000db8fa8d99cac",
     "size": 20443
   },
   "commands/claude-code/start-slice.md": {
-    "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
-    "size": 1903
+    "hash": "7ab28a8dd767efd4c63762b6578a812fe218894a9791ee53a8604dae9b70659e",
+    "size": 1649
   },
   "commands/claude-code/status.full.md": {
     "hash": "3e7ed7c5f843b358357447b293e317e8f47db6278941bbe495a22a8b3acaf69d",
@@ -64,8 +72,8 @@
     "size": 1339
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "045228aa737c657792f71fce425f92235d69c764115972e8a2b90b54f3ad0b24",
-    "size": 18357
+    "hash": "29fd0f66b3acbba219f75f66012cff780cbda70080b28bac51edabd323104e9f",
+    "size": 19575
   },
   "docs/adr/bootstrap-exception.md": {
     "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
@@ -74,6 +82,10 @@
   "docs/adr/cliff-failure-mode-and-v1-defenses.md": {
     "hash": "749b0a252b696eaf6db948cb07431618ab5cf198a0b8242d670fccf1a546a165",
     "size": 25505
+  },
+  "docs/adr/compression-infrastructure-bootstrap.md": {
+    "hash": "a741d5192b871214af93cae3b3d661fa8cea3143148ac2316c8d4f9f5869aa3a",
+    "size": 11297
   },
   "docs/adr/context-discipline-protocol.md": {
     "hash": "a35f2aafa25f381e40dcdd60eba382b7e9b1c30458da88732c11d515d7096c2b",
@@ -96,8 +108,8 @@
     "size": 16093
   },
   "docs/adr/index.md": {
-    "hash": "09a292bad5e338d6018414c1a25246bfb7b42aae588021cbce0a5dc11c83863d",
-    "size": 1392
+    "hash": "230c5589a3c75562f52f2c96eb652cbbf650a7f3c877fe043fa8388522cfaa18",
+    "size": 1568
   },
   "docs/adr/parallelism-v1.md": {
     "hash": "f86951edf42f2a310804341a56a95e174c24577b82cfbab2aed034e69cc96f7c",
@@ -128,8 +140,8 @@
     "size": 22709
   },
   "docs/operational-reference.md": {
-    "hash": "62d3e2a0f719e87ae686c3caa737a7aef4e8fb30ab694c69c855cf85fb6fff45",
-    "size": 28176
+    "hash": "15e66187800f2a9d56542042656e71e449f3c296bcd2677eb43cc3b85bae4862",
+    "size": 30073
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -279,6 +291,10 @@
     "hash": "1f7c9562cb3cec07632bac7c004cb65c4b0f3366235bb868bb6a0dd732d1c294",
     "size": 5014
   },
+  "scripts/slice_orchestrator.py": {
+    "hash": "082984df82c527146f4de0adcc5477f9030af6d56a76392af7707b484e4390c9",
+    "size": 12926
+  },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
     "size": 5832
@@ -399,6 +415,10 @@
     "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",
     "size": 8536
   },
+  "tests/unit/test_role_guard.py": {
+    "hash": "c8f1ec544895eb8ee14148efba955094c3be7a919325bf92ac28986a2c014f3c",
+    "size": 6532
+  },
   "tests/unit/test_slice_003_precursor.py": {
     "hash": "32b73f194510ebc54a8f3cbab374026042869b0519bfbc9ee22aef19e3035b83",
     "size": 8312
@@ -406,6 +426,14 @@
   "tests/unit/test_slice_005_design_decomposition.py": {
     "hash": "4925964d367989e830f00553e76b59ea0c7bf01ce1f1c3fe7cf2185c0d8960cd",
     "size": 17472
+  },
+  "tests/unit/test_slice_id_derivation.py": {
+    "hash": "6e32b9f118ab0c3f9a0fbc270de4e2cfb6e39ef5a3c6ffbc2ae4e886ae4fe344",
+    "size": 1546
+  },
+  "tests/unit/test_slice_orchestrator_state_machine.py": {
+    "hash": "f780b4313a4c85141c20819c21e669c9b2e11d29295c0b913d79fe86fe4fd4af",
+    "size": 12877
   },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
