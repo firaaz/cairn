@@ -187,6 +187,11 @@ def test_v2_6_run_phase_loop_failed_retries_once(monkeypatch):
     monkeypatch.setattr(so, "dispatch_agent", stub_dispatch)
     monkeypatch.setattr(so, "dispatch_phase_3", stub_dispatch)
     monkeypatch.setattr(so, "commit_phase_handoff", lambda *a, **k: None)
+    # F3 (compression/orchestrator-hardening): pin _current_phase so this
+    # test passes irrespective of the real repo's slice.yaml state. Without
+    # this monkeypatch, _current_phase reads .claude/current-slice/slice.yaml
+    # and may return any phase — defeating the phase-1 retry assertion.
+    monkeypatch.setattr(so, "_current_phase", lambda: 1, raising=False)
 
     rc = so.run_phase_loop(max_phase=4)
     assert rc != 0  # escalated after second FAILED
@@ -208,6 +213,10 @@ def test_a8_retry_uses_same_inputs_and_envelope(monkeypatch):
     monkeypatch.setattr(so, "dispatch_agent", stub_dispatch)
     monkeypatch.setattr(so, "dispatch_phase_3", stub_dispatch)
     monkeypatch.setattr(so, "commit_phase_handoff", lambda *a, **k: None)
+    # F3 (compression/orchestrator-hardening): pin _current_phase — without
+    # this monkeypatch, the real slice.yaml decides which phase the loop
+    # starts in, and the phase-1 retry-once assertion below becomes flaky.
+    monkeypatch.setattr(so, "_current_phase", lambda: 1, raising=False)
 
     so.run_phase_loop(max_phase=4)
     first_two = [c for c in call_log if c[0] == "phase-1-writer"]
