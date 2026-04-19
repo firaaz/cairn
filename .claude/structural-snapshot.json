@@ -387,6 +387,10 @@
     "hash": "d1f9fdd7d94d8f1655aec32c904c452c10d3d8f9fe8044f174d57312f8920015",
     "size": 17240
   },
+  "tests/unit/test_housekeeping_post_slice_a_tidy.py": {
+    "hash": "bb9a49ab12aae2b378eb9a7a93750502d04d6a94b3dbed5fc0b549b86de57e4e",
+    "size": 5266
+  },
   "tests/unit/test_identifier_scheme_sweep.py": {
     "hash": "86380c2920a45ba008ad86a60938d63f91b8fa95f27f49cff85a74030bfb6baa",
     "size": 4422
@@ -432,8 +436,8 @@
     "size": 1546
   },
   "tests/unit/test_slice_orchestrator_state_machine.py": {
-    "hash": "f780b4313a4c85141c20819c21e669c9b2e11d29295c0b913d79fe86fe4fd4af",
-    "size": 12877
+    "hash": "faa9fcb04d121f3b3b9f0193fdc5abce9312e9a595ea505f622f70bd28921bbd",
+    "size": 12849
   },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
