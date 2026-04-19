@@ -10,3 +10,6 @@ slices:
   - id: housekeeping/stale-22k-cleanup
     added: 2026-04-16
     intent: "Replace stale 22k reference in docs/ARCHITECTURE.md:46 invariant-check description and tests/unit/test_context_budget.py:103 docstring with 30k/30,000; preserve regression-assertion literals on lines 121/148/149 that intentionally guard against the stale value."
+  - id: housekeeping/post-slice-a-tidy
+    added: 2026-04-19
+    intent: "Post-Slice-A janitorial + first compressed-protocol dogfood: fix F841 in test_slice_orchestrator_state_machine.py:147; retire stale .claude/platform-probe.md; verify .claude/handoff.md gitignore drift-free; verify empty current-slice subdirs pruned. Out of scope: orchestrator/agent changes, which become their own slice from dogfooding findings."

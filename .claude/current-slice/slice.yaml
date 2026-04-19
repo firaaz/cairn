@@ -1,4 +1,9 @@
-id: chore/cleanup-reorg
-name: "chore/cleanup-reorg"
+id: housekeeping/post-slice-a-tidy
+name: "Housekeeping — post-Slice-A tidy + first compressed-protocol dogfood"
 status: in-progress
 current_phase: 1
+started: 2026-04-19
+completed: null
+invariants-touched: []
+adrs-referenced: []
+adrs-created: []
