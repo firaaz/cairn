@@ -1,9 +1,9 @@
 id: compression/orchestrator-hardening
 name: "Compression — orchestrator hardening (permission-mode, brief persistence, test isolation)"
-status: 4-integration
+status: complete
 current_phase: 4
 started: 2026-04-19
-completed: null
+completed: 2026-04-19
 invariants-touched: []
 adrs-referenced: [compression-infrastructure-bootstrap]
 adrs-created: []
