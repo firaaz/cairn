@@ -330,6 +330,23 @@ Three hooks wired in `.claude/settings.json`:
 
 Hooks are friction-plus-walls, not security boundaries. A determined or careless agent can route around the friction layer; the wall layer (the explicit patterns above) holds.
 
+## Environment variables
+
+Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "no hardcoded timeouts/sizes in consumer-facing scripts" — every script that reads a knob falls back to a documented default.
+
+| Var | Default | Read by | Purpose |
+|---|---|---|---|
+| `CAIRN_PHASE_1_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Hard ceiling on a `phase-1-writer` dispatch. Returns `FAILED` with a timeout summary on overrun. |
+| `CAIRN_PHASE_2_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for `phase-2-skeptic`. |
+| `CAIRN_PHASE_3_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for each parallel `phase-3-implementer` cluster dispatch. |
+| `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for `phase-4-integrator`. |
+| `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
+| `CAIRN_LEGACY_START_SLICE` | unset | `commands/claude-code/start-slice.md` | When set to any non-empty value, `/start-slice` defers to `start-slice-legacy.md`'s prose protocol instead of invoking the orchestrator. Equivalent to passing `--legacy`. |
+| `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → hook is a no-op (non-compressed slices unaffected). |
+| `AGENT_ENVELOPE` | unset | `checks/role_guard.py` | Colon-separated regex list of allowed write paths for `phase-3-implementer`. Empty/unset denies all writes. |
+| `EXPAND_ENVELOPE` | unset | `checks/scope-guard.sh` | Override for the slice envelope; logs to `.claude/current-slice/envelope-expansions.log`. |
+| `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; logs to `.claude/adr-editorial-fixes.log`. |
+
 ## Cairn repo internals (load on demand)
 
 This section documents cairn's own repo layout and working practices. It is deliberately not in `CLAUDE.md` — CLAUDE.md is a safety cheat sheet, not a README. Load this section when doing non-trivial work on cairn itself.
