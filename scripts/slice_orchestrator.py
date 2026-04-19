@@ -34,6 +34,8 @@ ROLE_TO_PHASE = {role: phase for phase, role in ROLE_FOR_PHASE.items()}
 
 DEFAULT_TIMEOUT_HARD = 1800
 
+PERMISSION_MODE = "acceptEdits"
+
 SLICE_YAML = Path(".claude/current-slice/slice.yaml")
 CLUSTERS_YAML = Path(".claude/current-slice/validation/coupling-clusters.yaml")
 
@@ -108,7 +110,15 @@ def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
     if envelope is not None:
         env["AGENT_ENVELOPE"] = envelope
     timeout = _resolve_timeout(role, timeout_hard)
-    cmd = ["claude", "-p", "--agent", role, json.dumps(inputs)]
+    cmd = [
+        "claude",
+        "-p",
+        "--agent",
+        role,
+        "--permission-mode",
+        PERMISSION_MODE,
+        json.dumps(inputs),
+    ]
     try:
         proc = subprocess.run(
             cmd,
@@ -228,6 +238,16 @@ def _slice_id():
         return "unknown/unknown"
 
 
+def _slice_brief():
+    if not SLICE_YAML.exists():
+        return ""
+    try:
+        state = read_slice_state(SLICE_YAML)
+        return state.get("brief", "") or ""
+    except (OSError, ValueError):
+        return ""
+
+
 def _dispatch_for_phase(phase, role, inputs, envelope, timeout):
     if phase == 3:
         return dispatch_phase_3(_slice_id())
@@ -239,6 +259,9 @@ def run_phase_loop(max_phase=4):
     while 1 <= phase <= max_phase:
         role = ROLE_FOR_PHASE[phase]
         inputs = {"phase": phase, "role": role, "slice_id": _slice_id()}
+        brief = _slice_brief()
+        if brief:
+            inputs["brief"] = brief
         envelope = None
         timeout = _resolve_timeout(role, None)
         result = _dispatch_for_phase(phase, role, inputs, envelope, timeout)
@@ -341,7 +364,8 @@ def init_new_slice(brief):
         raise SystemExit(f"init_new_slice: malformed proposed_slice_id: {proposed!r}")
     SLICE_YAML.parent.mkdir(parents=True, exist_ok=True)
     SLICE_YAML.write_text(
-        f'id: {proposed}\nname: "{proposed}"\nstatus: in-progress\ncurrent_phase: 1\n'
+        f'id: {proposed}\nname: "{proposed}"\nstatus: in-progress\n'
+        f'current_phase: 1\nbrief: "{brief}"\n'
     )
     subprocess.run(["git", "add", str(SLICE_YAML)], check=False)
     subprocess.run(["git", "commit", "-m", f"slice: {proposed} — init"], check=False)
