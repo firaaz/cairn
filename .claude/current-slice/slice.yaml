@@ -1,9 +1,9 @@
 id: housekeeping/post-slice-a-tidy
 name: "Housekeeping — post-Slice-A tidy + first compressed-protocol dogfood"
-status: in-progress
+status: complete
 current_phase: 4
 started: 2026-04-19
-completed: null
+completed: 2026-04-19
 invariants-touched: []
 adrs-referenced: []
 adrs-created: []
