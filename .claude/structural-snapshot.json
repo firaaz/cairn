@@ -292,8 +292,8 @@
     "size": 5014
   },
   "scripts/slice_orchestrator.py": {
-    "hash": "082984df82c527146f4de0adcc5477f9030af6d56a76392af7707b484e4390c9",
-    "size": 12926
+    "hash": "0344af02d3d5a38e3c4e1712d99fd3a2e15764dfdcf9b605c2ede88304f7d668",
+    "size": 15085
   },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
@@ -340,8 +340,8 @@
     "size": 8746
   },
   "tests/unit/test_adr_rename_sweep.py": {
-    "hash": "82af52d3bac2d06beec4752865107f4d399cef9a019a5fea54ec52f1c92db768",
-    "size": 18255
+    "hash": "0e2775fddcc1814a6f39e99bb7a589c2b87df00b8a92d4581dd6d1aa7874a730",
+    "size": 33766
   },
   "tests/unit/test_context_budget.py": {
     "hash": "b162e0c3292b5946e8c536f7a4b7c5d596737b4c8864eda07feffebc8a691bae",
@@ -411,6 +411,10 @@
     "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
     "size": 50807
   },
+  "tests/unit/test_orchestrator_hardening.py": {
+    "hash": "be6414109b70d8bed5c960a5ecc0ec14f7a9e000aa41b039907b70f6d9b96e0e",
+    "size": 9638
+  },
   "tests/unit/test_phase_rethink.py": {
     "hash": "a1daec1cd0d44c0d99f79b63443cf992bbcb4332136363445e5f1e9d3eb5c935",
     "size": 11529
@@ -436,8 +440,8 @@
     "size": 1546
   },
   "tests/unit/test_slice_orchestrator_state_machine.py": {
-    "hash": "faa9fcb04d121f3b3b9f0193fdc5abce9312e9a595ea505f622f70bd28921bbd",
-    "size": 12849
+    "hash": "5cec3f3a2711bc79bf70891e7a70a9259971ba5be1ab9ccaac8aa3892b8da888",
+    "size": 13605
   },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",

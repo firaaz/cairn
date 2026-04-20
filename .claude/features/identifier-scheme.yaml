@@ -45,3 +45,7 @@ slices:
     added: 2026-04-18
     after: identifier-scheme/adr-rename-sweep
     intent: "ADR identifier-scheme §D7 Phase 2 Part 3 — final mechanical scope. Sweep residual SLICE-NNN/ADR-NNN prose references out of the active long-form corpus (commands/claude-code/handoff.full.md, docs/spec-v1.md, docs/lessons.md, docs/operational-reference.md, docs/ARCHITECTURE.md, CLAUDE.md, ADR body prose, tests/unit/test_dogfood_evaluate.py docstring). Replaces each with the entity's current canonical id. Historical archives, .claude/learning.md, hooks, validators, tolerance-test fixtures, and frontmatter cross-reference fields are out of scope. ADR body prose edits use ADR_EDITORIAL_FIX=1. Closes the identifier-scheme feature tail; unblocks merge to dev and 2-overdue integration sweep."
+  - id: identifier-scheme/rename-sweep-test-robust
+    added: 2026-04-20
+    after: identifier-scheme/doc-sweep
+    intent: "Post-merge fix-up: widen tests/unit/test_adr_rename_sweep.py contract to guard flat-slug *shape* of every current and future ADR rather than pinning docs/adr/ to a fixed twelve-file set. Unblocks compression-infrastructure-bootstrap ADR (2026-04-19) and prevents every subsequent /new-adr from re-breaking the rename-sweep regression guard. Envelope: tests/unit/test_adr_rename_sweep.py only."
