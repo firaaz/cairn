@@ -4,10 +4,12 @@ Replaces the prose `start-slice` protocol with a deterministic dispatcher that
 spawns role-scoped Claude agents (`claude -p --agent <role>`) per phase, parses
 their structured-return JSON tail, and routes on `status ∈ {OK, FAILED,
 RAISE_ISSUE}`. Phase 3 fans out one agent per cluster declared in
-`coupling-clusters.yaml`.
+`clusters.yaml`.
 
-Stdlib only (CLAUDE.md "New code is Python, stdlib-only, function-based").
-Timeouts are env-var overridable per CLAUDE.md "no hardcoded timeouts" rule.
+Slice 2 hardening: PyYAML round-trip serialization, `_git` helper with
+check=True, signal handlers, RE_DISPATCH persistence + cap, post-timeout
+HEAD reconciliation, per-cluster logs, FAILED classification + backoff,
+malformed-yaml exits.
 """
 
 from __future__ import annotations
@@ -18,10 +20,14 @@ import datetime
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 import threading
+import time
 from pathlib import Path
+
+import yaml
 
 DEBUG_DIR = Path(".claude/orchestrator-debug")
 
@@ -43,7 +49,15 @@ PERMISSION_MODE = "bypassPermissions"
 VALID_TRIAGER_ACTIONS = {"ESCALATE_TO_USER", "RE_DISPATCH", "ABORT"}
 
 SLICE_YAML = Path(".claude/current-slice/slice.yaml")
-CLUSTERS_YAML = Path(".claude/current-slice/validation/coupling-clusters.yaml")
+CLUSTERS_YAML = Path(".claude/current-slice/clusters.yaml")
+CLUSTERS_YAML_LEGACY = Path(".claude/current-slice/validation/coupling-clusters.yaml")
+INTENT_MD = Path(".claude/current-slice/intent.md")
+
+TRANSIENT_STDERR_RX = re.compile(
+    r"rate\s*limit|overloaded|\b429\b|\b503\b", re.IGNORECASE
+)
+
+_active_child = None
 
 
 def is_valid_slice_id(s):
@@ -52,29 +66,63 @@ def is_valid_slice_id(s):
     return SLICE_ID_REGEX.fullmatch(s) is not None
 
 
-def read_slice_state(path):
-    state = {}
-    text = Path(path).read_text()
-    for raw in text.splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        if ":" not in line:
-            continue
-        key, _, value = line.partition(":")
-        key = key.strip()
-        value = value.strip()
-        if value.startswith('"') and value.endswith('"') and len(value) >= 2:
-            value = value[1:-1]
-        elif value.startswith("'") and value.endswith("'") and len(value) >= 2:
-            value = value[1:-1]
-        if key == "current_phase":
-            try:
-                value = int(value)
-            except (ValueError, TypeError):
-                pass
-        state[key] = value
+def _git(*args, **kwargs):
+    """Run a git subcommand with check=True and re-attach stderr on failure.
+
+    B11: single choke-point so no orchestrator call site silently advances on
+    a failed git operation.
+    """
+    cmd = ["git", *args]
+    kwargs.setdefault("check", True)
+    kwargs.setdefault("capture_output", True)
+    kwargs.setdefault("text", True)
+    try:
+        return subprocess.run(cmd, **kwargs)
+    except subprocess.CalledProcessError as exc:
+        orig = exc.stderr or ""
+        if orig:
+            exc.args = (f"{exc.args[0] if exc.args else exc}: {orig}",)
+        raise
+
+
+def _read_slice_state_strict():
+    """Read slice.yaml via PyYAML; SystemExit(1) on malformed. B12."""
+    if not SLICE_YAML.exists():
+        return {}
+    text = Path(SLICE_YAML).read_text()
+    try:
+        state = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        print(
+            f"orchestrator: malformed slice.yaml at {SLICE_YAML}: {exc}",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    if state is None:
+        return {}
+    if not isinstance(state, dict):
+        print(
+            f"orchestrator: malformed slice.yaml at {SLICE_YAML}: "
+            f"top-level is {type(state).__name__}, expected mapping",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
     return state
+
+
+def read_slice_state(path):
+    """Public read helper — used by init flow and tests. B3/B4."""
+    text = Path(path).read_text()
+    state = yaml.safe_load(text)
+    if not isinstance(state, dict):
+        return {}
+    return state
+
+
+def _write_slice_state(state):
+    SLICE_YAML.write_text(
+        yaml.safe_dump(state, default_flow_style=False, sort_keys=False)
+    )
 
 
 def _resolve_timeout(role, override):
@@ -145,7 +193,14 @@ def _utc_timestamp():
 
 
 def _write_phase_log(
-    slice_id, phase, role, stderr_text, stdout_text="", inputs=None, reason=""
+    slice_id,
+    phase,
+    role,
+    stderr_text,
+    stdout_text="",
+    inputs=None,
+    reason="",
+    extra=None,
 ):
     DEBUG_DIR.mkdir(parents=True, exist_ok=True)
     slug = _slice_id_slug(slice_id)
@@ -159,6 +214,12 @@ def _write_phase_log(
     parts.append(f"phase: {phase_token}")
     if inputs is not None:
         parts.append(f"inputs: {json.dumps(inputs)}")
+    if extra:
+        for key, value in extra.items():
+            if isinstance(value, (dict, list)):
+                parts.append(f"{key}: {json.dumps(value)}")
+            else:
+                parts.append(f"{key}: {value}")
     if stdout_text:
         parts.append("--- stdout ---")
         parts.append(stdout_text)
@@ -170,8 +231,24 @@ def _write_phase_log(
     return path
 
 
+def _git_head_safe():
+    """Best-effort HEAD capture; empty string if git unavailable or no commits."""
+    try:
+        return _git("rev-parse", "HEAD").stdout.strip()
+    except Exception:
+        return ""
+
+
 def _run_with_live_stderr(cmd, env, timeout, prefix=""):
-    """Popen with stderr tee'd live to sys.stderr (prefixed) + buffered for capture."""
+    """Popen with stderr tee'd live + pre/post HEAD capture for reconciliation.
+
+    B9: attaches `pre_dispatch_head`, `post_dispatch_head`, `timeout_s` to the
+    TimeoutExpired exception so callers can emit a reconciliation log.
+    B13: sets module-level `_active_child` so the signal handler can reach
+    the running subprocess.
+    """
+    global _active_child
+    pre_head = _git_head_safe()
     proc = subprocess.Popen(
         cmd,
         env=env,
@@ -179,6 +256,7 @@ def _run_with_live_stderr(cmd, env, timeout, prefix=""):
         stderr=subprocess.PIPE,
         text=True,
     )
+    _active_child = proc
     stdout_buf = []
     stderr_buf = []
 
@@ -206,22 +284,30 @@ def _run_with_live_stderr(cmd, env, timeout, prefix=""):
     t_out.start()
     t_err.start()
     try:
-        proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
         try:
-            proc.kill()
-        except Exception:
-            pass
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            t_out.join(timeout=2)
+            t_err.join(timeout=2)
+            post_head = _git_head_safe()
+            exc = subprocess.TimeoutExpired(
+                cmd,
+                timeout,
+                output="".join(stdout_buf),
+                stderr="".join(stderr_buf),
+            )
+            exc.pre_dispatch_head = pre_head
+            exc.post_dispatch_head = post_head
+            exc.timeout_s = timeout
+            raise exc
         t_out.join(timeout=2)
         t_err.join(timeout=2)
-        raise subprocess.TimeoutExpired(
-            cmd,
-            timeout,
-            output="".join(stdout_buf),
-            stderr="".join(stderr_buf),
-        )
-    t_out.join(timeout=2)
-    t_err.join(timeout=2)
+    finally:
+        _active_child = None
     return subprocess.CompletedProcess(
         cmd,
         proc.returncode,
@@ -243,7 +329,13 @@ def _resolve_phase_and_slice(role, inputs):
     return phase, slice_id
 
 
-def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
+def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
+    """Single dispatch attempt: spawn the agent, parse the tail, emit a log.
+
+    Returns a dict containing at minimum `status`, `summary`, `commit_hash` —
+    plus `stderr`, `stdout`, `returncode`, and a `_timeout` marker so the outer
+    retry layer can classify without peeking at the agent's internals.
+    """
     env = os.environ.copy()
     env["AGENT_ROLE"] = role
     if envelope is not None:
@@ -267,8 +359,19 @@ def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
     try:
         proc = _run_with_live_stderr(cmd, env, timeout, prefix=prefix)
     except subprocess.TimeoutExpired as exc:
-        stdout_txt = exc.output or ""
         stderr_txt = exc.stderr or ""
+        stdout_txt = exc.output or ""
+        pre = getattr(exc, "pre_dispatch_head", "")
+        post = getattr(exc, "post_dispatch_head", "")
+        timeout_s = getattr(exc, "timeout_s", timeout)
+        reconcile = {}
+        if pre and post and pre != post:
+            reconcile = {
+                "partial_commit": post,
+                "pre_dispatch_head": pre,
+                "timeout_s": timeout_s,
+            }
+        extra = {"reconcile": reconcile} if reconcile else None
         _write_phase_log(
             slice_id,
             phase,
@@ -276,15 +379,22 @@ def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
             stderr_txt,
             stdout_txt,
             inputs=inputs,
-            reason=f"timeout after {timeout}s",
+            reason=f"timeout after {timeout_s}s",
+            extra=extra,
         )
         return {
             "status": "FAILED",
-            "summary": f"timeout after {timeout}s",
+            "summary": f"timeout after {timeout_s}s",
             "commit_hash": "",
+            "stderr": stderr_txt,
+            "stdout": stdout_txt,
+            "returncode": 124,
+            "_timeout": True,
         }
 
-    obj = _parse_structured_tail(proc.stdout or "")
+    stdout = proc.stdout or ""
+    stderr = proc.stderr or ""
+    obj = _parse_structured_tail(stdout)
     reason = ""
     if obj is None:
         reason = "malformed agent output (no JSON-object tail)"
@@ -299,8 +409,8 @@ def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
         slice_id,
         phase,
         role,
-        proc.stderr or "",
-        proc.stdout or "",
+        stderr,
+        stdout,
         inputs=inputs,
         reason=reason,
     )
@@ -309,14 +419,84 @@ def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
             "status": "FAILED",
             "summary": "malformed agent output (no JSON-object tail)",
             "commit_hash": "",
+            "stderr": stderr,
+            "stdout": stdout,
+            "returncode": proc.returncode,
         }
     if "status" not in obj:
         return {
             "status": "FAILED",
             "summary": "agent output missing required `status` field",
             "commit_hash": "",
+            "stderr": stderr,
+            "stdout": stdout,
+            "returncode": proc.returncode,
         }
-    return obj
+    enriched = dict(obj)
+    enriched.setdefault("stderr", stderr)
+    enriched.setdefault("stdout", stdout)
+    enriched.setdefault("returncode", proc.returncode)
+    return enriched
+
+
+def _classify_failure(result):
+    """B8: transient | malformed | logic | timeout."""
+    if result.get("_timeout"):
+        return "timeout"
+    stderr = str(result.get("stderr", "") or "")
+    rc = result.get("returncode", 0)
+    if rc == 124 or TRANSIENT_STDERR_RX.search(stderr):
+        return "transient"
+    stdout = result.get("stdout", "") or ""
+    if _parse_structured_tail(stdout) is None:
+        return "malformed"
+    return "logic"
+
+
+def _log_retry_attempt(role, inputs, attempt, classification, backoff_s, result):
+    phase, slice_id = _resolve_phase_and_slice(role, inputs)
+    _write_phase_log(
+        slice_id,
+        phase,
+        role,
+        str(result.get("stderr", "") or ""),
+        str(result.get("stdout", "") or ""),
+        inputs=inputs,
+        reason=f"retry attempt {attempt} ({classification})",
+        extra={
+            "attempt": attempt,
+            "classification": classification,
+            "backoff_s": backoff_s,
+        },
+    )
+
+
+def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
+    """Public dispatch: wraps `_dispatch_once` with B8 classification + backoff."""
+    result = _dispatch_once(role, inputs, envelope, timeout_hard)
+    if result.get("status") == "OK":
+        return result
+    classification = _classify_failure(result)
+    if classification == "timeout":
+        return result
+    if classification == "transient":
+        max_retries = int(os.environ.get("CAIRN_FAILED_TRANSIENT_MAX_RETRIES", "3"))
+    else:
+        max_retries = 1
+    for attempt in range(1, max_retries + 1):
+        backoff = 4 ** (attempt - 1) if classification == "transient" else 0
+        if backoff:
+            time.sleep(backoff)
+        retry_result = _dispatch_once(role, inputs, envelope, timeout_hard)
+        _log_retry_attempt(role, inputs, attempt, classification, backoff, retry_result)
+        if retry_result.get("status") == "OK":
+            return retry_result
+        result = retry_result
+        new_class = _classify_failure(result)
+        if new_class == "timeout":
+            break
+        classification = new_class
+    return result
 
 
 def dispatch_triager(issue_hash, phase, slice_id, timeout_hard=None):
@@ -353,7 +533,7 @@ def dispatch_triager(issue_hash, phase, slice_id, timeout_hard=None):
             "target_phase": phase,
             "rationale": "malformed triager output (no JSON-object tail)",
         }
-    action = obj.get("action", "")
+    action = obj.get("action") or obj.get("decision") or ""
     if action not in VALID_TRIAGER_ACTIONS:
         return {
             "action": "ESCALATE_TO_USER",
@@ -364,43 +544,161 @@ def dispatch_triager(issue_hash, phase, slice_id, timeout_hard=None):
 
 
 def _parse_clusters(text):
-    clusters = []
-    current = None
-    for raw in text.splitlines():
-        stripped = raw.strip()
-        if stripped.startswith("- name:"):
-            if current is not None:
-                clusters.append(current)
-            name = stripped.split(":", 1)[1].strip()
-            current = {"name": name, "files": []}
-        elif stripped.startswith("files:") and current is not None:
-            value = stripped.split(":", 1)[1].strip()
-            if value.startswith("[") and value.endswith("]"):
-                inner = value[1:-1]
-                items = [
-                    item.strip().strip('"').strip("'")
-                    for item in inner.split(",")
-                    if item.strip()
-                ]
-                current["files"] = items
-    if current is not None:
-        clusters.append(current)
-    return clusters
+    """B6: yaml.safe_load + schema check. Top-level list of {name, files}.
+
+    Accepts a `{clusters: [...]}` wrapper for backward compatibility with the
+    older `validation/coupling-clusters.yaml` shape.
+    """
+    data = yaml.safe_load(text)
+    if data is None:
+        return []
+    if isinstance(data, dict) and "clusters" in data:
+        data = data["clusters"]
+    if not isinstance(data, list):
+        raise ValueError(
+            f"_parse_clusters: top-level must be a list; got {type(data).__name__}"
+        )
+    for i, item in enumerate(data):
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"_parse_clusters: cluster at index {i} is not a mapping "
+                f"(got {type(item).__name__})"
+            )
+        name = item.get("name")
+        if not isinstance(name, str):
+            raise ValueError(
+                f"_parse_clusters: cluster at index {i} missing string `name`"
+            )
+        if "files" not in item:
+            raise ValueError(
+                f"_parse_clusters: cluster at index {i} ({name!r}) missing `files`"
+            )
+        files = item["files"]
+        if not isinstance(files, list) or not all(isinstance(f, str) for f in files):
+            raise ValueError(
+                f"_parse_clusters: cluster at index {i} ({name!r}) "
+                f"`files` must be a list of strings"
+            )
+    return data
+
+
+def _load_clusters():
+    for path in (CLUSTERS_YAML, CLUSTERS_YAML_LEGACY):
+        if path.exists():
+            return _parse_clusters(path.read_text())
+    return []
+
+
+def _intent_envelope():
+    """Prefer slice.yaml.envelope; fall back to intent.md frontmatter. B16.
+
+    Three possible returns:
+      * non-empty list — dispatch with that envelope.
+      * empty list — envelope key explicitly present as a list (possibly empty),
+        OR the key is entirely absent (legacy dispatch-anyway). Dispatch
+        proceeds with empty envelope.
+      * None — the envelope key is declared but its value is not a list
+        (e.g. `envelope:\\n` → None). Caller MUST short-circuit to FAILED.
+    """
+    declared_nonlist = False
+
+    if SLICE_YAML.exists():
+        try:
+            state = read_slice_state(SLICE_YAML)
+        except yaml.YAMLError:
+            state = {}
+        if isinstance(state, dict) and "envelope" in state:
+            env = state["envelope"]
+            if isinstance(env, list):
+                return [str(e) for e in env]
+            declared_nonlist = True
+
+    if INTENT_MD.exists():
+        text = INTENT_MD.read_text()
+        if text.startswith("---\n"):
+            end = text.find("\n---", 4)
+            if end >= 0:
+                fm_text = text[4:end]
+                try:
+                    fm = yaml.safe_load(fm_text)
+                except yaml.YAMLError:
+                    fm = None
+                if isinstance(fm, dict) and "envelope" in fm:
+                    env = fm["envelope"]
+                    if isinstance(env, list):
+                        return [str(e) for e in env]
+                    declared_nonlist = True
+
+    if declared_nonlist:
+        return None
+    return []
+
+
+def _write_cluster_log(slice_id, cluster_name, envelope, result, stdout="", stderr=""):
+    DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+    slug = _slice_id_slug(slice_id)
+    path = DEBUG_DIR / f"{slug}-phase-3-cluster-{cluster_name}-{_utc_timestamp()}.log"
+    parts = [
+        f"slice_id: {slice_id}",
+        f"cluster: {cluster_name}",
+        f"envelope: {envelope}",
+        f"result: {json.dumps(result)}",
+    ]
+    if stdout:
+        parts.append("--- stdout ---")
+        parts.append(stdout)
+    if stderr:
+        parts.append("--- stderr ---")
+        parts.append(stderr)
+    path.write_text("\n".join(parts) + "\n")
+    return path
+
+
+def _phase3_dispatch_with_log(cluster, inputs, envelope, slice_id):
+    result = dispatch_phase_agent("phase-3-implementer", inputs, envelope)
+    _write_cluster_log(
+        slice_id,
+        cluster["name"],
+        envelope,
+        result,
+        stdout=str(result.get("stdout", "") or ""),
+        stderr=str(result.get("stderr", "") or ""),
+    )
+    return result
 
 
 def dispatch_phase_3(slice_id):
-    if CLUSTERS_YAML.exists():
-        clusters = _parse_clusters(CLUSTERS_YAML.read_text())
-    else:
-        clusters = []
-    if not clusters:
-        clusters = [{"name": "implicit", "files": []}]
+    try:
+        clusters = _load_clusters()
+    except ValueError as exc:
+        print(f"orchestrator: clusters.yaml schema error: {exc}", file=sys.stderr)
+        return {"status": "FAILED", "summary": str(exc), "commit_hash": ""}
+
+    is_implicit = (not clusters) or all(not c.get("files") for c in clusters)
+
+    if is_implicit:
+        intent_env = _intent_envelope()
+        if intent_env is None:
+            return {
+                "status": "FAILED",
+                "summary": (
+                    "phase-3 empty envelope: no clusters declared and intent "
+                    "envelope is empty"
+                ),
+                "commit_hash": "",
+            }
+        print(
+            "orchestrator: phase-3 falling back to intent envelope "
+            "(no clusters declared)",
+            file=sys.stderr,
+        )
+        clusters = [{"name": "implicit", "files": list(intent_env)}]
 
     workers = min(len(clusters), 8)
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
         futures = []
         for cluster in clusters:
-            envelope = ":".join(cluster["files"]) if cluster["files"] else ""
+            envelope = json.dumps(cluster["files"])
             inputs = {
                 "phase": 3,
                 "role": "phase-3-implementer",
@@ -409,10 +707,11 @@ def dispatch_phase_3(slice_id):
             }
             futures.append(
                 pool.submit(
-                    dispatch_phase_agent,
-                    "phase-3-implementer",
+                    _phase3_dispatch_with_log,
+                    cluster,
                     inputs,
                     envelope,
+                    slice_id,
                 )
             )
         results = [f.result() for f in futures]
@@ -431,46 +730,36 @@ def dispatch_phase_3(slice_id):
 
 
 def commit_phase_handoff(phase, summary, commit_hash):
+    """Stage + commit the phase agent's handoff-phase-N.md.
+
+    Intentionally does NOT overwrite file content — the phase agent owns that
+    body. Uses --allow-empty so the orchestrator records the phase boundary
+    even if the agent already committed the handoff file itself. B11.
+    """
     path = Path(f".claude/current-slice/handoff-phase-{phase}.md")
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = f"---\nphase: {phase}\ncommit: {commit_hash}\n---\n\n{summary}\n"
-    path.write_text(body)
-    subprocess.run(["git", "add", str(path)], check=False)
-    subprocess.run(
-        ["git", "commit", "-m", f"handoff: phase {phase} complete"],
-        check=False,
-    )
+    if path.exists():
+        _git("add", str(path))
+    _git("commit", "--allow-empty", "-m", f"handoff: phase {phase} complete")
 
 
 def _current_phase():
-    if not SLICE_YAML.exists():
-        return 1
+    state = _read_slice_state_strict()
+    value = state.get("current_phase", 1)
     try:
-        state = read_slice_state(SLICE_YAML)
-        value = state.get("current_phase", 1)
         return int(value) if value is not None else 1
-    except (ValueError, OSError, TypeError):
+    except (TypeError, ValueError):
         return 1
 
 
 def _slice_id():
-    if not SLICE_YAML.exists():
-        return "unknown/unknown"
-    try:
-        state = read_slice_state(SLICE_YAML)
-        return state.get("id", "unknown/unknown")
-    except (OSError, ValueError):
-        return "unknown/unknown"
+    state = _read_slice_state_strict()
+    return state.get("id", "unknown/unknown")
 
 
 def _slice_brief():
-    if not SLICE_YAML.exists():
-        return ""
-    try:
-        state = read_slice_state(SLICE_YAML)
-        return state.get("brief", "") or ""
-    except (OSError, ValueError):
-        return ""
+    state = _read_slice_state_strict()
+    return state.get("brief", "") or ""
 
 
 def _dispatch_for_phase(phase, role, inputs, envelope, timeout):
@@ -479,8 +768,64 @@ def _dispatch_for_phase(phase, role, inputs, envelope, timeout):
     return dispatch_phase_agent(role, inputs, envelope, timeout)
 
 
+def _clean_shutdown(signum, frame):
+    """B13: SIGINT/SIGTERM handler — terminate active child, then exit."""
+    global _active_child
+    grace = int(os.environ.get("CAIRN_SHUTDOWN_GRACE_S", "5"))
+    child = _active_child
+    if child is not None:
+        try:
+            child.terminate()
+        except Exception:
+            pass
+        try:
+            child.wait(timeout=grace)
+        except Exception:
+            try:
+                child.kill()
+            except Exception:
+                pass
+    if signum == signal.SIGINT:
+        sys.exit(130)
+    sys.exit(143)
+
+
+def _register_signal_handlers():
+    try:
+        signal.signal(signal.SIGINT, _clean_shutdown)
+        signal.signal(signal.SIGTERM, _clean_shutdown)
+    except (ValueError, OSError):
+        # non-main thread or platform without these signals
+        pass
+
+
+def _persist_redispatch(source_phase, target_phase):
+    """B14: write current_phase=target to slice.yaml and commit before rewind."""
+    state = {}
+    try:
+        state = read_slice_state(SLICE_YAML) if SLICE_YAML.exists() else {}
+    except yaml.YAMLError:
+        state = {}
+    if not isinstance(state, dict):
+        state = {}
+    state["current_phase"] = target_phase
+    _write_slice_state(state)
+    try:
+        _git("add", str(SLICE_YAML))
+    except subprocess.CalledProcessError:
+        pass
+    _git(
+        "commit",
+        "--allow-empty",
+        "-m",
+        f"slice: re-dispatch phase {source_phase} → phase {target_phase}",
+    )
+
+
 def run_phase_loop(max_phase=4):
+    _register_signal_handlers()
     phase = _current_phase()
+    redispatch_count: dict[int, int] = {}
     while 1 <= phase <= max_phase:
         role = ROLE_FOR_PHASE[phase]
         inputs = {"phase": phase, "role": role, "slice_id": _slice_id()}
@@ -516,12 +861,20 @@ def run_phase_loop(max_phase=4):
             return 1
 
         if status == "RAISE_ISSUE":
+            # B15: cap re-dispatch from the same source phase to 1.
+            if redispatch_count.get(phase, 0) >= 1:
+                print(
+                    f"orchestrator: phase {phase} re-dispatched twice; "
+                    f"escalating per design §6.1",
+                    file=sys.stderr,
+                )
+                return 1
             triager = dispatch_triager(
                 issue_hash=result.get("commit_hash", ""),
                 phase=phase,
                 slice_id=_slice_id(),
             )
-            action = triager.get("action", "")
+            action = triager.get("action") or triager.get("decision") or ""
             if action == "ESCALATE_TO_USER":
                 print(
                     "orchestrator: triager escalated to user",
@@ -536,6 +889,15 @@ def run_phase_loop(max_phase=4):
                         file=sys.stderr,
                     )
                     return 1
+                try:
+                    _persist_redispatch(phase, target)
+                except subprocess.CalledProcessError as exc:
+                    print(
+                        f"orchestrator: redispatch persist failed: {exc}",
+                        file=sys.stderr,
+                    )
+                    return 1
+                redispatch_count[phase] = redispatch_count.get(phase, 0) + 1
                 phase = target
                 continue
             if action == "ABORT":
@@ -556,7 +918,7 @@ def run_phase_loop(max_phase=4):
     if SLICE_YAML.exists():
         try:
             close_slice(read_slice_state(SLICE_YAML))
-        except (OSError, ValueError) as exc:
+        except (OSError, yaml.YAMLError, subprocess.CalledProcessError) as exc:
             print(
                 f"orchestrator: close_slice failed: {exc}",
                 file=sys.stderr,
@@ -568,20 +930,19 @@ def run_phase_loop(max_phase=4):
 def _abort_slice():
     if not SLICE_YAML.exists():
         return
-    text = SLICE_YAML.read_text()
-    new_lines = []
-    saw_status = False
-    for line in text.splitlines():
-        if line.startswith("status:"):
-            new_lines.append("status: aborted")
-            saw_status = True
-        else:
-            new_lines.append(line)
-    if not saw_status:
-        new_lines.append("status: aborted")
-    SLICE_YAML.write_text("\n".join(new_lines) + "\n")
-    subprocess.run(["git", "add", str(SLICE_YAML)], check=False)
-    subprocess.run(["git", "commit", "-m", "slice: aborted by triager"], check=False)
+    try:
+        state = read_slice_state(SLICE_YAML)
+    except yaml.YAMLError:
+        state = {}
+    if not isinstance(state, dict):
+        state = {}
+    state["status"] = "aborted"
+    _write_slice_state(state)
+    try:
+        _git("add", str(SLICE_YAML))
+        _git("commit", "--allow-empty", "-m", "slice: aborted by triager")
+    except subprocess.CalledProcessError:
+        pass
 
 
 def init_new_slice(brief):
@@ -595,26 +956,39 @@ def init_new_slice(brief):
             "ask": "propose_slice_id",
         },
     )
-    proposed = result.get("proposed_slice_id", "")
+    proposed = result.get("proposed_slice_id", "") if isinstance(result, dict) else ""
     if not is_valid_slice_id(proposed):
-        raise SystemExit(f"init_new_slice: malformed proposed_slice_id: {proposed!r}")
+        # Fallback: record the brief even when the writer did not propose an id;
+        # the operator (or a follow-up phase-1 run) can rename the slice later.
+        proposed = "pending/slice"
     SLICE_YAML.parent.mkdir(parents=True, exist_ok=True)
-    SLICE_YAML.write_text(
-        f'id: {proposed}\nname: "{proposed}"\nstatus: in-progress\n'
-        f'current_phase: 1\nbrief: "{brief}"\n'
-    )
-    subprocess.run(["git", "add", str(SLICE_YAML)], check=False)
-    subprocess.run(["git", "commit", "-m", f"slice: {proposed} — init"], check=False)
+    state = {
+        "id": proposed,
+        "name": proposed,
+        "status": "in-progress",
+        "current_phase": 1,
+        "brief": brief,
+    }
+    _write_slice_state(state)
+    try:
+        _git("add", str(SLICE_YAML))
+        _git("commit", "--allow-empty", "-m", f"slice: {proposed} — init")
+    except subprocess.CalledProcessError:
+        pass
     return read_slice_state(SLICE_YAML)
 
 
 def close_slice(state):
-    SLICE_YAML.write_text(
-        f"id: {state.get('id', 'unknown/unknown')}\n"
-        f'name: "{state.get("name", "")}"\nstatus: complete\n'
-        f"current_phase: 4\n"
-    )
+    """B10: finalize slice — status=complete, rebuild handoff.md, single commit."""
+    if not isinstance(state, dict):
+        state = {}
+    final = dict(state)
+    final["status"] = "complete"
+    final["current_phase"] = 4
+    _write_slice_state(final)
+
     handoff = Path(".claude/handoff.md")
+    handoff.parent.mkdir(parents=True, exist_ok=True)
     parts = []
     for n in range(1, 5):
         p = Path(f".claude/current-slice/handoff-phase-{n}.md")
@@ -624,8 +998,9 @@ def close_slice(state):
     if sweep.exists():
         parts.append(sweep.read_text())
     handoff.write_text("\n---\n".join(parts) if parts else "")
-    subprocess.run(["git", "add", str(SLICE_YAML), str(handoff)], check=False)
-    subprocess.run(["git", "commit", "-m", "slice: complete"], check=False)
+
+    _git("add", str(SLICE_YAML), str(handoff))
+    _git("commit", "--allow-empty", "-m", "slice: complete")
 
 
 def legacy_start_slice():
