@@ -46,6 +46,17 @@ def _matches_any(path, patterns):
 def _envelope_patterns(raw):
     if not raw:
         return []
+    try:
+        parsed = json.loads(raw)
+    except (ValueError, TypeError):
+        parsed = None
+    if isinstance(parsed, list) and all(isinstance(p, str) for p in parsed):
+        return [p for p in parsed if p]
+    print(
+        "role_guard: legacy colon-separated AGENT_ENVELOPE format detected; "
+        "migrate to JSON array (see compression/slice-2 §B7)",
+        file=sys.stderr,
+    )
     return [p for p in raw.split(":") if p]
 
 
