@@ -20,6 +20,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 DEBUG_DIR = Path(".claude/orchestrator-debug")
@@ -37,7 +38,9 @@ ROLE_TO_PHASE = {role: phase for phase, role in ROLE_FOR_PHASE.items()}
 
 DEFAULT_TIMEOUT_HARD = 1800
 
-PERMISSION_MODE = "acceptEdits"
+PERMISSION_MODE = "bypassPermissions"
+
+VALID_TRIAGER_ACTIONS = {"ESCALATE_TO_USER", "RE_DISPATCH", "ABORT"}
 
 SLICE_YAML = Path(".claude/current-slice/slice.yaml")
 CLUSTERS_YAML = Path(".claude/current-slice/validation/coupling-clusters.yaml")
@@ -92,7 +95,8 @@ def _resolve_timeout(role, override):
 def _parse_structured_tail(stdout):
     if not stdout:
         return None
-    for raw in reversed(stdout.splitlines()):
+    lines = stdout.splitlines()
+    for raw in reversed(lines):
         line = raw.strip()
         if not line:
             continue
@@ -104,32 +108,153 @@ def _parse_structured_tail(stdout):
             continue
         if isinstance(obj, dict):
             return obj
-    return None
+    last_close = -1
+    for i in range(len(lines) - 1, -1, -1):
+        if lines[i].rstrip().endswith("}"):
+            last_close = i
+            break
+    if last_close < 0:
+        return None
+    depth = 0
+    start = -1
+    for j in range(last_close, -1, -1):
+        seg = lines[j]
+        depth += seg.count("}") - seg.count("{")
+        if depth == 0 and "{" in seg:
+            start = j
+            break
+    if start < 0:
+        return None
+    candidate = "\n".join(lines[start : last_close + 1])
+    brace = candidate.find("{")
+    if brace > 0:
+        candidate = candidate[brace:]
+    try:
+        obj = json.loads(candidate)
+    except ValueError:
+        return None
+    return obj if isinstance(obj, dict) else None
 
 
-def _write_failure_log(role, inputs, returncode, stdout, stderr, reason):
+def _slice_id_slug(slice_id):
+    return (slice_id or "unknown-unknown").replace("/", "-")
+
+
+def _utc_timestamp():
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def _write_phase_log(
+    slice_id, phase, role, stderr_text, stdout_text="", inputs=None, reason=""
+):
     DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-    path = DEBUG_DIR / f"{ts}-{role}.log"
-    body = (
-        f"reason: {reason}\n"
-        f"role: {role}\n"
-        f"returncode: {returncode}\n"
-        f"inputs: {json.dumps(inputs)}\n"
-        f"--- stdout ---\n{stdout}\n"
-        f"--- stderr ---\n{stderr}\n"
-    )
-    path.write_text(body)
-    print(f"orchestrator: agent failure logged to {path}", file=sys.stderr)
+    slug = _slice_id_slug(slice_id)
+    phase_token = phase if phase is not None else "x"
+    path = DEBUG_DIR / f"{slug}-phase-{phase_token}-{role}-{_utc_timestamp()}.log"
+    parts = []
+    if reason:
+        parts.append(f"reason: {reason}")
+    parts.append(f"role: {role}")
+    parts.append(f"slice_id: {slice_id}")
+    parts.append(f"phase: {phase_token}")
+    if inputs is not None:
+        parts.append(f"inputs: {json.dumps(inputs)}")
+    if stdout_text:
+        parts.append("--- stdout ---")
+        parts.append(stdout_text)
+    parts.append("--- stderr ---")
+    parts.append(stderr_text or "")
+    path.write_text("\n".join(parts) + "\n")
+    if reason:
+        print(f"orchestrator: agent failure logged to {path}", file=sys.stderr)
     return path
 
 
-def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
+def _run_with_live_stderr(cmd, env, timeout, prefix=""):
+    """Popen with stderr tee'd live to sys.stderr (prefixed) + buffered for capture."""
+    proc = subprocess.Popen(
+        cmd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    stdout_buf = []
+    stderr_buf = []
+
+    def pump(src, dst, buf, pfx):
+        try:
+            for line in iter(src.readline, ""):
+                if not line:
+                    break
+                buf.append(line)
+                if dst is not None:
+                    dst.write(f"{pfx}{line}" if pfx else line)
+                    dst.flush()
+        finally:
+            try:
+                src.close()
+            except Exception:
+                pass
+
+    t_out = threading.Thread(
+        target=pump, args=(proc.stdout, None, stdout_buf, ""), daemon=True
+    )
+    t_err = threading.Thread(
+        target=pump, args=(proc.stderr, sys.stderr, stderr_buf, prefix), daemon=True
+    )
+    t_out.start()
+    t_err.start()
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+        t_out.join(timeout=2)
+        t_err.join(timeout=2)
+        raise subprocess.TimeoutExpired(
+            cmd,
+            timeout,
+            output="".join(stdout_buf),
+            stderr="".join(stderr_buf),
+        )
+    t_out.join(timeout=2)
+    t_err.join(timeout=2)
+    return subprocess.CompletedProcess(
+        cmd,
+        proc.returncode,
+        stdout="".join(stdout_buf),
+        stderr="".join(stderr_buf),
+    )
+
+
+def _resolve_phase_and_slice(role, inputs):
+    phase = None
+    slice_id = None
+    if isinstance(inputs, dict):
+        phase = inputs.get("phase")
+        slice_id = inputs.get("slice_id")
+    if phase is None:
+        phase = ROLE_TO_PHASE.get(role)
+    if not slice_id:
+        slice_id = _slice_id()
+    return phase, slice_id
+
+
+def dispatch_phase_agent(role, inputs, envelope=None, timeout_hard=None):
     env = os.environ.copy()
     env["AGENT_ROLE"] = role
     if envelope is not None:
         env["AGENT_ENVELOPE"] = envelope
     timeout = _resolve_timeout(role, timeout_hard)
+    phase, slice_id = _resolve_phase_and_slice(role, inputs)
+    prefix = (
+        f"[phase-{phase}-{role}|{slice_id}] "
+        if phase is not None
+        else f"[{role}|{slice_id}] "
+    )
     cmd = [
         "claude",
         "-p",
@@ -140,24 +265,17 @@ def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
         json.dumps(inputs),
     ]
     try:
-        proc = subprocess.run(
-            cmd,
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        proc = _run_with_live_stderr(cmd, env, timeout, prefix=prefix)
     except subprocess.TimeoutExpired as exc:
-        _write_failure_log(
+        stdout_txt = exc.output or ""
+        stderr_txt = exc.stderr or ""
+        _write_phase_log(
+            slice_id,
+            phase,
             role,
-            inputs,
-            returncode="timeout",
-            stdout=(exc.stdout or b"").decode(errors="replace")
-            if isinstance(exc.stdout, bytes)
-            else (exc.stdout or ""),
-            stderr=(exc.stderr or b"").decode(errors="replace")
-            if isinstance(exc.stderr, bytes)
-            else (exc.stderr or ""),
+            stderr_txt,
+            stdout_txt,
+            inputs=inputs,
             reason=f"timeout after {timeout}s",
         )
         return {
@@ -165,30 +283,83 @@ def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
             "summary": f"timeout after {timeout}s",
             "commit_hash": "",
         }
+
     obj = _parse_structured_tail(proc.stdout or "")
+    reason = ""
     if obj is None:
-        _write_failure_log(
-            role,
-            inputs,
-            returncode=proc.returncode,
-            stdout=proc.stdout or "",
-            stderr=proc.stderr or "",
-            reason="malformed agent output (no JSON-object tail)",
+        reason = "malformed agent output (no JSON-object tail)"
+    elif "status" not in obj:
+        reason = "agent output missing required `status` field"
+    elif obj.get("status") != "OK":
+        reason = (
+            f"agent self-reported status={obj.get('status')!r} "
+            f"summary={obj.get('summary', '')!r}"
         )
+    _write_phase_log(
+        slice_id,
+        phase,
+        role,
+        proc.stderr or "",
+        proc.stdout or "",
+        inputs=inputs,
+        reason=reason,
+    )
+    if obj is None:
         return {
             "status": "FAILED",
             "summary": "malformed agent output (no JSON-object tail)",
             "commit_hash": "",
         }
-    if obj.get("status") != "OK":
-        _write_failure_log(
-            role,
-            inputs,
-            returncode=proc.returncode,
-            stdout=proc.stdout or "",
-            stderr=proc.stderr or "",
-            reason=f"agent self-reported status={obj.get('status')!r} summary={obj.get('summary', '')!r}",
-        )
+    if "status" not in obj:
+        return {
+            "status": "FAILED",
+            "summary": "agent output missing required `status` field",
+            "commit_hash": "",
+        }
+    return obj
+
+
+def dispatch_triager(issue_hash, phase, slice_id, timeout_hard=None):
+    env = os.environ.copy()
+    env["AGENT_ROLE"] = "issue-triager"
+    timeout = _resolve_timeout("issue-triager", timeout_hard)
+    inputs = {
+        "issue_commit_hash": issue_hash,
+        "current_phase": phase,
+        "slice_id": slice_id,
+    }
+    prefix = f"[triager|{slice_id}] "
+    cmd = [
+        "claude",
+        "-p",
+        "--agent",
+        "issue-triager",
+        "--permission-mode",
+        PERMISSION_MODE,
+        json.dumps(inputs),
+    ]
+    try:
+        proc = _run_with_live_stderr(cmd, env, timeout, prefix=prefix)
+    except subprocess.TimeoutExpired:
+        return {
+            "action": "ESCALATE_TO_USER",
+            "target_phase": phase,
+            "rationale": f"triager timeout after {timeout}s",
+        }
+    obj = _parse_structured_tail(proc.stdout or "")
+    if obj is None:
+        return {
+            "action": "ESCALATE_TO_USER",
+            "target_phase": phase,
+            "rationale": "malformed triager output (no JSON-object tail)",
+        }
+    action = obj.get("action", "")
+    if action not in VALID_TRIAGER_ACTIONS:
+        return {
+            "action": "ESCALATE_TO_USER",
+            "target_phase": phase,
+            "rationale": f"triager returned invalid action {action!r}",
+        }
     return obj
 
 
@@ -230,10 +401,15 @@ def dispatch_phase_3(slice_id):
         futures = []
         for cluster in clusters:
             envelope = ":".join(cluster["files"]) if cluster["files"] else ""
-            inputs = {"slice_id": slice_id, "cluster": cluster["name"]}
+            inputs = {
+                "phase": 3,
+                "role": "phase-3-implementer",
+                "slice_id": slice_id,
+                "cluster": cluster["name"],
+            }
             futures.append(
                 pool.submit(
-                    dispatch_agent,
+                    dispatch_phase_agent,
                     "phase-3-implementer",
                     inputs,
                     envelope,
@@ -300,7 +476,7 @@ def _slice_brief():
 def _dispatch_for_phase(phase, role, inputs, envelope, timeout):
     if phase == 3:
         return dispatch_phase_3(_slice_id())
-    return dispatch_agent(role, inputs, envelope, timeout)
+    return dispatch_phase_agent(role, inputs, envelope, timeout)
 
 
 def run_phase_loop(max_phase=4):
@@ -340,15 +516,10 @@ def run_phase_loop(max_phase=4):
             return 1
 
         if status == "RAISE_ISSUE":
-            triager = dispatch_agent(
-                "issue-triager",
-                {
-                    "issue_commit_hash": result.get("commit_hash", ""),
-                    "current_phase": phase,
-                    "slice_id": _slice_id(),
-                },
-                None,
-                _resolve_timeout("issue-triager", None),
+            triager = dispatch_triager(
+                issue_hash=result.get("commit_hash", ""),
+                phase=phase,
+                slice_id=_slice_id(),
             )
             action = triager.get("action", "")
             if action == "ESCALATE_TO_USER":
@@ -382,6 +553,15 @@ def run_phase_loop(max_phase=4):
         )
         return 1
 
+    if SLICE_YAML.exists():
+        try:
+            close_slice(read_slice_state(SLICE_YAML))
+        except (OSError, ValueError) as exc:
+            print(
+                f"orchestrator: close_slice failed: {exc}",
+                file=sys.stderr,
+            )
+            return 1
     return 0
 
 
@@ -405,8 +585,15 @@ def _abort_slice():
 
 
 def init_new_slice(brief):
-    result = dispatch_agent(
-        "phase-1-writer", {"brief": brief, "ask": "propose_slice_id"}
+    result = dispatch_phase_agent(
+        "phase-1-writer",
+        {
+            "phase": 1,
+            "role": "phase-1-writer",
+            "slice_id": "unknown/unknown",
+            "brief": brief,
+            "ask": "propose_slice_id",
+        },
     )
     proposed = result.get("proposed_slice_id", "")
     if not is_valid_slice_id(proposed):

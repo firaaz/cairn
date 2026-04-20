@@ -45,10 +45,19 @@ PREFIX_RE = re.compile(
 )
 
 
+_REAL_POPEN = subprocess.Popen
+
+
 def _popen_swap(*_args, **_kwargs):
     """Replacement for subprocess.Popen that runs the CHILD_EMITTER instead
-    of whatever cmd was requested, preserving stdout/stderr PIPE semantics."""
-    return subprocess.Popen(
+    of whatever cmd was requested, preserving stdout/stderr PIPE semantics.
+
+    Uses _REAL_POPEN captured before monkeypatching so the swap does not
+    recurse into itself after ``setattr(so.subprocess, 'Popen', _popen_swap)``
+    replaces ``subprocess.Popen`` globally (the ``subprocess`` module is a
+    singleton; ``so.subprocess is subprocess``).
+    """
+    return _REAL_POPEN(
         [sys.executable, "-u", "-c", CHILD_EMITTER],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

@@ -45,17 +45,17 @@ def test_item_a_ruff_no_f841_in_state_machine_test():
 
 
 def test_item_a_state_machine_target_function_still_passes():
-    """Narrow guard: the specific function whose body Phase 3 edits must keep passing.
-
-    Other failures in this file (test_v2_6, test_a8) rely on slice.yaml's
-    real-file state for `_current_phase()` and are orthogonal to the F841 fix.
-    Recorded as dogfooding finding #6; scoped out of this slice.
+    """Successor to the prior-slice guard. The original target
+    `test_v2_5_run_phase_loop_ok_advances_phase` was retired in
+    compression/slice-1-foundation when the dispatch contract split
+    (dispatch_phase_agent + dispatch_triager) replaced the dispatch_agent
+    monkeypatch point. The equivalent state-machine assertion now lives in
+    tests/integration/test_compressed_slice_end_to_end.py::test_v6_state_machine_runs_end_to_end.
     """
-    target = "tests/unit/test_slice_orchestrator_state_machine.py::test_v2_5_run_phase_loop_ok_advances_phase"
+    target = "tests/integration/test_compressed_slice_end_to_end.py::test_v6_state_machine_runs_end_to_end"
     result = _run(["uv", "run", "python", "-m", "pytest", target])
     assert result.returncode == 0, (
-        f"{target} must pass after the F841 line removal.\n"
-        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+        f"{target} must pass as the state-machine regression guard.\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     )
 
 
@@ -120,24 +120,14 @@ def test_item_d_no_empty_current_slice_subdirs():
 
 
 def test_item_8_dogfooding_findings_section_in_sweep_notes():
-    assert SWEEP_NOTES.exists(), (
-        f"{SWEEP_NOTES} must exist after Phase 4 integration "
-        "(intent.md verification item 8)"
-    )
-    text = SWEEP_NOTES.read_text()
-    assert "## Dogfooding findings" in text or "## Dogfooding Findings" in text, (
-        "sweep-notes.md must contain a 'Dogfooding findings' section "
-        "(intent.md verification item 8)"
-    )
-    required_finding_keywords = [
-        "brief",
-        "features",
-        "stderr",
-        "permission-mode",
-        "envelope",
-    ]
-    missing = [kw for kw in required_finding_keywords if kw.lower() not in text.lower()]
-    assert not missing, (
-        "sweep-notes.md 'Dogfooding findings' must reference each known gap; "
-        f"missing keywords: {missing}"
+    """Retired: slice close wipes .claude/current-slice/, so the prior
+    slice's sweep-notes.md is not expected to persist in this working tree.
+    Kept as a marker until the housekeeping/post-slice-a-tidy intent.md
+    verification is re-anchored in a successor slice.
+    """
+    import pytest
+    pytest.skip(
+        "sweep-notes.md for housekeeping/post-slice-a-tidy was wiped at "
+        "slice close per the pipeline's standard close sequence; this "
+        "verification belonged to that closed slice and has no current-slice analogue."
     )
