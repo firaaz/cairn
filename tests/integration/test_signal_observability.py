@@ -51,8 +51,14 @@ def _driver(body: str) -> str:
     the temp directory. All Phase-3 terminal-writer symbols are required to
     exist by name; if they do not, the subprocess fails with AttributeError
     and the test's final JSON assertion fails RED.
+
+    Implementation note: `header` and `body` are dedented independently and
+    then concatenated. Interpolating an already-dedented `body` inside an
+    outer dedent block would leave mixed indents (outer's common prefix
+    collapses to 0 because body's lines have no leading whitespace) and
+    `python -c` rejects that with IndentationError.
     """
-    return textwrap.dedent(
+    header = textwrap.dedent(
         f"""
         import os, sys, signal, time
         sys.path.insert(0, {str(SCRIPTS_DIR)!r})
@@ -62,9 +68,9 @@ def _driver(body: str) -> str:
         so._init_state_dict(slice_id={SLICE_ID!r})
         so._register_atexit_terminal_writer()
         so._register_signal_handlers()
-        {body}
         """
     )
+    return header + textwrap.dedent(body)
 
 
 def _result_json(tmp_path: Path) -> dict:
