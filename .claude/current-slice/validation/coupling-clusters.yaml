@@ -1,0 +1,18 @@
+clusters:
+  - name: orchestrator-internals
+    files:
+      - ^scripts/slice_orchestrator\.py$
+      - ^tests/unit/test_observability_writer\.py$
+      - ^tests/unit/test_state_schema\.py$
+      - ^tests/unit/test_heartbeat\.py$
+      - ^tests/unit/test_close_slice_hardened\.py$
+      - ^tests/unit/test_resume_reconcile\.py$
+      - ^tests/unit/test_cross_slice_isolation\.py$
+      - ^tests/integration/test_signal_observability\.py$
+  - name: agent-prompts
+    files:
+      - ^\.claude/agents/phase-1-writer\.md$
+      - ^\.claude/agents/phase-2-skeptic\.md$
+      - ^\.claude/agents/phase-3-implementer\.md$
+      - ^\.claude/agents/phase-4-integrator\.md$
+      - ^tests/unit/test_agent_prompt_updates\.py$
