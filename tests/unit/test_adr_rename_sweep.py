@@ -596,12 +596,22 @@ def _run_self_in_subprocess() -> subprocess.CompletedProcess:
 
 
 class TestContractC1NoSizeLatch:
-    """Intent §1 / §V2: retire the fixed-cardinality corpus-size assertion."""
+    """Intent §1 / §V2: retire the fixed-cardinality corpus-size assertion.
+
+    The forbidden method name is fragment-joined so this probe itself does
+    not contribute to the source-count it measures (same technique used by
+    C2 for the post-sweep ADR slug). A literal occurrence anywhere in this
+    file — including inside assertion bodies or error messages — would make
+    the probe unsatisfiable by construction.
+    """
 
     def test_exact_count_method_removed(self):
-        assert "test_exact_twelve_adr_files_total" not in _self_source(), (
-            "`test_exact_twelve_adr_files_total` must be removed or rewritten "
-            "(intent §Specification Detail 1)."
+        forbidden = "_".join(["test", "exact", "twelve", "adr", "files", "total"])
+        count = _self_source().count(forbidden)
+        assert count == 0, (
+            f"Method name `{forbidden}` appears in source {count} time(s); "
+            f"intent §Specification Detail 1 requires it to be removed or "
+            f"rewritten (no `len(docs/adr/*.md) == <int>` latch)."
         )
 
     def test_no_int_equality_against_adr_corpus(self):
