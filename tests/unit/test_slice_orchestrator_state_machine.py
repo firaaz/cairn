@@ -125,7 +125,7 @@ def test_a1_dispatch_agent_strips_trailing_whitespace(monkeypatch):
     assert result["status"] == "OK"
 
 
-def test_v2_4_dispatch_agent_malformed_stdout_returns_failed(monkeypatch):
+def test_v2_4_dispatch_agent_malformed_stdout_returns_failed(monkeypatch, tmp_path):
     """V2.4 + A1 — no JSON-object line → status FAILED with diagnostic summary."""
     import slice_orchestrator as so
 
@@ -133,6 +133,7 @@ def test_v2_4_dispatch_agent_malformed_stdout_returns_failed(monkeypatch):
     monkeypatch.setattr(
         so.subprocess, "run", lambda *a, **kw: _fake_completed(stdout=stdout)
     )
+    monkeypatch.setattr(so, "DEBUG_DIR", tmp_path / "orchestrator-debug")
     result = so.dispatch_agent("phase-1-writer", {"brief": "x"})
     assert result["status"] == "FAILED"
     assert "malformed" in result["summary"].lower()

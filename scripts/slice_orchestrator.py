@@ -180,6 +180,15 @@ def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
             "summary": "malformed agent output (no JSON-object tail)",
             "commit_hash": "",
         }
+    if obj.get("status") != "OK":
+        _write_failure_log(
+            role,
+            inputs,
+            returncode=proc.returncode,
+            stdout=proc.stdout or "",
+            stderr=proc.stderr or "",
+            reason=f"agent self-reported status={obj.get('status')!r} summary={obj.get('summary', '')!r}",
+        )
     return obj
 
 
