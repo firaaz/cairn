@@ -97,7 +97,7 @@ def _parse_structured_tail(stdout):
         return None
     lines = stdout.splitlines()
     for raw in reversed(lines):
-        line = raw.strip()
+        line = raw.strip().strip("`").strip()
         if not line:
             continue
         if not (line.startswith("{") and line.endswith("}")):
@@ -110,7 +110,7 @@ def _parse_structured_tail(stdout):
             return obj
     last_close = -1
     for i in range(len(lines) - 1, -1, -1):
-        if lines[i].rstrip().endswith("}"):
+        if lines[i].rstrip().rstrip("`").rstrip().endswith("}"):
             last_close = i
             break
     if last_close < 0:
