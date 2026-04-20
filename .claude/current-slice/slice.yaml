@@ -2,4 +2,10 @@ id: compression/slice-1-foundation
 name: "compression/slice-1-foundation"
 status: in-progress
 current_phase: 1
-brief: "Harden the compression pipeline's dispatch layer so one slice runs autonomously end-to-end. Resolve A1 (subagent sensitive-file gate on .claude/current-slice/**) via empirical spike testing three candidate fixes and committing to whichever works. Wire checks/role_guard.py into .claude/settings.json as PreToolUse hook. Separate dispatch_agent into dispatch_phase_agent and dispatch_triager with distinct return contracts. Fix _parse_structured_tail to handle multi-line JSON. Replace subprocess.run capture_output with Popen tee-pump streaming child stderr live to orchestrator stderr with [phase-N-role|slice-id] prefix. Rename debug logs to {slice-id-slug}-phase-{n}-{role}-{timestamp}.log. Integration test: a trivial slice runs four phases via the orchestrator with zero human intervention, exits 0, produces sweep-notes.md. References design doc docs/plans/2026-04-20-compression-pipeline-hardening-design.md §5."
+invariants-touched: [INV-003]
+adrs-referenced:
+  - compression-infrastructure-bootstrap
+  - phase-lock-and-role-declaration
+  - cliff-failure-mode-and-v1-defenses
+adrs-created: []
+brief: "Harden the compression pipeline dispatch layer so one slice runs autonomously end-to-end. Resolve A1 (subagent sensitive-file gate on .claude/current-slice/**) via empirical spike testing three candidate fixes and committing to whichever works. Wire checks/role_guard.py into .claude/settings.json as PreToolUse hook. Separate dispatch_agent into dispatch_phase_agent and dispatch_triager with distinct return contracts. Fix _parse_structured_tail to handle multi-line JSON. Replace subprocess.run capture_output with Popen tee-pump streaming child stderr live to orchestrator stderr with [phase-N-role|slice-id] prefix. Rename debug logs to <slice-id-slug>-phase-<n>-<role>-<timestamp>.log. Integration test: a trivial slice runs four phases via the orchestrator with zero human intervention, exits 0, produces sweep-notes.md. Design doc docs/plans/2026-04-20-compression-pipeline-hardening-design.md section 5."
