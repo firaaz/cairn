@@ -1,0 +1,4 @@
+clusters:
+  - name: rename-sweep-test
+    files:
+      - "^tests/unit/test_adr_rename_sweep\\.py$"

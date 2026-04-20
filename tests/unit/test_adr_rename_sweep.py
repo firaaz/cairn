@@ -27,6 +27,7 @@ Not asserted here:
 Pytest + stdlib only.
 """
 
+import os
 import re
 import subprocess
 import sys
@@ -474,4 +475,337 @@ class TestV10ToleranceTestsPresent:
     def test_tolerance_test_file_present(self, relative_path):
         assert (CAIRN_ROOT / relative_path).is_file(), (
             f"{relative_path} missing — legacy-format tolerance coverage lost"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 skeptic contract (slice: identifier-scheme/rename-sweep-test-robust)
+#
+# The classes below assert the WIDENED contract required by the robustness
+# slice: the module must guard rename-sweep outcome AND ongoing flat-slug
+# shape of every docs/adr/*.md file WITHOUT a fixed-cardinality latch and
+# WITHOUT a hardcoded allowlist that enumerates post-sweep ADRs. Phase 3
+# must refactor the rest of this file until these classes pass; they must
+# NOT be deleted.
+#
+# RED pre-Phase-3 (current file contains a size-latch method against a
+# 12-file corpus; a 13th ADR has since landed). GREEN post-Phase-3.
+#
+# This section avoids hardcoding any post-sweep ADR slug literally (V3):
+# the C2 probe reconstructs the forbidden slug from fragments so the grep-
+# count assertion can inspect the file without naming the slug inline.
+# ---------------------------------------------------------------------------
+
+
+_SELF_PATH = Path(__file__).resolve()
+
+
+def _self_source() -> str:
+    return _SELF_PATH.read_text(encoding="utf-8")
+
+
+_FLAT_SLUG_FILENAME_RE = re.compile(r"^[a-z][a-z0-9-]*\.md$")
+
+
+def _run_self_in_subprocess() -> subprocess.CompletedProcess:
+    """Invoke pytest against this file only, isolated from the caller.
+
+    Uses `-k` to exclude the subprocess-driver classes (C3, C4). Without
+    this, the inner pytest would re-enter those classes and spawn its own
+    subprocesses, causing unbounded recursion / fixture-stage collisions.
+    A nested-suppression env var is also set as a belt-and-braces guard.
+    """
+    env = dict(os.environ)
+    env["CAIRN_SWEEP_SUPPRESS_SUBPROCESS_PROBES"] = "1"
+    return subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            str(_SELF_PATH),
+            "-q",
+            "--no-header",
+            "-rN",
+            "-p",
+            "no:cacheprovider",
+            "-k",
+            "not TestContractC3 and not TestContractC4",
+        ],
+        cwd=str(CAIRN_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=60,
+        env=env,
+    )
+
+
+class TestContractC1NoSizeLatch:
+    """Intent §1 / §V2: retire the fixed-cardinality corpus-size assertion."""
+
+    def test_exact_count_method_removed(self):
+        assert "test_exact_twelve_adr_files_total" not in _self_source(), (
+            "`test_exact_twelve_adr_files_total` must be removed or rewritten "
+            "(intent §Specification Detail 1)."
+        )
+
+    def test_no_int_equality_against_adr_corpus(self):
+        offenders: list[tuple[int, str]] = []
+        for i, ln in enumerate(_self_source().splitlines(), 1):
+            if re.search(r"==\s*\d+\b", ln) and re.search(
+                r"docs/adr|adr_dir|ADR_DIR", ln
+            ):
+                offenders.append((i, ln.rstrip()))
+        assert not offenders, (
+            "Fixed-integer comparison against ADR corpus detected (intent §V2):\n"
+            + "\n".join(f"  L{i}: {ln}" for i, ln in offenders)
+        )
+
+    def test_no_whole_corpus_set_equality_against_allowlist(self):
+        bad = re.search(
+            r'adr_dir\.glob\(\s*["\']\*\.md["\']\s*\)[\s\S]{0,600}?'
+            r"UNRENAMED_ADR_FILES[\s\S]{0,300}?==",
+            _self_source(),
+        )
+        assert bad is None, (
+            "Whole-corpus set equality still constructed from "
+            "UNRENAMED_ADR_FILES — intent §2 forbids its use as an "
+            "exhaustive allowlist."
+        )
+
+
+class TestContractC2NoHardcodedPostSweepADR:
+    """Intent §V3: the post-sweep ADR slug must not appear in source.
+
+    The full slug is reconstructed from fragments below so this probe
+    itself does not contribute to the grep count it measures.
+    """
+
+    def test_post_sweep_adr_slug_absent_from_source(self):
+        forbidden = "-".join(["compression", "infrastructure", "bootstrap"])
+        count = _self_source().count(forbidden)
+        assert count == 0, (
+            f"Source mentions the post-sweep ADR slug {count} time(s); "
+            f"intent §V3 requires grep-count 0 for any post-sweep ADR slug."
+        )
+
+
+_SUPPRESS_SUBPROCESS_PROBES = (
+    os.environ.get("CAIRN_SWEEP_SUPPRESS_SUBPROCESS_PROBES") == "1"
+)
+
+
+@pytest.mark.skipif(
+    _SUPPRESS_SUBPROCESS_PROBES,
+    reason="nested subprocess run: C3 driver suppressed to prevent recursion",
+)
+class TestContractC3CurrentCorpusPasses:
+    """Intent §V1: sweep suite exits 0 against the present docs/adr/ contents."""
+
+    def test_sweep_tests_pass_on_live_corpus(self):
+        result = _run_self_in_subprocess()
+        assert result.returncode == 0, (
+            f"pytest exited {result.returncode} on the live corpus.\n"
+            f"--- stdout ---\n{result.stdout}\n"
+            f"--- stderr ---\n{result.stderr}"
+        )
+
+
+@pytest.fixture
+def _synthetic_valid_adr():
+    slug = "z-synthetic-valid-adr-probe"
+    path = CAIRN_ROOT / "docs/adr" / f"{slug}.md"
+    # Idempotent setup: purge any leftover from an interrupted prior run.
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+    path.write_text(
+        "---\n"
+        f"id: {slug}\n"
+        'name: "synthetic probe ADR — phase-2 skeptic fixture"\n'
+        "status: accepted\n"
+        "---\n"
+        "\n"
+        "Synthetic body. No residue tokens.\n",
+        encoding="utf-8",
+    )
+    try:
+        yield slug, path
+    finally:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+@pytest.fixture
+def _synthetic_malformed_filename_adr():
+    # Underscore violates ^[a-z][a-z0-9-]*\.md$ (kebab-case only).
+    name = "bad_underscore_name_probe.md"
+    path = CAIRN_ROOT / "docs/adr" / name
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+    path.write_text(
+        "---\nid: bad_underscore_name_probe\nstatus: accepted\n---\n\nbody\n",
+        encoding="utf-8",
+    )
+    try:
+        yield name, path
+    finally:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+@pytest.fixture
+def _synthetic_mismatched_id_adr():
+    slug = "z-synthetic-id-mismatch-probe"
+    path = CAIRN_ROOT / "docs/adr" / f"{slug}.md"
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+    path.write_text(
+        "---\nid: totally-wrong-id-value\nstatus: accepted\n---\n\nbody\n",
+        encoding="utf-8",
+    )
+    try:
+        yield slug, path
+    finally:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+@pytest.mark.skipif(
+    _SUPPRESS_SUBPROCESS_PROBES,
+    reason="nested subprocess run: C4 driver suppressed to prevent recursion",
+)
+class TestContractC4RobustnessUnderGrowth:
+    """Intent §V4: suite is robust to corpus growth, specific to offender naming."""
+
+    def test_valid_new_adr_keeps_suite_green(self, _synthetic_valid_adr):
+        slug, _ = _synthetic_valid_adr
+        result = _run_self_in_subprocess()
+        assert result.returncode == 0, (
+            f"Adding a valid flat-slug synthetic ADR `{slug}.md` broke the "
+            f"suite — the guard is size-latched or allowlist-scoped.\n"
+            f"--- stdout ---\n{result.stdout}\n"
+            f"--- stderr ---\n{result.stderr}"
+        )
+
+    def test_malformed_filename_fails_with_name_in_output(
+        self, _synthetic_malformed_filename_adr
+    ):
+        name, _ = _synthetic_malformed_filename_adr
+        result = _run_self_in_subprocess()
+        assert result.returncode != 0, (
+            f"Suite stayed green despite malformed filename `{name}` — the "
+            f"flat-slug shape assertion is missing.\n"
+            f"--- stdout ---\n{result.stdout}\n"
+        )
+        combined = result.stdout + result.stderr
+        assert name in combined, (
+            f"Failure output does not name offending file `{name}` "
+            f"(intent §V4 requires assertion messages to name the offender).\n"
+            f"--- stdout ---\n{result.stdout}\n"
+            f"--- stderr ---\n{result.stderr}"
+        )
+
+    def test_mismatched_id_fails_with_name_in_output(
+        self, _synthetic_mismatched_id_adr
+    ):
+        slug, _ = _synthetic_mismatched_id_adr
+        expected = f"{slug}.md"
+        result = _run_self_in_subprocess()
+        assert result.returncode != 0, (
+            f"Suite stayed green despite id/stem mismatch in `{expected}` — "
+            f"the frontmatter shape assertion is missing or permissive.\n"
+            f"--- stdout ---\n{result.stdout}\n"
+        )
+        combined = result.stdout + result.stderr
+        assert expected in combined, (
+            f"Failure output does not name offending file `{expected}`.\n"
+            f"--- stdout ---\n{result.stdout}\n"
+            f"--- stderr ---\n{result.stderr}"
+        )
+
+
+class TestContractC5RegressionGuardsRetained:
+    """Intent §4 / §V5: rename-outcome regression coverage is preserved."""
+
+    def test_rename_table_constant_retained(self):
+        assert "RENAME_TABLE" in _self_source(), (
+            "RENAME_TABLE constant removed — V1/V2 coverage lost."
+        )
+
+    def test_flat_slug_targets_exist_check_retained(self):
+        assert "test_all_flat_slug_targets_exist" in _self_source(), (
+            "`test_all_flat_slug_targets_exist` removed — V1 coverage lost."
+        )
+
+    def test_zero_numeric_prefix_check_retained(self):
+        assert "test_zero_numeric_prefix_files" in _self_source(), (
+            "`test_zero_numeric_prefix_files` removed — numeric-prefix "
+            "glob regression guard lost."
+        )
+
+    def test_v2_id_matches_rename_table_retained(self):
+        assert "test_id_matches_rename_table" in _self_source(), (
+            "`test_id_matches_rename_table` removed — V2 frontmatter-id "
+            "regression for rename-table rows lost."
+        )
+
+    def test_v4_residue_scanner_retained(self):
+        src = _self_source()
+        assert "test_no_adr_nnn_token_in_live_tree" in src, "V4 method missing."
+        assert "test_no_numeric_adr_path_in_live_tree" in src, "V4 method missing."
+        assert "_SCAN_ROOTS" in src, "V4 _SCAN_ROOTS removed."
+        assert "_FILE_EXCLUDES" in src, "V4 _FILE_EXCLUDES removed."
+
+    def test_v4_tolerance_excludes_retained(self):
+        src = _self_source()
+        assert "tests/unit/test_hook_tolerance.py" in src, (
+            "V4 _FILE_EXCLUDES no longer exempts test_hook_tolerance.py."
+        )
+        assert "tests/unit/test_hook_relpath_bypass.py" in src, (
+            "V4 _FILE_EXCLUDES no longer exempts test_hook_relpath_bypass.py."
+        )
+
+    def test_v5_index_shape_retained(self):
+        src = _self_source()
+        assert "TestV5IndexShape" in src or (
+            "test_every_id_column_is_known_flat_slug" in src
+        ), "V5 index-shape assertions removed."
+
+    def test_v6_changelog_header_retained(self):
+        assert "ADR identifier migration" in _self_source(), (
+            "V6 changelog header constant / assertion removed."
+        )
+
+
+class TestContractC6DocstringWidened:
+    """Intent §7: module docstring names the widened (non-size-latched) guard."""
+
+    def _docstring(self) -> str:
+        m = re.match(r'\s*"""(.*?)"""', _self_source(), re.DOTALL)
+        return (m.group(1) if m else "").lower()
+
+    def test_docstring_acknowledges_non_size_latch(self):
+        doc = self._docstring()
+        markers = ("size-latch", "size latch", "not size-latched", "cardinality")
+        assert any(m in doc for m in markers), (
+            f"Module docstring does not acknowledge the non-cardinality "
+            f"contract. Expected one of {markers!r} (intent §7)."
+        )
+
+    def test_docstring_mentions_shape_guard(self):
+        doc = self._docstring()
+        assert "shape" in doc, (
+            "Module docstring does not mention `shape` — the widened guard "
+            "(flat-slug filename + id/stem match) should be called out (§7)."
         )
