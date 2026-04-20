@@ -267,6 +267,18 @@
     "hash": "6b52708d52a91ffe443308710df3b9298fed0e66dbe6276b22b9a0da31134dd4",
     "size": 58150
   },
+  "docs/plans/2026-04-20-a1-spike-results.md": {
+    "hash": "7553b0101b88dd4b3c621489c9a3f95cf93ea23f3f3795ec3cb34aec0253ca00",
+    "size": 5045
+  },
+  "docs/plans/2026-04-20-compression-pipeline-hardening-design.md": {
+    "hash": "65683678dac671557001c566147991dfa96fe0e256e08fcd18400ada1018a657",
+    "size": 20274
+  },
+  "docs/plans/2026-04-20-compression-pipeline-hardening-plan.md": {
+    "hash": "7e48c78d6b77c3d14a02369381f59eb68369703763a12c7ac5ffb2202b75fb82",
+    "size": 47550
+  },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
     "size": 13864
@@ -292,8 +304,8 @@
     "size": 5014
   },
   "scripts/slice_orchestrator.py": {
-    "hash": "0344af02d3d5a38e3c4e1712d99fd3a2e15764dfdcf9b605c2ede88304f7d668",
-    "size": 15085
+    "hash": "98db82908ba5976a7330fa87770427acf28e5cb8dd060beb47ec48ddd49b2f70",
+    "size": 20262
   },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
@@ -302,6 +314,14 @@
   "scripts/validate_architecture.py": {
     "hash": "ba0743516eed8453418a088cdb86218875348deaf84e4153ea320fbdc6141e8d",
     "size": 16162
+  },
+  "tests/integration/__init__.py": {
+    "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size": 0
+  },
+  "tests/integration/test_compressed_slice_end_to_end.py": {
+    "hash": "4430a3c84fd2d9d0c621f732fe56c70b39ce1a875d90f6aa4fda98aee72e1fd7",
+    "size": 8753
   },
   "tests/unit/efficiency_program/__init__.py": {
     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -359,6 +379,10 @@
     "hash": "a503d29a8ec6f90b6c0af51b0b97989db8106c2bae48d0b290bbf8e67c04e76d",
     "size": 5417
   },
+  "tests/unit/test_dispatch_contract_separation.py": {
+    "hash": "ac51b8a14cd90cccff73a6521dd55069fb442e552c5274ba832c618070bb737e",
+    "size": 7462
+  },
   "tests/unit/test_dogfood_evaluate.py": {
     "hash": "655a927b0dffdd78efeef0e94a5b25f2d68f1e6205766dd1c94c4a67109f48af",
     "size": 27516
@@ -388,8 +412,8 @@
     "size": 17240
   },
   "tests/unit/test_housekeeping_post_slice_a_tidy.py": {
-    "hash": "bb9a49ab12aae2b378eb9a7a93750502d04d6a94b3dbed5fc0b549b86de57e4e",
-    "size": 5266
+    "hash": "25743399aa9ee4215e5b5b9b527c83b0949439d2c3862714a140bdcf0a99144e",
+    "size": 5189
   },
   "tests/unit/test_identifier_scheme_sweep.py": {
     "hash": "86380c2920a45ba008ad86a60938d63f91b8fa95f27f49cff85a74030bfb6baa",
@@ -411,9 +435,13 @@
     "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
     "size": 50807
   },
-  "tests/unit/test_orchestrator_hardening.py": {
-    "hash": "be6414109b70d8bed5c960a5ecc0ec14f7a9e000aa41b039907b70f6d9b96e0e",
-    "size": 9638
+  "tests/unit/test_multiline_json_tail.py": {
+    "hash": "96d4b8ccf6ac10324ffe52d1b5faa1da5c89a61d7ee9ece8b366438d791b6c01",
+    "size": 3342
+  },
+  "tests/unit/test_orchestrator_live_stderr.py": {
+    "hash": "4c5dcf19953ce772e506c13234ddbbf950576090cf7e13cee9bcdb4206df3ff9",
+    "size": 6677
   },
   "tests/unit/test_phase_rethink.py": {
     "hash": "a1daec1cd0d44c0d99f79b63443cf992bbcb4332136363445e5f1e9d3eb5c935",
@@ -427,6 +455,10 @@
     "hash": "c8f1ec544895eb8ee14148efba955094c3be7a919325bf92ac28986a2c014f3c",
     "size": 6532
   },
+  "tests/unit/test_role_guard_wired.py": {
+    "hash": "7820093d9fa9cfddfd5a29391263fb052a012a725b11bd5b88fe6e053053850e",
+    "size": 3818
+  },
   "tests/unit/test_slice_003_precursor.py": {
     "hash": "32b73f194510ebc54a8f3cbab374026042869b0519bfbc9ee22aef19e3035b83",
     "size": 8312
@@ -438,10 +470,6 @@
   "tests/unit/test_slice_id_derivation.py": {
     "hash": "6e32b9f118ab0c3f9a0fbc270de4e2cfb6e39ef5a3c6ffbc2ae4e886ae4fe344",
     "size": 1546
-  },
-  "tests/unit/test_slice_orchestrator_state_machine.py": {
-    "hash": "5cec3f3a2711bc79bf70891e7a70a9259971ba5be1ab9ccaac8aa3892b8da888",
-    "size": 13605
   },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
