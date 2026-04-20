@@ -1,9 +1,5 @@
-id: compression/orchestrator-hardening
-name: "Compression — orchestrator hardening (permission-mode, brief persistence, test isolation)"
-status: complete
-current_phase: 4
-started: 2026-04-19
-completed: 2026-04-19
-invariants-touched: []
-adrs-referenced: [compression-infrastructure-bootstrap]
-adrs-created: []
+id: identifier-scheme/rename-sweep-test-robust
+name: "identifier-scheme/rename-sweep-test-robust"
+status: in-progress
+current_phase: 1
+brief: "Update test_adr_rename_sweep hardcoded ADR list to include compression-infrastructure-bootstrap.md and make the test robust to future ADR additions."
