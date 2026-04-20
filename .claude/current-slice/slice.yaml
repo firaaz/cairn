@@ -1,7 +1,7 @@
 id: compression/slice-3-observability-and-close-slice
 name: compression/slice-3-observability-and-close-slice
 status: in-progress
-current_phase: 1
+current_phase: 2
 brief: 'Slice 3 of compression feature: implement the firm slice-close-contract (INV-008
   = DC-3 idempotent close + DC-4 sole commit source + DC-7 slug isolation, plus DC-5
   wipe and DC-6 13-row resume matrix) and the provisional orchestrator-observability
