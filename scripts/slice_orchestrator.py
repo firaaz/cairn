@@ -14,12 +14,15 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import datetime
 import json
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+DEBUG_DIR = Path(".claude/orchestrator-debug")
 
 SLICE_ID_REGEX = re.compile(r"^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$")
 
@@ -104,6 +107,23 @@ def _parse_structured_tail(stdout):
     return None
 
 
+def _write_failure_log(role, inputs, returncode, stdout, stderr, reason):
+    DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    path = DEBUG_DIR / f"{ts}-{role}.log"
+    body = (
+        f"reason: {reason}\n"
+        f"role: {role}\n"
+        f"returncode: {returncode}\n"
+        f"inputs: {json.dumps(inputs)}\n"
+        f"--- stdout ---\n{stdout}\n"
+        f"--- stderr ---\n{stderr}\n"
+    )
+    path.write_text(body)
+    print(f"orchestrator: agent failure logged to {path}", file=sys.stderr)
+    return path
+
+
 def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
     env = os.environ.copy()
     env["AGENT_ROLE"] = role
@@ -127,7 +147,19 @@ def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
             text=True,
             timeout=timeout,
         )
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as exc:
+        _write_failure_log(
+            role,
+            inputs,
+            returncode="timeout",
+            stdout=(exc.stdout or b"").decode(errors="replace")
+            if isinstance(exc.stdout, bytes)
+            else (exc.stdout or ""),
+            stderr=(exc.stderr or b"").decode(errors="replace")
+            if isinstance(exc.stderr, bytes)
+            else (exc.stderr or ""),
+            reason=f"timeout after {timeout}s",
+        )
         return {
             "status": "FAILED",
             "summary": f"timeout after {timeout}s",
@@ -135,6 +167,14 @@ def dispatch_agent(role, inputs, envelope=None, timeout_hard=None):
         }
     obj = _parse_structured_tail(proc.stdout or "")
     if obj is None:
+        _write_failure_log(
+            role,
+            inputs,
+            returncode=proc.returncode,
+            stdout=proc.stdout or "",
+            stderr=proc.stderr or "",
+            reason="malformed agent output (no JSON-object tail)",
+        )
         return {
             "status": "FAILED",
             "summary": "malformed agent output (no JSON-object tail)",
