@@ -1,11 +1,16 @@
-"""Phase 2 validation tests for identifier-scheme/adr-rename-sweep.
+"""Rename-sweep outcome AND ongoing flat-slug shape guard for docs/adr/.
 
-Covers ADR identifier-scheme §D7 Phase 2 Part 1: rename 9 numeric-prefix ADRs to
-flat-slug filenames, migrate `id:` frontmatter, sweep live-tree cross-references,
-add CHANGELOG entry.
+Originally Phase-2 tests for identifier-scheme/adr-rename-sweep (§D7 Phase 2
+Part 1: rename 9 numeric-prefix ADRs → flat slugs, migrate `id:` frontmatter,
+sweep live-tree cross-references, add CHANGELOG entry). Widened under slice
+identifier-scheme/rename-sweep-test-robust: the module now additionally guards
+the ongoing flat-slug shape of every live docs/adr/ ADR (filename regex +
+frontmatter id/stem match) so `/new-adr` additions pass without test-source
+edits. The corpus is NOT size-latched — no assertion compares docs/adr/ to a
+fixed cardinality or a hardcoded whole-corpus allowlist.
 
-RED pre-Phase-3 (fail until the sweep lands), GREEN post-Phase-3:
-  V1 — rename outcome: flat-slug files exist, numeric-prefix files removed
+RED pre-Phase-3 (rename-sweep-test-robust), GREEN post-Phase-3:
+  V1 — rename outcome: flat-slug targets exist, numeric-prefix files removed
   V2 — each renamed ADR's `id:` frontmatter matches the flat slug
   V3 — `git log --follow` on a renamed ADR preserves pre-rename history
   V4 — zero `ADR-NNN` / `docs/adr/NNN-*` references in the live tree
@@ -14,6 +19,9 @@ RED pre-Phase-3 (fail until the sweep lands), GREEN post-Phase-3:
   V5 — `docs/adr/index.md` entries use flat-slug id and filename only
   V6 — `CHANGELOG.md` contains the migration entry (header, 9-row table,
        consumer-impact paragraph naming complex-rag-analysis, link to D7)
+  V-shape — flat-slug shape over live docs/adr/*.md (identifier-scheme D2):
+       filename matches ^[a-z][a-z0-9-]*\\.md$ AND frontmatter `id:` equals
+       stem. Not a size-latch; scales with /new-adr additions.
 
 GREEN pre/post (regression guards):
   V7  — scripts/validate_architecture.py exits 0
@@ -72,10 +80,17 @@ RENAME_TABLE: list[tuple[str, str, str]] = [
     ),
 ]
 
+# Historical record only: the two pre-existing flat-slug ADRs that did not pass
+# through the rename sweep. NOT used as an exhaustive allowlist for live-corpus
+# shape checks — per rename-sweep-test-robust intent §2, post-sweep ADRs must
+# not be enumerated in test source.
 UNRENAMED_ADR_FILES = {"d3-bypass-classification.md", "identifier-scheme.md"}
 INDEX_FILE = "index.md"
 
 CHANGELOG_HEADER_TEXT = "ADR identifier migration (Phase 2 Part 1)"
+
+# identifier-scheme D2: flat semantic slug — lowercase start, kebab-case body.
+ADR_FLAT_SLUG_FILENAME_RE = re.compile(r"^[a-z][a-z0-9-]*\.md$")
 
 
 # --- Live-tree scanner -------------------------------------------------------
@@ -183,18 +198,6 @@ class TestV1RenameOutcome:
         assert not numeric, (
             f"Numeric-prefix ADR files still present in docs/adr/: {numeric}. "
             f"Phase 3 must complete all renames."
-        )
-
-    def test_exact_twelve_adr_files_total(self):
-        adr_dir = CAIRN_ROOT / "docs/adr"
-        actual = sorted(p.name for p in adr_dir.glob("*.md"))
-        expected = sorted(
-            {new for _, new, _ in RENAME_TABLE} | UNRENAMED_ADR_FILES | {INDEX_FILE}
-        )
-        assert actual == expected, (
-            f"docs/adr/ contents diverge from expected set.\n"
-            f"  unexpected: {sorted(set(actual) - set(expected))}\n"
-            f"  missing:    {sorted(set(expected) - set(actual))}"
         )
 
 
@@ -320,10 +323,11 @@ class TestV5IndexShape:
 
     def test_every_id_column_is_known_flat_slug(self):
         content = self._read_index()
-        expected_ids = {slug for _, _, slug in RENAME_TABLE} | {
-            "d3-bypass-classification",
-            "identifier-scheme",
-        }
+        # Expected ids derive from the live docs/adr/ corpus (stems minus the
+        # index itself), NOT a hardcoded allowlist — /new-adr additions flow
+        # through without test-source edits (rename-sweep-test-robust §2).
+        adr_dir = CAIRN_ROOT / "docs/adr"
+        expected_ids = {p.stem for p in adr_dir.glob("*.md") if p.name != INDEX_FILE}
         # Parse markdown table rows: | id | title | ... |
         row_ids: list[str] = []
         for ln in content.splitlines():
@@ -427,6 +431,58 @@ class TestV6ChangelogEntry:
         assert has_adr and has_d7, (
             f"migration subsection must cross-link ADR identifier-scheme D7 "
             f"(identifier-scheme present: {has_adr}, D7 present: {has_d7})"
+        )
+
+
+# ---------------------------------------------------------------------------
+# V-shape — Flat-slug shape guard over the live docs/adr/ corpus
+# ---------------------------------------------------------------------------
+
+
+def _live_adr_filenames() -> list[str]:
+    """Enumerate docs/adr/*.md at collection time, excluding the index.
+
+    Pure live-corpus enumeration — no hardcoded allowlist, no cardinality
+    latch. /new-adr additions appear automatically on next collection.
+    """
+    adr_dir = CAIRN_ROOT / "docs/adr"
+    if not adr_dir.exists():
+        return []
+    return sorted(p.name for p in adr_dir.glob("*.md") if p.name != INDEX_FILE)
+
+
+class TestLiveCorpusFlatSlugShape:
+    """Shape guard over every present docs/adr/ ADR (identifier-scheme D2).
+
+    Widened contract (rename-sweep-test-robust §Specification Detail 3):
+    every file in the live corpus (a) has a flat-slug filename and (b) carries
+    `id: <stem>` frontmatter. Assertion messages always name the offending
+    filename so Phase-4 log triage is single-hop. NOT size-latched: this test
+    neither counts the corpus nor cross-checks it against any static allowlist.
+    """
+
+    @pytest.mark.parametrize("filename", _live_adr_filenames())
+    def test_filename_is_flat_slug(self, filename):
+        assert ADR_FLAT_SLUG_FILENAME_RE.match(filename), (
+            f"docs/adr/{filename}: filename violates identifier-scheme D2 "
+            f"flat-slug pattern `^[a-z][a-z0-9-]*\\.md$` — lowercase start, "
+            f"kebab-case body, `.md` suffix required."
+        )
+
+    @pytest.mark.parametrize("filename", _live_adr_filenames())
+    def test_frontmatter_id_matches_stem(self, filename):
+        path = CAIRN_ROOT / "docs/adr" / filename
+        content = path.read_text(encoding="utf-8")
+        m = ID_LINE_RE.search(content)
+        assert m, (
+            f"docs/adr/{filename}: no `id:` frontmatter line found "
+            f"(identifier-scheme D2 requires `id: <stem>`)."
+        )
+        actual = m.group(1).strip().strip("\"'")
+        stem = filename[: -len(".md")]
+        assert actual == stem, (
+            f"docs/adr/{filename}: frontmatter id is '{actual}', "
+            f"expected '{stem}' (D2: id must equal filename stem)."
         )
 
 
