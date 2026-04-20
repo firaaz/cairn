@@ -2,4 +2,4 @@ id: compression/slice-2-state-machine
 name: "compression/slice-2-state-machine"
 status: in-progress
 current_phase: 1
-brief: "Clear the orchestrator's code-bug backlog: state-machine durability (B10 close_slice integration, B14 RE_DISPATCH state persistence, B15 max-1 redispatch cap, B12 malformed slice.yaml exit, B13 SIGINT/SIGTERM handler), git reconciliation (B11 check=True on all git calls, B9 post-timeout HEAD reconciliation), serialization (B3/B4/B6 PyYAML adoption for brief/name/clusters, B7 JSON-list envelope encoding), phase-3 robustness (B16 empty-cluster guard, B2 per-cluster log capture, B8 FAILED classification + exponential backoff). Add pyyaml dep. One regression test per bug. References design docs/plans/2026-04-20-compression-pipeline-hardening-design.md §6."
+brief: "…"
