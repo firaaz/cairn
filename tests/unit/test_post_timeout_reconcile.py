@@ -10,11 +10,9 @@ Expected at Phase 2: FAILS — no reconciliation keys on current log.
 
 from __future__ import annotations
 
-import os
 import re
 import subprocess
 from pathlib import Path
-
 
 
 def _init_repo(tmp_path: Path) -> None:
@@ -52,67 +50,52 @@ def test_b9_failure_log_records_partial_commit_after_timeout(monkeypatch, tmp_pa
         so, "DEBUG_DIR", tmp_path / ".claude" / "orchestrator-debug", raising=False
     )
 
-    # Replace Popen with a fake that (a) makes a real git commit (so HEAD
-    # changes), then (b) raises TimeoutExpired from .wait().
-    real_run = subprocess.run
+    # Patch `_run_with_live_stderr` — the orchestrator's Popen wrapper —
+    # rather than `subprocess.Popen` itself. Patching Popen globally causes
+    # `subprocess.run` inside the fake to recurse into the fake (7c04b68).
+    def fake_run_with_live_stderr(cmd, env, timeout, prefix=""):
+        pre_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        (tmp_path / "child-artifact.txt").write_text("child wrote this")
+        subprocess.run(
+            ["git", "-c", "user.email=t@t", "-c", "user.name=t", "add", "-A"],
+            cwd=tmp_path,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "user.email=t@t",
+                "-c",
+                "user.name=t",
+                "commit",
+                "-q",
+                "-m",
+                "child partial",
+            ],
+            cwd=tmp_path,
+            check=True,
+        )
+        post_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        exc = subprocess.TimeoutExpired(cmd=cmd, timeout=timeout)
+        exc.pre_dispatch_head = pre_head
+        exc.post_dispatch_head = post_head
+        exc.timeout_s = timeout
+        raise exc
 
-    class FakePopen:
-        def __init__(self, *args, **kwargs):
-            self.pid = os.getpid()
-            (tmp_path / "child-artifact.txt").write_text("child wrote this")
-            real_run(
-                ["git", "-c", "user.email=t@t", "-c", "user.name=t", "add", "-A"],
-                cwd=tmp_path,
-                check=True,
-            )
-            real_run(
-                [
-                    "git",
-                    "-c",
-                    "user.email=t@t",
-                    "-c",
-                    "user.name=t",
-                    "commit",
-                    "-q",
-                    "-m",
-                    "child partial",
-                ],
-                cwd=tmp_path,
-                check=True,
-            )
-            self.stdout = _DummyStream()
-            self.stderr = _DummyStream()
-            self.returncode = None
-
-        def wait(self, timeout=None):
-            raise subprocess.TimeoutExpired(cmd="fake", timeout=timeout or 1)
-
-        def poll(self):
-            return None
-
-        def kill(self):
-            self.returncode = -9
-
-        def terminate(self):
-            self.returncode = -15
-
-        def communicate(self, timeout=None):
-            raise subprocess.TimeoutExpired(cmd="fake", timeout=timeout or 1)
-
-    class _DummyStream:
-        def readline(self):
-            return ""
-
-        def read(self):
-            return ""
-
-        def close(self):
-            pass
-
-    monkeypatch.setattr(so.subprocess, "Popen", FakePopen)
-
-    # Invoke dispatch_phase_agent with a short timeout; it should return
-    # FAILED and emit a per-phase failure log containing B9 reconciliation keys.
+    monkeypatch.setattr(so, "_run_with_live_stderr", fake_run_with_live_stderr)
     monkeypatch.setattr(so, "_resolve_timeout", lambda role, override: 1)
 
     result = so.dispatch_phase_agent(
