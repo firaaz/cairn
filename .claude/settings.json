@@ -14,7 +14,13 @@
       "Bash(uv run pytest *)",
       "Bash(uv run ruff *)",
       "Bash(shellcheck *)",
-      "Bash(jq *)"
+      "Bash(jq *)",
+      "Write(.claude/current-slice/validation/**)",
+      "Write(.claude/current-slice/implementation/**)",
+      "Write(.claude/current-slice/integration/**)",
+      "Edit(.claude/current-slice/validation/**)",
+      "Edit(.claude/current-slice/implementation/**)",
+      "Edit(.claude/current-slice/integration/**)"
     ]
   },
   "hooks": {
