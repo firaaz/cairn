@@ -1,6 +1,6 @@
 ---
 phase: 2
-commit: b700c1c4d34ca5de1c9eaadc7e20d7ab9d6774d1
+commit: 6985d43
 ---
 
-Embedded 6 RED + 12 GREEN contract probes (TestContractC1..C6) in tests/unit/test_adr_rename_sweep.py asserting the widened rename-sweep contract: size-latch retirement, no literal post-sweep ADR slug (fragment-joined probe avoids self-contribution), current-corpus green, subprocess-driven robustness under corpus growth with idempotent synthetic-ADR fixtures, rename-outcome regression guards retained, docstring widening. Nested pytest bounded via -k filter + CAIRN_SWEEP_SUPPRESS_SUBPROCESS_PROBES env guard; fixtures unlink-on-setup. approach.md and coupling-clusters.yaml written to .claude/current-slice/validation/.
+Re-dispatched Phase 2 skeptic after Phase 3 raised an issue on an unsatisfiable probe. TestContractC1.test_exact_count_method_removed embedded the forbidden method name literally, so _self_source().count() always self-hit; C3/C4 cascade-failed via the subprocess driver. Fixed by fragment-joining the forbidden name (same technique C2 uses for the post-sweep ADR slug). Contract and intent semantics unchanged. Full sweep file 66/66 green on live 13-file corpus. approach.md / coupling-clusters.yaml unchanged; permissions gate blocked the doc-edit, rationale captured in commit message.
