@@ -1,5 +1,13 @@
-id: compression/slice-2-state-machine
-name: compression/slice-2-state-machine
-status: complete
-current_phase: 4
-brief: "\u2026"
+id: compression/slice-3-observability-and-close-slice
+name: compression/slice-3-observability-and-close-slice
+status: in-progress
+current_phase: 1
+brief: 'Slice 3 of compression feature: implement the firm slice-close-contract (INV-008
+  = DC-3 idempotent close + DC-4 sole commit source + DC-7 slug isolation, plus DC-5
+  wipe and DC-6 13-row resume matrix) and the provisional orchestrator-observability
+  ADR (D1-D9: placement at .claude/orchestrator-debug/, JSON canonical + MD derived
+  close-only, schema v1.0 B2/B3 hybrid, three-level error policy, heartbeat, retention
+  tripwire). Full task decomposition in docs/plans/2026-04-20-observability-and-close-slice-plan.md.
+  ADRs landed 2026-04-20 at d11277b: docs/adr/slice-close-contract.md and docs/adr/orchestrator-observability.md.
+  Design spec with the RED-suite skeleton in docs/plans/2026-04-20-observability-and-close-slice-design.md.
+  Propose slice-id compression/slice-3-observability-and-close-slice.'
