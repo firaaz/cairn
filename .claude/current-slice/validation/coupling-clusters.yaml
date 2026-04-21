@@ -1,9 +1,9 @@
 clusters:
   - name: inv004-doc-contract
     files:
-      - "^docs/ARCHITECTURE\.md$"
-      - "^tests/unit/test_context_budget\.py$"
+      - '^docs/ARCHITECTURE\.md$'
+      - '^tests/unit/test_context_budget\.py$'
   - name: inv004-measurement-artifact
     files:
-      - "^tests/unit/test_context_budget\.py$"
-      - "^docs/plans/measurements/2026-04-12-slice-003\.txt$"
+      - '^tests/unit/test_context_budget\.py$'
+      - '^docs/plans/measurements/2026-04-12-slice-003\.txt$'
