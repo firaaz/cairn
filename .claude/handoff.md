@@ -2,11 +2,11 @@
 slice: none
 phase: n/a
 branch: feature/compression
-as-of: 2026-04-21 post-sweep-22
+as-of: 2026-04-21 9cfb57a
 ---
 
 ## State
-Slice 3 closed (`e025714`); INV-008 live. Sweep #22 complete — **FAIL** (all classified, no novel regressions). INV-004 RED is CC 2.1.114→2.1.116 harness drift (+583 tokens), not cairn content.
+Slice 3 closed (`e025714`); INV-008 live. Sweep #22 landed at `9cfb57a` with a FAIL verdict; all failures classified and queued.
 
 ## Next
 Start `housekeeping/post-inv008-tech-debt` — scope: 11 pytest reds + 2× E741 (`test_cross_slice_isolation.py:72-73`) + F841 (`test_post_timeout_reconcile.py:101`) + INV-004 re-baseline for CC 2.1.116. See sweep #22 §1-§3.
