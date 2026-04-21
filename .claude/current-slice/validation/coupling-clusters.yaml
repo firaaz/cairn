@@ -1,0 +1,7 @@
+clusters:
+  - name: triager-heuristic-surface
+    files:
+      - '^scripts/slice_orchestrator\.py$'
+      - '^\.claude/agents/issue-triager\.md$'
+      - '^tests/unit/test_triager_superseded_heuristic\.py$'
+      - '^docs/operational-reference\.md$'
