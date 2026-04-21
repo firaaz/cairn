@@ -38,12 +38,12 @@ expect: match
 description: "Verifies the four-phase pipeline definition exists in operational reference"
 ```
 
-**INV-004** Session-start context on a fresh prompt in cairn uses ≤30,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. Re-baselined by `housekeeping/inv004-rebaseline` (2026-04-16) for Claude Code 2.1.110, which added ~8k tokens of system-prompt overhead outside cairn's control. (context-discipline-protocol; dedicated ADR pending after 2+ slices of progressive-disclosure use)
+**INV-004** Session-start context on a fresh prompt in cairn uses ≤40,000 total tokens (input + cache_creation + cache_read). Slash commands use progressive disclosure: each command has a lite file (≤500 tokens, always loaded) and an optional `.full.md` sibling loaded only on discrete predicates. Machine-checked by `tests/unit/test_context_budget.py`. Re-baselined by `housekeeping/inv004-rebaseline` (2026-04-16) for Claude Code 2.1.110, which added ~8k tokens of system-prompt overhead outside cairn's control. Re-baselined again by `housekeeping/inv004-rebaseline-cc-2.1.116` (2026-04-21) for Claude Code 2.1.116, which added another ~583 tokens of system-prompt overhead outside cairn's control (observed 30,170-30,353 turn-1 tokens under CC 2.1.116 per sweep #22 section 1). (context-discipline-protocol; dedicated ADR pending after 2+ slices of progressive-disclosure use)
 
 ```invariant-check INV-004
 type: test-ref
 pattern: "tests/unit/test_context_budget.py"
-description: "Points to the test suite that machine-checks the 30k token budget"
+description: "Points to the test suite that machine-checks the 40k token budget"
 ```
 
 **INV-005** All cross-referenceable entities (ADRs, slices, features, decision points) carry a two-field identity model: an immutable `id:` (mechanical — used by hooks, filenames, cross-reference fields) and a mutable `name:` (human/LLM-facing prose label). ADR and feature `id:` shapes are flat semantic slugs; slice and decision-point `id:` shapes are hierarchical (`<feature>/<slice>`, `<adr-id>/<decision-slug>`). Hooks (`reversibility-guard.sh`, `scope-guard.sh`) and tooling tolerate both legacy `NNN-slug` filenames and flat-slug filenames during the migration window. Governing ADR: `identifier-scheme` (firm/accepted; supersedes the prior single-field naming ADR). Validator-anchored via the operationally dependent feature-slice model. (identifier-scheme)
