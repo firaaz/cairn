@@ -148,8 +148,8 @@
     "size": 27449
   },
   "docs/operational-reference.md": {
-    "hash": "15e66187800f2a9d56542042656e71e449f3c296bcd2677eb43cc3b85bae4862",
-    "size": 30073
+    "hash": "75b8a6b71692466d8aa05a003fd41f85471cf39148175ff5f7957d90581f65cb",
+    "size": 30965
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -324,8 +324,8 @@
     "size": 5014
   },
   "scripts/slice_orchestrator.py": {
-    "hash": "9dd3e4e1a24ced8a73a7bc5f55629969792e1401f194171d167dc9f3f3f8506a",
-    "size": 55384
+    "hash": "7db772b0cf6c7d9ca02bc04b2a7e91d708ca38c641d48ea3a0649d68d209a738",
+    "size": 57269
   },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
@@ -340,8 +340,8 @@
     "size": 0
   },
   "tests/integration/test_compressed_slice_end_to_end.py": {
-    "hash": "ed13471ca45d131dc9d71e7d2c27dec84246f43a3732b7a3fc55675465139785",
-    "size": 9488
+    "hash": "999cf72eea6aa105d1f79046101b2c3192d0864cfcda8b265fa01d8e92ef34de",
+    "size": 9667
   },
   "tests/integration/test_signal_observability.py": {
     "hash": "43372c5e58f2f8a46f66d27645c0827c81feeada622c804e9d5b9aaee6943128",
@@ -392,24 +392,24 @@
     "size": 3443
   },
   "tests/unit/test_close_slice_hardened.py": {
-    "hash": "42844fa117114496a1b22d48dcdf25eee6662f88f79879ae1e4eb1f0fd4f946c",
-    "size": 10969
+    "hash": "53244b6008c7199c9ae63427ced0bb45579ac1e20cab554d3d646b1f92dcbfb8",
+    "size": 11402
   },
   "tests/unit/test_close_slice_invocation.py": {
-    "hash": "2d6f0da1d68b616395defaec3684f6adb63626af123a5ec83ee1e27f650b6f84",
-    "size": 4123
+    "hash": "0a26f514cd3e82fd2f5b92813b360e1e772b76c9c8504250d220540dee67775e",
+    "size": 4317
   },
   "tests/unit/test_context_budget.py": {
-    "hash": "d1d2ef08883f1a34ec7081397a22dab29ec34631e08ba32d29291fbdf27a231a",
-    "size": 11150
+    "hash": "d5d31ac13a07dc3f88ac2942b7d1680b957e605f7b6a192ba96c61c011d57492",
+    "size": 11448
   },
   "tests/unit/test_context_discipline_protocol.py": {
     "hash": "96a847111618f7f5364f70faf2bcc834f87db4cf1a231173a605ed257eccbf64",
     "size": 13016
   },
   "tests/unit/test_cross_slice_isolation.py": {
-    "hash": "a0b91d1ddd93a70718a7dcad6ce49282d93aa8ba8b9d9c6efccbb68688b86214",
-    "size": 3595
+    "hash": "61a059cbeab7ab566290fb39ccb60a0c0f8f1fe8be909a1d5136abbbd5e06168",
+    "size": 3607
   },
   "tests/unit/test_d1_gate.py": {
     "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
@@ -484,8 +484,8 @@
     "size": 6971
   },
   "tests/unit/test_invariant_assertions.py": {
-    "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
-    "size": 50807
+    "hash": "df10429d72298807cf7d525ea03c9376819023524d73941ecea701c9406618b7",
+    "size": 50872
   },
   "tests/unit/test_malformed_slice_yaml.py": {
     "hash": "0f98ff7e010fbc1d07238e37eb49c3f79f3086c5be7bd7e53d7486e431d6da6c",
@@ -498,6 +498,10 @@
   "tests/unit/test_observability_writer.py": {
     "hash": "2a734d75d5a69dc55579bb43a264c25f8f35b6179394d8f63da4d3e93868df24",
     "size": 7604
+  },
+  "tests/unit/test_orchestrator_bug_fixes.py": {
+    "hash": "a32821756fcd709f2b414be374134bec38a5c025eb90db62fb297c5dabbabe47",
+    "size": 13611
   },
   "tests/unit/test_orchestrator_live_stderr.py": {
     "hash": "4c5dcf19953ce772e506c13234ddbbf950576090cf7e13cee9bcdb4206df3ff9",
@@ -516,8 +520,8 @@
     "size": 11529
   },
   "tests/unit/test_post_timeout_reconcile.py": {
-    "hash": "e77176fc6668488dbf5782af69d4a13588c36b54a0569d6615031b5631dec76d",
-    "size": 3809
+    "hash": "8fceeeb93d1753e5734b267892742b610f08a9bed2bc9713bfd166632bed3805",
+    "size": 3800
   },
   "tests/unit/test_progressive_disclosure.py": {
     "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",

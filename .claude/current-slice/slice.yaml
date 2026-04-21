@@ -1,7 +1,7 @@
 id: housekeeping/post-inv008-and-substrate-bugs
 name: housekeeping/post-inv008-and-substrate-bugs
-status: in-progress
-current_phase: 1
+status: complete
+current_phase: 4
 brief: "Bundled housekeeping-bugfix slice combining two previously-separate queues\
   \ per operator decision (sweep #23 2026-04-21-sweep-23.md \xA7Follow-up). Two scopes:\n\
   \nSCOPE A \u2014 post-inv008-tech-debt (from sweep #23 \xA72 roster):\n- 10 pytest\
