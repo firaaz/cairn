@@ -1,7 +1,7 @@
 id: housekeeping/inv004-rebaseline-cc-2-1-116
 name: housekeeping/inv004-rebaseline-cc-2-1-116
-status: in-progress
-current_phase: 1
+status: complete
+current_phase: 4
 brief: 'Re-baseline INV-004 turn-1 token budget for CC 2.1.116 harness drift. Proposed
   slice-id: housekeeping/inv004-rebaseline-cc-2.1.116. Current budget 30000 (set for
   CC 2.1.110); observed 30170-30351 tokens under CC 2.1.116 per sweep #22 section
