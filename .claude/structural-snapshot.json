@@ -1,7 +1,7 @@
 {
   "checks/role_guard.py": {
-    "hash": "d467ac86b286024bde7a89aca1943d7ef90d5c18c8f18e539f8e06fe54699466",
-    "size": 2597
+    "hash": "589df02c4593d4801c972ed05aac0a1507387536df2333c7be7f2a7058059896",
+    "size": 2998
   },
   "commands/claude-code/catchup.full.md": {
     "hash": "f3fadb3e43f6e5ecf2ddfc34dff5fb447dcd69948acfa4d624a2fac147ea000b",
@@ -72,8 +72,8 @@
     "size": 1339
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "29fd0f66b3acbba219f75f66012cff780cbda70080b28bac51edabd323104e9f",
-    "size": 19575
+    "hash": "0eb19b05818bcf8428634926705078d93d390d2f3b80fbbeb0bfaf0a7ae2e95b",
+    "size": 23554
   },
   "docs/adr/bootstrap-exception.md": {
     "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
@@ -108,8 +108,12 @@
     "size": 16093
   },
   "docs/adr/index.md": {
-    "hash": "230c5589a3c75562f52f2c96eb652cbbf650a7f3c877fe043fa8388522cfaa18",
-    "size": 1568
+    "hash": "133f0e8a7ab752fec6dad6d376d38590f0ad30c3ef2b7adb5158a7d6cb29dfee",
+    "size": 1903
+  },
+  "docs/adr/orchestrator-observability.md": {
+    "hash": "ef1a4cc025459d7705ce8cad54e9b8e216874c41d8ef61747c937534af2ed923",
+    "size": 14972
   },
   "docs/adr/parallelism-v1.md": {
     "hash": "f86951edf42f2a310804341a56a95e174c24577b82cfbab2aed034e69cc96f7c",
@@ -127,6 +131,10 @@
     "hash": "480dff8cf37db816409c48abafe7b3c8aedadf7b36017641888f787f949a34aa",
     "size": 5551
   },
+  "docs/adr/slice-close-contract.md": {
+    "hash": "dc1617a02c243e2cbac7551fc4fe837ffbf0cb4f919a9b9062d87397919be5a7",
+    "size": 29448
+  },
   "docs/dogfood-log.md": {
     "hash": "c79a5883d8047de98943d7cdf9e979f514782bacec5333e206d7cc0aba9d963b",
     "size": 319
@@ -136,8 +144,8 @@
     "size": 3516
   },
   "docs/lessons.md": {
-    "hash": "658f27e380b5004e4402d786b2a91748d3fe5c9ba731b2073b0a81c81db5ca09",
-    "size": 22709
+    "hash": "d07d65eb82f3da7afa5bc9c70b62f19e90f4c403c9c58d3e02e49465698c382f",
+    "size": 27449
   },
   "docs/operational-reference.md": {
     "hash": "15e66187800f2a9d56542042656e71e449f3c296bcd2677eb43cc3b85bae4862",
@@ -279,6 +287,18 @@
     "hash": "7e48c78d6b77c3d14a02369381f59eb68369703763a12c7ac5ffb2202b75fb82",
     "size": 47550
   },
+  "docs/plans/2026-04-20-observability-and-close-slice-brainstorm.md": {
+    "hash": "6dc54738acca1172fb86124892aafaa0f5ba5c7983b707a2d58249f543888ac1",
+    "size": 20743
+  },
+  "docs/plans/2026-04-20-observability-and-close-slice-design.md": {
+    "hash": "7db5ea41e4bd5672ba12bec15b746c348374c2b71c55824e00ec3daecd79c089",
+    "size": 35489
+  },
+  "docs/plans/2026-04-20-observability-and-close-slice-plan.md": {
+    "hash": "965a51c15f37025d692f98418a0835b407bf5be788d12acaa890c62a604474f2",
+    "size": 31417
+  },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
     "size": 13864
@@ -304,8 +324,8 @@
     "size": 5014
   },
   "scripts/slice_orchestrator.py": {
-    "hash": "98db82908ba5976a7330fa87770427acf28e5cb8dd060beb47ec48ddd49b2f70",
-    "size": 20262
+    "hash": "9dd3e4e1a24ced8a73a7bc5f55629969792e1401f194171d167dc9f3f3f8506a",
+    "size": 55384
   },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
@@ -320,8 +340,12 @@
     "size": 0
   },
   "tests/integration/test_compressed_slice_end_to_end.py": {
-    "hash": "4430a3c84fd2d9d0c621f732fe56c70b39ce1a875d90f6aa4fda98aee72e1fd7",
-    "size": 8753
+    "hash": "ed13471ca45d131dc9d71e7d2c27dec84246f43a3732b7a3fc55675465139785",
+    "size": 9488
+  },
+  "tests/integration/test_signal_observability.py": {
+    "hash": "43372c5e58f2f8a46f66d27645c0827c81feeada622c804e9d5b9aaee6943128",
+    "size": 5561
   },
   "tests/unit/efficiency_program/__init__.py": {
     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -363,6 +387,18 @@
     "hash": "0e2775fddcc1814a6f39e99bb7a589c2b87df00b8a92d4581dd6d1aa7874a730",
     "size": 33766
   },
+  "tests/unit/test_agent_prompt_updates.py": {
+    "hash": "2a6d13ad0c0f9f489bcaf606ed0f61bd462b778fe9f06c7b70ab54c36b1a7dfd",
+    "size": 3443
+  },
+  "tests/unit/test_close_slice_hardened.py": {
+    "hash": "42844fa117114496a1b22d48dcdf25eee6662f88f79879ae1e4eb1f0fd4f946c",
+    "size": 10969
+  },
+  "tests/unit/test_close_slice_invocation.py": {
+    "hash": "2d6f0da1d68b616395defaec3684f6adb63626af123a5ec83ee1e27f650b6f84",
+    "size": 4123
+  },
   "tests/unit/test_context_budget.py": {
     "hash": "b162e0c3292b5946e8c536f7a4b7c5d596737b4c8864eda07feffebc8a691bae",
     "size": 9480
@@ -370,6 +406,10 @@
   "tests/unit/test_context_discipline_protocol.py": {
     "hash": "96a847111618f7f5364f70faf2bcc834f87db4cf1a231173a605ed257eccbf64",
     "size": 13016
+  },
+  "tests/unit/test_cross_slice_isolation.py": {
+    "hash": "a0b91d1ddd93a70718a7dcad6ce49282d93aa8ba8b9d9c6efccbb68688b86214",
+    "size": 3595
   },
   "tests/unit/test_d1_gate.py": {
     "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
@@ -387,6 +427,10 @@
     "hash": "655a927b0dffdd78efeef0e94a5b25f2d68f1e6205766dd1c94c4a67109f48af",
     "size": 27516
   },
+  "tests/unit/test_failed_classification_backoff.py": {
+    "hash": "e1ca25a28be9059c6191a49ab29cf2d15c96cbf6c45764d71344405a12c531bb",
+    "size": 5547
+  },
   "tests/unit/test_feature_cross_index.py": {
     "hash": "d69b597bcac5506012f96ce826f773a9275f197ba05407ae7d5c752231a3efc5",
     "size": 5210
@@ -402,6 +446,14 @@
   "tests/unit/test_feature_skill_conformance.py": {
     "hash": "0ffec1b22a38e96242548959bcf0759d4f36066ec469e3a523a9c31c777100db",
     "size": 8976
+  },
+  "tests/unit/test_git_helper_check.py": {
+    "hash": "2974d5ac626a6d36477ffb25c122cbcbc1105dd6e2ebfe8f4c0779b04a1ca6ff",
+    "size": 2193
+  },
+  "tests/unit/test_heartbeat.py": {
+    "hash": "a057d1faa77626110988c05d6581129c05df6c6f52d38f09bbe908583ff5dc9b",
+    "size": 6168
   },
   "tests/unit/test_hook_relpath_bypass.py": {
     "hash": "4deb6402c26aaeb9768ba49ee34961106b8f9a78bbfb164ac4e9dbc285075c31",
@@ -435,29 +487,69 @@
     "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
     "size": 50807
   },
+  "tests/unit/test_malformed_slice_yaml.py": {
+    "hash": "0f98ff7e010fbc1d07238e37eb49c3f79f3086c5be7bd7e53d7486e431d6da6c",
+    "size": 1799
+  },
   "tests/unit/test_multiline_json_tail.py": {
     "hash": "96d4b8ccf6ac10324ffe52d1b5faa1da5c89a61d7ee9ece8b366438d791b6c01",
     "size": 3342
+  },
+  "tests/unit/test_observability_writer.py": {
+    "hash": "2a734d75d5a69dc55579bb43a264c25f8f35b6179394d8f63da4d3e93868df24",
+    "size": 7604
   },
   "tests/unit/test_orchestrator_live_stderr.py": {
     "hash": "4c5dcf19953ce772e506c13234ddbbf950576090cf7e13cee9bcdb4206df3ff9",
     "size": 6677
   },
+  "tests/unit/test_phase_3_empty_cluster_guard.py": {
+    "hash": "2fabaed98a325c4eb18f3f7f55970bb62c5893f73462e345d9099307ee0f6170",
+    "size": 4489
+  },
+  "tests/unit/test_phase_3_per_cluster_logs.py": {
+    "hash": "f38b7d10602d07c83550e5f04fe82d88d0ed2c46666357b55c57ab54b77d9afb",
+    "size": 3372
+  },
   "tests/unit/test_phase_rethink.py": {
     "hash": "a1daec1cd0d44c0d99f79b63443cf992bbcb4332136363445e5f1e9d3eb5c935",
     "size": 11529
+  },
+  "tests/unit/test_post_timeout_reconcile.py": {
+    "hash": "e77176fc6668488dbf5782af69d4a13588c36b54a0569d6615031b5631dec76d",
+    "size": 3809
   },
   "tests/unit/test_progressive_disclosure.py": {
     "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",
     "size": 8536
   },
+  "tests/unit/test_redispatch_cap.py": {
+    "hash": "7fc13aa4792635ddc7b323d39682837e963a8593e437f5150b43fec29ad7c6c3",
+    "size": 3245
+  },
+  "tests/unit/test_redispatch_persistence.py": {
+    "hash": "388502d7c4dbcaace0cd365b2d39a5b13661a0770cd8a4b7c689e85b57e4d2f0",
+    "size": 5220
+  },
+  "tests/unit/test_resume_reconcile.py": {
+    "hash": "086d93c9062e9edaac346262b1d1898cdddc834e6480ec212c9c2706b642bb52",
+    "size": 9983
+  },
   "tests/unit/test_role_guard.py": {
     "hash": "c8f1ec544895eb8ee14148efba955094c3be7a919325bf92ac28986a2c014f3c",
     "size": 6532
   },
+  "tests/unit/test_role_guard_envelope_json.py": {
+    "hash": "7c2cc53bb535133a76f6ee262d63044427daedbf69fc7fb41ef92e066e0f2573",
+    "size": 2614
+  },
   "tests/unit/test_role_guard_wired.py": {
     "hash": "7820093d9fa9cfddfd5a29391263fb052a012a725b11bd5b88fe6e053053850e",
     "size": 3818
+  },
+  "tests/unit/test_signal_handler.py": {
+    "hash": "673e634ea5a4c57bd55c7aa5fe66578be9184130223b1a1258c2df007f0bdd98",
+    "size": 3842
   },
   "tests/unit/test_slice_003_precursor.py": {
     "hash": "32b73f194510ebc54a8f3cbab374026042869b0519bfbc9ee22aef19e3035b83",
@@ -475,6 +567,10 @@
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
     "size": 20429
   },
+  "tests/unit/test_state_schema.py": {
+    "hash": "f7a9788a999435676e8d26aeff37b4469dc888c2e5f61bf8f63c3287657bc87a",
+    "size": 2942
+  },
   "tests/unit/test_sweep_debt_cleanup.py": {
     "hash": "44b5d2998f6d2fc39f0b0dac5b225e3345896edb2a1ca822bf02d8fd63e86f12",
     "size": 5890
@@ -482,5 +578,13 @@
   "tests/unit/test_validate_architecture.py": {
     "hash": "63b918c4a3eb3bbf5db4668bf9b4972b9e9956f66ac1613039e3c075e980642a",
     "size": 24662
+  },
+  "tests/unit/test_yaml_brief_round_trip.py": {
+    "hash": "cb3bbddc089af38a7e0e66a763f82a305757b3799db41b934846b1848b751eca",
+    "size": 2092
+  },
+  "tests/unit/test_yaml_clusters_schema.py": {
+    "hash": "4cb16e83828256c330e2b965a84792b858712810b5228ce71b5863db4a6d7d7f",
+    "size": 1920
   }
 }
