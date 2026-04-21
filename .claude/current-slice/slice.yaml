@@ -1,42 +1,38 @@
-id: housekeeping/post-inv008-and-substrate-bugs
-name: housekeeping/post-inv008-and-substrate-bugs
-status: complete
-current_phase: 4
-brief: "Bundled housekeeping-bugfix slice combining two previously-separate queues\
-  \ per operator decision (sweep #23 2026-04-21-sweep-23.md \xA7Follow-up). Two scopes:\n\
-  \nSCOPE A \u2014 post-inv008-tech-debt (from sweep #23 \xA72 roster):\n- 10 pytest\
-  \ reds: test_context_discipline_protocol::test_v5_learning_staging_ground_exists_and_is_minimal;\
-  \ 3\xD7 test_hook_relpath_bypass::{test_edit_body_bare_relative_flat_slug_blocked,\
-  \ test_edit_body_bare_relative_legacy_blocked, test_edit_body_slice_system_flat_slug_blocked};\
-  \ 3\xD7 test_hook_tolerance::TestV3FrontmatterEditBothForms::{test_edit_body_flat_slug_blocked,\
-  \ test_edit_body_flat_slug_emits_message, test_edit_body_legacy_blocked}; test_housekeeping_post_slice_a_tidy::test_item_b_handoff_not_tracked;\
-  \ 2\xD7 test_invariant_assertions::TestSlice011AssertionCoverage::{test_no_extra_assertion_blocks,\
-  \ test_invariant_count_unchanged}.\n- 2\xD7 ruff E741 at tests/unit/test_cross_slice_isolation.py:72-73\
-  \ (ambiguous `l`).\n- 1\xD7 ruff F841 at tests/unit/test_post_timeout_reconcile.py:101\
-  \ (unused `result`).\n- Heartbeat env var docs (CAIRN_HEARTBEAT_INTERVAL, CAIRN_HEARTBEAT_STALE)\
-  \ missing from docs/operational-reference.md:339-344; implementations live in scripts/slice_orchestrator.py\
-  \ and heartbeat code.\n\nSCOPE B \u2014 5 substrate bugs from memory orchestrator_bug_fix_slice_scope.md\
-  \ (from compression slice-B 2026-04-21):\n1. current_phase not persisted across\
-  \ sessions in .claude/current-slice/slice.yaml \u2014 causes phase drift on resume.\n\
-  2. phase-2-skeptic YAML-escape bug \u2014 coupling-clusters fragment got inline\
-  \ hotfix at 5319c53; confirm whether the fix is class-wide or narrow-patch; reconcile\
-  \ scope before editing.\n3. Slug dot/hyphen drift \u2014 confirmed live this window:\
-  \ rebaseline slice's slice.yaml uses hyphens (housekeeping/inv004-rebaseline-cc-2-1-116)\
-  \ while commit subjects use dots (housekeeping/inv004-rebaseline-cc-2.1.116). Pick\
-  \ one canonical form and enforce.\n4. Measurement churn \u2014 pytest run rewrote\
-  \ docs/plans/measurements/2026-04-12-slice-003.txt as a test side effect during\
-  \ sweep #23; the test should not mutate tracked measurement files.\n5. close_slice\
-  \ commit subject fails verify_handoff check (c) \u2014 ADR slice-close-contract\
-  \ INV-008 commit must not break the handoff verifier.\n\nReference material the\
-  \ Phase 1 writer should consult:\n- .claude/sweep-results/2026-04-21-sweep-23.md\
-  \ (full red roster with file:line)\n- memory file orchestrator_bug_fix_slice_scope.md\
-  \ (5-bug details)\n- docs/adr/slice-close-contract.md (firm INV-008 \u2014 close_slice\
-  \ behavior must not regress)\n- docs/adr/orchestrator-observability.md (provisional;\
-  \ heartbeat env vars)\n- docs/operational-reference.md (Phase Skill Guide, env var\
-  \ documentation location)\n\nOut-of-scope (enforce):\n- Path C + multi-instance\
-  \ hardening (deferred separately)\n- Triager misroute on superseded tests (deferred\
-  \ \u2014 memory triager_misroute_on_superseded_tests.md; prompt iteration pending)\n\
-  - Any new features, refactors, or abstractions beyond the named fixes/docs\n\nOperator\
-  \ explicitly chose bundling over the two-slice sequence in handoff.md (2-slice original:\
-  \ post-inv008-tech-debt then substrate-bug-fix). Phase 1 writer may re-split if\
-  \ the envelope proves unwieldy, but default is one slice."
+id: compression/triager-superseded-test-heuristic
+name: compression/triager-superseded-test-heuristic
+status: in-progress
+current_phase: 1
+brief: "Iterate `dispatch_triager` / triager prompt so a RAISE_ISSUE message naming\
+  \ pre-existing tests superseded by a now-firm contract routes to ESCALATE_TO_USER\
+  \ instead of RE_DISPATCH-to-Phase-2.\n\nObserved pattern (memory `triager_misroute_on_superseded_tests.md`,\
+  \ compression/slice-3-observability-and-close-slice 2026-04-20\u219221):\n1. A slice\
+  \ lands a firm contract (e.g., INV-008 DC-4 forbids the Phase-4 boundary commit;\
+  \ DC-5 wipes current-slice at close).\n2. Phase-3 implementer's new RED suite is\
+  \ GREEN, but pre-existing tests (e.g., `test_v6_four_phase_handoff_commits_present`,\
+  \ `test_v6_state_machine_runs_end_to_end`) encode behavior the new contract explicitly\
+  \ supersedes.\n3. Phase-3 correctly emits RAISE_ISSUE naming the superseded tests\
+  \ + the DCs that supersede them.\n4. Triager routes RE_DISPATCH-to-Phase-2. Phase-2's\
+  \ charter is producing NEW RED tests, not editing existing ones, so Phase-2 picks\
+  \ a different defect. Phase-3 RAISE_ISSUE's again on the same tests; B15 re-dispatch\
+  \ cap fires; late escalation.\n\nCore heuristic to add: if RAISE_ISSUE message contains\
+  \ `supersede`, `superseded`, `INV-\\d+`, or a DC-code introduced by the current\
+  \ slice (scan slice.yaml's `decision-points` / intent), prefer ESCALATE_TO_USER\
+  \ with rationale \"test-amendment recommended\" over RE_DISPATCH-to-Phase-2.\n\n\
+  Scope:\n- Triager logic in scripts/slice_orchestrator.py `dispatch_triager` (starts\
+  \ near line 1140) + its prompt/inputs.\n- A Phase-2 suite exercising the heuristic:\
+  \ RAISE_ISSUE text mentions superseded/INV/DC \u2192 triager returns ESCALATE_TO_USER;\
+  \ control case (ordinary implementation defect) still returns RE_DISPATCH.\n- Consider\
+  \ whether this warrants a new ADR or amendment to an existing triager-contract ADR\
+  \ (Phase-1 writer decides).\n\nReference material Phase-1 writer should consult:\n\
+  - memory file `triager_misroute_on_superseded_tests.md` (pattern + concrete log\
+  \ path)\n- `.claude/orchestrator-debug/compression-slice-3-observability-and-close-slice-phase-3-phase-3-implementer-20260420T194707Z.log`\
+  \ (concrete RAISE_ISSUE instance)\n- `scripts/slice_orchestrator.py` `dispatch_triager`\
+  \ + `VALID_TRIAGER_ACTIONS` (line 50)\n- `docs/adr/slice-close-contract.md` (INV-008\
+  \ DC-4/DC-5 \u2014 the firm contract whose landing triggered the misroute)\n- `docs/operational-reference.md`\
+  \ Phase Skill Guide (triager row, if one exists)\n\nOut-of-scope (enforce):\n- Path\
+  \ C fleet-writes empirical gap (memory `path_c_fleet_writes_empirical.md`)\n- Compression\
+  \ Slices C/D/F (`docs/plans/2026-04-20-compression-pipeline-hardening-plan.md`)\n\
+  - General triager refactoring beyond the superseded-test heuristic\n- RE_DISPATCH\
+  \ cap tuning (B15) \u2014 separate concern\n- Removing or reworking existing triager\
+  \ actions (ABORT, RE_DISPATCH, ESCALATE_TO_USER) \u2014 only the routing heuristic\
+  \ changes"
