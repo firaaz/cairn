@@ -1,0 +1,23 @@
+clusters:
+  - name: orchestrator-substrate-bugs
+    files:
+      - '^scripts/slice_orchestrator\.py$'
+      - '^scripts/verify_handoff\.sh$'
+      - '^\.claude/agents/phase-2-skeptic\.md$'
+      - '^tests/unit/test_context_budget\.py$'
+      - '^tests/unit/test_orchestrator_bug_fixes\.py$'
+      - '^docs/operational-reference\.md$'
+  - name: scope-a-tech-debt
+    files:
+      - '^checks/scope-guard\.sh$'
+      - '^checks/reversibility-guard\.sh$'
+      - '^docs/ARCHITECTURE\.md$'
+      - '^\.claude/learning\.md$'
+      - '^\.gitignore$'
+      - '^tests/unit/test_context_discipline_protocol\.py$'
+      - '^tests/unit/test_hook_relpath_bypass\.py$'
+      - '^tests/unit/test_hook_tolerance\.py$'
+      - '^tests/unit/test_housekeeping_post_slice_a_tidy\.py$'
+      - '^tests/unit/test_invariant_assertions\.py$'
+      - '^tests/unit/test_cross_slice_isolation\.py$'
+      - '^tests/unit/test_post_timeout_reconcile\.py$'
