@@ -16,4 +16,6 @@ Before tests: enumerate every ambiguity, resolve via ADR/architecture or flag fo
 
 Outputs: runnable RED pytest files; `approach.md` ≤300w; `coupling-clusters.yaml` schema `clusters: [{name, files: [regex...]}]`.
 
+**YAML safety for `coupling-clusters.yaml`.** Every regex pattern in the `files:` list MUST be written as a single-quoted YAML scalar — e.g. `'^scripts/foo\.py$'`. Never use double quotes for regex strings: double-quoted YAML scalars interpret backslash escapes (`\.`, `\d`, `\s`, `\w`), which silently mangles the pattern before the orchestrator loads it. Every fragment you emit MUST round-trip through `yaml.safe_load` without exception; when in doubt, validate with `python3 -c 'import sys,yaml; yaml.safe_load(sys.stdin.read())' < file` before committing.
+
 Final stdout line: `{"status":"OK|RAISE_ISSUE|FAILED","commit_hash":"<sha>","summary":"<=100w"}`. `RAISE_ISSUE` for unresolved spec ambiguity.

@@ -341,11 +341,14 @@ Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "
 | `CAIRN_PHASE_3_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for each parallel `phase-3-implementer` cluster dispatch. |
 | `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for `phase-4-integrator`. |
 | `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
+| `CAIRN_HEARTBEAT_INTERVAL` | `10.0` (s) | `scripts/slice_orchestrator.py` | Cadence (seconds) at which the orchestrator heartbeat daemon touches `.claude/current-slice/.heartbeat` with a UTC ISO timestamp. Lower = finer-grained liveness, more write pressure. Per ADR `orchestrator-observability`. |
+| `CAIRN_HEARTBEAT_STALE` | `30.0` (s) | `scripts/slice_orchestrator.py` | Staleness threshold (seconds) after which a `.heartbeat` timestamp is treated as advisory-stale by slice-close-contract D4 tooling. Should be ≥ 2× `CAIRN_HEARTBEAT_INTERVAL`. |
 | `CAIRN_LEGACY_START_SLICE` | unset | `commands/claude-code/start-slice.md` | When set to any non-empty value, `/start-slice` defers to `start-slice-legacy.md`'s prose protocol instead of invoking the orchestrator. Equivalent to passing `--legacy`. |
 | `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → hook is a no-op (non-compressed slices unaffected). |
 | `AGENT_ENVELOPE` | unset | `checks/role_guard.py` | Colon-separated regex list of allowed write paths for `phase-3-implementer`. Empty/unset denies all writes. |
 | `EXPAND_ENVELOPE` | unset | `checks/scope-guard.sh` | Override for the slice envelope; logs to `.claude/current-slice/envelope-expansions.log`. |
 | `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; logs to `.claude/adr-editorial-fixes.log`. |
+| `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in flag. When set (any non-empty value), `test_inv004_turn1_token_budget` rewrites `docs/plans/measurements/2026-04-12-slice-003.txt` with the fresh turn-1 reading. Unset by default so a plain `uv run pytest` leaves the tracked measurement file alone. |
 
 ## Cairn repo internals (load on demand)
 

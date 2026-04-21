@@ -67,6 +67,19 @@ def is_valid_slice_id(s):
     return SLICE_ID_REGEX.fullmatch(s) is not None
 
 
+def _normalize_slice_id(s):
+    """B3: collapse dotted version suffixes into the hyphenated canonical form.
+
+    Writers sometimes propose ids like `housekeeping/foo-1.2.3` (reading the
+    version literal off a brief); `SLICE_ID_REGEX` stays strict on hyphens, so
+    we rewrite dots to hyphens before validation. Non-string inputs pass
+    through unchanged so the caller's own type check still fires.
+    """
+    if not isinstance(s, str):
+        return s
+    return s.replace(".", "-")
+
+
 def _git(*args, **kwargs):
     """Run a git subcommand with check=True and re-attach stderr on failure.
 
@@ -610,12 +623,17 @@ def _is_slice_already_closed(state=None):
         if files != ["slice.yaml"]:
             return False
 
-    # Signal 4: HEAD subject == "slice: complete"
+    # Signal 4: HEAD subject matches `slice: <id> — complete` (B5 tightened) or
+    # the legacy `slice: complete` shape (backward-compat for fixtures /
+    # operator-rebased histories).
     try:
         proc = _git("log", "-1", "--format=%s")
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
-    if (proc.stdout or "").strip() != "slice: complete":
+    subject = (proc.stdout or "").strip()
+    if subject != "slice: complete" and not re.match(
+        r"^slice: .+ — complete$", subject
+    ):
         return False
 
     return True
@@ -626,6 +644,12 @@ def _is_slice_already_closed(state=None):
 
 _HANDOFF_RX = re.compile(r"^handoff: phase (\d+) complete$")
 _INIT_RX = re.compile(r"^slice: .+ — init$")
+_SLICE_COMPLETE_RX = re.compile(r"^slice: .+ — complete$")
+
+
+def _is_slice_complete_subject(subject):
+    """Accept both B5-tightened `slice: <id> — complete` and legacy `slice: complete`."""
+    return subject == "slice: complete" or bool(_SLICE_COMPLETE_RX.match(subject or ""))
 
 
 def _head_subject_safe():
@@ -737,7 +761,7 @@ def _reconcile_resume_state():
 
     # Row 7: IN_PROGRESS (or DEGRADED) / complete / slice: complete
     if effective == "IN_PROGRESS" and slice_status == "complete":
-        if head == "slice: complete":
+        if _is_slice_complete_subject(head):
             head_hash = _git_head_safe()
             res = dict(result_data)
             res.update(
@@ -754,7 +778,7 @@ def _reconcile_resume_state():
 
     # Row 8: OK / complete / slice: complete
     if rj_status == "OK" and slice_status == "complete":
-        if head == "slice: complete":
+        if _is_slice_complete_subject(head):
             res = dict(result_data)
             res.setdefault("exit_code", 0)
             res["status"] = "OK"
@@ -1362,6 +1386,23 @@ def _current_phase():
         return 1
 
 
+def _persist_current_phase(new_phase):
+    """B1: write `current_phase: N` to slice.yaml without clobbering siblings.
+
+    Invoked after every successful phase-handoff commit so a subsequent
+    `--resume` reads the advanced phase rather than re-dispatching the one
+    that just completed.
+    """
+    try:
+        state = read_slice_state(SLICE_YAML) if SLICE_YAML.exists() else {}
+    except yaml.YAMLError:
+        state = {}
+    if not isinstance(state, dict):
+        state = {}
+    state["current_phase"] = int(new_phase)
+    _write_slice_state(state)
+
+
 def _slice_id():
     state = _read_slice_state_strict()
     return state.get("id", "unknown/unknown")
@@ -1466,6 +1507,7 @@ def run_phase_loop(max_phase=4):
                     result.get("summary", ""),
                     result.get("commit_hash", ""),
                 )
+                _persist_current_phase(phase + 1)
             phase += 1
             continue
 
@@ -1478,6 +1520,7 @@ def run_phase_loop(max_phase=4):
                         retry.get("summary", ""),
                         retry.get("commit_hash", ""),
                     )
+                    _persist_current_phase(phase + 1)
                 phase += 1
                 continue
             print(
@@ -1583,6 +1626,7 @@ def init_new_slice(brief):
         },
     )
     proposed = result.get("proposed_slice_id", "") if isinstance(result, dict) else ""
+    proposed = _normalize_slice_id(proposed)
     if not is_valid_slice_id(proposed):
         # Fallback: record the brief even when the writer did not propose an id;
         # the operator (or a follow-up phase-1 run) can rename the slice later.
@@ -1642,13 +1686,19 @@ def close_slice(state=None):
     # Step 3: wipe current-slice (DC-5 strict; F5-tolerant).
     _wipe_current_slice()
 
-    # Step 4: sole `slice: complete` commit (DC-4).
+    # Step 4: sole `slice: <id> — complete` commit (DC-4 + B5-tightened).
+    slice_id_for_subject = sy.get("id") or "unknown/unknown"
     _git("add", str(SLICE_YAML), str(handoff))
     try:
         _git("add", "-u", ".claude/current-slice")
     except subprocess.CalledProcessError:
         pass
-    _git("commit", "--allow-empty", "-m", "slice: complete")
+    _git(
+        "commit",
+        "--allow-empty",
+        "-m",
+        f"slice: {slice_id_for_subject} — complete",
+    )
 
     # Step 5: persist terminal observability state.
     if _state and _state.get("slice_id"):

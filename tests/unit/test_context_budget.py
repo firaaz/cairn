@@ -8,6 +8,7 @@ Pytest + stdlib only.
 """
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -84,6 +85,11 @@ def _run_and_measure() -> tuple[int, str]:
 
 
 def _record_measurement(tokens: int, version: str) -> None:
+    # B4: gate the tracked-file write behind an opt-in env var so a default
+    # `uv run pytest` invocation does not dirty docs/plans/measurements/.
+    # Baseline re-runs set CAIRN_RECORD_MEASUREMENTS=1 explicitly.
+    if not os.environ.get("CAIRN_RECORD_MEASUREMENTS"):
+        return
     MEASUREMENT_FILE.parent.mkdir(parents=True, exist_ok=True)
     delta = tokens - D1_BASELINE
     pct = delta / D1_BASELINE * 100
