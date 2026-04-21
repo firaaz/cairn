@@ -134,7 +134,8 @@ def _canned_triager(*_args, **_kwargs):
 
 
 def test_v6_state_machine_runs_end_to_end(trivial_slice_workspace, monkeypatch, capsys):
-    """intent.md:75 — four phases, exit 0, sweep-notes.md, slice.yaml complete."""
+    """intent.md:75 — four phases, exit 0, close_slice bundles handoff.md and
+    wipes current-slice (INV-008 DC-5), slice.yaml complete."""
     import slice_orchestrator as so
 
     assert hasattr(so, "dispatch_phase_agent"), (
@@ -150,8 +151,15 @@ def test_v6_state_machine_runs_end_to_end(trivial_slice_workspace, monkeypatch, 
     rc = so.run_phase_loop(max_phase=4)
     assert rc == 0, f"run_phase_loop must exit 0 on happy path; got {rc}"
 
-    sweep = Path(".claude/current-slice/integration/sweep-notes.md")
-    assert sweep.exists(), "sweep-notes.md must be produced by Phase 4 OK"
+    handoff = Path(".claude/handoff.md")
+    assert handoff.exists(), "close_slice must bundle .claude/handoff.md before wipe"
+    assert "stub sweep" in handoff.read_text(), (
+        "handoff.md must contain bundled sweep-notes content"
+    )
+    sweep_source = Path(".claude/current-slice/integration/sweep-notes.md")
+    assert not sweep_source.exists(), (
+        "INV-008 DC-5: sweep-notes.md must be wiped from current-slice after close"
+    )
 
     final_yaml = Path(".claude/current-slice/slice.yaml").read_text()
     assert "status: complete" in final_yaml, (
@@ -165,7 +173,9 @@ def test_v6_state_machine_runs_end_to_end(trivial_slice_workspace, monkeypatch, 
 
 
 def test_v6_four_phase_handoff_commits_present(trivial_slice_workspace, monkeypatch):
-    """intent.md:75 — 'all four phases produced commits on the branch'."""
+    """intent.md:75 + INV-008 DC-4: phases 1-3 each emit a `handoff: phase N
+    complete` boundary commit; Phase 4 emits NO boundary commit; close_slice
+    is the sole producer of the `slice: complete` commit."""
     import slice_orchestrator as so
 
     monkeypatch.setattr(so, "dispatch_phase_agent", _canned_phase_agent)
@@ -176,11 +186,16 @@ def test_v6_four_phase_handoff_commits_present(trivial_slice_workspace, monkeypa
     log = subprocess.check_output(
         ["git", "log", "--pretty=%s"], text=True, cwd=trivial_slice_workspace
     )
-    # Handoff commit per phase (1..4) plus the close_slice commit.
-    for n in (1, 2, 3, 4):
-        assert f"phase {n}" in log, (
-            f"expected a commit mentioning 'phase {n}'; git log was:\n{log}"
+    for n in (1, 2, 3):
+        assert f"handoff: phase {n} complete" in log, (
+            f"expected `handoff: phase {n} complete` commit; git log was:\n{log}"
         )
+    assert "handoff: phase 4 complete" not in log, (
+        f"INV-008 DC-4 violated: HEAD-side phase 4 commit present; git log was:\n{log}"
+    )
+    assert "slice: complete" in log, (
+        f"close_slice must produce the `slice: complete` commit; git log was:\n{log}"
+    )
 
 
 # --- V6b — live end-to-end (opt-in) -----------------------------------------
