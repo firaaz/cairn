@@ -1104,14 +1104,15 @@ class TestCairnSelfDogfood:
         assert "ALL CHECKS PASSED" in result.stdout
 
 
-# === SLICE-011: Assertion block coverage for all 7 invariants =================
+# === SLICE-011: Assertion block coverage for all firm invariants ==============
 #
 # These tests verify that every invariant in cairn's own ARCHITECTURE.md carries
 # a machine-checkable assertion block, completing the D2 defense commitment.
-# They are expected to FAIL until Phase 3 adds the assertion blocks.
+# Baseline: INV-001 through INV-008 (INV-008 added by compression/slice-3
+# observability-and-close-slice — slice-close-contract).
 
 
-EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 8)}
+EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 9)}
 V1_ASSERTION_TYPES = {"grep", "file-exists", "test-ref"}
 
 
@@ -1121,10 +1122,10 @@ def _read_cairn_architecture() -> str:
 
 
 class TestSlice011AssertionCoverage:
-    """Every invariant (INV-001 through INV-007) must have an assertion block."""
+    """Every firm invariant (INV-001 through INV-008) must have an assertion block."""
 
     def test_all_seven_invariants_have_assertion_blocks(self):
-        """Each of INV-001..INV-007 has a parsed assertion block in ARCHITECTURE.md."""
+        """Each of INV-001..INV-008 has a parsed assertion block in ARCHITECTURE.md."""
         arch_text = _read_cairn_architecture()
         blocks = parse_assertion_blocks(arch_text)
         missing = EXPECTED_INVARIANT_IDS - set(blocks.keys())
@@ -1182,7 +1183,7 @@ class TestSlice011AssertionCoverage:
                 assert "pattern" in assertion, f"{inv_id} test-ref missing 'pattern'"
 
     def test_invariant_count_unchanged(self):
-        """ARCHITECTURE.md still has exactly 7 invariants (blocks didn't alter text)."""
+        """ARCHITECTURE.md has exactly the firm-invariant set (INV-001..INV-008)."""
         arch_text = _read_cairn_architecture()
         invariants = parse_invariants(arch_text)
         inv_ids = {f"INV-{inv['inv_num']:03d}" for inv in invariants}

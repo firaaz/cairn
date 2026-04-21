@@ -98,7 +98,7 @@ def test_b9_failure_log_records_partial_commit_after_timeout(monkeypatch, tmp_pa
     monkeypatch.setattr(so, "_run_with_live_stderr", fake_run_with_live_stderr)
     monkeypatch.setattr(so, "_resolve_timeout", lambda role, override: 1)
 
-    result = so.dispatch_phase_agent(
+    so.dispatch_phase_agent(
         "phase-1-writer", {"phase": 1, "role": "phase-1-writer", "slice_id": "s"}
     )
 

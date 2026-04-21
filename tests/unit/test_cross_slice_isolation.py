@@ -69,8 +69,8 @@ def test_index_jsonl_entries_include_slice_id_tag(monkeypatch, tmp_path):
     so._append_index_entry({"slice_id": "feat/beta", "event": "failure", "phase": 2})
 
     idx = Path(".claude/orchestrator-debug/index.jsonl")
-    lines = [json.loads(l) for l in idx.read_text().splitlines()]
-    assert [l["slice_id"] for l in lines] == ["feat/alpha", "feat/beta"]
+    lines = [json.loads(line) for line in idx.read_text().splitlines()]
+    assert [line["slice_id"] for line in lines] == ["feat/alpha", "feat/beta"]
 
 
 def test_slug_collision_exits_failed(monkeypatch, tmp_path, capsys):
