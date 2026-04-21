@@ -7,7 +7,7 @@ Phase-2 fixtures.
 RED/GREEN key at Phase 2 commit:
 - Item A ruff F841 --- RED (line 147 still contains unused `calls` var)
 - Item A pytest state-machine --- GREEN guard (no pre-existing failures in that file)
-- Item B gitignore + untracked --- GREEN guard (already true, drift detector)
+- Item B gitignore drift detector --- GREEN guard (untracked-after-close assertion retired; contradicts INV-008 D2)
 - Item C platform-probe retired --- RED (file still tracked)
 - Item D empty current-slice subdirs --- GREEN guard (pruned at a09e5e8)
 - Item 8 dogfooding findings in sweep-notes.md --- RED (sweep-notes not yet written)
@@ -69,14 +69,6 @@ def test_item_b_handoff_path_in_gitignore():
     )
 
 
-def test_item_b_handoff_not_tracked():
-    result = _run(["git", "ls-files", str(HANDOFF.relative_to(REPO_ROOT))])
-    assert result.stdout.strip() == "", (
-        f".claude/handoff.md must remain untracked; git ls-files returned:\n"
-        f"{result.stdout!r}"
-    )
-
-
 # --- Item C: .claude/platform-probe.md retirement ----------------------------
 
 
@@ -126,6 +118,7 @@ def test_item_8_dogfooding_findings_section_in_sweep_notes():
     verification is re-anchored in a successor slice.
     """
     import pytest
+
     pytest.skip(
         "sweep-notes.md for housekeeping/post-slice-a-tidy was wiped at "
         "slice close per the pipeline's standard close sequence; this "

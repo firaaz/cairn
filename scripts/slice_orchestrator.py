@@ -1688,7 +1688,7 @@ def close_slice(state=None):
 
     # Step 4: sole `slice: <id> — complete` commit (DC-4 + B5-tightened).
     slice_id_for_subject = sy.get("id") or "unknown/unknown"
-    _git("add", str(SLICE_YAML), str(handoff))
+    _git("add", "-f", str(SLICE_YAML), str(handoff))
     try:
         _git("add", "-u", ".claude/current-slice")
     except subprocess.CalledProcessError:
