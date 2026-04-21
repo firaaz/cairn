@@ -342,6 +342,17 @@ Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "
 | `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for `phase-4-integrator`. |
 | `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
 | `CAIRN_HEARTBEAT_INTERVAL` | `10.0` (s) | `scripts/slice_orchestrator.py` | Cadence (seconds) at which the orchestrator heartbeat daemon touches `.claude/current-slice/.heartbeat` with a UTC ISO timestamp. Lower = finer-grained liveness, more write pressure. Per ADR `orchestrator-observability`. |
+
+#### Triager superseded-test heuristic (advisory)
+
+Before `dispatch_triager` invokes the `issue-triager` agent, the orchestrator reads the RAISE_ISSUE commit body (`git log -1 --format=%B <hash>`) and `.claude/current-slice/intent.md`, then runs `detect_superseded_test_signal` in `scripts/slice_orchestrator.py`. On a hit, an advisory `supersession_hint = {"hint": "likely_superseded", "evidence": [...]}` is added to the JSON inputs handed to the triager. The hint fires when the commit body contains any of:
+
+- `\bsuperseded?\b` (root `supersede`/`superseded`; trailing `s` as in `supersedes` deliberately excluded);
+- `\bINV-\d{3}\b` (fires regardless of intent);
+- `\bDC-\d+\b` **and** the same `DC-<n>` token appears in the current slice's `intent.md` (AND-gated so unrelated DC references in quoted ADR prose do not fire).
+
+Matching is case-insensitive. The hint is **advisory**: the orchestrator does not second-guess the triager's final action — it only surfaces the signal so the triager can prefer `ESCALATE_TO_USER` with rationale "test-amendment recommended" over `RE_DISPATCH`-to-Phase-2 when pre-existing tests are named that a firm contract just landed supersedes. Fails open: any git/filesystem error leaves the triager inputs pristine. Pattern traced to memory `triager_misroute_on_superseded_tests.md` (2026-04-20→21).
+
 | `CAIRN_HEARTBEAT_STALE` | `30.0` (s) | `scripts/slice_orchestrator.py` | Staleness threshold (seconds) after which a `.heartbeat` timestamp is treated as advisory-stale by slice-close-contract D4 tooling. Should be ≥ 2× `CAIRN_HEARTBEAT_INTERVAL`. |
 | `CAIRN_LEGACY_START_SLICE` | unset | `commands/claude-code/start-slice.md` | When set to any non-empty value, `/start-slice` defers to `start-slice-legacy.md`'s prose protocol instead of invoking the orchestrator. Equivalent to passing `--legacy`. |
 | `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → hook is a no-op (non-compressed slices unaffected). |
