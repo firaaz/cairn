@@ -1,16 +1,42 @@
-id: housekeeping/inv004-rebaseline-cc-2-1-116
-name: housekeeping/inv004-rebaseline-cc-2-1-116
-status: complete
-current_phase: 4
-brief: 'Re-baseline INV-004 turn-1 token budget for CC 2.1.116 harness drift. Proposed
-  slice-id: housekeeping/inv004-rebaseline-cc-2.1.116. Current budget 30000 (set for
-  CC 2.1.110); observed 30170-30351 tokens under CC 2.1.116 per sweep #22 section
-  1 (.claude/sweep-results/2026-04-21-sweep-22.md:48-62). Scope: (1) raise BUDGET_HARD
-  constant in tests/unit/test_context_budget.py, (2) amend docs/ARCHITECTURE.md INV-004
-  body to cite new ceiling + CC 2.1.116 measurement. Pattern: prior housekeeping/inv004-rebaseline
-  slice (2026-04-16, commit d65e50c). Classification: environmental (harness-version
-  drift), NOT cairn content growth - trimming cairn content is explicitly wrong per
-  sweep section 1. Phase-1 writer should select the new ceiling based on headroom
-  convention from the prior re-baseline (22k to 30k was +36% headroom). Out of scope:
-  the 11 other pytest reds, 3 lint errors, heartbeat env var docs - those belong to
-  a separate housekeeping/post-inv008-tech-debt slice queued next.'
+id: housekeeping/post-inv008-and-substrate-bugs
+name: housekeeping/post-inv008-and-substrate-bugs
+status: in-progress
+current_phase: 1
+brief: "Bundled housekeeping-bugfix slice combining two previously-separate queues\
+  \ per operator decision (sweep #23 2026-04-21-sweep-23.md \xA7Follow-up). Two scopes:\n\
+  \nSCOPE A \u2014 post-inv008-tech-debt (from sweep #23 \xA72 roster):\n- 10 pytest\
+  \ reds: test_context_discipline_protocol::test_v5_learning_staging_ground_exists_and_is_minimal;\
+  \ 3\xD7 test_hook_relpath_bypass::{test_edit_body_bare_relative_flat_slug_blocked,\
+  \ test_edit_body_bare_relative_legacy_blocked, test_edit_body_slice_system_flat_slug_blocked};\
+  \ 3\xD7 test_hook_tolerance::TestV3FrontmatterEditBothForms::{test_edit_body_flat_slug_blocked,\
+  \ test_edit_body_flat_slug_emits_message, test_edit_body_legacy_blocked}; test_housekeeping_post_slice_a_tidy::test_item_b_handoff_not_tracked;\
+  \ 2\xD7 test_invariant_assertions::TestSlice011AssertionCoverage::{test_no_extra_assertion_blocks,\
+  \ test_invariant_count_unchanged}.\n- 2\xD7 ruff E741 at tests/unit/test_cross_slice_isolation.py:72-73\
+  \ (ambiguous `l`).\n- 1\xD7 ruff F841 at tests/unit/test_post_timeout_reconcile.py:101\
+  \ (unused `result`).\n- Heartbeat env var docs (CAIRN_HEARTBEAT_INTERVAL, CAIRN_HEARTBEAT_STALE)\
+  \ missing from docs/operational-reference.md:339-344; implementations live in scripts/slice_orchestrator.py\
+  \ and heartbeat code.\n\nSCOPE B \u2014 5 substrate bugs from memory orchestrator_bug_fix_slice_scope.md\
+  \ (from compression slice-B 2026-04-21):\n1. current_phase not persisted across\
+  \ sessions in .claude/current-slice/slice.yaml \u2014 causes phase drift on resume.\n\
+  2. phase-2-skeptic YAML-escape bug \u2014 coupling-clusters fragment got inline\
+  \ hotfix at 5319c53; confirm whether the fix is class-wide or narrow-patch; reconcile\
+  \ scope before editing.\n3. Slug dot/hyphen drift \u2014 confirmed live this window:\
+  \ rebaseline slice's slice.yaml uses hyphens (housekeeping/inv004-rebaseline-cc-2-1-116)\
+  \ while commit subjects use dots (housekeeping/inv004-rebaseline-cc-2.1.116). Pick\
+  \ one canonical form and enforce.\n4. Measurement churn \u2014 pytest run rewrote\
+  \ docs/plans/measurements/2026-04-12-slice-003.txt as a test side effect during\
+  \ sweep #23; the test should not mutate tracked measurement files.\n5. close_slice\
+  \ commit subject fails verify_handoff check (c) \u2014 ADR slice-close-contract\
+  \ INV-008 commit must not break the handoff verifier.\n\nReference material the\
+  \ Phase 1 writer should consult:\n- .claude/sweep-results/2026-04-21-sweep-23.md\
+  \ (full red roster with file:line)\n- memory file orchestrator_bug_fix_slice_scope.md\
+  \ (5-bug details)\n- docs/adr/slice-close-contract.md (firm INV-008 \u2014 close_slice\
+  \ behavior must not regress)\n- docs/adr/orchestrator-observability.md (provisional;\
+  \ heartbeat env vars)\n- docs/operational-reference.md (Phase Skill Guide, env var\
+  \ documentation location)\n\nOut-of-scope (enforce):\n- Path C + multi-instance\
+  \ hardening (deferred separately)\n- Triager misroute on superseded tests (deferred\
+  \ \u2014 memory triager_misroute_on_superseded_tests.md; prompt iteration pending)\n\
+  - Any new features, refactors, or abstractions beyond the named fixes/docs\n\nOperator\
+  \ explicitly chose bundling over the two-slice sequence in handoff.md (2-slice original:\
+  \ post-inv008-tech-debt then substrate-bug-fix). Phase 1 writer may re-split if\
+  \ the envelope proves unwieldy, but default is one slice."
