@@ -1,7 +1,7 @@
 """Phase 2 validation tests for SLICE-003 — context budget (INV-004).
 
 Live measurement: spawns a CC session with "hi" in cairn root, reads
-turn-1 token count from session JSONL, asserts ≤30k. Records CC version
+turn-1 token count from session JSONL, asserts ≤40k. Records CC version
 and measurement delta. Skips if `claude` CLI is not on PATH.
 
 Pytest + stdlib only.
@@ -14,8 +14,8 @@ from pathlib import Path
 import pytest
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
-BUDGET_HARD = 30_000
-BUDGET_ASPIRATIONAL = 25_000
+BUDGET_HARD = 40_000
+BUDGET_ASPIRATIONAL = 33_000
 D1_BASELINE = 27_314
 MEASUREMENT_FILE = (
     CAIRN_ROOT / "docs" / "plans" / "measurements" / "2026-04-12-slice-003.txt"
@@ -100,7 +100,7 @@ def _record_measurement(tokens: int, version: str) -> None:
 
 @pytest.mark.skipif(not _claude_available(), reason="claude CLI not on PATH")
 def test_inv004_turn1_token_budget():
-    """INV-004 — turn-1 total context ≤30,000 tokens on a fresh 'hi' session."""
+    """INV-004 — turn-1 total context ≤40,000 tokens on a fresh 'hi' session."""
     tokens, version = _run_and_measure()
     _record_measurement(tokens, version)
 

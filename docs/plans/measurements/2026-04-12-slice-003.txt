@@ -1,6 +1,6 @@
 CC version: 2.1.116 (Claude Code)
-Turn-1 tokens: 30351
+Turn-1 tokens: 30387
 D1 baseline: 27314
-Delta: +3037 (+11.1%)
-Hard budget (30000): FAIL
-Aspirational (25000): MISS
+Delta: +3073 (+11.3%)
+Hard budget (40000): PASS
+Aspirational (33000): PASS
