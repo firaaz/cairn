@@ -7,7 +7,7 @@ returns `status: OK`. Afterwards:
  - `.claude/handoff.md` is the concatenation of `handoff-phase-{1..4}.md`
    separated by `\\n---\\n`, followed by `integration/sweep-notes.md` if
    present.
- - A single git commit `slice: complete` stages both files.
+ - A single git commit `slice: <id> — complete` stages both files.
 
 Expected at Phase 2: FAILS because close_slice is not yet invoked from
 run_phase_loop at the end of the Phase-4-OK exit path, or it does not
@@ -97,8 +97,12 @@ def test_b10_close_slice_fires_and_produces_concatenated_handoff(monkeypatch, tm
         text=True,
         check=True,
     ).stdout.splitlines()
-    assert "slice: complete" in log, f"no `slice: complete` commit; log={log!r}"
-    assert log.count("slice: complete") == 1, "close_slice must commit exactly once"
+    # B5-tightened: HEAD subject is `slice: <id> — complete` (slice-close-contract).
+    import re as _re
+
+    _pat = _re.compile(r"^slice: .+ — complete$")
+    assert any(_pat.match(s) for s in log), f"no `slice: <id> — complete` commit; log={log!r}"
+    assert sum(1 for s in log if _pat.match(s)) == 1, "close_slice must commit exactly once"
 
 
 def test_b10_handoff_includes_sweep_notes_when_present(monkeypatch, tmp_path):

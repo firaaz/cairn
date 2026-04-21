@@ -175,7 +175,7 @@ def test_v6_state_machine_runs_end_to_end(trivial_slice_workspace, monkeypatch, 
 def test_v6_four_phase_handoff_commits_present(trivial_slice_workspace, monkeypatch):
     """intent.md:75 + INV-008 DC-4: phases 1-3 each emit a `handoff: phase N
     complete` boundary commit; Phase 4 emits NO boundary commit; close_slice
-    is the sole producer of the `slice: complete` commit."""
+    is the sole producer of the `slice: <id> — complete` commit."""
     import slice_orchestrator as so
 
     monkeypatch.setattr(so, "dispatch_phase_agent", _canned_phase_agent)
@@ -193,8 +193,12 @@ def test_v6_four_phase_handoff_commits_present(trivial_slice_workspace, monkeypa
     assert "handoff: phase 4 complete" not in log, (
         f"INV-008 DC-4 violated: HEAD-side phase 4 commit present; git log was:\n{log}"
     )
-    assert "slice: complete" in log, (
-        f"close_slice must produce the `slice: complete` commit; git log was:\n{log}"
+    # B5-tightened: subject is `slice: <id> — complete` (slice-close-contract).
+    import re as _re
+
+    _pat = _re.compile(r"^slice: .+ — complete$", _re.MULTILINE)
+    assert _pat.search(log), (
+        f"close_slice must produce a `slice: <id> — complete` commit; git log was:\n{log}"
     )
 
 
