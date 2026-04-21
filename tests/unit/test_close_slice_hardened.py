@@ -114,7 +114,11 @@ def test_close_slice_twice_is_noop(monkeypatch, tmp_path):
     ).stdout.splitlines()
 
     assert after == before, "second close_slice must not add any commit"
-    assert after.count("slice: complete") == 1
+    # B5-tightened: subject is `slice: <id> — complete` (slice-close-contract).
+    import re as _re
+
+    pat = _re.compile(r"^slice: .+ — complete$")
+    assert sum(1 for s in after if pat.match(s)) == 1
 
 
 def test_close_slice_short_circuits_on_already_closed_state(monkeypatch, tmp_path):
@@ -206,10 +210,14 @@ def test_close_slice_produces_single_slice_complete_commit(monkeypatch, tmp_path
         check=True,
     ).stdout.splitlines()
 
-    assert log[0] == "slice: complete", (
-        f"HEAD subject must be 'slice: complete'; got {log[0]!r}"
+    # B5-tightened: HEAD subject is `slice: <id> — complete` (slice-close-contract).
+    import re as _re
+
+    pat = _re.compile(r"^slice: .+ — complete$")
+    assert pat.match(log[0]), (
+        f"HEAD subject must match 'slice: <id> — complete'; got {log[0]!r}"
     )
-    assert log.count("slice: complete") == 1
+    assert sum(1 for s in log if pat.match(s)) == 1
     # DC-4 strengthening: no `handoff: phase 4 complete` anywhere in slice history.
     assert not any(s == "handoff: phase 4 complete" for s in log), (
         f"'handoff: phase 4 complete' must not appear; log={log!r}"
@@ -266,7 +274,8 @@ def test_close_slice_wipe_runs_before_commit(monkeypatch, tmp_path):
     def spy_git(*args, **kwargs):
         if args and args[0] == "commit":
             msg = args[args.index("-m") + 1] if "-m" in args else ""
-            if msg == "slice: complete":
+            # B5-tightened: subject is `slice: <id> — complete`.
+            if msg.startswith("slice: ") and msg.endswith(" — complete"):
                 events.append("commit")
         return real_git(*args, **kwargs)
 
