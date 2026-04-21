@@ -72,8 +72,8 @@
     "size": 1339
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "0eb19b05818bcf8428634926705078d93d390d2f3b80fbbeb0bfaf0a7ae2e95b",
-    "size": 23554
+    "hash": "bc2f7ab5fb62bd8e62f97b8086add5cb6c36fa2704d8b7f7e9fb6d206ef0b8d6",
+    "size": 23821
   },
   "docs/adr/bootstrap-exception.md": {
     "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
@@ -400,8 +400,8 @@
     "size": 4123
   },
   "tests/unit/test_context_budget.py": {
-    "hash": "b162e0c3292b5946e8c536f7a4b7c5d596737b4c8864eda07feffebc8a691bae",
-    "size": 9480
+    "hash": "d1d2ef08883f1a34ec7081397a22dab29ec34631e08ba32d29291fbdf27a231a",
+    "size": 11150
   },
   "tests/unit/test_context_discipline_protocol.py": {
     "hash": "96a847111618f7f5364f70faf2bcc834f87db4cf1a231173a605ed257eccbf64",
