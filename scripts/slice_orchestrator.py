@@ -1727,10 +1727,43 @@ def close_slice(state=None):
     """INV-008 slice-close contract: DC-3 idempotent, DC-4 sole commit source,
     DC-5 explicit wipe, DC-7 slug-keyed observability persistence.
 
-    Order: slice.yaml → bundle → wipe → commit `slice: complete`.
+    Order: sweep-notes presence check → slice.yaml → bundle → wipe → commit
+    `slice: complete`.
     """
     if _is_slice_already_closed(state):
         return
+
+    # Step 0: D2 presence check — sweep-notes.md must exist before any state
+    # mutation (slice.yaml write, bundle, wipe, commit). Compression §8 D2
+    # elevates "committed-artifact-first" to principle; INV-008 DC-4 keeps
+    # close_slice as the sole `slice: complete` commit site. Abort with
+    # FAILED-terminal observability and non-zero exit when missing.
+    sweep_notes = Path(".claude/current-slice/integration/sweep-notes.md")
+    if not sweep_notes.is_file():
+        reason = "sweepnotes-missing-at-close"
+        print(
+            f"orchestrator: close aborted — {sweep_notes} absent; "
+            "INV-008 DC-4 / compression §8 D2 require sweep-notes.md before "
+            "`slice: <id> — complete`",
+            file=sys.stderr,
+        )
+        if _state and _state.get("slice_id"):
+            _update_state(
+                status="FAILED",
+                exit_code=1,
+                ended_at=_iso_now(),
+                reason=reason,
+            )
+            try:
+                _persist_state(_state)
+            except SystemExit:
+                raise
+            except Exception as exc:
+                print(
+                    f"orchestrator: FAILED-branch persist_state failed: {exc}",
+                    file=sys.stderr,
+                )
+        sys.exit(1)
 
     # Step 1: slice.yaml → status=complete, current_phase=max_phase.
     try:
@@ -1768,6 +1801,21 @@ def close_slice(state=None):
         _git("add", "-u", ".claude/current-slice")
     except subprocess.CalledProcessError:
         pass
+    # Extended add surface: every path phase-4-integrator is contracted to
+    # write (.claude/agents/phase-4-integrator.md:9). Staging here, not in a
+    # new commit site — INV-008 DC-4 preserved.
+    for extra in (Path(".claude/sweep.yaml"), Path(".claude/handoff.md")):
+        if extra.exists():
+            try:
+                _git("add", "-f", str(extra))
+            except subprocess.CalledProcessError:
+                pass
+    sweep_results = Path(".claude/sweep-results")
+    if sweep_results.is_dir():
+        try:
+            _git("add", "-A", str(sweep_results))
+        except subprocess.CalledProcessError:
+            pass
     _git(
         "commit",
         "--allow-empty",
