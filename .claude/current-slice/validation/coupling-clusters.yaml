@@ -1,0 +1,5 @@
+clusters:
+  - name: orchestrator-phase-handoff-stage
+    files:
+      - '^scripts/slice_orchestrator\.py$'
+      - '^tests/unit/test_commit_phase_handoff_stage_surface\.py$'
