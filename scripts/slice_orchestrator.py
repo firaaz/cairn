@@ -1449,6 +1449,17 @@ def commit_phase_handoff(phase, summary, commit_hash):
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         _git("add", str(path))
+    # Stage phase-1-writer's full declared write surface
+    # (.claude/agents/phase-1-writer.md:9) at the handoff boundary.
+    # Guarded by path.exists() so Phases 2/3/4 (which do not touch
+    # either path) are no-ops — preserves INV-008 DC-4.
+    intent_path = Path(".claude/current-slice/intent.md")
+    if intent_path.exists():
+        _git("add", str(intent_path))
+    feature_id = _slice_id().split("/", 1)[0]
+    feature_path = Path(f".claude/features/{feature_id}.yaml")
+    if feature_path.exists():
+        _git("add", str(feature_path))
     _git("commit", "--allow-empty", "-m", f"handoff: phase {phase} complete")
 
 
