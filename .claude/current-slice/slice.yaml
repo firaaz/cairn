@@ -1,38 +1,25 @@
-id: compression/triager-superseded-test-heuristic
-name: compression/triager-superseded-test-heuristic
-status: complete
-current_phase: 4
-brief: "Iterate `dispatch_triager` / triager prompt so a RAISE_ISSUE message naming\
-  \ pre-existing tests superseded by a now-firm contract routes to ESCALATE_TO_USER\
-  \ instead of RE_DISPATCH-to-Phase-2.\n\nObserved pattern (memory `triager_misroute_on_superseded_tests.md`,\
-  \ compression/slice-3-observability-and-close-slice 2026-04-20\u219221):\n1. A slice\
-  \ lands a firm contract (e.g., INV-008 DC-4 forbids the Phase-4 boundary commit;\
-  \ DC-5 wipes current-slice at close).\n2. Phase-3 implementer's new RED suite is\
-  \ GREEN, but pre-existing tests (e.g., `test_v6_four_phase_handoff_commits_present`,\
-  \ `test_v6_state_machine_runs_end_to_end`) encode behavior the new contract explicitly\
-  \ supersedes.\n3. Phase-3 correctly emits RAISE_ISSUE naming the superseded tests\
-  \ + the DCs that supersede them.\n4. Triager routes RE_DISPATCH-to-Phase-2. Phase-2's\
-  \ charter is producing NEW RED tests, not editing existing ones, so Phase-2 picks\
-  \ a different defect. Phase-3 RAISE_ISSUE's again on the same tests; B15 re-dispatch\
-  \ cap fires; late escalation.\n\nCore heuristic to add: if RAISE_ISSUE message contains\
-  \ `supersede`, `superseded`, `INV-\\d+`, or a DC-code introduced by the current\
-  \ slice (scan slice.yaml's `decision-points` / intent), prefer ESCALATE_TO_USER\
-  \ with rationale \"test-amendment recommended\" over RE_DISPATCH-to-Phase-2.\n\n\
-  Scope:\n- Triager logic in scripts/slice_orchestrator.py `dispatch_triager` (starts\
-  \ near line 1140) + its prompt/inputs.\n- A Phase-2 suite exercising the heuristic:\
-  \ RAISE_ISSUE text mentions superseded/INV/DC \u2192 triager returns ESCALATE_TO_USER;\
-  \ control case (ordinary implementation defect) still returns RE_DISPATCH.\n- Consider\
-  \ whether this warrants a new ADR or amendment to an existing triager-contract ADR\
-  \ (Phase-1 writer decides).\n\nReference material Phase-1 writer should consult:\n\
-  - memory file `triager_misroute_on_superseded_tests.md` (pattern + concrete log\
-  \ path)\n- `.claude/orchestrator-debug/compression-slice-3-observability-and-close-slice-phase-3-phase-3-implementer-20260420T194707Z.log`\
-  \ (concrete RAISE_ISSUE instance)\n- `scripts/slice_orchestrator.py` `dispatch_triager`\
-  \ + `VALID_TRIAGER_ACTIONS` (line 50)\n- `docs/adr/slice-close-contract.md` (INV-008\
-  \ DC-4/DC-5 \u2014 the firm contract whose landing triggered the misroute)\n- `docs/operational-reference.md`\
-  \ Phase Skill Guide (triager row, if one exists)\n\nOut-of-scope (enforce):\n- Path\
-  \ C fleet-writes empirical gap (memory `path_c_fleet_writes_empirical.md`)\n- Compression\
-  \ Slices C/D/F (`docs/plans/2026-04-20-compression-pipeline-hardening-plan.md`)\n\
-  - General triager refactoring beyond the superseded-test heuristic\n- RE_DISPATCH\
-  \ cap tuning (B15) \u2014 separate concern\n- Removing or reworking existing triager\
-  \ actions (ABORT, RE_DISPATCH, ESCALATE_TO_USER) \u2014 only the routing heuristic\
-  \ changes"
+id: compression/phase-4-sweepnotes-required
+name: compression/phase-4-sweepnotes-required
+status: in-progress
+current_phase: 1
+brief: "Enforce D2 universal phase-artifact discipline (sweep-notes.md required at\
+  \ slice close) and co-land the adjacent close_slice staging-surface fix for orphaned\
+  \ phase-4 writes. Primary: in scripts/slice_orchestrator.py close_slice, add a presence\
+  \ check that .claude/current-slice/integration/sweep-notes.md exists on disk before\
+  \ the sole slice-complete commit; fail the close with non-zero exit, clear stderr,\
+  \ and orchestrator-result.json status FAILED if missing. Mechanical enforcement\
+  \ of the audit follow-up phase-4-sweepnotes-required (compression design section\
+  \ 9, D2 invariant). Secondary (co-landed because the edit surface is identical):\
+  \ extend the close_slice _git add surface at scripts/slice_orchestrator.py:1766-1770\
+  \ to cover every path declared in .claude/agents/phase-4-integrator.md:9 \u2014\
+  \ specifically .claude/handoff.md, .claude/sweep.yaml, and new files under .claude/sweep-results/.\
+  \ Use git add -A .claude/sweep-results/ so newly-created sweep result files are\
+  \ staged safely rather than enumerated. Eliminates the orphan-artifact pattern concretely\
+  \ observed in commit a8d8f23. Constrained by INV-008 DC-4 (docs/adr/slice-close-contract.md:63)\
+  \ \u2014 close_slice remains the sole commit source; we are extending the add list,\
+  \ not introducing new commit sites. Phase-2 writes one RED test asserting close_slice\
+  \ aborts when sweep-notes.md is absent, and one RED test asserting that a modified\
+  \ .claude/handoff.md or .claude/sweep.yaml lands in the slice-complete commit tree.\
+  \ Out of scope: Slice C (candidate-set hygiene D3), Slice D (envelope-immutability-guard\
+  \ D1), Slice F (rolling-window /status surfacing), Path C fleet-writes empirical\
+  \ gap, general close_slice refactor, any phase-4-agent contract changes."
