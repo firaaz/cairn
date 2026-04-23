@@ -1,25 +1,32 @@
-id: compression/phase-4-sweepnotes-required
-name: compression/phase-4-sweepnotes-required
-status: complete
-current_phase: 4
-brief: "Enforce D2 universal phase-artifact discipline (sweep-notes.md required at\
-  \ slice close) and co-land the adjacent close_slice staging-surface fix for orphaned\
-  \ phase-4 writes. Primary: in scripts/slice_orchestrator.py close_slice, add a presence\
-  \ check that .claude/current-slice/integration/sweep-notes.md exists on disk before\
-  \ the sole slice-complete commit; fail the close with non-zero exit, clear stderr,\
-  \ and orchestrator-result.json status FAILED if missing. Mechanical enforcement\
-  \ of the audit follow-up phase-4-sweepnotes-required (compression design section\
-  \ 9, D2 invariant). Secondary (co-landed because the edit surface is identical):\
-  \ extend the close_slice _git add surface at scripts/slice_orchestrator.py:1766-1770\
-  \ to cover every path declared in .claude/agents/phase-4-integrator.md:9 \u2014\
-  \ specifically .claude/handoff.md, .claude/sweep.yaml, and new files under .claude/sweep-results/.\
-  \ Use git add -A .claude/sweep-results/ so newly-created sweep result files are\
-  \ staged safely rather than enumerated. Eliminates the orphan-artifact pattern concretely\
-  \ observed in commit a8d8f23. Constrained by INV-008 DC-4 (docs/adr/slice-close-contract.md:63)\
-  \ \u2014 close_slice remains the sole commit source; we are extending the add list,\
-  \ not introducing new commit sites. Phase-2 writes one RED test asserting close_slice\
-  \ aborts when sweep-notes.md is absent, and one RED test asserting that a modified\
-  \ .claude/handoff.md or .claude/sweep.yaml lands in the slice-complete commit tree.\
-  \ Out of scope: Slice C (candidate-set hygiene D3), Slice D (envelope-immutability-guard\
-  \ D1), Slice F (rolling-window /status surfacing), Path C fleet-writes empirical\
-  \ gap, general close_slice refactor, any phase-4-agent contract changes."
+id: compression/phase-1-handoff-stage-surface
+name: compression/phase-1-handoff-stage-surface
+status: in-progress
+current_phase: 1
+brief: "Extend scripts/slice_orchestrator.py:commit_phase_handoff (lines 1441-1452)\
+  \ to stage phase-1-writer full declared write surface \u2014 BOTH .claude/current-slice/intent.md\
+  \ AND .claude/features/<feature>.yaml \u2014 alongside the existing handoff-phase-<N>.md\
+  \ stage. Per .claude/agents/phase-1-writer.md:9 the declared writes are both files;\
+  \ today commit_phase_handoff stages only handoff-phase-N.md, leaving BOTH orphaned.\
+  \ Evidence of the chronic intent.md orphan: 8e619c3 slice(amendment), 513b0de phase-1-artifact-recovery,\
+  \ a3729cb phase-1-artifacts (manual persistence), f2ab0f3 phase-1-intent (seeded).\
+  \ Evidence of the features-file orphan: a8d8f23 and dbea33c chore(orchestrator)\
+  \ tail-commits. One function, one fix: after the existing if path.exists(): _git(\"\
+  add\", str(path)) for handoff-phase-N.md at line 1450, add best-effort stages for\
+  \ both Phase-1 paths. Feature-id resolves from slice.yaml id (segment before /)\
+  \ via the existing _slice_id() helper. Each stage guarded by if path.exists(): _git(\"\
+  add\", str(path)) mirroring the existing pattern so Phases 2/3/4 (which do not touch\
+  \ either path) remain no-ops. No git add -A. No file creation. No mkdir. Phase-2\
+  \ writes FOUR RED tests: R1a intent.md stages when present, R1b features-file stages\
+  \ when present, R2a no-op when intent.md absent, R2b no-op when features-file absent.\
+  \ Preserves INV-008 DC-4 (close_slice remains sole slice-complete commit source;\
+  \ commit_phase_handoff stays a per-phase boundary staging function, not a new terminal\
+  \ commit site). Preserves INV-003 (phase-1-writer contract unchanged; only orchestrator\
+  \ staging surface extended). Out of scope: Slice C F2/candidate-set hygiene (pending\
+  \ /decision on shape a vs b); close_slice edits (Slice E landed those; symmetrical\
+  \ but separate function); init_new_slice edits (distinct commit site \u2014 init_new_slice\
+  \ owns slice.yaml only; Phase-1 outputs land at the Phase-1 handoff boundary, not\
+  \ init); phase-1-writer agent-contract changes (.md:9 declared surface is authoritative);\
+  \ feature-file or intent schema edits; generalised git add -A rewrites; Slice D\
+  \ envelope-immutability-guard; Slice F rolling-window /status surfacing; Path C\
+  \ fleet-writes empirical gap; any new commit sites. Mirror Slice E edit discipline\
+  \ \u2014 additive stage-list extension, not a rewrite."
