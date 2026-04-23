@@ -1,7 +1,7 @@
 id: compression/phase-1-handoff-stage-surface
 name: compression/phase-1-handoff-stage-surface
-status: in-progress
-current_phase: 1
+status: complete
+current_phase: 4
 brief: "Extend scripts/slice_orchestrator.py:commit_phase_handoff (lines 1441-1452)\
   \ to stage phase-1-writer full declared write surface \u2014 BOTH .claude/current-slice/intent.md\
   \ AND .claude/features/<feature>.yaml \u2014 alongside the existing handoff-phase-<N>.md\
