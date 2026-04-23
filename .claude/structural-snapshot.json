@@ -315,10 +315,6 @@
     "hash": "7d96b65a52a27271ce8194a8e1e2fd7ea3ae6d683188453f20d8ec6db8af3dff",
     "size": 3959
   },
-  "docs/why-cairn.md": {
-    "hash": "21125925807b3aac629c088e6496355caeea9c43ab99443d3290ccde2d17e4d0",
-    "size": 17059
-  },
   "scripts/dogfood_evaluate.py": {
     "hash": "3ce8d72a101a5fd2880db695ee621a2e8faebcec5463b1404b82c6bb29a5ad05",
     "size": 9248
