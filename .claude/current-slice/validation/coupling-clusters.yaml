@@ -1,6 +1,0 @@
-clusters:
-  - name: close-slice-d2-enforcement
-    files:
-      - '^scripts/slice_orchestrator\.py$'
-      - '^tests/unit/test_close_slice_sweepnotes_required\.py$'
-      - '^tests/unit/test_close_slice_add_surface\.py$'
