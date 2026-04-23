@@ -1,28 +1,31 @@
 ---
 slice: none
-phase: complete
+phase: n/a
 branch: feature/compression
-as-of: 2026-04-23 163a821
+as-of: 2026-04-23 1b36dbe
 ---
 
 ## State
-Slice `compression/phase-1-handoff-stage-surface` closed clean at `7101d83`; final orphan chore at `163a821`. `commit_phase_handoff` now stages phase-1-writer's full declared surface (intent.md + features/<f>.yaml) — chronic orphan pattern closed from next slice forward. `origin/feature/compression` synced (0/0, pushed `2b1461d..163a821`).
+Strategic plan approved (`~/.claude/plans/actually-it-looks-like-glimmering-journal.md`): cost as first-class constraint; dispatch economics the target. New feature `cost-discipline` seeded — design plan committed at `1b36dbe` covers Track 0 (telemetry + INV-009 provisional) and Lever 1 (per-phase model config) as two back-to-back slices.
 
 ## Next
-Open next compression slice (candidates in Blocked/Pending) or run `/integration-sweep` if the inline sweep at close is insufficient.
+Open `cost-discipline/track-0-telemetry` slice via `/start-slice` — envelope in design plan §"Expected slice".
 
 ## Blocked / Pending
 - Slice C (F2/candidate-set hygiene) — blocked on `/decision` shape a vs b → `docs/plans/2026-04-18-session-compression-audit.md:61`
 - Slice D envelope-immutability-guard (D1), Slice F rolling-window `/status` surfacing — not opened
-- INV-004 token-budget regression under CC 2.1.118 → future `housekeeping/inv004-rebaseline-cc-2.1.118` slice
+- `cost-discipline/lever-1-per-phase-model` — follows Track 0; no block
+- Track B lightweight-slice hatch + Track C consumer-surface docs — seeded in strategic plan; not designed
+- INV-004 token-budget regression under CC 2.1.118 → future `housekeeping/inv004-rebaseline-cc-2.1.118`
 - Path C fleet-writes empirical gap → memory `path_c_fleet_writes_empirical.md`
-- Writer-agent cannot amend existing intent on re-dispatch → memory `feedback_intent_is_the_contract.md`
 
 ## Features
-- compression: phase-1-handoff-stage-surface landed; C (blocked on decision), D, F outstanding
+- compression: C blocked, D/F not opened
+- cost-discipline: design committed; Track 0 slice ready to open
 
 ## Pointers
-- `scripts/slice_orchestrator.py:1441-1464` — `commit_phase_handoff` post-fix; mirror pattern if extending other per-phase stage surfaces
-- `docs/plans/2026-04-18-session-compression-audit.md:61` — F2 shape decision (a: contract-only tests vs b: intent.md `candidate-sets:` field) due before Slice C
-- `memory/feedback_intent_is_the_contract.md` — surface intent.md for explicit operator approval before Phase 2 dispatch
-- `aborted/compression-phase-handoff-features-20260423-2125` — first-attempt (narrow-scope features-only) commits; audit reference only, do not merge
+- `docs/plans/2026-04-23-cost-discipline-design.md` — read before `/start-slice`; envelope, schema additions, insertion points
+- `~/.claude/plans/actually-it-looks-like-glimmering-journal.md` — strategic plan; read to re-ground on why cost is the target
+- `docs/reviews/2026-04-23-from-portfolio-evaluation.md` — portfolio consumer findings; source for Track C
+- `scripts/slice_orchestrator.py:984-992` — dispatch site for Lever 1 + Track 0 `--output-format json` parsing
+- `scripts/slice_orchestrator.py:234-258` — `_init_state_dict`; Track 0 adds 7 fields (additive, no schema_version bump)
