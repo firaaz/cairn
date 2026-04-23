@@ -62,6 +62,14 @@ def _init_project(tmp_path: Path) -> Path:
 
 
 def _stub_dispatch_ok(role, inputs, envelope=None, timeout_hard=None):
+    # Mirror what a real Phase-4 integrator writes: ensure
+    # integration/sweep-notes.md exists so close_slice's D2 presence check
+    # passes (intent.md amendment 2026-04-23; existence-only, not schema-
+    # validated). Idempotent: won't overwrite a test-authored sweep-notes.md.
+    sn = Path(".claude/current-slice/integration/sweep-notes.md")
+    sn.parent.mkdir(parents=True, exist_ok=True)
+    if not sn.exists():
+        sn.write_text("sweep-notes stub\n")
     return {"status": "OK", "commit_hash": "deadbee", "summary": f"{role} ok"}
 
 
@@ -101,8 +109,12 @@ def test_b10_close_slice_fires_and_produces_concatenated_handoff(monkeypatch, tm
     import re as _re
 
     _pat = _re.compile(r"^slice: .+ — complete$")
-    assert any(_pat.match(s) for s in log), f"no `slice: <id> — complete` commit; log={log!r}"
-    assert sum(1 for s in log if _pat.match(s)) == 1, "close_slice must commit exactly once"
+    assert any(_pat.match(s) for s in log), (
+        f"no `slice: <id> — complete` commit; log={log!r}"
+    )
+    assert sum(1 for s in log if _pat.match(s)) == 1, (
+        "close_slice must commit exactly once"
+    )
 
 
 def test_b10_handoff_includes_sweep_notes_when_present(monkeypatch, tmp_path):

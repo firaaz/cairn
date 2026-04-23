@@ -56,6 +56,11 @@ def _init_project(
         (slice_dir / f"handoff-phase-{n}.md").write_text(
             f"---\nphase: {n}\n---\nphase-{n}-body\n"
         )
+    # Minimal sweep-notes.md stub so close_slice's D2 presence check passes
+    # (intent.md amendment 2026-04-23; existence-only, not schema-validated).
+    integ = slice_dir / "integration"
+    integ.mkdir()
+    (integ / "sweep-notes.md").write_text("sweep-notes stub\n")
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(
         ["git", "-c", "user.email=t@t", "-c", "user.name=t", "add", "-A"],
