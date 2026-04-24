@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import atexit
 import concurrent.futures
+import copy
 import datetime
 import json
 import os
@@ -57,6 +58,69 @@ INTENT_MD = Path(".claude/current-slice/intent.md")
 TRANSIENT_STDERR_RX = re.compile(
     r"rate\s*limit|overloaded|\b429\b|\b503\b", re.IGNORECASE
 )
+
+# --- Cost telemetry (INV-009 introduction, intent §S4) ---------------------
+#
+# Dated pricing table — ships as NEW dated constants on a price change, never
+# a silent edit to a single mutable table. Archived slices stay
+# reinterpretable at their cost-at-the-time because `_init_state_dict` copies
+# the active table into `pricing_snapshot` at slice open. Units: USD per
+# 1,000 tokens for each of the four claude-envelope token classes
+# (input, cache_creation, cache_read, output).
+PRICING_TABLE_2026_04_24 = {
+    "claude-opus-4-7": {
+        "input_per_1k": 0.015,
+        "cache_creation_per_1k": 0.01875,
+        "cache_read_per_1k": 0.0015,
+        "output_per_1k": 0.075,
+    },
+    "claude-sonnet-4-5": {
+        "input_per_1k": 0.003,
+        "cache_creation_per_1k": 0.00375,
+        "cache_read_per_1k": 0.0003,
+        "output_per_1k": 0.015,
+    },
+    "claude-haiku-4-5": {
+        "input_per_1k": 0.001,
+        "cache_creation_per_1k": 0.00125,
+        "cache_read_per_1k": 0.0001,
+        "output_per_1k": 0.005,
+    },
+}
+
+_PRICING_TABLE_NAME_RX = re.compile(r"^PRICING_TABLE_\d{4}_\d{2}_\d{2}$")
+
+TOKEN_CLASSES = ("input", "cache_creation", "cache_read", "output")
+
+# INV-009 (cost-per-slice budget) — introduced-provisional. Both thresholds
+# are None at introduction; INV-009 machine check warns (advisory) until a
+# rebaseline slice substitutes numeric values here, at which point breach
+# flips from warn to hard-fail. Promotion path: (a) one rebaseline cycle
+# demonstrates discipline, OR (b) a non-portfolio consumer adopts the
+# invariant. See docs/adr/cost-per-slice-budget.md.
+INV_009_COST_THRESHOLD_USD = None
+INV_009_TOKEN_THRESHOLD = None
+
+
+def _active_pricing_table_name():
+    """Return the sole module attribute name matching ``PRICING_TABLE_<date>``.
+
+    The dating convention is load-bearing (intent §S4 — archived slices stay
+    reinterpretable). Scans this module's globals for the unique match;
+    returns ``""`` if the table is absent (defensive no-op for test shims
+    that patch the module).
+    """
+    for name in globals():
+        if _PRICING_TABLE_NAME_RX.match(name):
+            return name
+    return ""
+
+
+def _active_pricing_table():
+    """Return the active dated PRICING_TABLE dict, or ``{}`` if absent."""
+    name = _active_pricing_table_name()
+    return globals().get(name) or {}
+
 
 _active_child = None
 
@@ -232,7 +296,14 @@ def _default_observability_errors():
 
 
 def _init_state_dict(slice_id):
-    """Reset the module-level state dict to schema v1.0 fresh defaults."""
+    """Reset the module-level state dict to schema v1.0 fresh defaults.
+
+    Cost telemetry fields (intent §S1) are additive only — ``schema_version``
+    stays at ``"1.0"`` (orchestrator-observability D4 additive-safe contract).
+    ``pricing_snapshot`` is a deep copy of the active dated ``PRICING_TABLE``
+    constant so archived slices remain reinterpretable at their
+    cost-at-the-time even if the prod table is revised later.
+    """
     _state.clear()
     _state.update(
         {
@@ -253,8 +324,115 @@ def _init_state_dict(slice_id):
             "observability_errors": _default_observability_errors(),
             "final_commit": "",
             "summary": "",
+            # Cost telemetry (INV-009 introduction, intent §S1). Additive —
+            # schema_version deliberately NOT bumped.
+            "tokens_by_phase": {},
+            "cost_by_phase_usd": {},
+            "model_by_phase": {},
+            "tokens_total": 0,
+            "cost_total_usd": 0.0,
+            "pricing_snapshot": copy.deepcopy(_active_pricing_table()),
         }
     )
+    return _state
+
+
+def _parse_usage_envelope(raw_stdout):
+    """Parse ``claude -p --output-format json`` stdout → four-class tokens dict.
+
+    Envelope shape (observed 2026-04-24 via the P1 smoke-test at slice open):
+    top-level is a JSON array; the terminal element carrying ``type ==
+    "result"`` holds the authoritative ``usage`` block with keys
+    ``input_tokens``, ``cache_creation_input_tokens``,
+    ``cache_read_input_tokens``, ``output_tokens``. Returns exactly the
+    four-key tokens dict with non-negative int values; missing keys default
+    to ``0`` so a malformed envelope cannot yield ``None`` and break the
+    caller.
+    """
+    zeros = {c: 0 for c in TOKEN_CLASSES}
+    try:
+        envelope = json.loads(raw_stdout)
+    except (TypeError, ValueError):
+        return zeros
+
+    result_entry = None
+    if isinstance(envelope, list):
+        for entry in reversed(envelope):
+            if isinstance(entry, dict) and entry.get("type") == "result":
+                result_entry = entry
+                break
+    elif isinstance(envelope, dict):
+        # Accept a single-object envelope shape too (defensive; a future
+        # `claude -p` revision could collapse the array).
+        result_entry = envelope
+
+    usage = {}
+    if isinstance(result_entry, dict):
+        u = result_entry.get("usage")
+        if isinstance(u, dict):
+            usage = u
+
+    def _nn(value):
+        try:
+            n = int(value)
+        except (TypeError, ValueError):
+            return 0
+        return n if n >= 0 else 0
+
+    return {
+        "input": _nn(usage.get("input_tokens", 0)),
+        "cache_creation": _nn(usage.get("cache_creation_input_tokens", 0)),
+        "cache_read": _nn(usage.get("cache_read_input_tokens", 0)),
+        "output": _nn(usage.get("output_tokens", 0)),
+    }
+
+
+def _cost_for_tokens(tokens, prices):
+    """Exact arithmetic: sum over 4 token classes of ``(tokens[c]/1000) * prices[c_per_1k]``.
+
+    Uses ``.get(..., 0)`` / ``.get(..., 0.0)`` so a pricing entry missing one
+    of the four ``*_per_1k`` keys (or a tokens dict missing one of the four
+    classes) contributes ``0.0`` rather than raising — defensive for the
+    advisory-only phase of INV-009. Returns a ``float``. Expression shape
+    intentionally mirrors the V13/V18 test reference formula bit-for-bit
+    (``sum`` over a generator with the same term structure and iteration
+    order) so floating-point associativity cannot diverge the two.
+    """
+    return sum(
+        (tokens.get(c, 0) / 1000.0) * prices.get(f"{c}_per_1k", 0.0)
+        for c in TOKEN_CLASSES
+    )
+
+
+def _record_phase_cost(phase, tokens, model):
+    """Record per-phase token usage and dollar cost on the module state dict.
+
+    Idempotent per-phase: a redispatch of the same phase **overwrites** its
+    entry rather than accumulating (risk register L166 — retry counts
+    already live in ``retries_by_phase``, so cost attribution tracks the
+    most recent successful dispatch). Recomputes ``tokens_total`` and
+    ``cost_total_usd`` from the post-update per-phase dicts so totals stay
+    equal to sum-of-parts by construction. Does **not** mutate
+    ``retries_by_phase`` — cost attribution is orthogonal to retry
+    accounting.
+    """
+    tokens_by_phase = _state.setdefault("tokens_by_phase", {})
+    cost_by_phase = _state.setdefault("cost_by_phase_usd", {})
+    model_by_phase = _state.setdefault("model_by_phase", {})
+    pricing = _state.setdefault("pricing_snapshot", {})
+
+    # Overwrite, not accumulate. Copy tokens dict so caller mutations don't
+    # leak into the state.
+    tokens_by_phase[phase] = {c: int(tokens.get(c, 0)) for c in TOKEN_CLASSES}
+    model_by_phase[phase] = model
+
+    prices = pricing.get(model) or {}
+    cost_by_phase[phase] = _cost_for_tokens(tokens_by_phase[phase], prices)
+
+    _state["tokens_total"] = sum(
+        v for phase_tokens in tokens_by_phase.values() for v in phase_tokens.values()
+    )
+    _state["cost_total_usd"] = sum(cost_by_phase.values())
     return _state
 
 
@@ -410,6 +588,34 @@ def _generate_result_md(state):
                 f"(commit `{c.get('commit_hash', '')}`, "
                 f"{c.get('duration_seconds', '')}s)"
             )
+        lines.append("")
+
+    # Cost section (intent §S5): surfaced only when at least one phase has a
+    # recorded tokens entry. Derived deterministically from the per-phase
+    # dicts so MD stays a pure projection of state JSON (D2/D5).
+    tokens_by_phase = state.get("tokens_by_phase") or {}
+    if tokens_by_phase:
+        cost_by_phase = state.get("cost_by_phase_usd") or {}
+        model_by_phase = state.get("model_by_phase") or {}
+        tokens_total = state.get("tokens_total", 0)
+        cost_total = state.get("cost_total_usd", 0.0) or 0.0
+        pricing_name = _active_pricing_table_name()
+        lines.append("## Cost")
+        lines.append("")
+        lines.append(f"Total: {tokens_total} tokens, ${cost_total:.2f} USD")
+        lines.append("")
+        lines.append("| Phase | Model | Tokens | USD |")
+        lines.append("|-------|-------|--------|-----|")
+        for phase_name, phase_tokens in tokens_by_phase.items():
+            phase_tok_sum = sum((phase_tokens or {}).values())
+            phase_cost = cost_by_phase.get(phase_name, 0.0) or 0.0
+            phase_model = model_by_phase.get(phase_name, "")
+            lines.append(
+                f"| {phase_name} | {phase_model} | {phase_tok_sum} | "
+                f"${phase_cost:.4f} |"
+            )
+        lines.append("")
+        lines.append(f"pricing: {pricing_name}")
         lines.append("")
 
     lines.append("## Final Commit")
