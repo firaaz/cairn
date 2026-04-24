@@ -132,3 +132,45 @@ Triage outputs **a sequence** of one or more flows. Examples: a code-local bug r
 **Mechanism**: recorded here as a pattern. Two follow-through items:
 - Protocol refinement to `commands/claude-code/decision.md` Phase 0 — add the code-level-claims verification sub-step and the explicit instruction for Phase 5 to ground in implicated code. Runs through a normal slice.
 - Reinforcement of L-003's unlanded rule (for firm ADRs, commit the ADR body without the `docs/adr/index.md` update at Phase 4; let `/refresh-architecture` regenerate the index at Phase 6). In this session the draft commit included the index update alongside the ADR bodies; the subagent prompt partially restricted index access as a workaround, but L-003's cleaner protocol refinement remains unlanded.
+
+## L-008: Phase-3 implementer commit discipline — empty handoff commits after a partial commit
+
+**Discovered**: 2026-04-24, during the `cost-discipline/lever-1-per-phase-model` slice. Orchestrator escalated on B15 cap after two Phase-4 re-dispatches; diagnostic trace showed Phase 3 had produced a genuine source-code diff but committed only a subset of the envelope.
+
+**Pattern**: Phase 3 implementer makes edits across multiple envelope files (typically source + tests + docs), then stages and commits a **subset** — most commonly the docs file alone, because the docs change feels like a natural unit of work. The source file(s) remain in the working tree, uncommitted. The orchestrator's per-phase handoff commit (`commit_phase_handoff` at Phase 3 boundary) then runs against a staging area with nothing new in it and produces an **empty commit** (`handoff: phase 3 complete` with `--stat` showing zero files). Phase 4 correctly refuses to close per DC-4 (Phase 4 must not commit source) and raises RAISE_ISSUE. Triager re-dispatches to Phase 3; the re-dispatched Phase 3 agent sees the docs change is already committed, finds no new work to do, and produces a second empty handoff commit. Phase 4 raises again. B15 cap trips; orchestrator escalates to the operator.
+
+**Concrete instance**: Lever 1 Phase 3 committed `8c7ce44 docs(operational-reference): add CAIRN_MODEL_<ROLE>/CAIRN_EFFORT_<ROLE> env-var family` (28 lines of docs), then produced `fc90cec handoff: phase 3 complete` (empty — `git show --stat fc90cec` shows no files). `scripts/slice_orchestrator.py` had 42 lines of correct new work (`AGENT_MODEL_CONFIG` + `_resolve_model_config` + dispatch splice + `model_by_phase` recording) in the working tree but never staged. Phase 4 integrator correctly raised DC-4 naming the uncommitted file; triager re-dispatched to Phase 3; re-dispatched Phase 3 committed nothing new (`92500a9 handoff: phase 3 complete`, also empty); Phase 4 raised again; B15 cap hit (orchestrator `run_phase_loop` line 1917-1921 log: `phase 4 re-dispatched twice; escalating per design §6.1`). Operator-adjudicated recovery commit `7feebbd phase-3(manual-recovery): ...` landed the 42-line scripts diff; `--resume` then closed the slice cleanly at `23f1db0`. Phase 4 diagnostic was correct on every invocation — the bug was entirely Phase-3-side.
+
+**Rule for future Phase-3 runs (and future orchestrator hardening)**: The implementer agent must stage **every** modified envelope file before returning `OK`. Any diff the agent wrote during the phase but didn't stage is a bug, not a judgment call — the handoff commit is not the operator's review gate, it is the mechanical commit that the subsequent phase reads as input. A safer orchestrator-level enforcement is to verify `commit_phase_handoff` at the Phase-3 boundary produces a non-empty `--stat` (or to stage envelope files defensively via `git add -A <envelope>` at the boundary) and raise before handing off to Phase 4; the agent-prompt-only fix (telling the agent to commit everything) has now been tried and is insufficient under context pressure. Two empty handoff commits in sequence is the observable tell; a single empty handoff commit is the leading signal.
+
+**Anti-pattern signals**: "I committed the docs already, the tests pass so implementation is done," "the next commit will pick it up," "the handoff commit will stage what's left," "Phase 4 will see the working tree state anyway." All four are internally plausible to the implementer. None of them produce a non-empty commit. The Phase-4 integrator sees only the committed state — not the working tree — by design, and its refusal to close is the correct behavior.
+
+**Mechanism**: follow-up slice to add an orchestrator-level non-empty-handoff check at the Phase-3 → Phase-4 boundary. Either (a) fail Phase 3 with an explicit reason if `commit_phase_handoff` produces an empty commit while the working tree has staged+unstaged envelope diffs, or (b) `git add -A` over envelope globs before the handoff commit (more aggressive, may mask other bugs). (a) is the conservative fix. Lives under `scripts/slice_orchestrator.py` `run_phase_loop` / `commit_phase_handoff`.
+
+## L-009: `.claude/sweep.yaml` is a sweep-interval control file, not a Phase-4 result destination
+
+**Discovered**: 2026-04-24, during the `cost-discipline/lever-1-per-phase-model` slice close. Close commit `23f1db0` landed cleanly but clobbered `.claude/sweep.yaml`: the pre-close content (`last-sweep-at-slice-id: cost-discipline/track-0-telemetry` / `sweep-interval: 1`) was replaced with Phase-4 result data (date/slice/status/invariants/tests). Tests and invariants were all PASS; the regression was silent because the clobber doesn't cause any immediate failure — it only degrades the next slice's sweep-due decision.
+
+**Pattern**: Two artifacts in cairn share the word "sweep" and have distinct roles: `.claude/sweep.yaml` (the sweep-interval control file) and `.claude/current-slice/integration/sweep-notes.md` (the Phase-4 audit output). The phase-4-integrator agent prompt (`.claude/agents/phase-4-integrator.md:9`) declares writes to both: `Writes: .claude/current-slice/{integration/sweep-notes.md,handoff-phase-4.md,slice.yaml}, .claude/handoff.md, .claude/sweep.yaml`. But the prompt does not specify the schema of `.claude/sweep.yaml`. Under context pressure, a Phase-4 agent treats it as a **results destination** (mirroring `sweep-notes.md` structure: status/tests/invariants) and overwrites the control-file content. The sweep-due check at the next slice's close (`start-slice.full.md` Step 7.2 — reads `sweep-interval` and counts commits since `last-sweep-at-slice-id`) then falls back to "sweep due" because both keys are missing, causing a spurious sweep on the next close.
+
+**Concrete instance**: Pre-Lever-1 sweep.yaml (committed at `96b7930`):
+```yaml
+last-sweep-at-slice-id: cost-discipline/track-0-telemetry
+sweep-interval: 1
+```
+Post-Lever-1 sweep.yaml (committed at `23f1db0` by close_slice, after phase-4 agent rewrote it):
+```yaml
+# Cairn Sweep — cost-discipline/lever-1-per-phase-model
+date: 2026-04-24
+slice: cost-discipline/lever-1-per-phase-model
+status: complete
+invariants: { INV-003: PASS, ... }
+tests: { total: 746, passed: 746, ... }
+```
+Track 0's phase-4 close did not exhibit this — it correctly updated `last-sweep-at-slice-id:`. Lever 1's phase-4 agent under identical prompt produced the clobber. Impact is sweep-cadence noise, not data loss; `/integration-sweep` itself still works, but "is a sweep due?" will now answer "yes" at every close until the control keys are restored.
+
+**Rule for future phase-4-integrator prompt work**: Either (a) remove `.claude/sweep.yaml` from the agent's declared Writes list — it is not a per-slice artifact, it is a sweep-interval control file owned by `/integration-sweep` and the orchestrator's close_slice flow — and rely on the orchestrator's close_slice to write `last-sweep-at-slice-id:` at the close commit; or (b) keep it in the list but specify the exact schema (`last-sweep-at-slice-id: <slice-id>` + `sweep-interval: <int>`) and forbid any other keys. (a) is the cleaner fix because it matches the underlying ownership (control file is not phase-specific). Per-slice audit data belongs in `sweep-notes.md`, which the agent already writes correctly.
+
+**Anti-pattern signals**: "sweep.yaml is in the agent's Writes list, so I'll put my sweep data there," "the filename matches 'sweep' — my audit is a sweep — so the file is for me," "I'll mirror sweep-notes.md shape into sweep.yaml for machine-readability," "the control-file schema isn't documented so I'll write what seems useful." All four are internally plausible to the agent. None check the file's actual role against the rest of the protocol.
+
+**Mechanism**: follow-up slice to edit `.claude/agents/phase-4-integrator.md` Writes list — remove `.claude/sweep.yaml`, keep `.claude/current-slice/integration/sweep-notes.md`. Separately, audit the orchestrator's close_slice flow to confirm it (not the agent) is the writer of `last-sweep-at-slice-id:` at close. Operator hygiene: this slice's close left sweep.yaml clobbered; next slice should either restore the control keys or the follow-up slice fixing the agent prompt should land before the next slice closes.
