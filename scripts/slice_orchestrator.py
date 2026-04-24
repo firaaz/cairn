@@ -50,6 +50,39 @@ PERMISSION_MODE = "bypassPermissions"
 
 VALID_TRIAGER_ACTIONS = {"ESCALATE_TO_USER", "RE_DISPATCH", "ABORT"}
 
+# --- Per-phase model configuration (cost-discipline/lever-1-per-phase-model) ---
+#
+# Maps each role name to its default {model, effort} pair. Env-var family
+# CAIRN_MODEL_<ROLE_UPPER_UNDERSCORE> / CAIRN_EFFORT_<ROLE_UPPER_UNDERSCORE>
+# overrides either value independently at runtime. See docs/operational-reference.md
+# for the full env-var knob list and override semantics.
+AGENT_MODEL_CONFIG: dict[str, dict[str, str]] = {
+    "phase-1-writer": {"model": "claude-opus-4-7", "effort": "high"},
+    "phase-2-skeptic": {"model": "claude-opus-4-7", "effort": "high"},
+    "phase-3-implementer": {"model": "claude-sonnet-4-6", "effort": "medium"},
+    "phase-4-integrator": {"model": "claude-sonnet-4-6", "effort": "low"},
+    "issue-triager": {"model": "claude-opus-4-7", "effort": "medium"},
+}
+
+
+def _resolve_model_config(role: str) -> tuple[str, str | None]:
+    """Return (model, effort) for *role*, applying env-var overrides.
+
+    Env-var precedence (intent §2):
+      - CAIRN_MODEL_<ROLE_UPPER_UNDERSCORE> overrides model if non-empty.
+      - CAIRN_EFFORT_<ROLE_UPPER_UNDERSCORE> overrides effort if non-empty.
+    Unknown roles fall back to ('claude-opus-4-7', 'high').
+    Empty-string env vars are treated as unset (``or`` short-circuit).
+    """
+    defaults = AGENT_MODEL_CONFIG.get(
+        role, {"model": "claude-opus-4-7", "effort": "high"}
+    )
+    env_key = role.upper().replace("-", "_")
+    model = os.environ.get(f"CAIRN_MODEL_{env_key}") or defaults["model"]
+    effort = os.environ.get(f"CAIRN_EFFORT_{env_key}") or defaults["effort"]
+    return model, effort
+
+
 SLICE_YAML = Path(".claude/current-slice/slice.yaml")
 CLUSTERS_YAML = Path(".claude/current-slice/clusters.yaml")
 CLUSTERS_YAML_LEGACY = Path(".claude/current-slice/validation/coupling-clusters.yaml")
@@ -1252,11 +1285,16 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
         if phase is not None
         else f"[{role}|{slice_id}] "
     )
+    resolved_model, resolved_effort = _resolve_model_config(role)
     cmd = [
         "claude",
         "-p",
         "--agent",
         role,
+        "--model",
+        resolved_model,
+        "--effort",
+        resolved_effort,
         "--permission-mode",
         PERMISSION_MODE,
         "--output-format",
@@ -1323,6 +1361,10 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
             f"orchestrator: cost telemetry skipped ({_cost_exc!r})",
             file=sys.stderr,
         )
+    # INV-009 honesty: always record the RESOLVED model (what was sent to
+    # claude -p) so cost attribution is truthful under env-var overrides.
+    # Overwrites the envelope-derived model set by _record_phase_cost above.
+    _state.setdefault("model_by_phase", {})[role] = resolved_model
     obj = _parse_structured_tail(agent_text)
     reason = ""
     if obj is None:
