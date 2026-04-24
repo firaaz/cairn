@@ -1,42 +1,47 @@
-id: cost-discipline/track-0-telemetry
-name: cost-discipline/track-0-telemetry
-status: complete
-current_phase: 4
-brief: "Extend scripts/slice_orchestrator.py to record per-phase token usage and dollar\
-  \ cost for every subagent dispatch (via `claude -p --output-format json`), emit\
-  \ them in the <slug>-result.json state file, render a Cost section in <slug>-result.md,\
-  \ and introduce INV-009 (cost-per-slice budget, provisional, advisory-only at introduction)\
-  \ per docs/plans/2026-04-23-cost-discipline-design.md \xA7\"Track 0\".\n\nEnvelope:\n\
-  - scripts/slice_orchestrator.py \u2014 _init_state_dict at :234-258 gains 7 additive\
-  \ fields (tokens_by_phase, cost_by_phase_usd, model_by_phase, tokens_total, cost_total_usd,\
-  \ pricing_snapshot) + a dated PRICING_TABLE constant; subagent dispatch site at\
-  \ :984-992 gains --output-format json and parses usage metadata via a new _record_phase_cost(phase,\
-  \ tokens, model) helper that is idempotent per-phase (overwrites on retry, does\
-  \ not accumulate); _write_result_md projection extends with a Cost section. Schema_version\
-  \ NOT bumped (additive-only per orchestrator-observability D4).\n- tests/unit/test_slice_orchestrator_cost.py\
-  \ \u2014 new; verifies 7 fields default empty, JSON usage parsing, pricing attribution,\
-  \ idempotent retry behavior, JSON\u2192MD Cost section, PRICING_TABLE constant presence.\n\
-  - docs/adr/cost-per-slice-budget.md \u2014 new ADR; introduces INV-009 with firmness:\
-  \ provisional, advisory-only at introduction (no red fail), X/Y thresholds TBD pending\
-  \ baseline (procedure documented per design \xA7INV-009).\n- docs/ARCHITECTURE.md\
-  \ \u2014 new INV-009 entry + invariant-check block, additive.\n- docs/operational-reference.md\
-  \ \u2014 document PRICING_TABLE dating, advisory semantics, Cost surfacing.\n- commands/claude-code/status.md\
-  \ and status.full.md \u2014 describe one-line cost surfacing (per-slice only, not\
-  \ cumulative, per design-plan OQ#2).\n\nPreconditions: smoke-test `claude -p --output-format\
-  \ json` usage envelope field shape BEFORE Phase 1 accepts (design plan risk register\
-  \ L163). Flag existence already confirmed 2026-04-23 via `claude -p --help` (confirms\
-  \ --output-format, --model, --effort, --max-budget-usd exist as named).\n\nInvariants:\
-  \ INV-009 introduced-provisional this slice; preserves INV-003 (phase contracts\
-  \ unchanged \u2014 dispatch plumbing only), INV-004 (status output bounded, one\
-  \ cost line), INV-006 (feature file at .claude/features/cost-discipline.yaml, always-create),\
-  \ INV-008 (close_slice untouched \u2014 existing state-persist captures final values\
-  \ at close).\n\nOut of scope: Lever 1 per-phase model config (own follow-on slice,\
-  \ cost-discipline/lever-1-per-phase-model); Lever 2 compression (Slices C/D/F on\
-  \ their own track); Track B lightweight-slice hatch; --max-budget-usd plumbing (design\
-  \ OQ#3, deferred); hard-fail INV-009 (OQ#1 recommendation: advisory at intro); cumulative\
-  \ /status totals (OQ#2 recommendation: per-slice only); multi-consumer pricing tables\
-  \ (OQ#5 roadmap); AST/grep anchoring for INV-009 check (lands under cliff-failure-mode-and-v1-defenses\
-  \ D2 when that slice runs); Phase-3/4 implementer/integrator changes beyond dispatch-site\
-  \ token-capture plumbing.\n\nMirror prior additive-schema slice edit discipline\
-  \ (observability D4 landing) \u2014 additive fields only, no rewrite of existing\
-  \ state shape, no bump to schema_version, no new commit sites, no mkdir surprises.\n"
+id: cost-discipline/lever-1-per-phase-model
+name: cost-discipline/lever-1-per-phase-model
+status: in-progress
+current_phase: 1
+brief: "Slice id: cost-discipline/lever-1-per-phase-model\n\nLand per-phase model\
+  \ configuration in scripts/slice_orchestrator.py:\n\n1. AGENT_MODEL_CONFIG dict\
+  \ (module-level constant) mapping each phase role to {model, effort}:\n   - phase-1-writer:\
+  \ claude-opus-4-7, high\n   - phase-2-skeptic: claude-opus-4-7, high\n   - phase-3-implementer:\
+  \ claude-sonnet-4-6, medium\n   - phase-4-integrator: claude-sonnet-4-6, low\n \
+  \  - issue-triager: claude-opus-4-7, medium\n\n2. _resolve_model_config(role: str)\
+  \ -> tuple[str, str | None] helper with env-var override precedence:\n   - CAIRN_MODEL_<ROLE_UPPER_UNDERSCORE>\
+  \ overrides model\n   - CAIRN_EFFORT_<ROLE_UPPER_UNDERSCORE> overrides effort\n\
+  \   - Role names normalize: \"phase-3-implementer\" -> \"PHASE_3_IMPLEMENTER\"\n\
+  \   - Unknown role falls back to {model: claude-opus-4-7, effort: high}\n\n3. Dispatch\
+  \ plumbing at scripts/slice_orchestrator.py:984-992 (the cmd = [\"claude\", \"-p\"\
+  , \"--agent\", role, ...] list in dispatch_phase_agent): splice --model <resolved-model>\
+  \ and --effort <resolved-effort> after --agent <role>.\n\n4. model_by_phase[phase]\
+  \ (from Track 0 schema) must record the RESOLVED model, so cost attribution stays\
+  \ honest when env-var overrides fire. Integrate with _record_phase_cost from Track\
+  \ 0.\n\n5. New tests/unit/test_slice_orchestrator_model_config.py verifying:\n \
+  \  - Default resolution returns expected (model, effort) for each role\n   - CAIRN_MODEL_<ROLE>\
+  \ env-var overrides model; dict default used otherwise\n   - CAIRN_EFFORT_<ROLE>\
+  \ env-var overrides effort independently\n   - Dispatch passes --model and --effort\
+  \ as separate argv entries (not shell-escaped)\n   - Unknown role falls back to\
+  \ opus/high\n\n6. docs/operational-reference.md: document CAIRN_MODEL_<ROLE> / CAIRN_EFFORT_<ROLE>\
+  \ env-var family alongside existing CAIRN_<KNOB> pattern. Include the full role\
+  \ name list.\n\nNo new ADR (knob, not structural commitment).\n\nEnvelope:\n- scripts/slice_orchestrator.py\
+  \ (dict + helper + dispatch splice + model_by_phase recording)\n- tests/unit/test_slice_orchestrator_model_config.py\
+  \ (new)\n- docs/operational-reference.md (env-var family docs)\n\nOut of scope:\n\
+  - Lever 2 compression (separate track)\n- Track B lightweight-slice hatch (separate\
+  \ strategic track)\n- --max-budget-usd plumbing (design OQ#3, deferred)\n- Agent-prompt\
+  \ edits (.claude/agents/phase-*.md \u2014 content stays model-agnostic)\n- Per-slice\
+  \ model overrides (premature)\n- Hard-fail INV-009 promotion (slice 1 is advisory\
+  \ per Track 0)\n- Schema_version bump (Track 0 was additive-only; this slice does\
+  \ not add new state fields)\n- Any change to close_slice, agent definitions, or\
+  \ phase contracts (INV-003 preserved)\n\nInvariants touched:\n- INV-003 (phase-lock-and-role-declaration\
+  \ \u2014 dispatch plumbing only, no agent-prompt or role-definition changes)\n-\
+  \ INV-009 (cost-per-slice \u2014 honest model_by_phase attribution preserved under\
+  \ env-var overrides)\n\nInvariants preserved (not touched, must not regress):\n\
+  - INV-004 (orchestrator-observability \u2014 status output bounded)\n- INV-006 (feature-slice-model\
+  \ \u2014 feature file always-create)\n- INV-008 (slice-close contract \u2014 close_slice\
+  \ untouched)\n\nValidation event (cross-slice, post-close): comparison run of a\
+  \ later slice with default config vs CAIRN_MODEL_PHASE_3_IMPLEMENTER=claude-opus-4-7\
+  \ CAIRN_MODEL_PHASE_4_INTEGRATOR=claude-opus-4-7 (pre-change parity) shows >=30%\
+  \ cost reduction on phases 3+4 in the resulting <slug>-result.json files. Recorded\
+  \ in sweep-notes at close.\n\nDesign source: docs/plans/2026-04-23-cost-discipline-design.md\
+  \ \xA7\"Lever 1\" at :100-150. Slice pre-seeded in .claude/features/cost-discipline.yaml:10-13."
