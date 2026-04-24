@@ -394,6 +394,34 @@ Matching is case-insensitive. The hint is **advisory**: the orchestrator does no
 | `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; logs to `.claude/adr-editorial-fixes.log`. |
 | `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in flag. When set (any non-empty value), `test_inv004_turn1_token_budget` rewrites `docs/plans/measurements/2026-04-12-slice-003.txt` with the fresh turn-1 reading. Unset by default so a plain `uv run pytest` leaves the tracked measurement file alone. |
 
+#### Per-phase model and effort overrides
+
+`CAIRN_MODEL_<ROLE>` and `CAIRN_EFFORT_<ROLE>` let the operator swap the model or thinking-effort level for any agent role without touching `AGENT_MODEL_CONFIG`. Key derivation: `role.upper().replace("-", "_")`. An **empty string does not override** — the dict default is used (same `or`-fallback semantics as all other `CAIRN_*` knobs).
+
+Defaults come from `AGENT_MODEL_CONFIG` in `scripts/slice_orchestrator.py`. Unknown roles fall back to `claude-opus-4-7` / `high`.
+
+| Var | Default (from `AGENT_MODEL_CONFIG`) | Read by | Purpose |
+|---|---|---|---|
+| `CAIRN_MODEL_PHASE_1_WRITER` | `claude-opus-4-7` | `scripts/slice_orchestrator.py` | Override model for `phase-1-writer`. |
+| `CAIRN_EFFORT_PHASE_1_WRITER` | `high` | `scripts/slice_orchestrator.py` | Override effort level for `phase-1-writer`. |
+| `CAIRN_MODEL_PHASE_2_SKEPTIC` | `claude-opus-4-7` | `scripts/slice_orchestrator.py` | Override model for `phase-2-skeptic`. |
+| `CAIRN_EFFORT_PHASE_2_SKEPTIC` | `high` | `scripts/slice_orchestrator.py` | Override effort level for `phase-2-skeptic`. |
+| `CAIRN_MODEL_PHASE_3_IMPLEMENTER` | `claude-sonnet-4-6` | `scripts/slice_orchestrator.py` | Override model for `phase-3-implementer`. Lever 1 cost reduction: Sonnet is ~5× cheaper than Opus for implementation work. |
+| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `medium` | `scripts/slice_orchestrator.py` | Override effort level for `phase-3-implementer`. |
+| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-sonnet-4-6` | `scripts/slice_orchestrator.py` | Override model for `phase-4-integrator`. |
+| `CAIRN_EFFORT_PHASE_4_INTEGRATOR` | `low` | `scripts/slice_orchestrator.py` | Override effort level for `phase-4-integrator`. |
+| `CAIRN_MODEL_ISSUE_TRIAGER` | `claude-opus-4-7` | `scripts/slice_orchestrator.py` | Override model for `issue-triager`. |
+| `CAIRN_EFFORT_ISSUE_TRIAGER` | `medium` | `scripts/slice_orchestrator.py` | Override effort level for `issue-triager`. |
+
+The resolved model (after env-var override) is recorded in `model_by_phase[role]` inside the slice state, so cost attribution in `<slug>-result.json` reflects what was actually dispatched (INV-009 honesty). To restore pre-Lever-1 parity (all phases on Opus/high), set:
+
+```
+CAIRN_MODEL_PHASE_3_IMPLEMENTER=claude-opus-4-7
+CAIRN_EFFORT_PHASE_3_IMPLEMENTER=high
+CAIRN_MODEL_PHASE_4_INTEGRATOR=claude-opus-4-7
+CAIRN_EFFORT_PHASE_4_INTEGRATOR=high
+```
+
 ## Cairn repo internals (load on demand)
 
 This section documents cairn's own repo layout and working practices. It is deliberately not in `CLAUDE.md` — CLAUDE.md is a safety cheat sheet, not a README. Load this section when doing non-trivial work on cairn itself.
