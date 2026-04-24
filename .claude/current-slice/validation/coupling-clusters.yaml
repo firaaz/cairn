@@ -1,0 +1,17 @@
+clusters:
+  - name: orchestrator-cost-plumbing
+    files:
+      - '^scripts/slice_orchestrator\.py$'
+      - '^tests/unit/test_slice_orchestrator_cost\.py$'
+  - name: invariant-codification
+    files:
+      - '^docs/adr/cost-per-slice-budget\.md$'
+      - '^docs/ARCHITECTURE\.md$'
+  - name: docs-and-status-surface
+    files:
+      - '^docs/operational-reference\.md$'
+      - '^commands/claude-code/status\.md$'
+      - '^commands/claude-code/status\.full\.md$'
+  - name: feature-file
+    files:
+      - '^\.claude/features/cost-discipline\.yaml$'
