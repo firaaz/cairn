@@ -82,6 +82,14 @@ expect: match
 description: "Proxy check: verifies the close_slice function exists in the orchestrator (the function whose lifecycle is contracted by INV-008). Migrates to test-ref on tests/unit/test_close_slice_hardened.py::test_close_slice_twice_is_noop when the implementing slice lands the test file."
 ```
 
+**INV-009** Per-slice total token consumption (`tokens_total`) and total dollar cost (`cost_total_usd`), as recorded at close in `.claude/orchestrator-debug/<slug>-result.json`, do not exceed thresholds `Y` and `$X` respectively. Thresholds are set from measured baseline via `ceil(p75 × 1.25)` over three slices of cost data (or forward-only next-three per rebaseline procedure). Provisional firmness, advisory-only at introduction — while `INV_009_COST_THRESHOLD_USD` and `INV_009_TOKEN_THRESHOLD` module constants remain `None`, the machine check emits `UserWarning` rather than raising; once a `housekeeping/inv009-rebaseline-<reason>` slice substitutes numeric values, the same check body raises on breach. Promotes to firm after (a) one rebaseline cycle demonstrates discipline, or (b) a consumer project other than portfolio adopts the invariant. AST/grep anchoring migrates under cliff-failure-mode-and-v1-defenses D2 when that slice runs. (cost-per-slice-budget)
+
+```invariant-check INV-009
+type: test-ref
+pattern: "tests/unit/test_slice_orchestrator_cost.py"
+description: "Points to the Phase-2 cost-telemetry test file whose _check_inv_009(state, cost_threshold, token_threshold) helper is the machine-check body for INV-009 at introduction. Warns (advisory) while thresholds are None; raises on breach once numeric. Migrates to AST/grep anchoring under cliff-failure-mode-and-v1-defenses D2 when that design slice lands."
+```
+
 ## Boundaries
 
 The slice pipeline has four phase boundaries, each implemented as a fresh session separated by a committed artifact (phase-lock-and-role-declaration D1):
