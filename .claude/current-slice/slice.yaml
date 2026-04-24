@@ -1,32 +1,42 @@
-id: compression/phase-1-handoff-stage-surface
-name: compression/phase-1-handoff-stage-surface
-status: complete
-current_phase: 4
-brief: "Extend scripts/slice_orchestrator.py:commit_phase_handoff (lines 1441-1452)\
-  \ to stage phase-1-writer full declared write surface \u2014 BOTH .claude/current-slice/intent.md\
-  \ AND .claude/features/<feature>.yaml \u2014 alongside the existing handoff-phase-<N>.md\
-  \ stage. Per .claude/agents/phase-1-writer.md:9 the declared writes are both files;\
-  \ today commit_phase_handoff stages only handoff-phase-N.md, leaving BOTH orphaned.\
-  \ Evidence of the chronic intent.md orphan: 8e619c3 slice(amendment), 513b0de phase-1-artifact-recovery,\
-  \ a3729cb phase-1-artifacts (manual persistence), f2ab0f3 phase-1-intent (seeded).\
-  \ Evidence of the features-file orphan: a8d8f23 and dbea33c chore(orchestrator)\
-  \ tail-commits. One function, one fix: after the existing if path.exists(): _git(\"\
-  add\", str(path)) for handoff-phase-N.md at line 1450, add best-effort stages for\
-  \ both Phase-1 paths. Feature-id resolves from slice.yaml id (segment before /)\
-  \ via the existing _slice_id() helper. Each stage guarded by if path.exists(): _git(\"\
-  add\", str(path)) mirroring the existing pattern so Phases 2/3/4 (which do not touch\
-  \ either path) remain no-ops. No git add -A. No file creation. No mkdir. Phase-2\
-  \ writes FOUR RED tests: R1a intent.md stages when present, R1b features-file stages\
-  \ when present, R2a no-op when intent.md absent, R2b no-op when features-file absent.\
-  \ Preserves INV-008 DC-4 (close_slice remains sole slice-complete commit source;\
-  \ commit_phase_handoff stays a per-phase boundary staging function, not a new terminal\
-  \ commit site). Preserves INV-003 (phase-1-writer contract unchanged; only orchestrator\
-  \ staging surface extended). Out of scope: Slice C F2/candidate-set hygiene (pending\
-  \ /decision on shape a vs b); close_slice edits (Slice E landed those; symmetrical\
-  \ but separate function); init_new_slice edits (distinct commit site \u2014 init_new_slice\
-  \ owns slice.yaml only; Phase-1 outputs land at the Phase-1 handoff boundary, not\
-  \ init); phase-1-writer agent-contract changes (.md:9 declared surface is authoritative);\
-  \ feature-file or intent schema edits; generalised git add -A rewrites; Slice D\
-  \ envelope-immutability-guard; Slice F rolling-window /status surfacing; Path C\
-  \ fleet-writes empirical gap; any new commit sites. Mirror Slice E edit discipline\
-  \ \u2014 additive stage-list extension, not a rewrite."
+id: cost-discipline/track-0-telemetry
+name: cost-discipline/track-0-telemetry
+status: in-progress
+current_phase: 1
+brief: "Extend scripts/slice_orchestrator.py to record per-phase token usage and dollar\
+  \ cost for every subagent dispatch (via `claude -p --output-format json`), emit\
+  \ them in the <slug>-result.json state file, render a Cost section in <slug>-result.md,\
+  \ and introduce INV-009 (cost-per-slice budget, provisional, advisory-only at introduction)\
+  \ per docs/plans/2026-04-23-cost-discipline-design.md \xA7\"Track 0\".\n\nEnvelope:\n\
+  - scripts/slice_orchestrator.py \u2014 _init_state_dict at :234-258 gains 7 additive\
+  \ fields (tokens_by_phase, cost_by_phase_usd, model_by_phase, tokens_total, cost_total_usd,\
+  \ pricing_snapshot) + a dated PRICING_TABLE constant; subagent dispatch site at\
+  \ :984-992 gains --output-format json and parses usage metadata via a new _record_phase_cost(phase,\
+  \ tokens, model) helper that is idempotent per-phase (overwrites on retry, does\
+  \ not accumulate); _write_result_md projection extends with a Cost section. Schema_version\
+  \ NOT bumped (additive-only per orchestrator-observability D4).\n- tests/unit/test_slice_orchestrator_cost.py\
+  \ \u2014 new; verifies 7 fields default empty, JSON usage parsing, pricing attribution,\
+  \ idempotent retry behavior, JSON\u2192MD Cost section, PRICING_TABLE constant presence.\n\
+  - docs/adr/cost-per-slice-budget.md \u2014 new ADR; introduces INV-009 with firmness:\
+  \ provisional, advisory-only at introduction (no red fail), X/Y thresholds TBD pending\
+  \ baseline (procedure documented per design \xA7INV-009).\n- docs/ARCHITECTURE.md\
+  \ \u2014 new INV-009 entry + invariant-check block, additive.\n- docs/operational-reference.md\
+  \ \u2014 document PRICING_TABLE dating, advisory semantics, Cost surfacing.\n- commands/claude-code/status.md\
+  \ and status.full.md \u2014 describe one-line cost surfacing (per-slice only, not\
+  \ cumulative, per design-plan OQ#2).\n\nPreconditions: smoke-test `claude -p --output-format\
+  \ json` usage envelope field shape BEFORE Phase 1 accepts (design plan risk register\
+  \ L163). Flag existence already confirmed 2026-04-23 via `claude -p --help` (confirms\
+  \ --output-format, --model, --effort, --max-budget-usd exist as named).\n\nInvariants:\
+  \ INV-009 introduced-provisional this slice; preserves INV-003 (phase contracts\
+  \ unchanged \u2014 dispatch plumbing only), INV-004 (status output bounded, one\
+  \ cost line), INV-006 (feature file at .claude/features/cost-discipline.yaml, always-create),\
+  \ INV-008 (close_slice untouched \u2014 existing state-persist captures final values\
+  \ at close).\n\nOut of scope: Lever 1 per-phase model config (own follow-on slice,\
+  \ cost-discipline/lever-1-per-phase-model); Lever 2 compression (Slices C/D/F on\
+  \ their own track); Track B lightweight-slice hatch; --max-budget-usd plumbing (design\
+  \ OQ#3, deferred); hard-fail INV-009 (OQ#1 recommendation: advisory at intro); cumulative\
+  \ /status totals (OQ#2 recommendation: per-slice only); multi-consumer pricing tables\
+  \ (OQ#5 roadmap); AST/grep anchoring for INV-009 check (lands under cliff-failure-mode-and-v1-defenses\
+  \ D2 when that slice runs); Phase-3/4 implementer/integrator changes beyond dispatch-site\
+  \ token-capture plumbing.\n\nMirror prior additive-schema slice edit discipline\
+  \ (observability D4 landing) \u2014 additive fields only, no rewrite of existing\
+  \ state shape, no bump to schema_version, no new commit sites, no mkdir surprises.\n"
