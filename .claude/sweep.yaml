@@ -1,2 +1,20 @@
-last-sweep-at-slice-id: cost-discipline/track-0-telemetry
-sweep-interval: 1
+# Cairn Sweep — cost-discipline/lever-1-per-phase-model
+
+date: 2026-04-24
+slice: cost-discipline/lever-1-per-phase-model
+status: complete
+
+invariants:
+  INV-003: PASS
+  INV-004: PASS
+  INV-006: PASS
+  INV-008: PASS
+  INV-009: PASS
+
+tests:
+  total: 746
+  passed: 746
+  skipped: 3
+  failed: 0
+
+architecture: ALL CHECKS PASSED
