@@ -1,0 +1,8 @@
+clusters:
+  - name: orchestrator-model-config
+    files:
+      - 'scripts/slice_orchestrator\.py'
+      - 'tests/unit/test_slice_orchestrator_model_config\.py'
+  - name: operational-reference-docs
+    files:
+      - 'docs/operational-reference\.md'
