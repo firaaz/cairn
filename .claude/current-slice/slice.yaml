@@ -1,7 +1,7 @@
 id: cost-discipline/lever-1-per-phase-model
 name: cost-discipline/lever-1-per-phase-model
 status: in-progress
-current_phase: 2
+current_phase: 3
 brief: "Slice id: cost-discipline/lever-1-per-phase-model\n\nLand per-phase model\
   \ configuration in scripts/slice_orchestrator.py:\n\n1. AGENT_MODEL_CONFIG dict\
   \ (module-level constant) mapping each phase role to {model, effort}:\n   - phase-1-writer:\
