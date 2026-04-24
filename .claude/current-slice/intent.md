@@ -17,6 +17,7 @@ preconditions:
 envelope:
   - "scripts/slice_orchestrator.py"
   - "tests/unit/test_slice_orchestrator_cost.py"
+  - "tests/unit/test_invariant_assertions.py"  # Amendment 2026-04-24 (phase-4 raise-issue): widen EXPECTED_INVARIANT_IDS at :1115 to include INV-009; scope-gap caught by Phase 4 auditor Ground 2
   - "docs/adr/cost-per-slice-budget.md"
   - "docs/ARCHITECTURE.md"
   - "docs/operational-reference.md"
@@ -67,9 +68,17 @@ out-of-scope:
 
 ### S2 — Dispatch site adds `--output-format json` and parses usage
 
-The subagent dispatch site at `scripts/slice_orchestrator.py:984-992` (the `cmd = ["claude", "-p", "--agent", role, ...]` list) gains `--output-format json`. The current text-tail parser at `_dispatch_once` adapts to the JSON envelope; the structured-tail parsing the orchestrator already does for agent return JSON is unchanged (the agent's `proposed_slice_id` / `status` JSON is the *agent's stdout*, which lives inside the `claude -p` JSON envelope's `result` field — so only the outer-envelope reader is new).
+**Amendment 2026-04-24 (phase-4 raise-issue Ground 1):** the original S2 wording below was insufficient — the Phase-3 implementer landed helpers but did NOT wire them into `_dispatch_once`, leaving the telemetry as dead code. The line-specific integration requirements below are MANDATORY and checked structurally in V3.
 
-The usage block is read out of the envelope and passed to `_record_phase_cost(phase, tokens_dict, model)`. Field-key mapping is fixed during the precondition smoke test, not guessed from the design doc.
+**S2.a — Required edit site 1.** In `_dispatch_once` (currently at `scripts/slice_orchestrator.py:1172` function start, cmd list at `:1190-1198`), the `cmd = [...]` list for the subagent dispatch MUST include the literal pair `"--output-format", "json"` as command arguments. The `grep` check `grep -n '"--output-format"' scripts/slice_orchestrator.py` must return at least one match inside the `_dispatch_once` function body.
+
+**S2.b — Required edit site 2.** After the `claude -p` subprocess returns (currently around `:1235-1256` in `_dispatch_once`), the orchestrator MUST call `_record_phase_cost(phase, _parse_usage_envelope(stdout), model)` (or an equivalent call-pattern passing the parsed usage and dispatched model to the recorder). A grep of `_record_phase_cost` in `scripts/slice_orchestrator.py` MUST show at least one call outside the definition at `:407`. `_parse_usage_envelope` MUST similarly show at least one call outside its definition at `:340`.
+
+**S2.c — Parser adaptation.** The structured-tail parser for agent-returned JSON (e.g. `proposed_slice_id`, `status`) is unchanged — the agent's stdout lives inside the `claude -p` JSON envelope's `result` field. Only the outer-envelope reader is new. The envelope shape is a JSON array of event objects (`init` / `assistant` / `rate_limit_event` / `result`); the `result` event is terminal and holds both `usage` (with keys `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens` — confirmed via P1 smoke-test 2026-04-24) and a top-level `total_cost_usd` field.
+
+**S2.d — Error tolerance.** If the JSON envelope is malformed or the `result` event is absent (e.g. a subprocess crashed mid-stream), the cost-recording step MUST NOT crash the dispatch. Log a warning to stderr and proceed with empty `tokens` for that phase — this matches the idempotent-retry contract in §S3.
+
+**S2.e — Resolved model attribution.** Pass the *resolved* model string (from `AGENT_MODEL_CONFIG` / env-var overrides in the future; currently the runtime default) as the `model` argument to `_record_phase_cost` so `model_by_phase[phase]` records the actually-dispatched model.
 
 ### S3 — `_record_phase_cost(phase, tokens, model)` helper, idempotent per-phase
 
@@ -150,6 +159,8 @@ Created this slice per INV-006 (feature-slice-model D3 always-create). Lists thi
 - **V8** `docs/operational-reference.md` contains documentation for the `PRICING_TABLE_<date>` constant convention, the INV-009 advisory semantics, AND the Cost section in `<slug>-result.md`.
 - **V9** `commands/claude-code/status.md` AND `commands/claude-code/status.full.md` each contain one cost-surfacing line description; neither contains the words "cumulative" or "across slices" applied to cost.
 - **V10** `.claude/features/cost-discipline.yaml` exists, contains slice id `cost-discipline/track-0-telemetry`, and lists `cost-discipline/lever-1-per-phase-model` with `after: [cost-discipline/track-0-telemetry]`.
+- **V21** (Amendment 2026-04-24) `_dispatch_once` body (the function whose docstring mentions agent subprocess dispatch) contains at least one call to `_record_phase_cost(` with arguments — i.e., `grep -n '_record_phase_cost(' scripts/slice_orchestrator.py` must return MORE than one line (one is the `def`; additional lines prove callers exist). Same check for `_parse_usage_envelope(`.
+- **V22** (Amendment 2026-04-24) `tests/unit/test_invariant_assertions.py:~1115` constant `EXPECTED_INVARIANT_IDS` (or equivalent-named set) contains `"INV-009"`. `uv run pytest tests/unit/test_invariant_assertions.py` exits zero — no regressions from the INV-009 introduction.
 
 ### Behavioral assertions (Phase 2 Skeptic test file `tests/unit/test_slice_orchestrator_cost.py`, Phase 4 Auditor verifies green)
 
