@@ -1,7 +1,7 @@
 id: cost-discipline/track-0-telemetry
 name: cost-discipline/track-0-telemetry
 status: in-progress
-current_phase: 2
+current_phase: 3
 brief: "Extend scripts/slice_orchestrator.py to record per-phase token usage and dollar\
   \ cost for every subagent dispatch (via `claude -p --output-format json`), emit\
   \ them in the <slug>-result.json state file, render a Cost section in <slug>-result.md,\
