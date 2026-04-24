@@ -330,6 +330,39 @@ Three hooks wired in `.claude/settings.json`:
 
 Hooks are friction-plus-walls, not security boundaries. A determined or careless agent can route around the friction layer; the wall layer (the explicit patterns above) holds.
 
+## Cost telemetry (Track 0)
+
+Track 0 of the cost-discipline program lands per-phase token-usage and dollar-cost telemetry in the orchestrator's observability artifact. Three operator-facing surfaces:
+
+### PRICING_TABLE_<date> constant convention
+
+`scripts/slice_orchestrator.py` carries a dated module-level constant whose name matches the regex `^PRICING_TABLE_\d{4}_\d{2}_\d{2}$` (example: `PRICING_TABLE_2026_04_24`). The dating is **load-bearing**: pricing changes ship as **new** dated constants in visible commits, not silent edits to a single mutable table. `_init_state_dict` deep-copies the current dated table into the per-slice `pricing_snapshot` field so archived slices stay reinterpretable at their cost-at-the-time. When a vendor price changes, a dedicated housekeeping slice lands a new `PRICING_TABLE_<new-date>` constant and retires the old one by reference only — prior slices' `pricing_snapshot` values continue to reflect the pricing in force at the time they ran.
+
+Shape per model entry: `{"input_per_1k": float, "cache_creation_per_1k": float, "cache_read_per_1k": float, "output_per_1k": float}` — all four token classes must be priced for every dispatched model.
+
+### INV-009 — cost-per-slice budget (provisional, advisory-only at introduction)
+
+INV-009 asserts `tokens_total ≤ INV_009_TOKEN_THRESHOLD` AND `cost_total_usd ≤ INV_009_COST_THRESHOLD_USD` against the active slice's `<slug>-result.json`. Both module constants default to `None` at introduction — the check emits a `UserWarning` ("INV-009 advisory: thresholds TBD at introduction") and does not fail. INV-009 is **advisory-only** while thresholds are `None`; once a rebaseline slice substitutes numeric values, the same check body raises on breach.
+
+**Rebaseline procedure** (mirrors INV-004's re-baseline precedent). When either (a) a compounding floor change lands that crosses the then-current threshold, or (b) the first set of numeric thresholds needs choosing, a dedicated `housekeeping/inv009-rebaseline-<reason>` slice:
+
+1. Re-runs telemetry against three recent closed slices (or accepts the forward-only baseline of the next three slices).
+2. Sets thresholds at `ceil(p75 × 1.25)` of those data points.
+3. Records baseline data points in `docs/adr/cost-per-slice-budget.md`.
+4. Flips `INV_009_COST_THRESHOLD_USD` / `INV_009_TOKEN_THRESHOLD` from `None` to the numeric values.
+
+INV-009 promotes from `firmness: provisional` to `firm` after either one rebaseline cycle demonstrates discipline, or a consumer project other than portfolio adopts the invariant (see `docs/adr/cost-per-slice-budget.md`).
+
+### Cost section in `<slug>-result.md` and one-line `/status` surfacing
+
+The `_generate_result_md` projection of the observability state emits a `## Cost` section on terminal transitions (cadence unchanged per `orchestrator-observability` D5). Content:
+
+- One totals line: `Total: <N> tokens, $<X.XX> USD`.
+- One table: `phase | model | tokens | USD` — one row per populated phase in `phases_completed`.
+- One footer: `pricing: PRICING_TABLE_<date>` (constant name, not the full table).
+
+`/status` surfaces one cost line — **per-slice only, not cumulative** (see `docs/adr/cost-per-slice-budget.md` §OQ#2). When a slice is active, it shows that slice's running cost; when none is active, it shows the last-closed slice's total. The expanded `/status full` view adds model attribution from `model_by_phase`. INV-004's token budget on `/status` output is preserved — one line each, bounded.
+
 ## Environment variables
 
 Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "no hardcoded timeouts/sizes in consumer-facing scripts" — every script that reads a knob falls back to a documented default.
