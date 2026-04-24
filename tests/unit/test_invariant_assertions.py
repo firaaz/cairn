@@ -1112,7 +1112,7 @@ class TestCairnSelfDogfood:
 # observability-and-close-slice — slice-close-contract).
 
 
-EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 9)}
+EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 10)}
 V1_ASSERTION_TYPES = {"grep", "file-exists", "test-ref"}
 
 

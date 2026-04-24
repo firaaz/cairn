@@ -387,6 +387,71 @@ def _parse_usage_envelope(raw_stdout):
     }
 
 
+def _extract_agent_result_text(raw_stdout):
+    """Return the agent's actual stdout carried inside the ``claude -p
+    --output-format json`` envelope, or ``""`` when no envelope is detected.
+
+    With ``--output-format json`` the subprocess stdout is a JSON array of
+    event objects; the terminal ``type == "result"`` element holds the
+    agent's raw tail in its ``result`` string. This helper extracts that
+    string so ``_parse_structured_tail`` can keep consuming the agent's
+    `{"status": ...}` tail without change (intent §S2.c). Returns ``""``
+    (falsy) when the input is not a recognisable envelope — callers fall
+    back to the raw stdout so non-envelope test stubs keep working.
+    """
+    if not raw_stdout:
+        return ""
+    try:
+        envelope = json.loads(raw_stdout)
+    except (TypeError, ValueError):
+        return ""
+    if not isinstance(envelope, list):
+        return ""
+    for entry in reversed(envelope):
+        if isinstance(entry, dict) and entry.get("type") == "result":
+            result_field = entry.get("result")
+            if isinstance(result_field, str):
+                return result_field
+            return ""
+    return ""
+
+
+def _extract_envelope_model(raw_stdout):
+    """Return the model id recorded in the envelope, or ``""`` if absent.
+
+    Looks first at the terminal ``result`` event's ``modelUsage`` keys
+    (``claude -p --output-format json`` emits one key per dispatched model).
+    Falls back to any ``assistant`` event's ``message.model`` field.
+    Returns ``""`` on malformed input — ``_record_phase_cost`` then records
+    an empty model id and attributes zero cost via ``_cost_for_tokens``'s
+    ``.get(..., 0.0)`` path (intent §S2.d error tolerance).
+    """
+    if not raw_stdout:
+        return ""
+    try:
+        envelope = json.loads(raw_stdout)
+    except (TypeError, ValueError):
+        return ""
+    if not isinstance(envelope, list):
+        return ""
+    for entry in reversed(envelope):
+        if not isinstance(entry, dict) or entry.get("type") != "result":
+            continue
+        model_usage = entry.get("modelUsage")
+        if isinstance(model_usage, dict) and model_usage:
+            return next(iter(model_usage))
+        break
+    for entry in reversed(envelope):
+        if not isinstance(entry, dict) or entry.get("type") != "assistant":
+            continue
+        msg = entry.get("message")
+        if isinstance(msg, dict):
+            model = msg.get("model")
+            if isinstance(model, str) and model:
+                return model
+    return ""
+
+
 def _cost_for_tokens(tokens, prices):
     """Exact arithmetic: sum over 4 token classes of ``(tokens[c]/1000) * prices[c_per_1k]``.
 
@@ -1194,6 +1259,8 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
         role,
         "--permission-mode",
         PERMISSION_MODE,
+        "--output-format",
+        "json",
         json.dumps(inputs),
     ]
     try:
@@ -1234,7 +1301,29 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
 
     stdout = proc.stdout or ""
     stderr = proc.stderr or ""
-    obj = _parse_structured_tail(stdout)
+    # With `--output-format json`, the subprocess stdout is a JSON array
+    # envelope whose terminal `result` event carries the agent's actual
+    # tail in its `result` string. Extract that for `_parse_structured_tail`;
+    # on any parse failure (non-envelope stubs in tests, mid-stream crash)
+    # fall through to the raw stdout so existing behaviour is preserved
+    # (intent §S2.c/S2.d).
+    agent_text = _extract_agent_result_text(stdout) or stdout
+    # Record per-phase cost telemetry (intent §S2 wiring — V3/V21). Tolerant
+    # by contract: a malformed envelope yields zero tokens and empty model
+    # via the helpers' `.get(..., 0)` paths, so a crashed subprocess cannot
+    # topple the dispatcher (§S2.d error tolerance).
+    try:
+        _record_phase_cost(
+            role,
+            _parse_usage_envelope(stdout),
+            _extract_envelope_model(stdout),
+        )
+    except Exception as _cost_exc:  # pragma: no cover — defensive only
+        print(
+            f"orchestrator: cost telemetry skipped ({_cost_exc!r})",
+            file=sys.stderr,
+        )
+    obj = _parse_structured_tail(agent_text)
     reason = ""
     if obj is None:
         reason = "malformed agent output (no JSON-object tail)"
@@ -1260,7 +1349,7 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
             "summary": "malformed agent output (no JSON-object tail)",
             "commit_hash": "",
             "stderr": stderr,
-            "stdout": stdout,
+            "stdout": agent_text,
             "returncode": proc.returncode,
         }
     if "status" not in obj:
@@ -1269,12 +1358,12 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
             "summary": "agent output missing required `status` field",
             "commit_hash": "",
             "stderr": stderr,
-            "stdout": stdout,
+            "stdout": agent_text,
             "returncode": proc.returncode,
         }
     enriched = dict(obj)
     enriched.setdefault("stderr", stderr)
-    enriched.setdefault("stdout", stdout)
+    enriched.setdefault("stdout", agent_text)
     enriched.setdefault("returncode", proc.returncode)
     return enriched
 
