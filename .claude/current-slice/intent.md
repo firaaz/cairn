@@ -1,18 +1,29 @@
 ---
-slice_id: cost-discipline/lever-1-per-phase-model
+slice: cost-discipline/lever-1-per-phase-model
 name: "Lever 1 — per-phase model configuration"
-phase: 1
-status: draft
-preconditions_met:
-  - "cost-discipline/track-0-telemetry: complete (slice.yaml status=complete, phase 4)"
-design_source: "docs/plans/2026-04-23-cost-discipline-design.md §Lever 1 :100-150"
-invariants_touched:
-  - INV-003  # dispatch plumbing only; no agent-prompt or role-definition changes
-  - INV-009  # model_by_phase attribution stays honest under env-var overrides
-invariants_preserved:
-  - INV-004  # status output bounded — no new /status lines
-  - INV-006  # feature file (.claude/features/cost-discipline.yaml) already exists
-  - INV-008  # close_slice untouched
+date: 2026-04-24
+phase: 1-intent
+invariants-touched: [INV-003, INV-009]
+invariants-preserved: [INV-004, INV-006, INV-008]
+adrs-referenced: []
+adrs-created: []
+preconditions:
+  - "cost-discipline/track-0-telemetry: complete (slice.yaml status=complete, phase 4). model_by_phase state field must be writable via _record_phase_cost from Track 0."
+envelope:
+  - "scripts/slice_orchestrator.py"
+  - "tests/unit/test_slice_orchestrator_model_config.py"
+  - "docs/operational-reference.md"
+out-of-scope:
+  - "Lever 2 compression (separate track)"
+  - "Track B lightweight-slice escape hatch (separate strategic track)"
+  - "`--max-budget-usd` plumbing (design plan OQ#3, deferred until baseline variance observed)"
+  - "Agent-prompt edits (`.claude/agents/phase-*.md` — content stays model-agnostic)"
+  - "Per-slice model overrides (premature; no evidence that per-slice variation matters yet)"
+  - "Hard-fail INV-009 promotion (stays advisory per Track 0)"
+  - "schema_version bump (this slice does not add new state fields; reuses Track 0's model_by_phase)"
+  - "close_slice edits, agent-definition changes, phase-contract changes (INV-003/INV-008 preserved)"
+  - "New ADR (this is a tunable knob, not a structural commitment)"
+design-source: "docs/plans/2026-04-23-cost-discipline-design.md §Lever 1 :100-150"
 ---
 
 ## What / Why / Boundary
