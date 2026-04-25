@@ -1,27 +1,28 @@
 ---
-slice: none
-phase: n/a
+slice: compression/lever-2-orchestrator-split
+phase: 2-validation
 branch: feature/compression
-as-of: 2026-04-25 e7f2ce0
+as-of: 2026-04-25 18afa0c
 ---
 
 ## State
-Part-7 /decision aborted at Phase 3 on operator reframe (cost is goal, not artifact-topology). Part-8 compression audit (N=1, Lever-1) committed at e7f2ce0 with hex framing for docs (H1 port layer) + code (H2 orchestrator split) + 5-slice intervention queue ranked by measured leverage.
+Slice `compression/lever-2-orchestrator-split` open at Phase 2 (Validation). Phase 1 intent + envelope amendment committed; envelope adds the single new gate-test file `tests/unit/test_slice_orchestrator_package_split.py` to permit the Skeptic's RED tests.
 
 ## Next
-Open `compression/lever-2-orchestrator-split` slice: refactor scripts/slice_orchestrator.py into core/dispatch/lifecycle/resume/telemetry/git package; 746-test suite must pass with zero behavioral diff.
+Open a fresh session, run `/catchup phase 2`, then dispatch the `phase-2-skeptic` subagent against `.claude/current-slice/intent.md` to write the V2–V6 gate tests (RED).
 
 ## Blocked / Pending
-- 4 follow-on slices queued post-H2: M0 orientation → M0.5 api-digests → M3+M2 read-cap → S1+S3 subagent (per Part-8 §13)
-- H1 doc-port layer deferred until 2-3 adapters exist
-- Compression Slice C blocked on Slice B Part 0 ADR (orthogonal to cost levers)
-- Cost-discipline carry-overs: L-008/L-009 follow-ons, sweep.yaml control keys, cross-slice Lever 1 validation
+- Phase 2 must NOT read source code or Phase 3 implementation; intent.md alone is the input
+- Test-file invariance: only `tests/unit/test_slice_orchestrator_package_split.py` may be added; every other test file stays byte-identical
+- 4 follow-on slices queued post-H2: M0 → M0.5 → M3+M2 → S1+S3 (Part-8 §13)
+- Cost-discipline carry-overs: L-008/L-009 follow-ons, sweep.yaml control keys
 
 ## Features
-- compression: Part-8 audit complete; H2 lever-2 ready to start
+- compression: Lever-2 (H2) Phase 1 closed; Phase 2 queued
 - cost-discipline: Lever 1 shipped; hardening queued
 
 ## Pointers
-- `docs/plans/2026-04-25-efficiency-program-part-8-compression-audit.md` — §10 unified ranking, §13 sequencing, §14 counterargs
-- `docs/plans/2026-04-24-efficiency-program-part-7-candidate-set-discipline.md` — §10.8 governance primitive deferred behind H1
-- `scripts/slice_orchestrator.py:1270-1303` — H2 split target; current dispatch site
+- `.claude/current-slice/intent.md` — slice contract; §S2 module map, §S3 re-export list, §V1–V8 gates
+- `.claude/current-slice/handoff-phase-1.md` — phase-end summary; ambiguities flagged for Phase 2
+- `docs/plans/2026-04-25-efficiency-program-part-8-compression-audit.md` — §5 + §10 + §13.1 design source
+- `scripts/slice_orchestrator.py` — pre-split file (deleted in Phase 3)

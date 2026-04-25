@@ -1,6 +1,6 @@
 id: compression/lever-2-orchestrator-split
 name: "Compression Lever 2 — orchestrator package split"
-status: intent
+status: 2-validation
 started: 2026-04-25
 completed: null
 invariants-touched: [INV-003, INV-004, INV-008, INV-009]
