@@ -1,28 +1,28 @@
 ---
-slice: cost-discipline/lever-1-per-phase-model
-phase: complete
+slice: none
+phase: n/a
 branch: feature/compression
-as-of: 2026-04-24 ea3b45e
+as-of: 2026-04-24 15aa61b
 ---
 
 ## State
-Lever 1 closed (`23f1db0`): `AGENT_MODEL_CONFIG` + `_resolve_model_config` + dispatch `--model`/`--effort` splice + honest `model_by_phase` recording. 746 tests pass. Closed on Phase-4 run 4 after Phase-3 commit-discipline bug tripped B15 cap (recovered via manual `7feebbd`). Two lessons filed at `ea3b45e`.
+Part-7 candidate-set discipline research drafted at `docs/plans/2026-04-24-efficiency-program-part-7-candidate-set-discipline.md` (uncommitted, ~950 lines). §10 supersedes §8 with operator-confirmed unified primitive: declared per-phase READ envelope handles context-reduction AND F2-prevention as one structural move, not a composite trade-off. `/decision` aborted mid-Phase-0 (read ARCHITECTURE.md + adr/index.md only) at session-end call.
 
 ## Next
-Restore `.claude/sweep.yaml` control keys (`last-sweep-at-slice-id: cost-discipline/lever-1-per-phase-model`, `sweep-interval: 1`) OR open the L-009 follow-on slice — either fixes the sweep-due regression before next close.
+Resume `/decision` Phase 0 in fresh session, framing per §10.8 (unified primitive); cite research doc as primary Phase-0 input.
 
 ## Blocked / Pending
-- `.claude/sweep.yaml` clobbered at `23f1db0` — control keys missing → `docs/lessons.md:L-009`
-- L-008 follow-on: orchestrator non-empty-handoff check at Phase-3 boundary → `docs/lessons.md:L-008` §Mechanism
-- L-009 follow-on: remove `.claude/sweep.yaml` from `.claude/agents/phase-4-integrator.md:9` Writes list
-- Cross-slice Lever 1 validation: default vs `CAIRN_MODEL_PHASE_{3,4}_*=opus` comparison needs two post-Lever-1 slices
-- compression Slice C — blocked on `/decision` shape a vs b → `docs/plans/2026-04-18-session-compression-audit.md:61`
+- Research doc uncommitted → commit before `/decision` Phase 4 lands ADR
+- Compression audit (§10.9 / §12 follow-on) — empirical per-phase context measurement deferred
+- Compression Slice C blocked on this decision → `docs/plans/2026-04-18-session-compression-audit.md:61`
+- Cost-discipline carry-overs: L-008/L-009 follow-ons, sweep.yaml control keys, cross-slice Lever 1 validation
+- Plan file `/Users/firaazfarook/.claude/plans/melodic-conjuring-cherny.md` tracks workflow
 
 ## Features
-- cost-discipline: Track 0 + Lever 1 complete; L-008/L-009 hardening queued
-- compression: C blocked, D/F not opened
+- compression: research drafted; Slice C unblock pending /decision
+- cost-discipline: Lever 1 shipped; hardening + cross-slice validation queued
 
 ## Pointers
-- `docs/lessons.md:L-008/L-009` — phase-3 empty-handoff + sweep.yaml clobbering; read before either follow-on
-- `.claude/features/cost-discipline.yaml` — both slices marked complete
-- `scripts/slice_orchestrator.py:1288-1303` — dispatch splice, exemplar for new orchestrator code
+- `docs/plans/2026-04-24-efficiency-program-part-7-candidate-set-discipline.md` — read §10.8 first (unified primitive), §1.4 (operator framing); §8 superseded
+- `.claude/agents/phase-{1,2,3,4}-*.md` — declare WRITE surface only; READ envelope is the primitive's leverage point
+- `docs/plans/2026-04-18-session-compression-audit.md:45-49,61-63` — Part 0 ADR scope + F2 trigger
