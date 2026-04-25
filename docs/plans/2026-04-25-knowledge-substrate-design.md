@@ -585,17 +585,17 @@ All artifacts the wipe would otherwise destroy except git-tracked sources outsid
 
 What must happen to start substrate Slice 1:
 
-1. **GitHub Project board setup (Path C, agent-managed via GitHub MCP).** ~30 min agent task. Create the board, create six cards (4 slices + 2 ADRs), set initial status (Slice 1 = ready, others = blocked/parked). Pre-requisite: GitHub MCP server registered in `.mcp.json` and authenticated (PAT or OAuth, write-scoped to cairn repo only).
-
-2. **Two `/decision` sessions** (independent — can be parallel):
+1. **Two `/decision` sessions** (independent — can be parallel):
    - Session A: drafts ADR `cairn-substrate-and-fastmcp` from §8.1 above. Sixteen decisions ready as input.
    - Session B: drafts ADR `slice-artifact-preservation` from §8.2 above. Seven decisions ready as input.
 
    Each ADR is **drafted but not committed** until its co-landing slice runs (`cairn-substrate-and-fastmcp` lands at Slice 2; `slice-artifact-preservation` lands at the sibling slice).
 
-3. **`/brainstorm` + `/write-plan` for substrate Slice 1** (`compression/lever-X-knowledge-index`). Concrete extractor architecture per entity type, pydantic schema details, kuzudb schema syntax (`CREATE NODE TABLE` for each entity, edge tables for each predicate), CI round-trip validator test cases, integration with `.claude/features/compression.yaml`. The design doc (this file) is Slice 1's brainstorm input — most architectural decisions are settled, so the slice's own brainstorm focuses on implementation details.
+2. **`/brainstorm` + `/write-plan` for substrate Slice 1** (`compression/lever-X-knowledge-index`). Concrete extractor architecture per entity type, pydantic schema details, kuzudb schema syntax (`CREATE NODE TABLE` for each entity, edge tables for each predicate), CI round-trip validator test cases, integration with `.claude/features/compression.yaml`. The design doc (this file) is Slice 1's brainstorm input — most architectural decisions are settled, so the slice's own brainstorm focuses on implementation details.
 
-4. **`/start-slice` for sibling slice** (`compression/slice-artifact-preservation`) in a parallel worktree. Independent of substrate work; can land before, during, or after Slice 1.
+3. **`/start-slice` for sibling slice** (`compression/slice-artifact-preservation`) in a parallel worktree. Independent of substrate work; can land before, during, or after Slice 1.
+
+> **Removed step (2026-04-26):** "GitHub Project board setup (Path C, agent-managed via GitHub MCP)" was originally listed here as a prerequisite. Path C was never enumerated against alternatives in this doc, and per §8.1 D2 a credentialed external dependency requires deliberate ADR — not a 30-minute setup task. Deferred behind substrate Slices 1+2; tracked in `docs/roadmap.md` under "Gated — sequenced after specific milestones." See `agent-managed-planning-substrate` entry there for the full work item.
 
 ### Cross-references
 

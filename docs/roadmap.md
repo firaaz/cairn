@@ -51,6 +51,12 @@ Two slices run in parallel on separate worktrees, both complete cleanly, no scop
 - Example slice walkthroughs — at least one worked example in `examples/`
 - Mechanical validator auto-enforcement — `scripts/validate_architecture.py` runs as pre-commit on ADR file changes
 
+## Gated — sequenced after specific milestones
+
+*High-value items deferred behind specific work. Each entry names what it's waiting on so they don't slip silently — they unblock when their gate fires.*
+
+- **Agent-managed planning substrate** — gated on substrate Slices 1+2 shipping. Run `/decision agent-managed-planning-substrate` + ADR covering: GitHub MCP adoption (or alternative), `.mcp.json` registration, credential posture (PAT vs OAuth, scope, rotation), agent-context-discipline implications, tool-count budget, supersession path. Required by §8.1 D2 of the knowledge-substrate design (any new credentialed external dependency needs deliberate ADR). Until then, `.claude/features/compression.yaml` + `.claude/handoff.md` carry planning state. See `docs/plans/2026-04-25-knowledge-substrate-design.md` §9:579.
+
 ## Not for v1 (post-release)
 
 - Jira/Confluence integration
