@@ -213,10 +213,16 @@ def test_v2_public_surface_reexport(name: str) -> None:
         f"(implementation/notes.md)."
     )
     value = getattr(so, name)
-    assert value is not None, (
-        f"slice_orchestrator.{name} resolved but is None — re-export must "
-        f"point at the actual definition."
-    )
+    # INV-009 thresholds are deliberately ``None`` at introduction (intent §S7,
+    # docs/adr/cost-per-slice-budget.md, and tests/unit/test_slice_orchestrator_cost.py
+    # ``test_inv_009_thresholds_default_to_none``). For these two names the
+    # reachability check above is sufficient — getattr returning the literal
+    # ``None`` proves the re-export points at the actual definition.
+    if name not in ("INV_009_COST_THRESHOLD_USD", "INV_009_TOKEN_THRESHOLD"):
+        assert value is not None, (
+            f"slice_orchestrator.{name} resolved but is None — re-export must "
+            f"point at the actual definition."
+        )
 
 
 def test_v2_pricing_table_lexical_pattern() -> None:

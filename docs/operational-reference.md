@@ -336,7 +336,7 @@ Track 0 of the cost-discipline program lands per-phase token-usage and dollar-co
 
 ### PRICING_TABLE_<date> constant convention
 
-`scripts/slice_orchestrator.py` carries a dated module-level constant whose name matches the regex `^PRICING_TABLE_\d{4}_\d{2}_\d{2}$` (example: `PRICING_TABLE_2026_04_24`). The dating is **load-bearing**: pricing changes ship as **new** dated constants in visible commits, not silent edits to a single mutable table. `_init_state_dict` deep-copies the current dated table into the per-slice `pricing_snapshot` field so archived slices stay reinterpretable at their cost-at-the-time. When a vendor price changes, a dedicated housekeeping slice lands a new `PRICING_TABLE_<new-date>` constant and retires the old one by reference only — prior slices' `pricing_snapshot` values continue to reflect the pricing in force at the time they ran.
+`scripts/slice_orchestrator/core.py` carries a dated module-level constant whose name matches the regex `^PRICING_TABLE_\d{4}_\d{2}_\d{2}$` (example: `PRICING_TABLE_2026_04_24`). The dating is **load-bearing**: pricing changes ship as **new** dated constants in visible commits, not silent edits to a single mutable table. `_init_state_dict` deep-copies the current dated table into the per-slice `pricing_snapshot` field so archived slices stay reinterpretable at their cost-at-the-time. When a vendor price changes, a dedicated housekeeping slice lands a new `PRICING_TABLE_<new-date>` constant and retires the old one by reference only — prior slices' `pricing_snapshot` values continue to reflect the pricing in force at the time they ran.
 
 Shape per model entry: `{"input_per_1k": float, "cache_creation_per_1k": float, "cache_read_per_1k": float, "output_per_1k": float}` — all four token classes must be priced for every dispatched model.
 
@@ -369,16 +369,16 @@ Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "
 
 | Var | Default | Read by | Purpose |
 |---|---|---|---|
-| `CAIRN_PHASE_1_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Hard ceiling on a `phase-1-writer` dispatch. Returns `FAILED` with a timeout summary on overrun. |
-| `CAIRN_PHASE_2_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for `phase-2-skeptic`. |
-| `CAIRN_PHASE_3_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for each parallel `phase-3-implementer` cluster dispatch. |
-| `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Same, for `phase-4-integrator`. |
-| `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator.py` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
-| `CAIRN_HEARTBEAT_INTERVAL` | `10.0` (s) | `scripts/slice_orchestrator.py` | Cadence (seconds) at which the orchestrator heartbeat daemon touches `.claude/current-slice/.heartbeat` with a UTC ISO timestamp. Lower = finer-grained liveness, more write pressure. Per ADR `orchestrator-observability`. |
+| `CAIRN_PHASE_1_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Hard ceiling on a `phase-1-writer` dispatch. Returns `FAILED` with a timeout summary on overrun. |
+| `CAIRN_PHASE_2_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for `phase-2-skeptic`. |
+| `CAIRN_PHASE_3_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for each parallel `phase-3-implementer` cluster dispatch. |
+| `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for `phase-4-integrator`. |
+| `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
+| `CAIRN_HEARTBEAT_INTERVAL` | `10.0` (s) | `scripts/slice_orchestrator/` | Cadence (seconds) at which the orchestrator heartbeat daemon touches `.claude/current-slice/.heartbeat` with a UTC ISO timestamp. Lower = finer-grained liveness, more write pressure. Per ADR `orchestrator-observability`. |
 
 #### Triager superseded-test heuristic (advisory)
 
-Before `dispatch_triager` invokes the `issue-triager` agent, the orchestrator reads the RAISE_ISSUE commit body (`git log -1 --format=%B <hash>`) and `.claude/current-slice/intent.md`, then runs `detect_superseded_test_signal` in `scripts/slice_orchestrator.py`. On a hit, an advisory `supersession_hint = {"hint": "likely_superseded", "evidence": [...]}` is added to the JSON inputs handed to the triager. The hint fires when the commit body contains any of:
+Before `dispatch_triager` invokes the `issue-triager` agent, the orchestrator reads the RAISE_ISSUE commit body (`git log -1 --format=%B <hash>`) and `.claude/current-slice/intent.md`, then runs `detect_superseded_test_signal` in `scripts/slice_orchestrator/core.py`. On a hit, an advisory `supersession_hint = {"hint": "likely_superseded", "evidence": [...]}` is added to the JSON inputs handed to the triager. The hint fires when the commit body contains any of:
 
 - `\bsuperseded?\b` (root `supersede`/`superseded`; trailing `s` as in `supersedes` deliberately excluded);
 - `\bINV-\d{3}\b` (fires regardless of intent);
@@ -386,7 +386,7 @@ Before `dispatch_triager` invokes the `issue-triager` agent, the orchestrator re
 
 Matching is case-insensitive. The hint is **advisory**: the orchestrator does not second-guess the triager's final action — it only surfaces the signal so the triager can prefer `ESCALATE_TO_USER` with rationale "test-amendment recommended" over `RE_DISPATCH`-to-Phase-2 when pre-existing tests are named that a firm contract just landed supersedes. Fails open: any git/filesystem error leaves the triager inputs pristine. Pattern traced to memory `triager_misroute_on_superseded_tests.md` (2026-04-20→21).
 
-| `CAIRN_HEARTBEAT_STALE` | `30.0` (s) | `scripts/slice_orchestrator.py` | Staleness threshold (seconds) after which a `.heartbeat` timestamp is treated as advisory-stale by slice-close-contract D4 tooling. Should be ≥ 2× `CAIRN_HEARTBEAT_INTERVAL`. |
+| `CAIRN_HEARTBEAT_STALE` | `30.0` (s) | `scripts/slice_orchestrator/` | Staleness threshold (seconds) after which a `.heartbeat` timestamp is treated as advisory-stale by slice-close-contract D4 tooling. Should be ≥ 2× `CAIRN_HEARTBEAT_INTERVAL`. |
 | `CAIRN_LEGACY_START_SLICE` | unset | `commands/claude-code/start-slice.md` | When set to any non-empty value, `/start-slice` defers to `start-slice-legacy.md`'s prose protocol instead of invoking the orchestrator. Equivalent to passing `--legacy`. |
 | `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → hook is a no-op (non-compressed slices unaffected). |
 | `AGENT_ENVELOPE` | unset | `checks/role_guard.py` | Colon-separated regex list of allowed write paths for `phase-3-implementer`. Empty/unset denies all writes. |
@@ -398,20 +398,20 @@ Matching is case-insensitive. The hint is **advisory**: the orchestrator does no
 
 `CAIRN_MODEL_<ROLE>` and `CAIRN_EFFORT_<ROLE>` let the operator swap the model or thinking-effort level for any agent role without touching `AGENT_MODEL_CONFIG`. Key derivation: `role.upper().replace("-", "_")`. An **empty string does not override** — the dict default is used (same `or`-fallback semantics as all other `CAIRN_*` knobs).
 
-Defaults come from `AGENT_MODEL_CONFIG` in `scripts/slice_orchestrator.py`. Unknown roles fall back to `claude-opus-4-7` / `high`.
+Defaults come from `AGENT_MODEL_CONFIG` in `scripts/slice_orchestrator/core.py`. Unknown roles fall back to `claude-opus-4-7` / `high`.
 
 | Var | Default (from `AGENT_MODEL_CONFIG`) | Read by | Purpose |
 |---|---|---|---|
-| `CAIRN_MODEL_PHASE_1_WRITER` | `claude-opus-4-7` | `scripts/slice_orchestrator.py` | Override model for `phase-1-writer`. |
-| `CAIRN_EFFORT_PHASE_1_WRITER` | `high` | `scripts/slice_orchestrator.py` | Override effort level for `phase-1-writer`. |
-| `CAIRN_MODEL_PHASE_2_SKEPTIC` | `claude-opus-4-7` | `scripts/slice_orchestrator.py` | Override model for `phase-2-skeptic`. |
-| `CAIRN_EFFORT_PHASE_2_SKEPTIC` | `high` | `scripts/slice_orchestrator.py` | Override effort level for `phase-2-skeptic`. |
-| `CAIRN_MODEL_PHASE_3_IMPLEMENTER` | `claude-sonnet-4-6` | `scripts/slice_orchestrator.py` | Override model for `phase-3-implementer`. Lever 1 cost reduction: Sonnet is ~5× cheaper than Opus for implementation work. |
-| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `medium` | `scripts/slice_orchestrator.py` | Override effort level for `phase-3-implementer`. |
-| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-sonnet-4-6` | `scripts/slice_orchestrator.py` | Override model for `phase-4-integrator`. |
-| `CAIRN_EFFORT_PHASE_4_INTEGRATOR` | `low` | `scripts/slice_orchestrator.py` | Override effort level for `phase-4-integrator`. |
-| `CAIRN_MODEL_ISSUE_TRIAGER` | `claude-opus-4-7` | `scripts/slice_orchestrator.py` | Override model for `issue-triager`. |
-| `CAIRN_EFFORT_ISSUE_TRIAGER` | `medium` | `scripts/slice_orchestrator.py` | Override effort level for `issue-triager`. |
+| `CAIRN_MODEL_PHASE_1_WRITER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-1-writer`. |
+| `CAIRN_EFFORT_PHASE_1_WRITER` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-1-writer`. |
+| `CAIRN_MODEL_PHASE_2_SKEPTIC` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-2-skeptic`. |
+| `CAIRN_EFFORT_PHASE_2_SKEPTIC` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-2-skeptic`. |
+| `CAIRN_MODEL_PHASE_3_IMPLEMENTER` | `claude-sonnet-4-6` | `scripts/slice_orchestrator/` | Override model for `phase-3-implementer`. Lever 1 cost reduction: Sonnet is ~5× cheaper than Opus for implementation work. |
+| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `medium` | `scripts/slice_orchestrator/` | Override effort level for `phase-3-implementer`. |
+| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-sonnet-4-6` | `scripts/slice_orchestrator/` | Override model for `phase-4-integrator`. |
+| `CAIRN_EFFORT_PHASE_4_INTEGRATOR` | `low` | `scripts/slice_orchestrator/` | Override effort level for `phase-4-integrator`. |
+| `CAIRN_MODEL_ISSUE_TRIAGER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `issue-triager`. |
+| `CAIRN_EFFORT_ISSUE_TRIAGER` | `medium` | `scripts/slice_orchestrator/` | Override effort level for `issue-triager`. |
 
 The resolved model (after env-var override) is recorded in `model_by_phase[role]` inside the slice state, so cost attribution in `<slug>-result.json` reflects what was actually dispatched (INV-009 honesty). To restore pre-Lever-1 parity (all phases on Opus/high), set:
 
