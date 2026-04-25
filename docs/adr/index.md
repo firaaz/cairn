@@ -16,3 +16,4 @@
 | compression-infrastructure-bootstrap | Compression-infrastructure bootstrap — narrow authorization for role_guard.py hook | accepted | provisional | process | 2026-04-19 |
 | slice-close-contract | Slice-close contract — idempotent close, sole commit source, cross-slice isolation | accepted | firm | process | 2026-04-20 |
 | orchestrator-observability | Orchestrator observability — JSON canonical, MD derived, forward-compat schema, deferred retention | accepted | provisional | process | 2026-04-20 |
+| slice-artifact-preservation | Slice artifact preservation — pre-wipe snapshots of phase ephemerals | accepted | firm | process | 2026-04-26 |
