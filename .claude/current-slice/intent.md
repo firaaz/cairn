@@ -14,6 +14,7 @@ envelope:
   - "scripts/slice_orchestrator/resume.py"
   - "scripts/slice_orchestrator/telemetry.py"
   - "scripts/slice_orchestrator/git.py"
+  - "tests/unit/test_slice_orchestrator_package_split.py"
   - "docs/ARCHITECTURE.md"
   - "docs/operational-reference.md"
   - "commands/claude-code/start-slice.md"
@@ -24,7 +25,7 @@ envelope:
   - ".claude/current-slice/integration/sweep-notes.md"
   - ".claude/features/compression.yaml"
 out-of-scope:
-  - "tests/unit/**/*.py — test files MUST NOT be edited; any test diff signals a broken refactor"
+  - "tests/unit/**/*.py except the single new tests/unit/test_slice_orchestrator_package_split.py — every other test file MUST NOT be edited; any other-test diff signals a broken refactor"
   - "docs/adr/**/*.md — ADRs are append-only / firm; historical scripts/slice_orchestrator.py:NNN citations stay frozen by design"
   - ".claude/agents/**/*.md — agent prompts unchanged; INV-003 phase-lock contract preserved"
   - "checks/*.sh — hook surface unchanged"
@@ -106,7 +107,7 @@ The pre-split form `python scripts/slice_orchestrator.py --brief "..."` ceases t
 
 Where a path string conceptually still refers to "the orchestrator as a module," the directory form `scripts/slice_orchestrator/` (no `.py` suffix) is the correct replacement. Where a citation is line-specific to a definition, the new submodule path is the correct replacement.
 
-**S6. Test-file invariance.** Zero `tests/**/*` files MAY be edited in this slice. Every test currently passing pre-split MUST continue to pass post-split with no test-source change. A test diff in Phase 4 is a hard FAIL signal that the refactor leaked a behavioral change.
+**S6. Test-file invariance.** Zero **existing** `tests/**/*` files MAY be edited in this slice. The single exception is the new RED-gate test file `tests/unit/test_slice_orchestrator_package_split.py`, written by Phase 2 to mechanically verify gates V2–V6 (public-surface re-export, CLI invocation, filesystem shape, architecture validator, path-string sweep). Every existing test currently passing pre-split MUST continue to pass post-split with no source change. A diff in any test file other than the new gate file (whether in Phase 3's commit or Phase 4's audit) is a hard FAIL signal that the refactor leaked a behavioral change.
 
 **S7. Invariant preservation contract.** Each invariant in `invariants-touched` is preserved by construction:
 - **INV-003** (phase-lock-and-role-declaration) — dispatch logic moves to `dispatch.py`; role/phase tables (`ROLE_FOR_PHASE`, `ROLE_TO_PHASE`) move to `core.py`; the agent-side phase-lock contract is untouched, agent prompts unchanged.
@@ -127,7 +128,7 @@ Out of scope ⟶ everything in `out-of-scope:` above. Particularly:
 
 ### Verification
 
-**V1. Test suite green, zero diff.** `uv run python -m pytest` returns 746 passed (3 skipped allowed; total may be 746 or higher only via additive ADR-driven test families, but no test count *decrease* and no test diff). `git diff HEAD~1 -- tests/` for the Phase 3 commit MUST be empty.
+**V1. Test suite green, zero diff except the gate file.** `uv run python -m pytest` returns ≥746 passed (3 skipped allowed; the new `test_slice_orchestrator_package_split.py` adds N gate tests, all GREEN at Phase 4). `git diff HEAD~1 -- tests/` for the Phase 3 commit MUST be empty (Phase 3 does not touch any test file). `git diff <phase-1-intent-commit> -- tests/` at Phase 4 MUST show changes only in `tests/unit/test_slice_orchestrator_package_split.py` — every other test file is byte-identical.
 
 **V2. Public-surface re-export proof.** `python -c "import slice_orchestrator as so; print(so.is_valid_slice_id('a/b'), so.AGENT_MODEL_CONFIG, so.INV_009_COST_THRESHOLD_USD, so.dispatch_phase_agent, so.run_phase_loop, so.close_slice)"` succeeds and prints non-error values for every name. Every name in §S3 MUST be importable.
 
