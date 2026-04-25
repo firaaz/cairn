@@ -1,8 +1,13 @@
 id: compression/lever-2-orchestrator-split
-name: "Compression Lever 2 — orchestrator package split"
-status: 4-integration
+name: "Compression Lever 2 \u2014 orchestrator package split"
+status: complete
 started: 2026-04-25
-completed: null
-invariants-touched: [INV-003, INV-004, INV-008, INV-009]
+completed: 2026-04-25
+invariants-touched:
+- INV-003
+- INV-004
+- INV-008
+- INV-009
 adrs-referenced: []
 adrs-created: []
+current_phase: 4

@@ -195,7 +195,10 @@ class _MirroringModule(_types.ModuleType):
     Any ``setattr`` against the facade is propagated to each submodule whose
     own ``__dict__`` already contains the same attribute name, keeping
     submodule globals in sync with facade-side patches. Attribute deletion is
-    similarly mirrored so ``monkeypatch`` teardown restores all surfaces.
+    propagated to the facade only; submodule entries are left alone because
+    the original definition is unrecoverable without snapshotting. Pytest's
+    ``monkeypatch.setattr`` teardown uses setattr-back-to-original (not
+    delattr), so this is safe in practice.
     """
 
     _SUBMODULE_NAMES = (
