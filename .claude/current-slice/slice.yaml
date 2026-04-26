@@ -1,13 +1,13 @@
 id: compression/learnings-capture
 name: compression/learnings-capture
 status: in-progress
-current_phase: 2
-brief: 'Restore the per-slice learning-capture surface that the compressed protocol
-  structurally lost. Add two layered surfaces — (1) Phase-4 integrator emits optional
-  ## Learnings observed section in sweep-notes.md; (2) orchestrator emits mechanical
-  events to .claude/current-slice/integration/orchestrator-events.jsonl (phase_redispatch,
-  redispatch_cap_exceeded, cost_threshold_breach, token_threshold_breach, agent_timeout).
-  Both ride existing slice-artifact-preservation pipeline. stdlib-only. adrs-referenced:
-  [slice-artifact-preservation, phase-lock-and-role-declaration]. Feature: compression.
-  Predecessor: slice-artifact-preservation (closed). Successor: substrate Slice 2
-  (lever-Y-mcp-substrate) opens after this closes.'
+current_phase: 3
+brief: "Restore the per-slice learning-capture surface that the compressed protocol\
+  \ structurally lost. Add two layered surfaces \u2014 (1) Phase-4 integrator emits\
+  \ optional ## Learnings observed section in sweep-notes.md; (2) orchestrator emits\
+  \ mechanical events to .claude/current-slice/integration/orchestrator-events.jsonl\
+  \ (phase_redispatch, redispatch_cap_exceeded, cost_threshold_breach, token_threshold_breach,\
+  \ agent_timeout). Both ride existing slice-artifact-preservation pipeline. stdlib-only.\
+  \ adrs-referenced: [slice-artifact-preservation, phase-lock-and-role-declaration].\
+  \ Feature: compression. Predecessor: slice-artifact-preservation (closed). Successor:\
+  \ substrate Slice 2 (lever-Y-mcp-substrate) opens after this closes."
