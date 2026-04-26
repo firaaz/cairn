@@ -24,6 +24,7 @@ from .core import (
     PERMISSION_MODE,
     ROLE_TO_PHASE,
     VALID_TRIAGER_ACTIONS,
+    _check_inv009_thresholds,
     _classify_failure,
     _extract_agent_result_text,
     _extract_envelope_model,
@@ -230,6 +231,11 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
             role,
             _parse_usage_envelope(stdout),
             _extract_envelope_model(stdout),
+        )
+        _check_inv009_thresholds(
+            slice_id,
+            _state.get("cost_total_usd", 0.0),
+            _state.get("tokens_total", 0),
         )
     except Exception as _cost_exc:  # pragma: no cover — defensive only
         print(

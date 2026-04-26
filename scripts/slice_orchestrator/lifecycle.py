@@ -22,9 +22,10 @@ from .core import (
     ROLE_FOR_PHASE,
     SLICE_YAML,
     _iso_now,
+    _normalize_slice_id,
+    _record_orchestrator_event,  # noqa: F401 — used in run_phase_loop
     _resolve_timeout,
     is_valid_slice_id,
-    _normalize_slice_id,
 )
 from .dispatch import (
     dispatch_phase_3,
@@ -102,6 +103,7 @@ _ARTIFACT_RELPATHS = (
     "validation/approach.md",
     "implementation/notes.md",
     "integration/sweep-notes.md",
+    "integration/orchestrator-events.jsonl",
     "handoff-phase-1.md",
     "handoff-phase-2.md",
     "handoff-phase-3.md",
@@ -302,6 +304,12 @@ def run_phase_loop(max_phase=4):
         if status == "RAISE_ISSUE":
             # B15: cap re-dispatch from the same source phase to 1.
             if redispatch_count.get(phase, 0) >= 1:
+                _record_orchestrator_event(
+                    _slice_id(),
+                    "redispatch_cap_exceeded",
+                    phase=phase,
+                    count=redispatch_count.get(phase, 0) + 1,
+                )
                 print(
                     f"orchestrator: phase {phase} re-dispatched twice; "
                     f"escalating per design §6.1",
@@ -336,6 +344,12 @@ def run_phase_loop(max_phase=4):
                         file=sys.stderr,
                     )
                     return 1
+                _record_orchestrator_event(
+                    _slice_id(),
+                    "phase_redispatch",
+                    from_phase=phase,
+                    to_phase=target,
+                )
                 redispatch_count[phase] = redispatch_count.get(phase, 0) + 1
                 phase = target
                 continue

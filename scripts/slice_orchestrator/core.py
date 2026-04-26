@@ -486,6 +486,52 @@ def _parse_clusters(text):
     return data
 
 
+def _record_orchestrator_event(slice_id: str, event_type: str, **fields) -> None:
+    """Append one JSON-encoded event line to orchestrator-events.jsonl.
+
+    Schema: {"ts": <ISO8601-UTC>, "slice_id": ..., "event_type": ..., **fields}.
+    Append-only; parent-dir-tolerant (F5); no _git calls (DC-4 by construction).
+    """
+    path = Path(".claude/current-slice/integration/orchestrator-events.jsonl")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "slice_id": slice_id,
+        "event_type": event_type,
+        **fields,
+    }
+    with open(str(path), "a") as fh:
+        fh.write(json.dumps(record) + "\n")
+
+
+def _check_inv009_thresholds(
+    slice_id: str, cost_total_usd: float, tokens_total: int
+) -> None:
+    """Emit orchestrator events when INV-009 thresholds are exceeded.
+
+    Advisory-only while both thresholds are None (introduced-provisional).
+    Emits cost_threshold_breach and/or token_threshold_breach when the
+    corresponding threshold is set and the observed value exceeds it.
+    """
+    if (
+        INV_009_COST_THRESHOLD_USD is not None
+        and cost_total_usd > INV_009_COST_THRESHOLD_USD
+    ):
+        _record_orchestrator_event(
+            slice_id,
+            "cost_threshold_breach",
+            threshold_usd=INV_009_COST_THRESHOLD_USD,
+            observed_usd=cost_total_usd,
+        )
+    if INV_009_TOKEN_THRESHOLD is not None and tokens_total > INV_009_TOKEN_THRESHOLD:
+        _record_orchestrator_event(
+            slice_id,
+            "token_threshold_breach",
+            threshold_tokens=INV_009_TOKEN_THRESHOLD,
+            observed_tokens=tokens_total,
+        )
+
+
 def _intent_envelope():
     """Prefer slice.yaml.envelope; fall back to intent.md frontmatter. B16.
 
