@@ -17,3 +17,6 @@ venv/
 
 # Git worktrees (project-local, never tracked)
 .worktrees/
+
+# substrate index (derived; rebuildable from sources)
+.claude/cairn_query/

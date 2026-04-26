@@ -5,6 +5,10 @@ description = "Slice-pipeline methodology repo (hooks, slash commands, validator
 requires-python = ">=3.11"
 dependencies = [
     "pyyaml>=6.0",
+    "pydantic>=2.6",
+    "kuzu>=0.6",
+    "mistune>=3.0",
+    "typer>=0.12",
 ]
 
 [dependency-groups]
