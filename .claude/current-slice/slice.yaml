@@ -1,44 +1,47 @@
-id: compression/learnings-capture
-name: compression/learnings-capture
-status: complete
-current_phase: 4
-brief: "Retry of compression/learnings-capture (failed slice archived at .claude/completed-slices/compression-learnings-capture-failed/;\
-  \ archive commit 4fc3157).\n\nGoal: restore the per-slice learning-capture surface\
-  \ that the compressed protocol structurally lost. Two layered surfaces, both ride\
-  \ the existing slice-artifact-preservation pipeline, stdlib-only:\n1. Orchestrator\
-  \ emits mechanical events to .claude/current-slice/integration/orchestrator-events.jsonl.\
-  \ Event types (v1 set): phase_redispatch, redispatch_cap_exceeded, cost_threshold_breach,\
-  \ token_threshold_breach, agent_timeout.\n2. Phase-4 integrator (.claude/agents/phase-4-integrator.md)\
-  \ gains an optional \"## Learnings observed\" subsection in its sweep-notes.md template\
-  \ guidance \u2014 free-form, empty by default.\n\nFeature: compression. adrs-referenced:\
-  \ [slice-artifact-preservation, phase-lock-and-role-declaration]. No new ADR (mechanism\
-  \ addition only).\n\nREQUIRED INPUTS FOR PHASE 1 (read at intent draft time):\n\n\
-  - .claude/completed-slices/compression-learnings-capture-failed/slice.yaml \u2014\
-  \ failure-reason names \"cluster-no-RED-test\" as root cause: Phase 3's prompt-amendment\
-  \ cluster observed GREEN test status and reported OK without editing .claude/agents/phase-4-integrator.md,\
-  \ because the prior intent excluded prompt-content tests as \"brittle.\" The retry\
-  \ MUST gate the phase-4-integrator.md cluster with a RED test (a string-presence\
-  \ assertion against the agent file is acceptable trade-off vs. the prior brittle-exclusion).\
-  \ Every Phase-3 cluster needs a progress signal beyond GREEN test status.\n\n- .claude/completed-slices/compression-learnings-capture-failed/intent.md\
-  \ \u2014 prior intent (envelope, spec, verification table, out-of-scope list). Reuse\
-  \ what is still correct; tighten the verification surface to close the cluster-no-RED-test\
-  \ gap.\n\n- stash@{0} \u2014 partial Phase-3 orphan from cost-discipline/lever-1-tier-retune.\
-  \ Contains: _record_orchestrator_event helper in core.py, phase_redispatch + redispatch_cap_exceeded\
-  \ event emissions in lifecycle.py, \"integration/orchestrator-events.jsonl\" added\
-  \ to _ARTIFACT_RELPATHS. Seed only \u2014 orphan was Phase-3 scope drift, not vetted\
-  \ spec; carve carefully. Inspect with `git stash show -p stash@{0}`. Remaining wiring\
-  \ not in stash: agent_timeout (dispatch.py TimeoutExpired site), cost_threshold_breach\
-  \ + token_threshold_breach (core.py INV-009 detection), phase-4-integrator.md prompt\
-  \ amendment.\n\n- docs/lessons.md L-011, L-012, L-013 \u2014 read all three; they\
-  \ shape this slice's discipline:\n  - L-011 (phase-handoff commit gap): Phase-N\
-  \ agents must `git commit` their envelope edits before returning OK; an --allow-empty\
-  \ boundary commit is not equivalent to a content commit.\n  - L-012 (hook-narrative\
-  \ tier sensitivity): when a tier flip is in play, dogfood end-to-end before declaring\
-  \ complete.\n  - L-013 (Phase-3 redispatch scope drift): keep motivation prose terse;\
-  \ audit `git status` against envelope after every Phase-3 redispatch \u2014 out-of-envelope\
-  \ source changes are RAISE_ISSUE by default.\n\nOut-of-scope (carry from prior intent\
-  \ unless changed): per-phase 1/2/3 learning surfaces, automatic 3\xD7-rule promotion,\
-  \ post-close commit detection (L-010), empty-handoff-commit detection (L-008), .claude/learning.md\
-  \ V5 cap revision, any new ADR, any Phase-1/2/3 agent-prompt change.\n\nPredecessor:\
-  \ prior failed slice (4fc3157). Successor: substrate Slice 2 (lever-Y-mcp-substrate)\
-  \ opens after this closes.\n"
+id: compression/lever-Y-mcp-substrate
+name: compression/lever-Y-mcp-substrate
+status: in-progress
+current_phase: 1
+brief: |
+  compression/lever-Y-mcp-substrate (substrate Slice 2). Feature: compression. Co-lands ADR cairn-substrate-and-fastmcp (already drafted at docs/adr/cairn-substrate-and-fastmcp.md, status: accepted, firmness: firm — D3 gate is structurally clear).
+
+  GOAL
+  Wrap the typed knowledge substrate (built in Slice 1, scripts/cairn_query/) in a FastMCP server adapter so phase agents can query typed records over MCP instead of re-reading canonical markdown. Prove the cost-reduction thesis on phase-1-writer as the single proof-of-concept phase; Slice 3 (lever-Z-substrate-full-pipeline) generalizes to phases 2/3/4.
+
+  WHAT SHIPS (per docs/plans/2026-04-25-knowledge-substrate-design.md §6 Slice 2 row)
+  1. FastMCP server adapter wrapping cairn_query (4 read-only MCP tools per design §5; mcp_servers/cairn_knowledge/ per §4 layout).
+  2. .mcp.json registration so the server starts under stdio transport when phase agents launch.
+  3. Snapshot pinning: orchestrator captures `git rev-parse HEAD` per phase as snapshot_id, passes via AGENT_ENVELOPE (extends today's phase-3-only AGENT_ENVELOPE consumption to phase-1-writer per ADR D9).
+  4. phase-1-writer agent prompt updated to query-first (one phase only as POC).
+  5. Structural lockdown for phase-1-writer: checks/role_guard.py ROLE_POLICIES denies Read/Bash on scripts/cairn_query/** and canonical knowledge sources (docs/ARCHITECTURE.md, docs/adr/**, docs/lessons.md, docs/spec-v1.md, docs/operational-reference.md) unless slice envelope grants. Per ADR D8.
+
+  ADRS REFERENCED (must be in adrs-referenced; all already committed)
+  - cairn-substrate-and-fastmcp (D1, D6, D8, D9, D12, D14, D15, D16 — listed in ADR text).
+  - phase-lock-and-role-declaration (D4 Phase Skill Guide surfacing).
+  - compression-infrastructure-bootstrap (existing role_guard.py PreToolUse mechanism class — extending its policy table, not its mechanism).
+
+  CLOSES WHEN
+  - pytest full passes (must clear the 8 pre-existing cairn-substrate-and-fastmcp validator failures from current baseline 947 pass / 8 OOS / 3 skip).
+  - FastMCP server starts under .mcp.json.
+  - phase-1-writer queries cairn_query through MCP successfully on a real slice.
+  - Cost-delta ≥ 40% Phase-1 reduction vs Lever-1 baseline ($2.96 / 105k cache_creation for Phase 1).
+
+  REQUIRED INPUTS FOR PHASE 1 (read at intent draft time)
+  - docs/plans/2026-04-25-knowledge-substrate-design.md §4 (architecture), §5 (tool surface), §6 (Slice 2 deliverables), §8.1 (16 decisions inventory) — design source of truth.
+  - docs/adr/cairn-substrate-and-fastmcp.md — committed ADR; declared decisions fix the spec scope.
+  - docs/ARCHITECTURE.md — verify invariants-touched (ADR sets invariants-touched: []; intent's envelope likely matches).
+  - scripts/cairn_query/ public interface only (modification slice — DO NOT read internals).
+  - checks/role_guard.py public structure of ROLE_POLICIES (modification slice — public interface only).
+  - scripts/slice_orchestrator/dispatch.py public interface for AGENT_ENVELOPE construction (modification slice — public interface only).
+
+  WATCHOUTS (carry into intent boundary or out-of-scope as appropriate)
+  - L-011 (Phase-3 cluster fan-out commit gap): docs/roadmap.md §11 queued; lean = orchestrator-side commit ownership. Slice 2's Phase 3 likely fans out (FastMCP adapter + role_guard table + agent prompt + .mcp.json + snapshot pinning are 5 candidate clusters). Operator-fixup remediation path documented at commit 354167a.
+  - D9 envelope-grant enumeration: phase-1-writer has known canonical-source reads today; intent must enumerate them and route each through MCP or grant via slice envelope. Do not silently break phase-1 behavior.
+  - D15 operator-memory exclusion: MCP tool surface MUST NOT expose operator memory (~/.claude/projects/.../memory/), even via opt-in. Structural enforcement, non-negotiable.
+
+  OUT-OF-SCOPE (must appear in intent.md boundary)
+  - Mutation surface (typed claims by agents) — explicitly deferred per ADR D7 to a future ADR.
+  - phases 2/3/4 query-first conversion + lockdown — Slice 3 (lever-Z-substrate-full-pipeline).
+  - Compaction policy for sweep-results artifacts — separate ADR.
+  - GitHub Project board automation — gated behind Slice 3 per project memory.
+  - AGENT_ENVELOPE extension to phases 2/3/4 — Slice 3 (only phase-1-writer extends in this slice).
