@@ -1,0 +1,15 @@
+id: cost-discipline/lever-1-tier-retune
+name: cost-discipline/lever-1-tier-retune
+status: in-progress
+current_phase: 1
+brief: "Wire per-phase model + extended-thinking selection into the slice orchestrator's\
+  \ `claude -p` dispatch. Default tiers: P1=opus high, P2=opus high, P3=sonnet high,\
+  \ P4=opus low. Tiers must be configurable per-phase (env vars or config table) so\
+  \ operators can override without code edits. Motivation: empirical signal from the\
+  \ failed compression/learnings-capture slice \u2014 Phase 3 underperformed at the\
+  \ default tier on cluster fan-out (worker reported OK without RED-test gating),\
+  \ while Phase 4 correctly caught the gap. Sonnet-high P3 should improve fan-out\
+  \ reliability at lower cost; opus-low P4 retains audit quality at lower cost. Envelope:\
+  \ scripts/slice_orchestrator/dispatch.py and any companion per-phase config surface;\
+  \ new tests under tests/unit/scripts/slice_orchestrator/. Out of scope: phase semantics,\
+  \ gate logic, artifact contracts, role assignments, agent prompt bodies."
