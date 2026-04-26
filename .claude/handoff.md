@@ -2,11 +2,11 @@
 slice: none
 phase: complete
 branch: feature/compression
-as-of: 2026-04-26 lever-Z-substrate-full-pipeline phase 4
+as-of: 2026-04-26 003d9ad
 ---
 
 ## State
-`compression/lever-Z-substrate-full-pipeline` Phase 4 PASS — substrate program v1 enforceability commitment **COMPLETE**. `ROLE_DENY_READ` extended to all four phase roles (`phase-1-writer`, `phase-2-skeptic`, `phase-3-implementer`, `phase-4-integrator`); query-first directives in phase 2/3/4 agent prompts; INV-010 prose updated; INV-010 PASS; architecture validator PASS (10 invariants, 17 ADRs); pytest 1048 passed / 3 skipped / 1 pre-existing OOS failure (`test_inv004_turn1_token_budget`, env-dependent CC-session token measurement). First slice to dogfood orchestrator-driven query-first dispatch end-to-end across all four phase roles; Phase 4 sourced INV-010 Statement from `mcp_servers.cairn_knowledge.tools.lookup` not from re-reading `docs/ARCHITECTURE.md`. Awaits operator close commit.
+`compression/lever-Z-substrate-full-pipeline` closed at `003d9ad` (`slice: ... — complete`). Substrate program v1 enforceability commitment **COMPLETE**. `ROLE_DENY_READ` extended to all four phase roles (`phase-1-writer`, `phase-2-skeptic`, `phase-3-implementer`, `phase-4-integrator`); query-first directives in phase 2/3/4 agent prompts; INV-010 prose updated; INV-010 PASS; architecture validator PASS (10 invariants, 17 ADRs); pytest 1048 passed / 3 skipped / 1 pre-existing OOS failure (`test_inv004_turn1_token_budget`, env-dependent CC-session token measurement). First slice to dogfood orchestrator-driven query-first dispatch end-to-end across all four phase roles; Phase 4 sourced INV-010 Statement from `mcp_servers.cairn_knowledge.tools.lookup` not from re-reading `docs/ARCHITECTURE.md`. Working tree clean.
 
 ## Next
 **Phase-1 dispatch defect fixup** — gating before any further orchestrator-driven slice. Claude Code's built-in sensitive-file gate denies Write on `.claude/**`; Slice-2-fixup hardening (Bash dropped from `phase-1-writer.md:4` frontmatter) made the documented P1 Bash-heredoc escape unreachable. Lever-Z Phase 1 was hand-rolled because of this defect; the defect itself was OOS for Lever-Z (intent §Boundary item 1). Candidate fixes (operator-decision in the fixup): restore Bash to `phase-1-writer.md:4` frontmatter (steelman: `_bash_path_tokens` already catches canonical-knowledge tokens, so canonical-knowledge lockdown survives; only the `.claude/**` escape is restored), or amend `settings.json` / CC built-in gate behavior, or document an alternative escape mechanism. Substrate Slice 4+ is undesigned (no immediate successor in the substrate program proper).
@@ -24,8 +24,9 @@ as-of: 2026-04-26 lever-Z-substrate-full-pipeline phase 4
 
 ## Pointers
 - `.claude/sweep.yaml` — read first; names new mechanisms shipped + COMPLETE gate.
-- `.claude/current-slice/integration/sweep-notes.md` — full Phase-4 audit including S4 dogfood walkthrough and rough edges observed in cairn-knowledge MCP query path.
-- `.claude/current-slice/handoff-phase-4.md` — phase-boundary handoff; commit list; OOS reaffirmations.
+- `.claude/sweep-results/compression-lever-Z-substrate-full-pipeline/artifacts/integration/sweep-notes.md` — full Phase-4 audit including S4 dogfood walkthrough and rough edges observed in cairn-knowledge MCP query path (gitignored, on-disk only).
+- `.claude/sweep-results/compression-lever-Z-substrate-full-pipeline/artifacts/handoff-phase-4.md` — phase-boundary handoff; commit list; OOS reaffirmations.
+- `.claude/sweep-results/compression-lever-Z-substrate-full-pipeline/artifacts/integration/envelope-expansions.log` — both cross-slice contradiction amendments (G7; then test_v4 + test_bootstrap).
 - `docs/plans/2026-04-25-knowledge-substrate-design.md` §348 — Slice 3 spec (now closed).
 - `docs/ARCHITECTURE.md` INV-010 — canonical statement names all four phase roles.
 - `checks/role_guard.py:33-47` — `_CANONICAL_DENY_PATTERNS` constant + `ROLE_DENY_READ` four-role table.
