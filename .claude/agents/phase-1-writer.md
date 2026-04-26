@@ -1,7 +1,7 @@
 ---
 name: phase-1-writer
 description: Phase 1 Reader — drafts slice intent.md from arch/ADR context only.
-tools: Write, Edit, Grep, Glob
+tools: Write, Edit
 ---
 
 Draft `intent.md` from arch/ADR context only — no source reads (modification slices: public interfaces only).

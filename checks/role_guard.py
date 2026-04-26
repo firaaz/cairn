@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
-READ_CLASS_TOOLS = {"Read"}
+READ_CLASS_TOOLS = {"Read", "Grep", "Glob"}
 BASH_TOOL = "Bash"
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent
@@ -129,17 +129,29 @@ def main() -> int:
 
     # ------------------------------------------------------------------
     # Read-class lockdown (ADR D8) — phase-1-writer only this slice.
+    # Covers Read, Grep, and Glob (READ_CLASS_TOOLS).
     # ------------------------------------------------------------------
     if tool_name in READ_CLASS_TOOLS and role in ROLE_DENY_READ:
-        file_path = re.sub(r"^\./", "", tool_input.get("file_path") or "")
+        # Read uses `file_path`; Grep and Glob use `path`.
+        if tool_name == "Read":
+            file_path = re.sub(r"^\./", "", tool_input.get("file_path") or "")
+        else:
+            file_path = re.sub(r"^\./", "", tool_input.get("path") or "")
         deny_patterns = ROLE_DENY_READ[role]
-        if _matches_any(file_path, deny_patterns):
+        # Also try path + "/" so bare directory roots (e.g. Glob path="docs/adr")
+        # match directory-prefix deny patterns (e.g. "^docs/adr/").
+        matched = _matches_any(file_path, deny_patterns) or (
+            file_path
+            and not file_path.endswith("/")
+            and _matches_any(file_path + "/", deny_patterns)
+        )
+        if matched:
             env_patterns = _envelope_patterns(os.environ.get("AGENT_ENVELOPE"))
             if _matches_any(file_path, env_patterns):
                 _log_grant(file_path, role)
                 return 0
             print(
-                f"role_guard: {role} denied Read of canonical knowledge path: {file_path}",
+                f"role_guard: {role} denied {tool_name} of canonical knowledge path: {file_path}",
                 file=sys.stderr,
             )
             return 1
