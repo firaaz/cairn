@@ -63,3 +63,40 @@ Per handoff Blocked/Pending #3 (prior invariant-prose cluster reported
 OK with stale commit_hash), commit_hash for each cluster is captured
 via `git rev-parse HEAD` immediately after the commit lands and
 reported in the structured tail.
+
+## Blocker — two pre-existing tests outside envelope regress
+
+After landing Cluster A (ROLE_DENY_READ widening), full pytest reveals
+TWO pre-existing tests regress, both outside the slice envelope:
+
+1. `tests/unit/test_role_guard_phase_1_lockdown.py::test_v4_other_roles_unaffected_by_read_denylist`
+   Asserts phase-2-skeptic / phase-3-implementer / phase-4-integrator
+   Read on `docs/ARCHITECTURE.md` returns rc=0. Slice 3 §S1 inverts
+   this. The test's own docstring acknowledges the inversion: "only
+   phase-1-writer is locked down this slice; phases 2/3/4 keep direct
+   Read access (Slice 3 generalizes)."
+
+2. `tests/unit/test_role_guard.py::test_bootstrap_scope_read_tool_ignored`
+   Asserts phase-2-skeptic Read on `docs/adr/any.md` returns rc=0.
+   Slice 3 widens phase-2-skeptic's deny set to include `^docs/adr/`,
+   inverting this assertion. The test's stated intent (Read tool ignored
+   when not in WRITE_TOOLS) is preserved if the path argument is changed
+   to a non-deny-list path.
+
+Both are direct mirrors of the G7 cross-slice contradiction the operator
+already resolved at envelope-expansions.log. Scope-guard correctly
+denied an out-of-envelope Edit on `test_role_guard_phase_1_lockdown.py`;
+I reverted my preemptive edit on `test_role_guard.py` to keep the
+working tree clean.
+
+**Resolution requires operator envelope expansion** (precedent: commit
+8fc0133, envelope-expansions.log entry of 2026-04-26). Proposed amend:
+add both files to the envelope with the same edit-don't-decide framing
+as G7 (cross-slice contradiction, predecessor docstring already
+anticipated the inversion). Cluster D would then rewrite both tests
+to assert the inversion (mirroring the G7 rewrite from Cluster A) +
+update test_bootstrap_scope_read_tool_ignored's path argument.
+
+Per the closes-when condition #7 ("Full pytest GREEN modulo the
+pre-existing INV-004 turn-1 token-budget OOS env-dependent failure"),
+these two new regressions block OK. RAISE_ISSUE.
