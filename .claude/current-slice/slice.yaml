@@ -1,7 +1,7 @@
 id: cost-discipline/lever-1-tier-retune
 name: cost-discipline/lever-1-tier-retune
 status: in-progress
-current_phase: 2
+current_phase: 3
 brief: "Wire per-phase model + extended-thinking selection into the slice orchestrator's\
   \ `claude -p` dispatch. Default tiers: P1=opus high, P2=opus high, P3=sonnet high,\
   \ P4=opus low. Tiers must be configurable per-phase (env vars or config table) so\

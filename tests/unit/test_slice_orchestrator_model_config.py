@@ -1,15 +1,25 @@
-"""Phase 2 RED — cost-discipline/lever-1-per-phase-model.
+"""Phase 2 RED — cost-discipline/lever-1-tier-retune.
 
-Verifies intent.md §1-§4 specification items T1-T11.
+Default-tier retune of two rows in ``AGENT_MODEL_CONFIG`` (intent.md §Spec
+Detail Edit 1):
 
-Every test is expected to FAIL at Phase 2 — ``AGENT_MODEL_CONFIG`` and
-``_resolve_model_config`` do not yet exist in scripts/slice_orchestrator.py,
-and the dispatch plumbing splice (``--model``/``--effort``) has not been added.
+    phase-3-implementer  effort  medium → high
+    phase-4-integrator   model   claude-sonnet-4-6 → claude-opus-4-7
 
-Invariants touched: INV-003 (dispatch plumbing only), INV-009 (honest
-  model_by_phase attribution under env-var overrides).
-Design source: docs/plans/2026-04-23-cost-discipline-design.md §Lever 1
-               .claude/current-slice/intent.md §1-§4, §Verification T1-T11.
+Every retune-touching assertion below is expected to FAIL against current
+``scripts/slice_orchestrator/core.py`` and PASS once Phase 3 lands the
+two-row literal change. The override-precedence and unknown-role-fallback
+contracts are unchanged and re-asserted here as regression guards so a
+future tier flip cannot silently bypass the env-var surface.
+
+Pre-existing T1–T11 assertions (from cost-discipline/lever-1-per-phase-model)
+are retuned in-place where they pinned the old default values; structural
+checks (symbol presence, argv shape, env-var precedence) are left intact.
+
+Invariants touched: INV-003 (role names, ordering, gates — preserved by
+  construction; only literals change), INV-009 (honest model_by_phase
+  attribution — preserved; verified by T11-default with new opus default).
+Design source: .claude/current-slice/intent.md §1-§4, §Verification.
 
 Pytest + stdlib only (CLAUDE.md stdlib-only rule).
 """
@@ -144,8 +154,12 @@ def test_agent_model_config_default_values_match_spec():
     expected = {
         "phase-1-writer": ("claude-opus-4-7", "high"),
         "phase-2-skeptic": ("claude-opus-4-7", "high"),
-        "phase-3-implementer": ("claude-sonnet-4-6", "medium"),
-        "phase-4-integrator": ("claude-sonnet-4-6", "low"),
+        # Retuned (lever-1-tier-retune): effort medium → high to restore
+        # reasoning depth on cluster fan-out; Sonnet model retained for cost.
+        "phase-3-implementer": ("claude-sonnet-4-6", "high"),
+        # Retuned (lever-1-tier-retune): model sonnet → opus to put audit
+        # quality on the higher-judgment model; effort stays low.
+        "phase-4-integrator": ("claude-opus-4-7", "low"),
         "issue-triager": ("claude-opus-4-7", "medium"),
     }
     for role, (exp_model, exp_effort) in expected.items():
@@ -201,17 +215,26 @@ def test_t1_phase_1_writer_default_model_and_effort(monkeypatch):
 
 
 def test_t2_phase_3_implementer_default_model_and_effort(monkeypatch):
-    """T2: _resolve_model_config('phase-3-implementer') → ('claude-sonnet-4-6', 'medium')."""
+    """T2 (retuned): _resolve_model_config('phase-3-implementer') → ('claude-sonnet-4-6', 'high').
+
+    Effort retune medium → high (lever-1-tier-retune §Spec Detail Edit 1).
+    Sonnet model retained — bumping effort, not model, preserves Lever 1's
+    cost split while restoring reasoning depth on cluster fan-out where the
+    `compression/learnings-capture` empirical regression was observed.
+    """
     monkeypatch.delenv("CAIRN_MODEL_PHASE_3_IMPLEMENTER", raising=False)
     monkeypatch.delenv("CAIRN_EFFORT_PHASE_3_IMPLEMENTER", raising=False)
     so = _import_so()
     model, effort = so._resolve_model_config("phase-3-implementer")
     assert model == "claude-sonnet-4-6", (
         f"T2: phase-3-implementer default model must be 'claude-sonnet-4-6'; "
-        f"got {model!r} (Lever 1 cost reduction: implementer on Sonnet ~5× cheaper)"
+        f"got {model!r} (Lever 1 cost reduction retained: implementer on Sonnet)"
     )
-    assert effort == "medium", (
-        f"T2: phase-3-implementer default effort must be 'medium'; got {effort!r}"
+    assert effort == "high", (
+        f"T2 (retuned): phase-3-implementer default effort must be 'high' "
+        f"(was 'medium'); got {effort!r}. Empirical signal: Phase-3 cluster "
+        "fan-out worker reported OK without RED-test gating at medium — "
+        "lever-1-tier-retune bumps effort to restore reasoning depth."
     )
 
 
@@ -221,16 +244,26 @@ def test_t2_phase_3_implementer_default_model_and_effort(monkeypatch):
 
 
 def test_t3_phase_4_integrator_default_model_and_effort(monkeypatch):
-    """T3: _resolve_model_config('phase-4-integrator') → ('claude-sonnet-4-6', 'low')."""
+    """T3 (retuned): _resolve_model_config('phase-4-integrator') → ('claude-opus-4-7', 'low').
+
+    Model retune sonnet → opus (lever-1-tier-retune §Spec Detail Edit 1).
+    Phase 4 is the audit boundary — its judgment quality decides whether
+    bad implementer output reaches close. Operator stance: audit on Opus,
+    accept low effort to keep cost delta narrow.
+    """
     monkeypatch.delenv("CAIRN_MODEL_PHASE_4_INTEGRATOR", raising=False)
     monkeypatch.delenv("CAIRN_EFFORT_PHASE_4_INTEGRATOR", raising=False)
     so = _import_so()
     model, effort = so._resolve_model_config("phase-4-integrator")
-    assert model == "claude-sonnet-4-6", (
-        f"T3: phase-4-integrator default model must be 'claude-sonnet-4-6'; got {model!r}"
+    assert model == "claude-opus-4-7", (
+        f"T3 (retuned): phase-4-integrator default model must be "
+        f"'claude-opus-4-7' (was 'claude-sonnet-4-6'); got {model!r}. "
+        "Audit-boundary judgment rides Opus per lever-1-tier-retune §Spec "
+        "Detail Edit 1."
     )
     assert effort == "low", (
-        f"T3: phase-4-integrator default effort must be 'low'; got {effort!r}"
+        f"T3: phase-4-integrator default effort must be 'low' (unchanged); "
+        f"got {effort!r}"
     )
 
 
@@ -259,7 +292,7 @@ def test_t4_issue_triager_default_model_and_effort(monkeypatch):
 
 
 def test_t5_cairn_model_env_overrides_model_only(monkeypatch):
-    """T5: CAIRN_MODEL_PHASE_3_IMPLEMENTER overrides model; effort stays 'medium'."""
+    """T5: CAIRN_MODEL_PHASE_3_IMPLEMENTER overrides model; effort stays at retuned 'high'."""
     monkeypatch.setenv("CAIRN_MODEL_PHASE_3_IMPLEMENTER", "claude-opus-4-7")
     monkeypatch.delenv("CAIRN_EFFORT_PHASE_3_IMPLEMENTER", raising=False)
     so = _import_so()
@@ -268,8 +301,8 @@ def test_t5_cairn_model_env_overrides_model_only(monkeypatch):
         f"T5: CAIRN_MODEL_PHASE_3_IMPLEMENTER='claude-opus-4-7' must override "
         f"the model; got {model!r}"
     )
-    assert effort == "medium", (
-        f"T5: effort must remain at dict default 'medium' when only model is "
+    assert effort == "high", (
+        f"T5: effort must remain at retuned dict default 'high' when only model is "
         f"overridden; got {effort!r} (env vars override independently)"
     )
 
@@ -280,14 +313,17 @@ def test_t5_cairn_model_env_overrides_model_only(monkeypatch):
 
 
 def test_t6_cairn_effort_env_overrides_effort_only(monkeypatch):
-    """T6: CAIRN_EFFORT_PHASE_4_INTEGRATOR overrides effort; model stays 'claude-sonnet-4-6'."""
+    """T6 (retuned-default): CAIRN_EFFORT_PHASE_4_INTEGRATOR overrides effort;
+    model stays at the new opus default.
+    """
     monkeypatch.delenv("CAIRN_MODEL_PHASE_4_INTEGRATOR", raising=False)
     monkeypatch.setenv("CAIRN_EFFORT_PHASE_4_INTEGRATOR", "high")
     so = _import_so()
     model, effort = so._resolve_model_config("phase-4-integrator")
-    assert model == "claude-sonnet-4-6", (
-        f"T6: model must remain at dict default 'claude-sonnet-4-6' when only "
-        f"effort is overridden; got {model!r}"
+    assert model == "claude-opus-4-7", (
+        f"T6 (retuned): model must remain at the new dict default "
+        f"'claude-opus-4-7' when only effort is overridden; got {model!r}. "
+        "Independent overrides: setting CAIRN_EFFORT_* must not perturb model."
     )
     assert effort == "high", (
         f"T6: CAIRN_EFFORT_PHASE_4_INTEGRATOR='high' must override effort; "
@@ -505,10 +541,11 @@ def test_t9_model_and_effort_are_adjacent_to_their_values_not_joined(
 
 
 def test_t10_empty_model_env_var_does_not_override(monkeypatch):
-    """T10: CAIRN_MODEL_PHASE_3_IMPLEMENTER='' must not override; dict default used.
+    """T10 (retuned-default): CAIRN_MODEL_PHASE_3_IMPLEMENTER='' must not
+    override; dict default used.
 
-    Intent §2: 'Env-var wins if non-empty; dict default wins otherwise.'
-    The `or` short-circuit on an empty string must fall through to the default.
+    Empty-string env var must fall through via ``or`` short-circuit. Default
+    effort is now 'high' post-retune.
     """
     monkeypatch.setenv("CAIRN_MODEL_PHASE_3_IMPLEMENTER", "")
     monkeypatch.delenv("CAIRN_EFFORT_PHASE_3_IMPLEMENTER", raising=False)
@@ -519,13 +556,17 @@ def test_t10_empty_model_env_var_does_not_override(monkeypatch):
         f"expected dict default 'claude-sonnet-4-6', got {model!r}. "
         "Implementation must use `os.environ.get(...) or default` semantics."
     )
-    assert effort == "medium", (
-        f"T10: effort must remain at dict default 'medium'; got {effort!r}"
+    assert effort == "high", (
+        f"T10 (retuned): effort must remain at the new dict default 'high'; "
+        f"got {effort!r}"
     )
 
 
 def test_t10_empty_effort_env_var_does_not_override(monkeypatch):
-    """T10 variant: CAIRN_EFFORT_PHASE_4_INTEGRATOR='' must not override."""
+    """T10 variant (retuned-default): CAIRN_EFFORT_PHASE_4_INTEGRATOR='' must not override.
+
+    Default model is now 'claude-opus-4-7' post-retune.
+    """
     monkeypatch.delenv("CAIRN_MODEL_PHASE_4_INTEGRATOR", raising=False)
     monkeypatch.setenv("CAIRN_EFFORT_PHASE_4_INTEGRATOR", "")
     so = _import_so()
@@ -534,8 +575,9 @@ def test_t10_empty_effort_env_var_does_not_override(monkeypatch):
         f"T10: empty CAIRN_EFFORT_PHASE_4_INTEGRATOR must not override; "
         f"expected dict default 'low', got {effort!r}."
     )
-    assert model == "claude-sonnet-4-6", (
-        f"T10: model must remain at dict default 'claude-sonnet-4-6'; got {model!r}"
+    assert model == "claude-opus-4-7", (
+        f"T10 (retuned): model must remain at the new dict default "
+        f"'claude-opus-4-7'; got {model!r}"
     )
 
 
@@ -589,10 +631,12 @@ def test_t11_dispatch_records_resolved_model_default_config(monkeypatch, tmp_pat
     so._dispatch_once("phase-4-integrator", _DISPATCH_INPUTS_P4)
 
     recorded = so._state.get("model_by_phase", {}).get("phase-4-integrator")
-    assert recorded == "claude-sonnet-4-6", (
-        f"T11-default: model_by_phase['phase-4-integrator'] must equal default "
-        f"model 'claude-sonnet-4-6'; got {recorded!r}. "
-        "Spec §4: model_by_phase must be populated from _resolve_model_config."
+    assert recorded == "claude-opus-4-7", (
+        f"T11-default (retuned): model_by_phase['phase-4-integrator'] must "
+        f"equal the new default model 'claude-opus-4-7' (was "
+        f"'claude-sonnet-4-6'); got {recorded!r}. INV-009 honesty: "
+        "model_by_phase records the RESOLVED model — when the dict default "
+        "flips, this attribution must flip with it (not lag or hardcode)."
     )
 
 
@@ -657,4 +701,177 @@ def test_phase_2_skeptic_default_resolution(monkeypatch):
     )
     assert effort == "high", (
         f"phase-2-skeptic default effort must be 'high'; got {effort!r}"
+    )
+
+
+# =============================================================================
+# lever-1-tier-retune §Verification — eight named RED tests.
+# =============================================================================
+#
+# Mapped 1:1 to intent.md §Verification bullets. These are the canonical
+# Phase-2 RED set for this slice; the T1-T11 retuning above is in-place
+# coverage of the prior lever-1-per-phase-model regression surface so the
+# override / argv / honest-attribution invariants are not lost behind the
+# new defaults.
+
+
+def test_default_phase_3_implementer_resolves_sonnet_high(monkeypatch):
+    """Verification: phase-3-implementer default → ('claude-sonnet-4-6', 'high').
+
+    intent.md §Spec Detail Edit 1, row P3: effort medium → high; model
+    unchanged. Empirical motivation: cluster-fan-out worker reported OK
+    without RED-test gating at sonnet/medium on
+    `compression/learnings-capture` (artifacts under
+    `.claude/completed-slices/compression-learnings-capture-failed/`).
+    """
+    monkeypatch.delenv("CAIRN_MODEL_PHASE_3_IMPLEMENTER", raising=False)
+    monkeypatch.delenv("CAIRN_EFFORT_PHASE_3_IMPLEMENTER", raising=False)
+    so = _import_so()
+    model, effort = so._resolve_model_config("phase-3-implementer")
+    assert (model, effort) == ("claude-sonnet-4-6", "high"), (
+        f"lever-1-tier-retune: phase-3-implementer default must be "
+        f"('claude-sonnet-4-6', 'high'); got ({model!r}, {effort!r}). "
+        "Sonnet retained for cost; effort bumped to restore reasoning "
+        "depth on cluster fan-out."
+    )
+
+
+def test_default_phase_4_integrator_resolves_opus_low(monkeypatch):
+    """Verification: phase-4-integrator default → ('claude-opus-4-7', 'low').
+
+    intent.md §Spec Detail Edit 1, row P4: model sonnet → opus; effort
+    unchanged. Phase 4 is the audit boundary; operator stance is that
+    judgment quality should ride Opus while accepting `low` effort to keep
+    cost delta narrow.
+    """
+    monkeypatch.delenv("CAIRN_MODEL_PHASE_4_INTEGRATOR", raising=False)
+    monkeypatch.delenv("CAIRN_EFFORT_PHASE_4_INTEGRATOR", raising=False)
+    so = _import_so()
+    model, effort = so._resolve_model_config("phase-4-integrator")
+    assert (model, effort) == ("claude-opus-4-7", "low"), (
+        f"lever-1-tier-retune: phase-4-integrator default must be "
+        f"('claude-opus-4-7', 'low'); got ({model!r}, {effort!r}). "
+        "Audit boundary on Opus; effort stays low to keep cost delta narrow."
+    )
+
+
+def test_default_unchanged_phase_1_writer(monkeypatch):
+    """Verification: phase-1-writer default unchanged at ('claude-opus-4-7', 'high').
+
+    Regression guard on a row the retune does NOT touch — accidental drift
+    on this row would mean the literal edit slipped past its intended scope.
+    """
+    monkeypatch.delenv("CAIRN_MODEL_PHASE_1_WRITER", raising=False)
+    monkeypatch.delenv("CAIRN_EFFORT_PHASE_1_WRITER", raising=False)
+    so = _import_so()
+    assert so._resolve_model_config("phase-1-writer") == (
+        "claude-opus-4-7",
+        "high",
+    ), (
+        "lever-1-tier-retune regression guard: phase-1-writer default must "
+        "remain ('claude-opus-4-7', 'high'). intent.md §Spec Detail Edit 1 "
+        "touches only rows P3 and P4; any drift here means scope creep."
+    )
+
+
+def test_default_unchanged_phase_2_skeptic(monkeypatch):
+    """Verification: phase-2-skeptic default unchanged at ('claude-opus-4-7', 'high')."""
+    monkeypatch.delenv("CAIRN_MODEL_PHASE_2_SKEPTIC", raising=False)
+    monkeypatch.delenv("CAIRN_EFFORT_PHASE_2_SKEPTIC", raising=False)
+    so = _import_so()
+    assert so._resolve_model_config("phase-2-skeptic") == (
+        "claude-opus-4-7",
+        "high",
+    ), (
+        "lever-1-tier-retune regression guard: phase-2-skeptic default must "
+        "remain ('claude-opus-4-7', 'high'). intent.md §Spec Detail Edit 1 "
+        "touches only rows P3 and P4."
+    )
+
+
+def test_default_unchanged_issue_triager(monkeypatch):
+    """Verification: issue-triager default unchanged at ('claude-opus-4-7', 'medium')."""
+    monkeypatch.delenv("CAIRN_MODEL_ISSUE_TRIAGER", raising=False)
+    monkeypatch.delenv("CAIRN_EFFORT_ISSUE_TRIAGER", raising=False)
+    so = _import_so()
+    assert so._resolve_model_config("issue-triager") == (
+        "claude-opus-4-7",
+        "medium",
+    ), (
+        "lever-1-tier-retune regression guard: issue-triager default must "
+        "remain ('claude-opus-4-7', 'medium'). intent.md §Spec Detail Edit 1 "
+        "touches only rows P3 and P4."
+    )
+
+
+def test_env_override_still_wins_phase_3_effort(monkeypatch):
+    """Verification: CAIRN_EFFORT_PHASE_3_IMPLEMENTER=medium beats new 'high' default.
+
+    intent.md §Spec Detail Edit 2: 'Override-precedence tests (env var beats
+    default) MUST still pass against the new defaults — exercise both
+    phase-3-implementer and phase-4-integrator override cases explicitly so
+    future tier flips cannot silently bypass the override surface.'
+
+    Operator-revert path: the slice's own §Why narrative names this exact
+    env var as the way to revert P3 effort.
+    """
+    monkeypatch.delenv("CAIRN_MODEL_PHASE_3_IMPLEMENTER", raising=False)
+    monkeypatch.setenv("CAIRN_EFFORT_PHASE_3_IMPLEMENTER", "medium")
+    so = _import_so()
+    model, effort = so._resolve_model_config("phase-3-implementer")
+    assert effort == "medium", (
+        f"lever-1-tier-retune: CAIRN_EFFORT_PHASE_3_IMPLEMENTER='medium' "
+        f"must beat the new dict default 'high'; got {effort!r}. The env-var "
+        "surface is the documented operator-revert path for this retune; "
+        "if a future tier flip silently bypasses it the override contract "
+        "is broken."
+    )
+    assert model == "claude-sonnet-4-6", (
+        f"P3 model must remain at the (unchanged) dict default "
+        f"'claude-sonnet-4-6' when only effort env var is set; got {model!r}"
+    )
+
+
+def test_env_override_still_wins_phase_4_model(monkeypatch):
+    """Verification: CAIRN_MODEL_PHASE_4_INTEGRATOR=claude-sonnet-4-6 beats new opus default.
+
+    Operator-revert path named in intent.md §Why for the P4 retune.
+    """
+    monkeypatch.setenv("CAIRN_MODEL_PHASE_4_INTEGRATOR", "claude-sonnet-4-6")
+    monkeypatch.delenv("CAIRN_EFFORT_PHASE_4_INTEGRATOR", raising=False)
+    so = _import_so()
+    model, effort = so._resolve_model_config("phase-4-integrator")
+    assert model == "claude-sonnet-4-6", (
+        f"lever-1-tier-retune: CAIRN_MODEL_PHASE_4_INTEGRATOR='claude-sonnet-4-6' "
+        f"must beat the new dict default 'claude-opus-4-7'; got {model!r}. "
+        "Operator-revert path must keep working post-retune."
+    )
+    assert effort == "low", (
+        f"P4 effort must remain at dict default 'low' when only model env "
+        f"var is set; got {effort!r}"
+    )
+
+
+def test_unknown_role_falls_back_to_opus_high(monkeypatch):
+    """Verification: unknown role → ('claude-opus-4-7', 'high') fallback unchanged.
+
+    intent.md §Spec Detail: '_resolve_model_config is not edited — its body,
+    env-var precedence, and unknown-role fallback (claude-opus-4-7 / high)
+    remain byte-identical.' This test is a regression guard on that
+    invariant — if the body of _resolve_model_config is rewritten as part
+    of the literal edit, this catches it.
+    """
+    # Use a clearly-fictitious role name; ensure no stray env var pollutes.
+    fake_role = "phase-99-phantom-retune"
+    env_key = fake_role.upper().replace("-", "_")
+    monkeypatch.delenv(f"CAIRN_MODEL_{env_key}", raising=False)
+    monkeypatch.delenv(f"CAIRN_EFFORT_{env_key}", raising=False)
+    so = _import_so()
+    assert so._resolve_model_config(fake_role) == (
+        "claude-opus-4-7",
+        "high",
+    ), (
+        "lever-1-tier-retune contract: unknown-role fallback must remain "
+        "('claude-opus-4-7', 'high') byte-identical to current behaviour. "
+        "intent.md §Spec Detail forbids edits to _resolve_model_config body."
     )

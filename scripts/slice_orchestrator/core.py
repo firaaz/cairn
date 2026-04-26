@@ -41,8 +41,8 @@ VALID_TRIAGER_ACTIONS = {"ESCALATE_TO_USER", "RE_DISPATCH", "ABORT"}
 AGENT_MODEL_CONFIG: dict[str, dict[str, str]] = {
     "phase-1-writer": {"model": "claude-opus-4-7", "effort": "high"},
     "phase-2-skeptic": {"model": "claude-opus-4-7", "effort": "high"},
-    "phase-3-implementer": {"model": "claude-sonnet-4-6", "effort": "medium"},
-    "phase-4-integrator": {"model": "claude-sonnet-4-6", "effort": "low"},
+    "phase-3-implementer": {"model": "claude-sonnet-4-6", "effort": "high"},
+    "phase-4-integrator": {"model": "claude-opus-4-7", "effort": "low"},
     "issue-triager": {"model": "claude-opus-4-7", "effort": "medium"},
 }
 

@@ -1,0 +1,13 @@
+# Phase 2 coupling clusters — cost-discipline/lever-1-tier-retune.
+#
+# Single literal-edit cluster: AGENT_MODEL_CONFIG lives in core.py and the
+# RED tests pin its defaults from tests/unit/test_slice_orchestrator_model_config.py.
+# core.py and the test file are the only two source-tracked files Phase 3
+# needs to touch (plus docs/operational-reference.md, but that is doc-only
+# per intent and not a coupling concern). All regexes use single-quoted YAML
+# scalars so backslash escapes survive yaml.safe_load.
+clusters:
+  - name: agent-model-config
+    files:
+      - '^scripts/slice_orchestrator/core\.py$'
+      - '^tests/unit/test_slice_orchestrator_model_config\.py$'
