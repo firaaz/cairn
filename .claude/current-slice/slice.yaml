@@ -1,15 +1,44 @@
-id: cost-discipline/lever-1-tier-retune
-name: cost-discipline/lever-1-tier-retune
-status: complete
-current_phase: 4
-brief: "Wire per-phase model + extended-thinking selection into the slice orchestrator's\
-  \ `claude -p` dispatch. Default tiers: P1=opus high, P2=opus high, P3=sonnet high,\
-  \ P4=opus low. Tiers must be configurable per-phase (env vars or config table) so\
-  \ operators can override without code edits. Motivation: empirical signal from the\
-  \ failed compression/learnings-capture slice \u2014 Phase 3 underperformed at the\
-  \ default tier on cluster fan-out (worker reported OK without RED-test gating),\
-  \ while Phase 4 correctly caught the gap. Sonnet-high P3 should improve fan-out\
-  \ reliability at lower cost; opus-low P4 retains audit quality at lower cost. Envelope:\
-  \ scripts/slice_orchestrator/dispatch.py and any companion per-phase config surface;\
-  \ new tests under tests/unit/scripts/slice_orchestrator/. Out of scope: phase semantics,\
-  \ gate logic, artifact contracts, role assignments, agent prompt bodies."
+id: compression/learnings-capture
+name: compression/learnings-capture
+status: in-progress
+current_phase: 1
+brief: "Retry of compression/learnings-capture (failed slice archived at .claude/completed-slices/compression-learnings-capture-failed/;\
+  \ archive commit 4fc3157).\n\nGoal: restore the per-slice learning-capture surface\
+  \ that the compressed protocol structurally lost. Two layered surfaces, both ride\
+  \ the existing slice-artifact-preservation pipeline, stdlib-only:\n1. Orchestrator\
+  \ emits mechanical events to .claude/current-slice/integration/orchestrator-events.jsonl.\
+  \ Event types (v1 set): phase_redispatch, redispatch_cap_exceeded, cost_threshold_breach,\
+  \ token_threshold_breach, agent_timeout.\n2. Phase-4 integrator (.claude/agents/phase-4-integrator.md)\
+  \ gains an optional \"## Learnings observed\" subsection in its sweep-notes.md template\
+  \ guidance \u2014 free-form, empty by default.\n\nFeature: compression. adrs-referenced:\
+  \ [slice-artifact-preservation, phase-lock-and-role-declaration]. No new ADR (mechanism\
+  \ addition only).\n\nREQUIRED INPUTS FOR PHASE 1 (read at intent draft time):\n\n\
+  - .claude/completed-slices/compression-learnings-capture-failed/slice.yaml \u2014\
+  \ failure-reason names \"cluster-no-RED-test\" as root cause: Phase 3's prompt-amendment\
+  \ cluster observed GREEN test status and reported OK without editing .claude/agents/phase-4-integrator.md,\
+  \ because the prior intent excluded prompt-content tests as \"brittle.\" The retry\
+  \ MUST gate the phase-4-integrator.md cluster with a RED test (a string-presence\
+  \ assertion against the agent file is acceptable trade-off vs. the prior brittle-exclusion).\
+  \ Every Phase-3 cluster needs a progress signal beyond GREEN test status.\n\n- .claude/completed-slices/compression-learnings-capture-failed/intent.md\
+  \ \u2014 prior intent (envelope, spec, verification table, out-of-scope list). Reuse\
+  \ what is still correct; tighten the verification surface to close the cluster-no-RED-test\
+  \ gap.\n\n- stash@{0} \u2014 partial Phase-3 orphan from cost-discipline/lever-1-tier-retune.\
+  \ Contains: _record_orchestrator_event helper in core.py, phase_redispatch + redispatch_cap_exceeded\
+  \ event emissions in lifecycle.py, \"integration/orchestrator-events.jsonl\" added\
+  \ to _ARTIFACT_RELPATHS. Seed only \u2014 orphan was Phase-3 scope drift, not vetted\
+  \ spec; carve carefully. Inspect with `git stash show -p stash@{0}`. Remaining wiring\
+  \ not in stash: agent_timeout (dispatch.py TimeoutExpired site), cost_threshold_breach\
+  \ + token_threshold_breach (core.py INV-009 detection), phase-4-integrator.md prompt\
+  \ amendment.\n\n- docs/lessons.md L-011, L-012, L-013 \u2014 read all three; they\
+  \ shape this slice's discipline:\n  - L-011 (phase-handoff commit gap): Phase-N\
+  \ agents must `git commit` their envelope edits before returning OK; an --allow-empty\
+  \ boundary commit is not equivalent to a content commit.\n  - L-012 (hook-narrative\
+  \ tier sensitivity): when a tier flip is in play, dogfood end-to-end before declaring\
+  \ complete.\n  - L-013 (Phase-3 redispatch scope drift): keep motivation prose terse;\
+  \ audit `git status` against envelope after every Phase-3 redispatch \u2014 out-of-envelope\
+  \ source changes are RAISE_ISSUE by default.\n\nOut-of-scope (carry from prior intent\
+  \ unless changed): per-phase 1/2/3 learning surfaces, automatic 3\xD7-rule promotion,\
+  \ post-close commit detection (L-010), empty-handoff-commit detection (L-008), .claude/learning.md\
+  \ V5 cap revision, any new ADR, any Phase-1/2/3 agent-prompt change.\n\nPredecessor:\
+  \ prior failed slice (4fc3157). Successor: substrate Slice 2 (lever-Y-mcp-substrate)\
+  \ opens after this closes.\n"
