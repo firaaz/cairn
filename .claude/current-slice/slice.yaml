@@ -1,5 +1,5 @@
-id: compression/substrate-phases-2-3-4
-name: compression/substrate-phases-2-3-4
+id: compression/lever-Z-substrate-full-pipeline
+name: compression/lever-Z-substrate-full-pipeline
 status: in-progress
 current_phase: 1
 brief: "Substrate Slice 3 (knowledge-substrate design doc 2026-04-25 \xA7348). Extend\
