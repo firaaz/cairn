@@ -43,4 +43,23 @@
 
 ## Cluster C: invariant-prose-amendment
 
-- (to be filled)
+- Amended INV-010 prose in `docs/ARCHITECTURE.md` to name all four
+  phase roles in the deny surface (was: `AGENT_ROLE=phase-1-writer`
+  only; now: set membership of {phase-1-writer, phase-2-skeptic,
+  phase-3-implementer, phase-4-integrator}). Replaced the trailing
+  POC-scope sentence ("POC scope is phase-1-writer; phases 2/3/4
+  lockdown lands in a future slice.") with a sentence naming Slice 3
+  as the rollout that closes the v1 enforceability commitment.
+- The `invariant-check INV-010` block was NOT touched. Grep target
+  stays at the `ROLE_DENY_READ` literal — the constant's set of role
+  keys widened in Cluster A but the constant's name did not change
+  (intent §S5 / out-of-scope §6).
+- `uv run python scripts/validate_architecture.py` exits 0 with all
+  10 invariants verified post-edit.
+
+## Verification commit-hash discipline
+
+Per handoff Blocked/Pending #3 (prior invariant-prose cluster reported
+OK with stale commit_hash), commit_hash for each cluster is captured
+via `git rev-parse HEAD` immediately after the commit lands and
+reported in the structured tail.
