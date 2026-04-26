@@ -90,6 +90,16 @@ pattern: "tests/unit/test_slice_orchestrator_cost.py"
 description: "Points to the Phase-2 cost-telemetry test file whose _check_inv_009(state, cost_threshold, token_threshold) helper is the machine-check body for INV-009 at introduction. Warns (advisory) while thresholds are None; raises on breach once numeric. Migrates to AST/grep anchoring under cliff-failure-mode-and-v1-defenses D2 when that design slice lands."
 ```
 
+**INV-010** Knowledge-substrate access for phase agents is mediated structurally. The cairn-knowledge MCP server (`mcp_servers/cairn_knowledge/`) wraps `scripts/cairn_query/` as four read-only tools (`lookup`, `search`, `path_bindings`, `cypher`); registered in `.mcp.json` under stdio transport; pinned per-phase via `AGENT_ENVELOPE.cairn_query_snapshot` set to `git rev-parse HEAD` at dispatch time. Direct Read/Bash access to `scripts/cairn_query/**`, `docs/ARCHITECTURE.md`, `docs/adr/**`, `docs/lessons.md`, `docs/spec-v1.md`, and `docs/operational-reference.md` is denied by `checks/role_guard.py`'s `ROLE_DENY_READ` table when `AGENT_ROLE=phase-1-writer`, unless the active slice's `AGENT_ENVELOPE.paths` regex set grants the path (the grant escape hatch logs to `.claude/envelope-grants.log`). Operator memory under `~/.claude/projects/.../memory/` is permanently excluded from the MCP tool surface — no opt-in flag, no path-argument escape. POC scope is phase-1-writer; phases 2/3/4 lockdown lands in a future slice. (cairn-substrate-and-fastmcp; compression-infrastructure-bootstrap)
+
+```invariant-check INV-010
+type: grep
+pattern: "ROLE_DENY_READ"
+target: "checks/role_guard.py"
+expect: match
+description: "Verifies the canonical-knowledge lockdown table exists in role_guard.py — Check B anchor for cairn-substrate-and-fastmcp."
+```
+
 ## Boundaries
 
 The slice pipeline has four phase boundaries, each implemented as a fresh session separated by a committed artifact (phase-lock-and-role-declaration D1):

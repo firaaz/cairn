@@ -2,7 +2,7 @@
 slice: compression/lever-Y-mcp-substrate
 date: 2026-04-26
 phase: 1-intent
-invariants-touched: []
+invariants-touched: [INV-010]
 adrs-referenced:
   - cairn-substrate-and-fastmcp
   - phase-lock-and-role-declaration
@@ -20,6 +20,8 @@ envelope:
   - "tests/unit/test_orchestrator_snapshot_pinning.py"
   - "tests/unit/test_phase_1_writer_query_first.py"
   - "docs/operational-reference.md"
+  - "docs/ARCHITECTURE.md"   # operator-fixup 2026-04-26: introduces INV-010 to satisfy validate_architecture.py Check B for the firm/accepted ADR cairn-substrate-and-fastmcp; gap missed by Phase 1 (intent set invariants-touched: [] from the ADR's frontmatter, which is a different semantic from Check B's "every firm ADR has at least one referencing INV"). Phase 4 RAISE_ISSUE → triager ESCALATE_TO_USER at run 1; envelope amended pre-resume.
+  - "tests/unit/test_invariant_assertions.py"   # operator-fixup 2026-04-26: bumps EXPECTED_INVARIANT_IDS range(1, 10) → range(1, 11) to track INV-010. Co-amended with docs/ARCHITECTURE.md above.
 out-of-scope:
   - "Mutation surface (typed-claim writes by agents) — deferred per ADR D7."
   - "Phases 2/3/4 query-first conversion + lockdown — Slice 3 (compression/lever-Z-substrate-full-pipeline)."
