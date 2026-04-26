@@ -308,11 +308,18 @@ def test_g6b_glob_without_path_argument_allowed():
 # ---------------------------------------------------------------------------
 
 
-def test_g7_phase_3_implementer_grep_on_deny_list_path_allowed():
-    """intent §S3 G7 — phase-3-implementer is NOT in ROLE_DENY_READ this slice.
+def test_g7_phase_3_implementer_grep_on_deny_list_path_denied():
+    """Slice 3 (`compression/lever-Z-substrate-full-pipeline`) inversion of
+    Slice-2-fixup G7: lockdown extended to phases 2/3/4, so
+    phase-3-implementer Grep on a canonical-knowledge path now denies.
 
-    Slice 3 (`compression/lever-Z-substrate-full-pipeline`) extends the
-    lockdown to phases 2/3/4. This slice keeps it phase-1-writer-only.
+    Cross-slice contradiction protocol per envelope-expansions.log
+    (2026-04-26): the Slice-2-fixup assertion (`code == 0`) was directly
+    inverted by Slice 3's §S1 ROLE_DENY_READ widening. G7 docstring already
+    anticipated the inversion. Phase-2-skeptic chose not to duplicate
+    G1-G7 in test_role_guard_phases_234_deny.py — D1-D6 there cover the
+    same surface for the new roles, so this G7 rewrite preserves the test
+    slot but coverage is owned by D1-D6.
     """
     snapshot = _backup_grant_log()
     try:
@@ -323,11 +330,13 @@ def test_g7_phase_3_implementer_grep_on_deny_list_path_allowed():
             },
             role="phase-3-implementer",
         )
-        assert code == 0, (
-            f"intent §S3 G7 boundary — phase-3-implementer Grep must NOT deny "
-            f"(lockdown is per-role; phases 2/3/4 are Slice 3 scope); "
-            f"got rc={code} stderr={stderr!r}"
+        assert code == 1, (
+            f"Slice 3 §S1 — phase-3-implementer Grep on canonical-knowledge "
+            f"path must now deny (ROLE_DENY_READ widened to all four phase "
+            f"roles); got rc={code} stderr={stderr!r}"
         )
+        assert "phase-3-implementer" in stderr, stderr
+        assert "docs/ARCHITECTURE.md" in stderr, stderr
     finally:
         _restore_grant_log(snapshot)
 

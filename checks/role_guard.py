@@ -1,6 +1,7 @@
 """PreToolUse hook — denies writes outside a role's allow-list when AGENT_ROLE is set.
 Also denies Read and Bash read-class access to canonical knowledge paths for
-phase-1-writer unless AGENT_ENVELOPE grants the path (ADR D8).
+all four phase roles (phase-1-writer, phase-2-skeptic, phase-3-implementer,
+phase-4-integrator) unless AGENT_ENVELOPE grants the path (ADR D8).
 
 Inner gate paired with each agent's `tools:` frontmatter (the outer gate). Reads
 tool-call JSON from stdin. AGENT_ROLE unset is the no-op path, so non-compressed
@@ -24,17 +25,25 @@ BASH_TOOL = "Bash"
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent
 
-# Canonical knowledge paths locked down for phase-1-writer (ADR D8).
+# Canonical knowledge paths locked down for all four phase roles (ADR D8).
 # Agents must query these via MCP (cairn_query) instead of direct Read/Bash.
+# Slice 3 (compression/lever-Z-substrate-full-pipeline) widened the role-key
+# set from {phase-1-writer} to all four phase roles; pattern list is
+# byte-identical across roles per intent §S1.
+_CANONICAL_DENY_PATTERNS = [
+    r"^scripts/cairn_query/",
+    r"^docs/ARCHITECTURE\.md$",
+    r"^docs/adr/",
+    r"^docs/lessons\.md$",
+    r"^docs/spec-v1\.md$",
+    r"^docs/operational-reference\.md$",
+]
+
 ROLE_DENY_READ = {
-    "phase-1-writer": [
-        r"^scripts/cairn_query/",
-        r"^docs/ARCHITECTURE\.md$",
-        r"^docs/adr/",
-        r"^docs/lessons\.md$",
-        r"^docs/spec-v1\.md$",
-        r"^docs/operational-reference\.md$",
-    ],
+    "phase-1-writer": list(_CANONICAL_DENY_PATTERNS),
+    "phase-2-skeptic": list(_CANONICAL_DENY_PATTERNS),
+    "phase-3-implementer": list(_CANONICAL_DENY_PATTERNS),
+    "phase-4-integrator": list(_CANONICAL_DENY_PATTERNS),
 }
 
 ROLE_POLICIES = {
@@ -128,7 +137,7 @@ def main() -> int:
     tool_input = payload.get("tool_input") or {}
 
     # ------------------------------------------------------------------
-    # Read-class lockdown (ADR D8) — phase-1-writer only this slice.
+    # Read-class lockdown (ADR D8) — all four phase roles per Slice 3.
     # Covers Read, Grep, and Glob (READ_CLASS_TOOLS).
     # ------------------------------------------------------------------
     if tool_name in READ_CLASS_TOOLS and role in ROLE_DENY_READ:
