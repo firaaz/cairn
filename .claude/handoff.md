@@ -2,26 +2,28 @@
 slice: none
 phase: n/a
 branch: feature/compression
-as-of: 2026-04-26 c44b676
+as-of: 2026-04-26 4fc3157
 ---
 
 ## State
-On `feature/compression` post-merge of WS1+WS4 (substrate Slice 1 + slice-artifact-preservation), plus L-010 lessons commit and `learnings-capture` slice plan landed at `c44b676`. Both substrate-program ADRs firm. Lifecycle.py runs artifact-preservation pre-wipe copy on every close. `scripts/cairn_query/` package + CLI + validator on path.
+`compression/learnings-capture` failed and is archived at `.claude/completed-slices/compression-learnings-capture-failed/`. Workspace reset; partial Phase 3 work preserved in `stash@{0}`.
 
 ## Next
-Open `compression/learnings-capture` via `/start-slice` using `docs/plans/2026-04-26-learnings-capture-plan.md` as input. Substrate Slice 2 (`compression/lever-Y-mcp-substrate`) opens AFTER, so its first run exercises the new capture surfaces.
+Open `compression/learnings-capture` retry via `/start-slice` — intent MUST collapse the 2-cluster split (orchestrator-events + phase4-prompt-amendment) into one cluster.
 
 ## Blocked / Pending
-- 8 architecture-validator failures — `cairn-substrate-and-fastmcp` firm without ARCHITECTURE.md INV. Resolves at Slice 2's co-landing per ADR §6/§8.1. Do NOT touch in `learnings-capture`.
-- L-010 carry-over: WS1 `validators.py` post-close fixup (`51e1fb4`) was a Phase-4 role-lock breach; mechanism deferred.
-- `agent-managed-planning-substrate` ADR — gated on Slices 1+2 (`docs/roadmap.md`).
-- INV-004 token rebaseline under CC 2.1.119 — non-blocking.
-- `.claude/sweep.yaml` post-merge — control keys missing (L-009 hygiene).
+- Failure root cause: `phase4-prompt-amendment` cluster had no RED test → worker reported OK from GREEN pytest without editing its envelope file. Single-cluster retry pre-empts this.
+- Cluster-prompt amendment (workers must show envelope-file diff before OK) — sibling-fix slice candidate.
+- Model-tier config slice queued post-retry: P3 → sonnet high, P4 → opus low (P3 underperformance empirical; P4 correctly caught misses).
+- 8 architecture-validator failures — resolves at substrate Slice 2.
+- Substrate Slice 2 (`compression/lever-Y-mcp-substrate`) — opens after retry closes.
+- L-010 mechanism, INV-004 rebaseline, agent-managed-planning-substrate ADR — unchanged from prior handoff.
 
 ## Features
-- compression: 2 landed; learnings-capture queued; substrate Slice 2 after.
+- compression: learnings-capture failed (archived); retry queued; substrate Slice 2 after.
 
 ## Pointers
-- `docs/plans/2026-04-26-learnings-capture-plan.md` — input to next `/start-slice`; intent.md derives from §Goal/§Architecture/§Envelope.
-- `docs/adr/cairn-substrate-and-fastmcp.md` — Slice 2 open (after learnings); D1 dep set, D6 stdio, D8 lockdown stage 1, D9 envelope-grant, D12 SHA pinning.
-- `docs/lessons.md` L-010 — Phase-4 role-lock differential; recurrence watch.
+- `.claude/completed-slices/compression-learnings-capture-failed/slice.yaml` — `failure-reason` names cluster-no-RED-test root cause; read at retry-intent design time.
+- `docs/plans/2026-04-26-learnings-capture-plan.md` — retry input; intent must add cost/token/timeout RED tests and merge to single cluster.
+- `stash@{0}` — partial Phase 3 work (helper + _ARTIFACT_RELPATHS + 2/5 emission sites + RED test file); post-mortem reference only, do not restore.
+- Memory `project_per_phase_model_and_thinking` — update post-close with this slice's empirical signal.
