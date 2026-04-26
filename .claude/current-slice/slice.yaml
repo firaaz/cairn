@@ -1,7 +1,7 @@
 id: compression/slice-artifact-preservation
 name: compression/slice-artifact-preservation
 status: in-progress
-current_phase: 1
+current_phase: 3
 brief: "Implement compression/slice-artifact-preservation per docs/plans/2026-04-26-slice-artifact-preservation-plan.md.\
   \ Slice id: compression/slice-artifact-preservation. Feature: compression. The plan\
   \ is the authoritative source for intent.md \u2014 derive Goal, Architecture, Envelope,\
