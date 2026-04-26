@@ -408,8 +408,8 @@ Defaults come from `AGENT_MODEL_CONFIG` in `scripts/slice_orchestrator/core.py`.
 | `CAIRN_MODEL_PHASE_2_SKEPTIC` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-2-skeptic`. |
 | `CAIRN_EFFORT_PHASE_2_SKEPTIC` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-2-skeptic`. |
 | `CAIRN_MODEL_PHASE_3_IMPLEMENTER` | `claude-sonnet-4-6` | `scripts/slice_orchestrator/` | Override model for `phase-3-implementer`. Lever 1 cost reduction: Sonnet is ~5× cheaper than Opus for implementation work. |
-| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `medium` | `scripts/slice_orchestrator/` | Override effort level for `phase-3-implementer`. |
-| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-sonnet-4-6` | `scripts/slice_orchestrator/` | Override model for `phase-4-integrator`. |
+| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-3-implementer`. (Retuned `medium → high` by `cost-discipline/lever-1-tier-retune` after the prior `compression/learnings-capture` slice's Phase-3 cluster fan-out worker reported OK without RED-test gating; Sonnet retained, effort bumped to restore reasoning depth.) |
+| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-4-integrator`. (Retuned `claude-sonnet-4-6 → claude-opus-4-7` by `cost-discipline/lever-1-tier-retune`; Phase 4 is the audit boundary, judgment quality rides Opus while `effort=low` keeps the cost delta narrow.) |
 | `CAIRN_EFFORT_PHASE_4_INTEGRATOR` | `low` | `scripts/slice_orchestrator/` | Override effort level for `phase-4-integrator`. |
 | `CAIRN_MODEL_ISSUE_TRIAGER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `issue-triager`. |
 | `CAIRN_EFFORT_ISSUE_TRIAGER` | `medium` | `scripts/slice_orchestrator/` | Override effort level for `issue-triager`. |
