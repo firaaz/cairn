@@ -23,6 +23,19 @@ envelope:
   # precedent). Phase 3 deletes or rewrites G7 alongside the
   # ROLE_DENY_READ extension.
   - "tests/unit/test_role_guard_grep_glob_deny.py"
+  # Operator mid-Phase-3 amendment 2026-04-26: TWO additional pre-existing
+  # tests assert phases 2/3/4 are NOT in ROLE_DENY_READ — surfaced by
+  # phase-3-implementer (Cluster D blocker) after Clusters A/B/C landed
+  # GREEN. Same edit-don't-decide protocol as the G7 amendment above:
+  #   - test_role_guard_phase_1_lockdown.py::test_v4_other_roles_unaffected_by_read_denylist
+  #     asserts phases 2/3/4 Read on docs/ARCHITECTURE.md returns rc=0.
+  #     Docstring already names "Slice 3 generalizes" as the inversion event.
+  #   - test_role_guard.py::test_bootstrap_scope_read_tool_ignored
+  #     asserts phase-2-skeptic Read on docs/adr/any.md returns rc=0.
+  # Phase 3 Cluster D rewrites both to assert the inversion (or substitutes
+  # non-deny-list paths where the test's intent is preserved).
+  - "tests/unit/test_role_guard_phase_1_lockdown.py"
+  - "tests/unit/test_role_guard.py"
   - ".claude/current-slice/intent.md"
   - ".claude/current-slice/slice.yaml"
   - ".claude/features/compression.yaml"

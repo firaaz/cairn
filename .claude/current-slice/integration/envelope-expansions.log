@@ -8,3 +8,20 @@
     G7 alongside the ROLE_DENY_READ extension; the rewrite belongs in this slice
     because the contradicting code change ships in this slice.
   surfaced-by: phase-2-skeptic report (commit cb46944)
+
+2026-04-26T19:05Z operator mid-Phase-3 amendment
+  added: tests/unit/test_role_guard_phase_1_lockdown.py
+         tests/unit/test_role_guard.py
+  reason: two additional cross-slice contradictions, same pattern as G7.
+    test_v4_other_roles_unaffected_by_read_denylist (in
+    test_role_guard_phase_1_lockdown.py) asserts phases 2/3/4 Read on
+    docs/ARCHITECTURE.md returns rc=0; docstring already names "Slice 3
+    generalizes" as the expected inversion. test_bootstrap_scope_read_tool_ignored
+    (in test_role_guard.py) asserts phase-2-skeptic Read on docs/adr/any.md
+    returns rc=0 — directly inverted by Slice 3 §S1. Both tests are direct
+    mirrors of the G7 amendment above; same edit-don't-decide protocol applies.
+    Phase 3 Cluster D rewrites both alongside the ROLE_DENY_READ extension.
+  surfaced-by: phase-3-implementer report (commit 20d0125, RAISE_ISSUE)
+  pattern: substrate-program slices that widen ROLE_DENY_READ keep surfacing
+    test inversions in prior-slice tests. Candidate docs/lessons.md entry
+    after this slice closes.
