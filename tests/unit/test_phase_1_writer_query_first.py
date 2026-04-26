@@ -56,12 +56,20 @@ def test_v7_tools_frontmatter_excludes_read_and_bash():
 
 
 def test_v7_tools_frontmatter_keeps_authoring_tools():
-    """intent §S5 — Write/Edit/Grep/Glob remain available."""
+    """Write/Edit remain available.
+
+    Parent slice (compression/lever-Y-mcp-substrate) §S5 originally also
+    required Grep/Glob to remain. Superseded by fixup slice
+    (compression/lever-Y-mcp-substrate-fixup) §S3, which mandates dropping
+    Grep/Glob from this frontmatter — the parent slice's READ_CLASS_TOOLS
+    was Read-only, so the outer-gate Grep/Glob entries had no inner-gate
+    counterpart and were a substrate defect. Write/Edit assertion stays.
+    """
     fm, _ = _read_frontmatter_and_body()
     tools = _tools_field(fm)
-    for required in ("Write", "Edit", "Grep", "Glob"):
+    for required in ("Write", "Edit"):
         assert required in tools, (
-            f"intent §S5 — `{required}` must remain in phase-1-writer tools; got {tools!r}"
+            f"Write/Edit must remain in phase-1-writer tools; got {tools!r}"
         )
 
 

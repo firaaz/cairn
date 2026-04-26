@@ -14,6 +14,12 @@ envelope:
   - "tests/unit/test_mcp_cairn_knowledge_server.py"
   - "tests/unit/test_mcp_cairn_knowledge_jsonrpc.py"
   - "tests/unit/test_role_guard_grep_glob_deny.py"
+  # Operator pre-resume amendment 2026-04-26: parent slice's
+  # test_v7_tools_frontmatter_keeps_authoring_tools asserts the opposite
+  # of this slice's §S3 frontmatter contract; stale assertion is a
+  # downstream artifact of the same substrate defect this slice fixes.
+  # Edit-don't-decide per cross-slice contradiction protocol.
+  - "tests/unit/test_phase_1_writer_query_first.py"
   - ".claude/current-slice/intent.md"
   - ".claude/current-slice/slice.yaml"
   - ".claude/features/compression.yaml"

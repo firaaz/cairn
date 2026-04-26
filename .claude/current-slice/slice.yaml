@@ -1,10 +1,21 @@
 id: compression/lever-Y-mcp-substrate-fixup
-name: "compression/lever-Y-mcp-substrate-fixup"
+name: compression/lever-Y-mcp-substrate-fixup
 status: validation
-current_phase: 2
-brief: "Fix three substrate defects from compression/lever-Y-mcp-substrate (roadmap §12): (1) ship real MCP JSON-RPC dispatcher in mcp_servers/cairn_knowledge/server.py replacing the boot-only stub; (2) add fastmcp to pyproject.toml per ADR cairn-substrate-and-fastmcp D1; (3) extend checks/role_guard.py READ_CLASS_TOOLS to include Grep+Glob and remove them from phase-1-writer frontmatter so the canonical-knowledge lockdown is not bypassable. Harden Phase-2 tests to verify JSON-RPC round-trip rather than boot-liveness. Operationalizes existing ADR commitments (D1, D6, D8); no new ADR. INV-010 prose amended to name Grep/Glob in the deny surface; invariant-check grep target unchanged. Gates substrate Slice 3."
+current_phase: 3
+brief: "Fix three substrate defects from compression/lever-Y-mcp-substrate (roadmap\
+  \ \xA712): (1) ship real MCP JSON-RPC dispatcher in mcp_servers/cairn_knowledge/server.py\
+  \ replacing the boot-only stub; (2) add fastmcp to pyproject.toml per ADR cairn-substrate-and-fastmcp\
+  \ D1; (3) extend checks/role_guard.py READ_CLASS_TOOLS to include Grep+Glob and\
+  \ remove them from phase-1-writer frontmatter so the canonical-knowledge lockdown\
+  \ is not bypassable. Harden Phase-2 tests to verify JSON-RPC round-trip rather than\
+  \ boot-liveness. Operationalizes existing ADR commitments (D1, D6, D8); no new ADR.\
+  \ INV-010 prose amended to name Grep/Glob in the deny surface; invariant-check grep\
+  \ target unchanged. Gates substrate Slice 3."
 started: 2026-04-26
 completed: null
-invariants-touched: [INV-010]
-adrs-referenced: [cairn-substrate-and-fastmcp, compression-infrastructure-bootstrap]
+invariants-touched:
+- INV-010
+adrs-referenced:
+- cairn-substrate-and-fastmcp
+- compression-infrastructure-bootstrap
 adrs-created: []
