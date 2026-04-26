@@ -1,0 +1,10 @@
+2026-04-26T18:45Z operator pre-Phase-3 amendment
+  added: tests/unit/test_role_guard_grep_glob_deny.py
+  reason: cross-slice contradiction — Slice-2-fixup G7 asserts phase-3-implementer
+    NOT in ROLE_DENY_READ; Slice 3 §S1 adds phase-3-implementer to ROLE_DENY_READ.
+    G7 will RED on Phase 3's role_guard.py edit. G7 docstring anticipates the
+    inversion. Edit-don't-decide per cross-slice contradiction protocol (handoff
+    Blocked/Pending #4, commit 8fc0133 precedent). Phase 3 deletes or rewrites
+    G7 alongside the ROLE_DENY_READ extension; the rewrite belongs in this slice
+    because the contradicting code change ships in this slice.
+  surfaced-by: phase-2-skeptic report (commit cb46944)

@@ -14,6 +14,15 @@ envelope:
   - "tests/unit/test_phase_2_skeptic_query_first_prompt.py"
   - "tests/unit/test_phase_3_implementer_query_first_prompt.py"
   - "tests/unit/test_phase_4_integrator_query_first_prompt.py"
+  # Operator pre-Phase-3 amendment 2026-04-26: Slice-2-fixup's
+  # test_g7_phase_3_implementer_grep_on_deny_list_path_allowed asserts
+  # phase-3-implementer is NOT in ROLE_DENY_READ — directly inverted by
+  # this slice's §S1. Surfaced by Phase 2 skeptic; G7 docstring already
+  # anticipates the inversion. Edit-don't-decide per cross-slice
+  # contradiction protocol (handoff Blocked/Pending #4, commit 8fc0133
+  # precedent). Phase 3 deletes or rewrites G7 alongside the
+  # ROLE_DENY_READ extension.
+  - "tests/unit/test_role_guard_grep_glob_deny.py"
   - ".claude/current-slice/intent.md"
   - ".claude/current-slice/slice.yaml"
   - ".claude/features/compression.yaml"
