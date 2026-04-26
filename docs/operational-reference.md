@@ -393,6 +393,7 @@ Matching is case-insensitive. The hint is **advisory**: the orchestrator does no
 | `EXPAND_ENVELOPE` | unset | `checks/scope-guard.sh` | Override for the slice envelope; logs to `.claude/current-slice/envelope-expansions.log`. |
 | `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; logs to `.claude/adr-editorial-fixes.log`. |
 | `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in flag. When set (any non-empty value), `test_inv004_turn1_token_budget` rewrites `docs/plans/measurements/2026-04-12-slice-003.txt` with the fresh turn-1 reading. Unset by default so a plain `uv run pytest` leaves the tracked measurement file alone. |
+| `CAIRN_QUERY_DB` | `.claude/cairn_query/index.kz` | `scripts/cairn_query/` | Path to the kuzudb index for `cairn_query`. Override to point at a scratch location during tests or when running multiple corpus variants in parallel. Set via `CAIRN_QUERY_DB=/tmp/my.kz python -m cairn_query rebuild`. |
 
 #### Per-phase model and effort overrides
 
