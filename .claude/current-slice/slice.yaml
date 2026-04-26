@@ -1,21 +1,45 @@
-id: compression/lever-Y-mcp-substrate-fixup
-name: compression/lever-Y-mcp-substrate-fixup
-status: complete
-current_phase: 4
-brief: "Fix three substrate defects from compression/lever-Y-mcp-substrate (roadmap\
-  \ \xA712): (1) ship real MCP JSON-RPC dispatcher in mcp_servers/cairn_knowledge/server.py\
-  \ replacing the boot-only stub; (2) add fastmcp to pyproject.toml per ADR cairn-substrate-and-fastmcp\
-  \ D1; (3) extend checks/role_guard.py READ_CLASS_TOOLS to include Grep+Glob and\
-  \ remove them from phase-1-writer frontmatter so the canonical-knowledge lockdown\
-  \ is not bypassable. Harden Phase-2 tests to verify JSON-RPC round-trip rather than\
-  \ boot-liveness. Operationalizes existing ADR commitments (D1, D6, D8); no new ADR.\
-  \ INV-010 prose amended to name Grep/Glob in the deny surface; invariant-check grep\
-  \ target unchanged. Gates substrate Slice 3."
-started: 2026-04-26
-completed: null
-invariants-touched:
-- INV-010
-adrs-referenced:
-- cairn-substrate-and-fastmcp
-- compression-infrastructure-bootstrap
-adrs-created: []
+id: compression/substrate-phases-2-3-4
+name: compression/substrate-phases-2-3-4
+status: in-progress
+current_phase: 1
+brief: "Substrate Slice 3 (knowledge-substrate design doc 2026-04-25 \xA7348). Extend\
+  \ query-first lockdown from phase-1-writer (Slice 2 + Slice 2 fixup, both closed\
+  \ at 9b71cfa) to phase-2-skeptic, phase-3-implementer, and phase-4-integrator per\
+  \ ADR cairn-substrate-and-fastmcp D8 second-stage rollout \u2014 completes the substrate's\
+  \ structural enforceability across all four phase roles. Ships: (1) phase-2/3/4\
+  \ agent prompt updates directing query-first consumption of canonical knowledge\
+  \ via the cairn-knowledge MCP server (lookup/search/path_bindings/cypher) instead\
+  \ of direct markdown reads; (2) checks/role_guard.py ROLE_DENY_READ extended to\
+  \ cover phase-2-skeptic, phase-3-implementer, and phase-4-integrator with the same\
+  \ deny set as phase-1-writer (canonical knowledge sources: docs/ARCHITECTURE.md,\
+  \ docs/adr/**, docs/lessons.md, docs/spec-v1.md, docs/operational-reference.md;\
+  \ substrate internals: scripts/cairn_query/**) with envelope-grant escape (D9) preserved;\
+  \ (3) .claude/agents/phase-2-skeptic.md, phase-3-implementer.md, phase-4-integrator.md\
+  \ frontmatter tightened to drop direct read access to the locked-down sources (defense-in-depth\
+  \ outer gate); (4) phase-4-integrator integrates typed invariant_check_results consumption\
+  \ \u2014 reads structured evidence from the substrate instead of running each invariant\
+  \ check via grep-on-source by hand; (5) sweep-notes template generation from typed\
+  \ records \u2014 phase-4-integrator emits invariant-evidence rows pre-filled from\
+  \ substrate query rather than hand-typed citations. Closes when: (a) full-slice\
+  \ cost re-measured against the $18.71 Lever-1 baseline shows \u226550% total stacked\
+  \ reduction (per design \xA7348 cost target), (b) sweep-notes template correctly\
+  \ fills invariant-evidence rows from substrate query on this slice's own Phase-4\
+  \ run (dogfood), (c) docs/ARCHITECTURE.md INV-010 prose names phases 2/3/4 in the\
+  \ deny surface (invariant-check `target:` grep stays at ROLE_DENY_READ literal \u2014\
+  \ the constant's set widens, the name does not), and (d) full pytest GREEN modulo\
+  \ the pre-existing INV-004 turn-1 token-budget OOS env-dependent failure documented\
+  \ in handoff. Operationalizes existing ADR cairn-substrate-and-fastmcp D6/D8/D9;\
+  \ no new ADR (D8 already authorizes second-stage rollout to phases 2/3/4). Predecessor:\
+  \ compression/lever-Y-mcp-substrate-fixup (closed 9b71cfa) \u2014 provides the functional\
+  \ substrate. First slice to dogfood the orchestrator-driven query-first dispatch\
+  \ end-to-end across all four phases. Out of scope: mutation surface (ADR D7 explicit\
+  \ deferral; v1 stays read-only), AGENT_ENVELOPE schema changes (Slice 2 already\
+  \ shipped object shape with paths/cairn_query_snapshot keys), Bash read-class deny\
+  \ widening (cat/head/grep tokens already covered via _bash_path_tokens in role_guard.py),\
+  \ INV-010 invariant-check `target:` block (grep target stays ROLE_DENY_READ literal),\
+  \ scripts/cairn_query/** internals (substrate Slice 1 territory; consumed via public\
+  \ callables), mcp_servers/cairn_knowledge/** internals (Slice 2 + fixup territory;\
+  \ consumed via JSON-RPC), scripts/slice_orchestrator/dispatch.py AGENT_ENVELOPE\
+  \ construction (already wired for phases 1-4), substrate Slice 4+ (not yet designed),\
+  \ per-phase MCP tool surface differentiation (all four phases share the same four-tool\
+  \ surface), any new ADR."
