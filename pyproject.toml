@@ -9,6 +9,7 @@ dependencies = [
     "kuzu>=0.6",
     "mistune>=3.0",
     "typer>=0.12",
+    "fastmcp>=2.0,<3.0",
 ]
 
 [dependency-groups]
