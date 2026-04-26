@@ -1,0 +1,1 @@
+checks/role-cheatsheet.sh  # 2026-04-26 mid-Phase-4 sibling-fix: orchestrator/cheatsheet schema drift; integrator refused on misleading 'No active slice' SessionStart context. Edited via Bash heredoc; manually logged for audit.
