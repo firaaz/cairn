@@ -1,21 +1,11 @@
-# Cairn Sweep — compression/lever-2-orchestrator-split
-
-date: 2026-04-25
-slice: compression/lever-2-orchestrator-split
-status: complete
-
+# sweep.yaml
+slice_id: compression/lever-X-knowledge-index
+phase: 4
 invariants:
-  INV-003: PASS
-  INV-004: PASS
+  INV-001: PASS
   INV-008: PASS
-  INV-009: PASS
-
-tests:
-  total: 836
-  passed: 835
-  skipped: 3
-  failed: 1
-  failed-classification:
-    - test_inv004_turn1_token_budget: pre-existing CC 2.1.119 environmental drift (rebaseline target was CC 2.1.116); out-of-scope per intent §out-of-scope (no test-file edits, no progressive-disclosure changes); resolution belongs to a future housekeeping/inv004-rebaseline-cc-2.1.119 slice
-
-architecture: ALL CHECKS PASSED
+gates_passed: 7
+gates_out_of_scope: 1
+new_tests: 78
+total_passing: 914
+pre_existing_failures: 8
