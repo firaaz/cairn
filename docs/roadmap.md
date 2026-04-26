@@ -44,6 +44,10 @@ Two slices run in parallel on separate worktrees, both complete cleanly, no scop
 
 `docs/dogfood-log.md` with structured entries (date, slice ID, friction observed, fix or follow-up). Populated over prior slices retroactively, then maintained going forward.
 
+### 11. L-011 structural fix — phase-handoff commit gap
+
+Promoted from L-011's "deferred pending recurrence" stance after 3 documented recurrences inside ~24h (R1: `cost-discipline/lever-1-tier-retune`; R2: `compression/learnings-capture` failed; R3: `compression/learnings-capture` retry). Each recurrence cost re-dispatch cycles + operator-side commit fixup. Two candidate fixes (per L-011): (a) tighten phase-agent prompts + orchestrator-side `git diff <handoff>~..<handoff>` non-empty assertion for content-bearing phases (cheaper); (b) move content commits to the orchestrator, forbid agent-side commits (structurally correct). The R2/R3 pattern points at Phase-3 cluster fan-out workers as the most fragile seam, favoring (b). Slice should pick a direction and ship a closed-loop fix; orchestrator-events.jsonl now captures `phase_redispatch` + `redispatch_cap_exceeded` so the recurrence rate is measurable post-fix. Docs ref: `docs/lessons.md` §L-011.
+
 ## May-land-before-v1 (bonus)
 
 - Template extraction — `intent.md`, `slice.yaml`, ADR frontmatter extracted to `templates/`
