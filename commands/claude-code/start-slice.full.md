@@ -207,7 +207,7 @@ The fresh session matters — context isolation is what makes the external check
 
 ## Step 7: Complete a Slice
 
-When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory for successful slices — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Per context-discipline-protocol, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
+When Phase 4 passes, the completion sequence **wipes** every file under `.claude/current-slice/`. This is not optional and there is no archive directory **for committed history** — the `status: complete` commit IS the git-history record, and `.claude/learning.md` plus ADRs cover the post-mortem case. Ephemeral artifacts (intent, validation/approach, implementation/notes, sweep-notes, handoff-phase-{1..4}, envelope-expansions.log, pre-close slice.yaml) ARE preserved on-disk at `.claude/sweep-results/<slice-id>/artifacts/` (gitignored) for analytical use — see ADR `slice-artifact-preservation`. Per context-discipline-protocol, leaving residue in `.claude/current-slice/` after close would cause the next slice to inherit stale framing through `/catchup`, defeating the context-isolation boundary this pipeline exists to enforce.
 
 ### D1 + D3 Gates
 
