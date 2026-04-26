@@ -1,47 +1,57 @@
 id: compression/lever-Y-mcp-substrate
 name: compression/lever-Y-mcp-substrate
 status: in-progress
-current_phase: 2
-brief: |
-  compression/lever-Y-mcp-substrate (substrate Slice 2). Feature: compression. Co-lands ADR cairn-substrate-and-fastmcp (already drafted at docs/adr/cairn-substrate-and-fastmcp.md, status: accepted, firmness: firm — D3 gate is structurally clear).
-
-  GOAL
-  Wrap the typed knowledge substrate (built in Slice 1, scripts/cairn_query/) in a FastMCP server adapter so phase agents can query typed records over MCP instead of re-reading canonical markdown. Prove the cost-reduction thesis on phase-1-writer as the single proof-of-concept phase; Slice 3 (lever-Z-substrate-full-pipeline) generalizes to phases 2/3/4.
-
-  WHAT SHIPS (per docs/plans/2026-04-25-knowledge-substrate-design.md §6 Slice 2 row)
-  1. FastMCP server adapter wrapping cairn_query (4 read-only MCP tools per design §5; mcp_servers/cairn_knowledge/ per §4 layout).
-  2. .mcp.json registration so the server starts under stdio transport when phase agents launch.
-  3. Snapshot pinning: orchestrator captures `git rev-parse HEAD` per phase as snapshot_id, passes via AGENT_ENVELOPE (extends today's phase-3-only AGENT_ENVELOPE consumption to phase-1-writer per ADR D9).
-  4. phase-1-writer agent prompt updated to query-first (one phase only as POC).
-  5. Structural lockdown for phase-1-writer: checks/role_guard.py ROLE_POLICIES denies Read/Bash on scripts/cairn_query/** and canonical knowledge sources (docs/ARCHITECTURE.md, docs/adr/**, docs/lessons.md, docs/spec-v1.md, docs/operational-reference.md) unless slice envelope grants. Per ADR D8.
-
-  ADRS REFERENCED (must be in adrs-referenced; all already committed)
-  - cairn-substrate-and-fastmcp (D1, D6, D8, D9, D12, D14, D15, D16 — listed in ADR text).
-  - phase-lock-and-role-declaration (D4 Phase Skill Guide surfacing).
-  - compression-infrastructure-bootstrap (existing role_guard.py PreToolUse mechanism class — extending its policy table, not its mechanism).
-
-  CLOSES WHEN
-  - pytest full passes (must clear the 8 pre-existing cairn-substrate-and-fastmcp validator failures from current baseline 947 pass / 8 OOS / 3 skip).
-  - FastMCP server starts under .mcp.json.
-  - phase-1-writer queries cairn_query through MCP successfully on a real slice.
-  - Cost-delta ≥ 40% Phase-1 reduction vs Lever-1 baseline ($2.96 / 105k cache_creation for Phase 1).
-
-  REQUIRED INPUTS FOR PHASE 1 (read at intent draft time)
-  - docs/plans/2026-04-25-knowledge-substrate-design.md §4 (architecture), §5 (tool surface), §6 (Slice 2 deliverables), §8.1 (16 decisions inventory) — design source of truth.
-  - docs/adr/cairn-substrate-and-fastmcp.md — committed ADR; declared decisions fix the spec scope.
-  - docs/ARCHITECTURE.md — verify invariants-touched (ADR sets invariants-touched: []; intent's envelope likely matches).
-  - scripts/cairn_query/ public interface only (modification slice — DO NOT read internals).
-  - checks/role_guard.py public structure of ROLE_POLICIES (modification slice — public interface only).
-  - scripts/slice_orchestrator/dispatch.py public interface for AGENT_ENVELOPE construction (modification slice — public interface only).
-
-  WATCHOUTS (carry into intent boundary or out-of-scope as appropriate)
-  - L-011 (Phase-3 cluster fan-out commit gap): docs/roadmap.md §11 queued; lean = orchestrator-side commit ownership. Slice 2's Phase 3 likely fans out (FastMCP adapter + role_guard table + agent prompt + .mcp.json + snapshot pinning are 5 candidate clusters). Operator-fixup remediation path documented at commit 354167a.
-  - D9 envelope-grant enumeration: phase-1-writer has known canonical-source reads today; intent must enumerate them and route each through MCP or grant via slice envelope. Do not silently break phase-1 behavior.
-  - D15 operator-memory exclusion: MCP tool surface MUST NOT expose operator memory (~/.claude/projects/.../memory/), even via opt-in. Structural enforcement, non-negotiable.
-
-  OUT-OF-SCOPE (must appear in intent.md boundary)
-  - Mutation surface (typed claims by agents) — explicitly deferred per ADR D7 to a future ADR.
-  - phases 2/3/4 query-first conversion + lockdown — Slice 3 (lever-Z-substrate-full-pipeline).
-  - Compaction policy for sweep-results artifacts — separate ADR.
-  - GitHub Project board automation — gated behind Slice 3 per project memory.
-  - AGENT_ENVELOPE extension to phases 2/3/4 — Slice 3 (only phase-1-writer extends in this slice).
+current_phase: 3
+brief: "compression/lever-Y-mcp-substrate (substrate Slice 2). Feature: compression.\
+  \ Co-lands ADR cairn-substrate-and-fastmcp (already drafted at docs/adr/cairn-substrate-and-fastmcp.md,\
+  \ status: accepted, firmness: firm \u2014 D3 gate is structurally clear).\n\nGOAL\n\
+  Wrap the typed knowledge substrate (built in Slice 1, scripts/cairn_query/) in a\
+  \ FastMCP server adapter so phase agents can query typed records over MCP instead\
+  \ of re-reading canonical markdown. Prove the cost-reduction thesis on phase-1-writer\
+  \ as the single proof-of-concept phase; Slice 3 (lever-Z-substrate-full-pipeline)\
+  \ generalizes to phases 2/3/4.\n\nWHAT SHIPS (per docs/plans/2026-04-25-knowledge-substrate-design.md\
+  \ \xA76 Slice 2 row)\n1. FastMCP server adapter wrapping cairn_query (4 read-only\
+  \ MCP tools per design \xA75; mcp_servers/cairn_knowledge/ per \xA74 layout).\n\
+  2. .mcp.json registration so the server starts under stdio transport when phase\
+  \ agents launch.\n3. Snapshot pinning: orchestrator captures `git rev-parse HEAD`\
+  \ per phase as snapshot_id, passes via AGENT_ENVELOPE (extends today's phase-3-only\
+  \ AGENT_ENVELOPE consumption to phase-1-writer per ADR D9).\n4. phase-1-writer agent\
+  \ prompt updated to query-first (one phase only as POC).\n5. Structural lockdown\
+  \ for phase-1-writer: checks/role_guard.py ROLE_POLICIES denies Read/Bash on scripts/cairn_query/**\
+  \ and canonical knowledge sources (docs/ARCHITECTURE.md, docs/adr/**, docs/lessons.md,\
+  \ docs/spec-v1.md, docs/operational-reference.md) unless slice envelope grants.\
+  \ Per ADR D8.\n\nADRS REFERENCED (must be in adrs-referenced; all already committed)\n\
+  - cairn-substrate-and-fastmcp (D1, D6, D8, D9, D12, D14, D15, D16 \u2014 listed\
+  \ in ADR text).\n- phase-lock-and-role-declaration (D4 Phase Skill Guide surfacing).\n\
+  - compression-infrastructure-bootstrap (existing role_guard.py PreToolUse mechanism\
+  \ class \u2014 extending its policy table, not its mechanism).\n\nCLOSES WHEN\n\
+  - pytest full passes (must clear the 8 pre-existing cairn-substrate-and-fastmcp\
+  \ validator failures from current baseline 947 pass / 8 OOS / 3 skip).\n- FastMCP\
+  \ server starts under .mcp.json.\n- phase-1-writer queries cairn_query through MCP\
+  \ successfully on a real slice.\n- Cost-delta \u2265 40% Phase-1 reduction vs Lever-1\
+  \ baseline ($2.96 / 105k cache_creation for Phase 1).\n\nREQUIRED INPUTS FOR PHASE\
+  \ 1 (read at intent draft time)\n- docs/plans/2026-04-25-knowledge-substrate-design.md\
+  \ \xA74 (architecture), \xA75 (tool surface), \xA76 (Slice 2 deliverables), \xA7\
+  8.1 (16 decisions inventory) \u2014 design source of truth.\n- docs/adr/cairn-substrate-and-fastmcp.md\
+  \ \u2014 committed ADR; declared decisions fix the spec scope.\n- docs/ARCHITECTURE.md\
+  \ \u2014 verify invariants-touched (ADR sets invariants-touched: []; intent's envelope\
+  \ likely matches).\n- scripts/cairn_query/ public interface only (modification slice\
+  \ \u2014 DO NOT read internals).\n- checks/role_guard.py public structure of ROLE_POLICIES\
+  \ (modification slice \u2014 public interface only).\n- scripts/slice_orchestrator/dispatch.py\
+  \ public interface for AGENT_ENVELOPE construction (modification slice \u2014 public\
+  \ interface only).\n\nWATCHOUTS (carry into intent boundary or out-of-scope as appropriate)\n\
+  - L-011 (Phase-3 cluster fan-out commit gap): docs/roadmap.md \xA711 queued; lean\
+  \ = orchestrator-side commit ownership. Slice 2's Phase 3 likely fans out (FastMCP\
+  \ adapter + role_guard table + agent prompt + .mcp.json + snapshot pinning are 5\
+  \ candidate clusters). Operator-fixup remediation path documented at commit 354167a.\n\
+  - D9 envelope-grant enumeration: phase-1-writer has known canonical-source reads\
+  \ today; intent must enumerate them and route each through MCP or grant via slice\
+  \ envelope. Do not silently break phase-1 behavior.\n- D15 operator-memory exclusion:\
+  \ MCP tool surface MUST NOT expose operator memory (~/.claude/projects/.../memory/),\
+  \ even via opt-in. Structural enforcement, non-negotiable.\n\nOUT-OF-SCOPE (must\
+  \ appear in intent.md boundary)\n- Mutation surface (typed claims by agents) \u2014\
+  \ explicitly deferred per ADR D7 to a future ADR.\n- phases 2/3/4 query-first conversion\
+  \ + lockdown \u2014 Slice 3 (lever-Z-substrate-full-pipeline).\n- Compaction policy\
+  \ for sweep-results artifacts \u2014 separate ADR.\n- GitHub Project board automation\
+  \ \u2014 gated behind Slice 3 per project memory.\n- AGENT_ENVELOPE extension to\
+  \ phases 2/3/4 \u2014 Slice 3 (only phase-1-writer extends in this slice).\n"

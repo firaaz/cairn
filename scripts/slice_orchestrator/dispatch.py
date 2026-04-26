@@ -137,6 +137,35 @@ def _resolve_phase_and_slice(role, inputs):
     return phase, slice_id
 
 
+# Write-paths for phase-1-writer (mirrors ROLE_POLICIES in checks/role_guard.py).
+# role_guard reads these from `paths` when the envelope is an object (ADR D9).
+_PHASE_1_WRITER_PATHS = [
+    r"^\.claude/current-slice/intent\.md$",
+    r"^\.claude/current-slice/slice\.yaml$",
+    r"^\.claude/features/[^/]+\.yaml$",
+]
+
+
+def _resolve_snapshot():
+    """Return current git HEAD SHA, or None if git is unavailable (ADR D12)."""
+    sha = _git_head_safe()
+    return sha if sha else None
+
+
+def _build_phase_1_writer_envelope(snapshot):
+    """Build the JSON-object AGENT_ENVELOPE for phase-1-writer dispatch.
+
+    Shape: {"paths": [...], "cairn_query_snapshot": "<sha>"}
+    ADR D12: when snapshot is falsy, substitute sentinel unknown-sha-<iso8601>.
+    """
+    if not snapshot:
+        ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        snapshot = f"unknown-sha-{ts}"
+    return json.dumps(
+        {"paths": _PHASE_1_WRITER_PATHS, "cairn_query_snapshot": snapshot}
+    )
+
+
 def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
     """Single dispatch attempt: spawn the agent, parse the tail, emit a log.
 
@@ -146,6 +175,11 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
     """
     env = os.environ.copy()
     env["AGENT_ROLE"] = role
+    # ADR D9/D12: synthesise an object envelope for phase-1-writer when the
+    # caller does not supply one explicitly. Other roles keep the legacy
+    # pass-through path so phase-3-implementer is unaffected.
+    if role == "phase-1-writer" and envelope is None:
+        envelope = _build_phase_1_writer_envelope(_resolve_snapshot())
     if envelope is not None:
         env["AGENT_ENVELOPE"] = envelope
     timeout = _resolve_timeout(role, timeout_hard)
