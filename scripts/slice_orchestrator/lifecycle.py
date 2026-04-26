@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -94,6 +95,42 @@ def _wipe_current_slice():
             except OSError:
                 # Non-empty (e.g. slice.yaml parent) — leave in place.
                 continue
+
+
+_ARTIFACT_RELPATHS = (
+    "intent.md",
+    "validation/approach.md",
+    "implementation/notes.md",
+    "integration/sweep-notes.md",
+    "handoff-phase-1.md",
+    "handoff-phase-2.md",
+    "handoff-phase-3.md",
+    "handoff-phase-4.md",
+    "envelope-expansions.log",
+)
+
+
+def _copy_artifacts_to_sweep_results(slice_id, pre_close_yaml_text):
+    """Pre-wipe snapshot of phase ephemerals (ADR slice-artifact-preservation).
+
+    S1.a — slug: forward-slashes → dashes.
+    S1.b — create target tree (artifacts/ + 3 subdirs); OSError propagates.
+    S1.c — copy each path in _ARTIFACT_RELPATHS if it exists (F5-tolerant).
+    S1.d — write caller-supplied pre_close_yaml_text to artifacts/slice.yaml.
+    S1.e — missing source → silent skip.
+    S1.f — OSError from makedirs/copyfile/write_text propagates uncaught.
+    """
+    slug = slice_id.replace("/", "-")
+    target = Path(".claude/sweep-results") / slug / "artifacts"
+    os.makedirs(str(target), exist_ok=True)
+    for subdir in ("validation", "implementation", "integration"):
+        os.makedirs(str(target / subdir), exist_ok=True)
+    src_base = Path(".claude/current-slice")
+    for rel in _ARTIFACT_RELPATHS:
+        src = src_base / rel
+        if src.is_file():
+            shutil.copyfile(str(src), str(target / rel))
+    Path(target / "slice.yaml").write_text(pre_close_yaml_text)
 
 
 def _is_slice_already_closed(state=None):
@@ -423,6 +460,12 @@ def close_slice(state=None):
                 )
         sys.exit(1)
 
+    # Step 0.5: Capture pre-close slice.yaml text BEFORE Step 1 mutates status.
+    try:
+        _pre_close_yaml_text = SLICE_YAML.read_text() if SLICE_YAML.exists() else ""
+    except OSError:
+        _pre_close_yaml_text = ""
+
     # Step 1: slice.yaml → status=complete, current_phase=max_phase.
     try:
         sy = read_slice_state(SLICE_YAML) if SLICE_YAML.exists() else {}
@@ -448,6 +491,10 @@ def close_slice(state=None):
             )
     except (subprocess.CalledProcessError, FileNotFoundError):
         pass
+
+    # Step 2.5: snapshot phase ephemerals before wipe destroys them (D1 ordering).
+    slice_id_for_artifacts = sy.get("id") or "unknown/unknown"
+    _copy_artifacts_to_sweep_results(slice_id_for_artifacts, _pre_close_yaml_text)
 
     # Step 3: wipe current-slice (DC-5 strict; F5-tolerant).
     _wipe_current_slice()
