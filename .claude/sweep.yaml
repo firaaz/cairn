@@ -1,28 +1,28 @@
-# Cairn Sweep — compression/lever-Y-mcp-substrate
+# Cairn Sweep — compression/lever-Y-mcp-substrate-fixup
 
 date: 2026-04-26
-slice: compression/lever-Y-mcp-substrate
+slice: compression/lever-Y-mcp-substrate-fixup
 status: complete
 
 invariants:
   INV-010: PASS
 
 tests:
-  total: 999
-  passed: 995
+  total: 1028
+  passed: 1025
   skipped: 3
-  failed: 1
-  failed-classification:
-    - test_inv004_turn1_token_budget: INV-004 turn-1 token budget (103574 > 40000); environment-dependent CC-session measurement; pre-existing OOS (not introduced by this slice); rebaseline tracked in .claude/handoff.md.
+  failed: 0
 
 architecture: PASS (10 invariants verified, 17 ADR files checked)
 
 new-mechanism:
-  - mcp_servers/cairn_knowledge/ FastMCP adapter (4 read-only tools: lookup, search, path_bindings, cypher)
-  - .mcp.json stdio registration of cairn-knowledge server
-  - checks/role_guard.py ROLE_DENY_READ table + envelope-object grant + envelope-grants.log audit log (D8/D9)
-  - scripts/slice_orchestrator/dispatch.py AGENT_ENVELOPE object shape with cairn_query_snapshot (D12) for phase-1-writer
-  - phase-1-writer query-first prompt + Read/Bash removed from tools frontmatter (defense-in-depth outer gate)
+  - mcp_servers/cairn_knowledge/server.py FastMCP JSON-RPC dispatcher (replaces boot-only stub; initialize / tools/list / tools/call round-trip)
+  - pyproject.toml + uv.lock fastmcp added to standing dep set per ADR cairn-substrate-and-fastmcp D1
+  - checks/role_guard.py READ_CLASS_TOOLS extended to {Read, Grep, Glob}; envelope-grant parity for Grep/Glob (D9)
+  - .claude/agents/phase-1-writer.md frontmatter no longer carries Grep/Glob (defense-in-depth outer gate)
+  - tests/unit/test_mcp_cairn_knowledge_jsonrpc.py (R1-R5 round-trip)
+  - tests/unit/test_role_guard_grep_glob_deny.py (G1-G7 deny + envelope-grant parity)
+  - docs/ARCHITECTURE.md INV-010 prose names Grep/Glob in deny surface; invariant-check target unchanged
 
-closed-by-fixup:
-  - 0e531e0 (operator pre-resume): docs/ARCHITECTURE.md INV-010 + EXPECTED_INVARIANT_IDS bump + intent envelope amendment; cleared 8 cairn-substrate-and-fastmcp validator failures that V1 demanded.
+gates:
+  - Substrate Slice 3 (compression/lever-Z-substrate-full-pipeline) unblocked.

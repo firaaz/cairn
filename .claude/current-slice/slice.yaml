@@ -1,7 +1,7 @@
 id: compression/lever-Y-mcp-substrate-fixup
 name: compression/lever-Y-mcp-substrate-fixup
-status: validation
-current_phase: 3
+status: complete
+current_phase: 4
 brief: "Fix three substrate defects from compression/lever-Y-mcp-substrate (roadmap\
   \ \xA712): (1) ship real MCP JSON-RPC dispatcher in mcp_servers/cairn_knowledge/server.py\
   \ replacing the boot-only stub; (2) add fastmcp to pyproject.toml per ADR cairn-substrate-and-fastmcp\
