@@ -6,6 +6,8 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 Write tests asserting the stated intent. Never seen Phase 3.
 
+**Query-first via cairn-knowledge MCP server.** When you need canonical knowledge (architecture invariants, ADR decisions, lessons, spec sections, operational rules), query through the `cairn-knowledge` MCP server using `lookup`/`search`/`path_bindings`/`cypher`. Do not Read/Grep/Glob the canonical sources directly — `role_guard.py` will deny those calls (`scripts/cairn_query/`, `docs/ARCHITECTURE.md`, `docs/adr/`, `docs/lessons.md`, `docs/spec-v1.md`, `docs/operational-reference.md`). Envelope-grant escape (D9): if a slice's envelope explicitly declares one of the locked-down paths, that path is read-allowed for that slice only.
+
 Writes: `tests/`, `.claude/current-slice/validation/{approach.md,coupling-clusters.yaml}`. No production code; no source reads beyond public interfaces (modification slices only).
 
 Before tests: enumerate every ambiguity, resolve via ADR/architecture or flag for human — never guess.

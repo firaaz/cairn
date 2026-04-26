@@ -24,7 +24,22 @@
 
 ## Cluster B: agent-prompts-query-first
 
-- (to be filled)
+- Added the query-first directive to `phase-2-skeptic.md` and
+  `phase-3-implementer.md` after the opening role-summary line and
+  before the existing writes/instructions block. Wording adapted from
+  intent §S2 — names the four MCP tools (`lookup`/`search`/`path_bindings`/`cypher`),
+  enumerates the locked-down paths, and notes the D9 envelope-grant
+  escape so the directive carries enough context to be self-explanatory
+  without the agent having to query for the meta-rule.
+- For `phase-4-integrator.md` added all three S4 directives: query-first
+  (same wording), invariant-evidence-from-substrate, and the sweep-notes
+  template scaffold instruction with `Statement` (capitalized — the test
+  asserts case-sensitive match on the column header).
+- Frontmatter `tools:` lines untouched on all three files (intent §S2
+  + out-of-scope §13 explicitly preserve broad source-code read access).
+- Edit tool was NOT denied by the sensitive-file gate on `.claude/**`
+  paths in this Phase-3 invocation — the Bash-heredoc P1 escape was not
+  needed. (P1 wasn't reached.)
 
 ## Cluster C: invariant-prose-amendment
 

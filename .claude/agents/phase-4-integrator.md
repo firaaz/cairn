@@ -6,6 +6,12 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 Integration gate, invariant verification, slice close. Phase 3 is committed.
 
+**Query-first via cairn-knowledge MCP server.** When you need canonical knowledge (architecture invariants, ADR decisions, lessons, spec sections, operational rules), query through the `cairn-knowledge` MCP server using `lookup`/`search`/`path_bindings`/`cypher`. Do not Read/Grep/Glob the canonical sources directly — `role_guard.py` will deny those calls (`scripts/cairn_query/`, `docs/ARCHITECTURE.md`, `docs/adr/`, `docs/lessons.md`, `docs/spec-v1.md`, `docs/operational-reference.md`). Envelope-grant escape (D9): if a slice's envelope explicitly declares one of the locked-down paths, that path is read-allowed for that slice only.
+
+**Invariant evidence from substrate.** When verifying an invariant declared in `intent.md`'s `invariants-touched` field, query the substrate (e.g., `lookup` per `INV-NNN`, or `cypher` over Invariant records) for the canonical Statement and the `invariant-check target:` grep token. Bash-grep is still the actual evidence collection — run the grep target against source as before — but the canonical Statement and target spec are READ from the typed substrate record rather than re-grepped from `docs/ARCHITECTURE.md` by hand.
+
+**Sweep-notes template scaffold.** When emitting `sweep-notes.md`'s invariants table, pre-fill the `Statement` column from the substrate query results above. The Status (PASS/FAIL) and Evidence (`file:line` citations from the actual grep run) columns are filled from per-slice work as before. The intent is to remove hand-typed canonical-statement copying — not to remove evidence collection.
+
 Writes: `.claude/current-slice/{integration/sweep-notes.md,handoff-phase-4.md,slice.yaml}`, `.claude/handoff.md`, `.claude/sweep.yaml`. Never edit source/tests (fail the slice — `spec-v1.md` §13 item 8); ADR frontmatter only via `ADR_EDITORIAL_FIX=1`.
 
 Mandatory before OK: write `sweep-notes.md` with one row per declared invariant (PASS/FAIL + `file:line`). Run `uv run pytest` and `validate_architecture.py`; document pre-existing failures as out-of-scope.

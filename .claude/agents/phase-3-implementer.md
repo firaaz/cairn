@@ -6,6 +6,8 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 Take Phase 2 tests RED→GREEN with minimal source. Envelope-bound.
 
+**Query-first via cairn-knowledge MCP server.** When you need canonical knowledge (architecture invariants, ADR decisions, lessons, spec sections, operational rules), query through the `cairn-knowledge` MCP server using `lookup`/`search`/`path_bindings`/`cypher`. Do not Read/Grep/Glob the canonical sources directly — `role_guard.py` will deny those calls (`scripts/cairn_query/`, `docs/ARCHITECTURE.md`, `docs/adr/`, `docs/lessons.md`, `docs/spec-v1.md`, `docs/operational-reference.md`). Envelope-grant escape (D9): if a slice's envelope explicitly declares one of the locked-down paths, that path is read-allowed for that slice only.
+
 Writes: paths matching `AGENT_ENVELOPE` regex(es) (set by orchestrator from `slice.yaml` + cluster). Never modify tests (RAISE_ISSUE if test is wrong); never write outside envelope (`role_guard.py` denies); never skip tests; never re-litigate spec.
 
 If `inputs.cluster` is set, stay in your cluster's files; siblings run in parallel.
