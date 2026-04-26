@@ -4,7 +4,6 @@ One file holds all seven entity types because they share a discriminated-union
 return type via `EntityType`. Splitting per entity would force cross-file
 imports of the union, hurting readability.
 """
-
 from __future__ import annotations
 
 from datetime import date
@@ -12,6 +11,7 @@ from enum import Enum
 from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, Field
+
 
 INV_ID_RE = r"^INV-\d{3}$"
 SLICE_ID_RE = r"^[a-z][a-z0-9-]*\/[a-z0-9][a-z0-9-]*$"
@@ -43,7 +43,7 @@ class Invariant(BaseModel):
 
 
 class DecisionPoint(BaseModel):
-    id: str  # full mechanical id <adr-id>/<slug>
+    id: str
     slug: str
     body: str
 
@@ -69,7 +69,7 @@ class Lesson(BaseModel):
     title: str
     discovered: date
     pattern: str
-    instances: list[str] = Field(default_factory=list)  # commit hashes / slice ids
+    instances: list[str] = Field(default_factory=list)
     rule: str
     anti_patterns: list[str] = Field(default_factory=list)
     body_anchor: PathAnchor
@@ -77,7 +77,7 @@ class Lesson(BaseModel):
 
 class SpecSection(BaseModel):
     entity_type: Literal["spec_section"] = "spec_section"
-    id: str  # e.g. "§13"
+    id: str
     title: str
     body_anchor: PathAnchor
 

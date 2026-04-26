@@ -2,14 +2,19 @@
 
 Plain DDL strings — kuzu requires DDL be issued as SQL-like statements.
 Each NODE TABLE / REL TABLE is keyed by its primary `id` field and matches
-the pydantic models in scripts.cairn_query.models.
+the pydantic models in cairn_query.models.
 """
-
 from __future__ import annotations
 
 from pathlib import Path
 
 import kuzu
+
+# Path is a synthetic node for the path-binding inverse view.
+PATH_NODE_TABLE = {
+    "name": "Path",
+    "ddl": "CREATE NODE TABLE IF NOT EXISTS Path(value STRING, PRIMARY KEY(value))",
+}
 
 NODE_TABLES = [
     {
@@ -26,7 +31,7 @@ NODE_TABLES = [
         "ddl": (
             "CREATE NODE TABLE IF NOT EXISTS Decision("
             "id STRING, name STRING, status STRING, firmness STRING, "
-            "topic STRING, date DATE, body_path STRING, "
+            "topic STRING, date DATE, body_path STRING, superseded_by STRING, "
             "PRIMARY KEY(id))"
         ),
     },
@@ -111,7 +116,8 @@ REL_TABLES = [
         "ddl": (
             "CREATE REL TABLE GROUP IF NOT EXISTS BINDS("
             "FROM Path TO Invariant, FROM Path TO Decision, FROM Path TO Lesson, "
-            "FROM Path TO SpecSection, FROM Path TO OpRule, FROM Path TO Feature, FROM Path TO Slice)"
+            "FROM Path TO SpecSection, FROM Path TO OpRule, FROM Path TO Feature, "
+            "FROM Path TO Slice)"
         ),
     },
     {
@@ -119,16 +125,11 @@ REL_TABLES = [
         "ddl": (
             "CREATE REL TABLE GROUP IF NOT EXISTS ANCHORED_AT("
             "FROM Invariant TO Path, FROM Decision TO Path, FROM Lesson TO Path, "
-            "FROM SpecSection TO Path, FROM OpRule TO Path, FROM Feature TO Path, FROM Slice TO Path)"
+            "FROM SpecSection TO Path, FROM OpRule TO Path, FROM Feature TO Path, "
+            "FROM Slice TO Path)"
         ),
     },
 ]
-
-# Path is a synthetic node table for the path-binding inverse view.
-PATH_NODE_TABLE = {
-    "name": "Path",
-    "ddl": "CREATE NODE TABLE IF NOT EXISTS Path(value STRING, PRIMARY KEY(value))",
-}
 
 
 def bootstrap_schema(db_path: Path) -> kuzu.Database:
@@ -136,6 +137,7 @@ def bootstrap_schema(db_path: Path) -> kuzu.Database:
 
     Idempotent — safe to call repeatedly; uses IF NOT EXISTS clauses.
     """
+    db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     db = kuzu.Database(str(db_path))
     conn = kuzu.Connection(db)
