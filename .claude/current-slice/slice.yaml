@@ -1,7 +1,7 @@
 id: compression/lever-Y-mcp-substrate
 name: compression/lever-Y-mcp-substrate
 status: in-progress
-current_phase: 1
+current_phase: 2
 brief: |
   compression/lever-Y-mcp-substrate (substrate Slice 2). Feature: compression. Co-lands ADR cairn-substrate-and-fastmcp (already drafted at docs/adr/cairn-substrate-and-fastmcp.md, status: accepted, firmness: firm — D3 gate is structurally clear).
 
