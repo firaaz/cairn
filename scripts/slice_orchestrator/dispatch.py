@@ -31,6 +31,7 @@ from .core import (
     _parse_clusters,
     _parse_structured_tail,
     _parse_usage_envelope,
+    _record_orchestrator_event,
     _resolve_model_config,
     _resolve_timeout,
     detect_superseded_test_signal,
@@ -194,6 +195,12 @@ def _dispatch_once(role, inputs, envelope=None, timeout_hard=None):
             inputs=inputs,
             reason=f"timeout after {timeout_s}s",
             extra=extra,
+        )
+        _record_orchestrator_event(
+            slice_id,
+            "agent_timeout",
+            phase=phase,
+            timeout_seconds=timeout_s,
         )
         return {
             "status": "FAILED",
