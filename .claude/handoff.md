@@ -1,28 +1,62 @@
+# Handoff — Phase 4 (Integration) — compression/slice-artifact-preservation
+date: 2026-04-26
+status: RAISE_ISSUE
+
+## Summary
+
+Phase 4 integration sweep complete. 840/840 tests pass (2 skipped, pre-existing). 8 new artifact-preservation tests all PASS. Architecture validator PASS (9 invariants, 16 ADRs). All 9 declared invariants PASS.
+
+## RAISE_ISSUE: Phase-3 Implementation Not Committed
+
+Five modified/untracked files from Phase-3 remain uncommitted in the working tree. DC-4 prohibits Phase 4 from committing. The orchestrator must:
+
+1. Stage: scripts/slice_orchestrator/lifecycle.py, .gitignore, commands/claude-code/start-slice.full.md, docs/ARCHITECTURE.md, docs/adr/slice-artifact-preservation.md
+2. Create the Phase-3 implementation commit
+3. Invoke close_slice for the terminal slice: complete commit
+
+## Pre-existing Failures
+
+None.
+
 ---
-slice: none
-phase: n/a
-branch: feature/compression
-as-of: 2026-04-26 9e0f3b0
----
+# Sweep Notes — compression/slice-artifact-preservation
+phase: 4
+date: 2026-04-26
 
-## State
-On `feature/compression` at 9e0f3b0; substrate program designed (4 slices + 2 ADRs), Slice-1 plan landed, agent-managed GitHub MCP/Project setup deferred to future ADR. No active slice; working tree clean.
+## Invariant Verification
 
-## Next
-Open substrate Slice 1 via `/start-slice compression/lever-X-knowledge-index` — Slice-1 plan is the implementation skeleton.
+| Invariant | Status | Evidence |
+|-----------|--------|---------|
+| INV-008 (a) DC-3 idempotency | PASS | lifecycle.py:136 (_is_slice_already_closed guard), lifecycle.py:428 (call site) |
+| INV-008 (b) DC-4 sole-commit-source | PASS | lifecycle.py:113-135 — helper uses os.makedirs/shutil.copyfile/Path.write_text only; no _git calls |
+| INV-008 (c) DC-7 slug-keyed observability | PASS | lifecycle.py:118-122 slug=slice_id.replace("/","-"), target=.claude/sweep-results/<slug>/artifacts/ |
+| INV-008 (d) pre-wipe snapshot two-tier failure | PASS | lifecycle.py:495-497 Step 2.5 before _wipe at line 500; F5-tolerance lines 126-130; OSError propagates |
+| D2 snapshot scope (9+1 files) | PASS | _ARTIFACT_RELPATHS 9 entries (lifecycle.py:99-111) + pre_close_yaml_text written directly |
+| D3 gitignored target | PASS | .gitignore updated with .claude/sweep-results/*/artifacts/ |
+| D5 start-slice.full.md amendment | PASS | commands/claude-code/start-slice.full.md line 210 updated |
+| D6a idempotency at helper level | PASS | test_d6a_helper_idempotent_on_repeat_invocation PASS |
+| D6b F5-tolerance missing source | PASS | test_d6b_missing_source_skips_silently PASS |
 
-## Blocked / Pending
-- `/decision cairn-substrate-and-fastmcp` — 16 decisions ready, design doc §8.1; parallelable with Slice 1.
-- `/decision slice-artifact-preservation` — 7 decisions ready, design doc §8.2; parallelable with Slice 1.
-- `/start-slice compression/slice-artifact-preservation` in parallel worktree; independent of substrate Slice 1.
-- `agent-managed-planning-substrate` ADR — gated on substrate Slices 1+2 shipping; tracked in `docs/roadmap.md` under "Gated."
-- INV-004 token-budget rebaseline under CC 2.1.119 — carried over from lever-2 audit; non-blocking.
+## Test Results
 
-## Features
-- compression: substrate program designed; Slice 1 ready to start.
+840 passed, 2 skipped (full suite, uv run pytest).
+- 8 artifact-preservation tests: ALL PASS
+- Architecture validator: ALL CHECKS PASSED (9 invariants, 16 ADRs)
 
-## Pointers
-- `docs/plans/2026-04-25-knowledge-substrate-design.md` — substrate program shape, entity model, decision inventories (§8.1, §8.2). Read first.
-- `docs/plans/2026-04-25-knowledge-substrate-slice-1-plan.md` — envelope + 18 TDD tasks. Read at slice-open.
-- `docs/roadmap.md` — gated-work bucket for `agent-managed-planning-substrate`.
-- `.claude/features/compression.yaml` — feature file; substrate slices append at slice-open.
+## RAISE_ISSUE: Phase-3 Implementation Not Committed
+
+Five modified/untracked files from Phase-3 remain uncommitted in the working tree:
+- scripts/slice_orchestrator/lifecycle.py  (modified)
+- .gitignore  (modified)
+- commands/claude-code/start-slice.full.md  (modified)
+- docs/ARCHITECTURE.md  (modified)
+- docs/adr/slice-artifact-preservation.md  (untracked — co-land per plan §Sequencing)
+
+DC-4 prohibits Phase 4 from issuing git commit. The orchestrator must:
+1. Stage these 5 files
+2. Create the Phase-3 implementation commit
+3. Invoke close_slice for the terminal slice: complete commit
+
+## Pre-existing Failures
+
+None.
