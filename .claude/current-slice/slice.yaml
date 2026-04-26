@@ -1,7 +1,8 @@
 id: compression/lever-Z-substrate-full-pipeline
 name: compression/lever-Z-substrate-full-pipeline
-status: in-progress
-current_phase: 1
+status: complete
+current_phase: 4
+completed: 2026-04-26
 brief: "Substrate Slice 3 (knowledge-substrate design doc 2026-04-25 \xA7348). Extend\
   \ query-first lockdown from phase-1-writer (Slice 2 + Slice 2 fixup, both closed\
   \ at 9b71cfa) to phase-2-skeptic, phase-3-implementer, and phase-4-integrator per\
