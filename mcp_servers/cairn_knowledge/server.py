@@ -113,26 +113,32 @@ def run() -> None:
     snapshot_id = _snapshot_id_from_envelope(envelope)
 
     # Eager corpus rebuild pinned to snapshot_id so the first tool call
-    # does not pay the rebuild cost.  Errors are non-fatal: the server
-    # stays alive and tools will attempt lazy reinitialisation on first use.
-    try:
-        storage = cairn_query.rebuild_from_sources(
-            db_path=cairn_query.DEFAULT_DB_PATH,
-            snapshot_id=snapshot_id,
-        )
-        # Wire pre-built storage into the tools module singleton so tools
-        # skip their own lazy rebuild on first call.
-        _tools_mod._STORAGE = storage
-    except Exception as exc:  # noqa: BLE001
-        print(
-            f"[cairn_knowledge] rebuild_from_sources failed: {exc}; "
-            "serving stale corpus",
-            file=sys.stderr,
-        )
+    # does not pay the rebuild cost.  Each server instance uses a private
+    # temp directory for its kuzu DB so multiple concurrent subprocess
+    # instances never contend on the same kuzu exclusive file lock.
+    import tempfile
 
-    # Start FastMCP JSON-RPC dispatcher over stdio. Blocks until stdin EOF;
-    # exits cleanly when the orchestrator closes the stdin pipe.
-    _mcp.run(transport="stdio", show_banner=False)
+    with tempfile.TemporaryDirectory(prefix="cairn_knowledge_") as _session_dir:
+        session_db_path = Path(_session_dir) / "index.kz"
+        try:
+            storage = cairn_query.rebuild_from_sources(
+                db_path=session_db_path,
+                snapshot_id=snapshot_id,
+            )
+            # Wire pre-built storage into the tools module singleton so tools
+            # skip their own lazy rebuild on first call.
+            _tools_mod._STORAGE = storage
+        except Exception as exc:  # noqa: BLE001
+            print(
+                f"[cairn_knowledge] rebuild_from_sources failed: {exc}; "
+                "serving stale corpus",
+                file=sys.stderr,
+            )
+
+        # Start FastMCP JSON-RPC dispatcher over stdio. Blocks until stdin EOF;
+        # exits cleanly when the orchestrator closes the stdin pipe.
+        # The session_db_path temp dir persists for the full server lifetime.
+        _mcp.run(transport="stdio", show_banner=False)
 
     # Unused variable suppression — referenced to satisfy source-text checks.
     _ = cairn_query_snapshot
