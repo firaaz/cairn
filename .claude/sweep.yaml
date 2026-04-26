@@ -1,20 +1,23 @@
-# Cairn Sweep — cost-discipline/lever-1-tier-retune
+# Cairn Sweep — compression/learnings-capture
 
 date: 2026-04-26
-slice: cost-discipline/lever-1-tier-retune
+slice: compression/learnings-capture
 status: complete
 
 invariants:
   INV-003: PASS
   INV-008: PASS
-  INV-009: PASS
 
 tests:
-  total: 943
-  passed: 932
+  total: 958
+  passed: 947
   skipped: 3
   failed: 8
   failed-classification:
     - all-eight: pre-existing cairn-substrate-and-fastmcp ADR-without-ARCHITECTURE-invariant condition; out-of-scope per intent §Verification; resolves at substrate Slice 2
 
 architecture: PRE-EXISTING FAILURE (cairn-substrate-and-fastmcp; tolerated by intent)
+
+new-mechanism:
+  - orchestrator-events.jsonl emission (5 v1 types) at .claude/current-slice/integration/
+  - Phase-4 integrator sweep-notes.md "## Learnings observed (optional)" subsection

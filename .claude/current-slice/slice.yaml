@@ -1,6 +1,6 @@
 id: compression/learnings-capture
 name: compression/learnings-capture
-status: in-progress
+status: complete
 current_phase: 4
 brief: "Retry of compression/learnings-capture (failed slice archived at .claude/completed-slices/compression-learnings-capture-failed/;\
   \ archive commit 4fc3157).\n\nGoal: restore the per-slice learning-capture surface\
