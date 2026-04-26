@@ -100,3 +100,43 @@ update test_bootstrap_scope_read_tool_ignored's path argument.
 Per the closes-when condition #7 ("Full pytest GREEN modulo the
 pre-existing INV-004 turn-1 token-budget OOS env-dependent failure"),
 these two new regressions block OK. RAISE_ISSUE.
+
+## Cluster D: stale-test-inversion (post-envelope-amendment)
+
+Operator amended the envelope at commit a79f609 to add the two stale
+test files, exactly mirroring the G7 amendment pattern. Cluster D
+resolves both:
+
+- **`test_role_guard_phase_1_lockdown.py::test_v4_other_roles_unaffected_by_read_denylist`**
+  Rewrote to assert the inversion (path b — assert post-Slice-3 truth).
+  Renamed function to `test_v4_other_roles_now_in_read_denylist_post_slice_3`.
+  The docstring already named "Slice 3 generalizes" as the inversion
+  event; new assertion: phases 2/3/4 Read on `docs/ARCHITECTURE.md`
+  returns rc=1 with role/'denied' in stderr. Mirrors G7's rewrite from
+  Cluster A (preserves the test slot as cross-slice regression evidence
+  rather than deleting).
+
+- **`test_role_guard.py::test_bootstrap_scope_read_tool_ignored`**
+  Substituted the path argument from `docs/adr/any.md` to
+  `tests/some_test_file.py` (path a — substitute non-deny path).
+  Reason: the test's docstring is "Tool not in {Write,Edit,MultiEdit,
+  NotebookEdit} → exit 0 regardless of role". Its purpose is to verify
+  the bootstrap-scope (write-path-only) check ignores Read tool calls
+  — the role being phase-2-skeptic and the path being under
+  `docs/adr/` were incidental in the original test (chosen pre-Slice-3
+  when phase-2-skeptic had no read-deny set). Substituting a non-deny
+  path preserves the original purpose without depending on the
+  now-inverted side condition. Updated docstring to record the
+  cross-slice contradiction protocol referencing
+  envelope-expansions.log 2026-04-26T19:05Z.
+
+Both files now GREEN. Full pytest: 1049 passed, 3 skipped (INV-004
+turn-1 token-budget OOS test was not encountered as a failure in this
+env). Architecture validator exits 0 with all 10 invariants verified
+(INV-010 included).
+
+## Verification commit-hash discipline (Cluster D)
+
+Per handoff Blocked/Pending #3 and the prior cluster discipline note
+above, captured commit hash via `git rev-parse HEAD` immediately after
+the Cluster D commit landed and reported it in the structured tail.

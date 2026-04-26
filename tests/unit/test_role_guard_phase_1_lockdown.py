@@ -113,16 +113,24 @@ def test_v4_default_allow_when_agent_role_unset():
     assert code == 0
 
 
-def test_v4_other_roles_unaffected_by_read_denylist():
-    """intent.md §S4 — only phase-1-writer is locked down this slice; phases
-    2/3/4 keep direct Read access (Slice 3 generalizes).
+def test_v4_other_roles_now_in_read_denylist_post_slice_3():
+    """compression/lever-Z-substrate-full-pipeline §S1 — Slice 3 generalizes
+    ROLE_DENY_READ from `phase-1-writer` only to all four phase roles
+    (`phase-2-skeptic`, `phase-3-implementer`, `phase-4-integrator` added).
+    Predecessor Slice-2 docstring anticipated this inversion ("Slice 3
+    generalizes"); Cluster D (envelope-expansions.log 2026-04-26T19:05Z)
+    rewrites the assertion to the post-Slice-3 truth: Read on
+    docs/ARCHITECTURE.md is now DENIED for all three additional roles.
     """
     for role in ("phase-2-skeptic", "phase-3-implementer", "phase-4-integrator"):
         code, stderr = _run_hook(
             {"tool_name": "Read", "tool_input": {"file_path": "docs/ARCHITECTURE.md"}},
             role=role,
         )
-        assert code == 0, (
-            f"{role} Read on canonical path must be allowed (Slice 3 territory); "
+        assert code == 1, (
+            f"{role} Read on canonical path must now be denied post-Slice-3; "
             f"got rc={code} stderr={stderr!r}"
+        )
+        assert role in stderr or "denied" in stderr.lower(), (
+            f"stderr must name role or 'denied'; got stderr={stderr!r}"
         )

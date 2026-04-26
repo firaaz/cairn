@@ -180,9 +180,19 @@ def test_a4_phase_3_implementer_multiple_envelope_patterns_colon_separated():
 
 
 def test_bootstrap_scope_read_tool_ignored():
-    """Tool not in {Write,Edit,MultiEdit,NotebookEdit} → exit 0 regardless of role."""
+    """Tool not in {Write,Edit,MultiEdit,NotebookEdit} → exit 0 regardless of role,
+    provided the path is outside ROLE_DENY_READ. Path argument substituted from
+    `docs/adr/any.md` to `tests/some_test_file.py` per
+    compression/lever-Z-substrate-full-pipeline Cluster D
+    (envelope-expansions.log 2026-04-26T19:05Z): Slice 3 §S1 added
+    `^docs/adr/` to phase-2-skeptic's read-deny set, which would otherwise
+    collide with this test's bootstrap-scope-ignores-Read intent. The
+    substitute path preserves the original purpose (the bootstrap-scope
+    write-path-only check ignores Read) without depending on the previous
+    phase-2-skeptic-has-no-read-deny-set side condition.
+    """
     code, _ = run_hook(
-        {"tool_name": "Read", "tool_input": {"file_path": "docs/adr/any.md"}},
+        {"tool_name": "Read", "tool_input": {"file_path": "tests/some_test_file.py"}},
         role="phase-2-skeptic",
     )
     assert code == 0
