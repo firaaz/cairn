@@ -1,21 +1,20 @@
-# Cairn Sweep — compression/lever-2-orchestrator-split
+# Cairn Sweep — cost-discipline/lever-1-tier-retune
 
-date: 2026-04-25
-slice: compression/lever-2-orchestrator-split
+date: 2026-04-26
+slice: cost-discipline/lever-1-tier-retune
 status: complete
 
 invariants:
   INV-003: PASS
-  INV-004: PASS
   INV-008: PASS
   INV-009: PASS
 
 tests:
-  total: 836
-  passed: 835
+  total: 943
+  passed: 932
   skipped: 3
-  failed: 1
+  failed: 8
   failed-classification:
-    - test_inv004_turn1_token_budget: pre-existing CC 2.1.119 environmental drift (rebaseline target was CC 2.1.116); out-of-scope per intent §out-of-scope (no test-file edits, no progressive-disclosure changes); resolution belongs to a future housekeeping/inv004-rebaseline-cc-2.1.119 slice
+    - all-eight: pre-existing cairn-substrate-and-fastmcp ADR-without-ARCHITECTURE-invariant condition; out-of-scope per intent §Verification; resolves at substrate Slice 2
 
-architecture: ALL CHECKS PASSED
+architecture: PRE-EXISTING FAILURE (cairn-substrate-and-fastmcp; tolerated by intent)
