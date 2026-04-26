@@ -1,9 +1,13 @@
-id: compression/lever-x-knowledge-index
-name: compression/lever-x-knowledge-index
-status: complete
-current_phase: 4
-phase_4_complete: true
-brief: 'Open compression/lever-X-knowledge-index - Slice 1 of the knowledge-substrate
-  program. Goal: ship scripts/cairn_query/ - a Python package extracting typed records
-  from cairn markdown corpus into a kuzudb graph index, exposed via Python API + typer
-  CLI, with CI round-trip validator. Operator-only consumer. Feature: compression.'
+id: compression/learnings-capture
+name: compression/learnings-capture
+status: in-progress
+current_phase: 2
+brief: 'Restore the per-slice learning-capture surface that the compressed protocol
+  structurally lost. Add two layered surfaces — (1) Phase-4 integrator emits optional
+  ## Learnings observed section in sweep-notes.md; (2) orchestrator emits mechanical
+  events to .claude/current-slice/integration/orchestrator-events.jsonl (phase_redispatch,
+  redispatch_cap_exceeded, cost_threshold_breach, token_threshold_breach, agent_timeout).
+  Both ride existing slice-artifact-preservation pipeline. stdlib-only. adrs-referenced:
+  [slice-artifact-preservation, phase-lock-and-role-declaration]. Feature: compression.
+  Predecessor: slice-artifact-preservation (closed). Successor: substrate Slice 2
+  (lever-Y-mcp-substrate) opens after this closes.'
