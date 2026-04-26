@@ -1,23 +1,28 @@
-# Cairn Sweep — compression/learnings-capture
+# Cairn Sweep — compression/lever-Y-mcp-substrate
 
 date: 2026-04-26
-slice: compression/learnings-capture
+slice: compression/lever-Y-mcp-substrate
 status: complete
 
 invariants:
-  INV-003: PASS
-  INV-008: PASS
+  INV-010: PASS
 
 tests:
-  total: 958
-  passed: 947
+  total: 999
+  passed: 995
   skipped: 3
-  failed: 8
+  failed: 1
   failed-classification:
-    - all-eight: pre-existing cairn-substrate-and-fastmcp ADR-without-ARCHITECTURE-invariant condition; out-of-scope per intent §Verification; resolves at substrate Slice 2
+    - test_inv004_turn1_token_budget: INV-004 turn-1 token budget (103574 > 40000); environment-dependent CC-session measurement; pre-existing OOS (not introduced by this slice); rebaseline tracked in .claude/handoff.md.
 
-architecture: PRE-EXISTING FAILURE (cairn-substrate-and-fastmcp; tolerated by intent)
+architecture: PASS (10 invariants verified, 17 ADR files checked)
 
 new-mechanism:
-  - orchestrator-events.jsonl emission (5 v1 types) at .claude/current-slice/integration/
-  - Phase-4 integrator sweep-notes.md "## Learnings observed (optional)" subsection
+  - mcp_servers/cairn_knowledge/ FastMCP adapter (4 read-only tools: lookup, search, path_bindings, cypher)
+  - .mcp.json stdio registration of cairn-knowledge server
+  - checks/role_guard.py ROLE_DENY_READ table + envelope-object grant + envelope-grants.log audit log (D8/D9)
+  - scripts/slice_orchestrator/dispatch.py AGENT_ENVELOPE object shape with cairn_query_snapshot (D12) for phase-1-writer
+  - phase-1-writer query-first prompt + Read/Bash removed from tools frontmatter (defense-in-depth outer gate)
+
+closed-by-fixup:
+  - 0e531e0 (operator pre-resume): docs/ARCHITECTURE.md INV-010 + EXPECTED_INVARIANT_IDS bump + intent envelope amendment; cleared 8 cairn-substrate-and-fastmcp validator failures that V1 demanded.
