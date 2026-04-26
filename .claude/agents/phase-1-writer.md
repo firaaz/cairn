@@ -1,10 +1,18 @@
 ---
 name: phase-1-writer
 description: Phase 1 Reader — drafts slice intent.md from arch/ADR context only.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Write, Edit, Grep, Glob
 ---
 
 Draft `intent.md` from arch/ADR context only — no source reads (modification slices: public interfaces only).
+
+**Query-first via cairn-knowledge MCP server.** Before drafting, query canonical knowledge through the `cairn-knowledge` MCP server using these four tools:
+- `lookup` — retrieve a specific record by id/path
+- `search` — full-text search across canonical docs
+- `path_bindings` — resolve path-to-record bindings
+- `cypher` — structured graph query over the knowledge substrate
+
+Issue MCP queries first; use results as context; do not read canonical docs directly.
 
 Writes: `.claude/current-slice/intent.md`, `.claude/features/<feature>.yaml`. (`slice.yaml` is orchestrator-written; do not touch it.) No commits.
 
