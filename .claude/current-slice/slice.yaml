@@ -1,8 +1,11 @@
 id: compression/lever-Z-fixup
-name: "compression/lever-Z-fixup"
-status: 2-validation
+name: compression/lever-Z-fixup
+status: complete
 started: 2026-04-27
 completed: null
-invariants-touched: [INV-003, INV-008]
+invariants-touched:
+- INV-003
+- INV-008
 adrs-referenced: []
 adrs-created: []
+current_phase: 4
