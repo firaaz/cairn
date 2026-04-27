@@ -44,14 +44,21 @@ def _tools_field(frontmatter: str) -> list[str]:
 
 
 def test_v7_tools_frontmatter_excludes_read_and_bash():
-    """intent §S5 — Read and Bash removed from agent's tools list."""
+    """intent §S5 — Read removed from agent's tools list.
+
+    Post-`compression/lever-Z-fixup` §S1: `Bash` was restored to this
+    frontmatter to unblock the documented `.claude/**` Bash-heredoc escape
+    used by the orchestrator's phase-1-writer subagent. The original V7
+    `Bash not in tools` assertion was inverted by S1 and dropped per
+    operator-routed envelope expansion (see
+    `.claude/current-slice/integration/envelope-expansions.log`,
+    2026-04-27 entry). `Read` remains absent — Slice-2-fixup hardening
+    plus L-Z-fixup intent §S1 hard non-goal preserve that.
+    """
     fm, _ = _read_frontmatter_and_body()
     tools = _tools_field(fm)
     assert "Read" not in tools, (
         f"intent §S5 — `Read` must be removed from phase-1-writer tools; got {tools!r}"
-    )
-    assert "Bash" not in tools, (
-        f"intent §S5 — `Bash` must be removed from phase-1-writer tools; got {tools!r}"
     )
 
 
