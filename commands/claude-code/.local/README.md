@@ -28,51 +28,84 @@ What does **not** belong here:
 
 ## Per-machine setup
 
-One-time setup on each machine where you develop cairn. Order matters: PAT → MCP entry → command symlink → board.
+One-time setup on each machine where you develop cairn. Order: gh auth → MCP launcher → Claude config → command symlink → board.
 
-### 1. Generate a fine-grained GitHub PAT
+The MCP authenticates by calling `gh auth token` at container-launch time, so no secret is ever stored in `~/.claude.json` or `.envrc`. Rotation happens through `gh`.
 
-Visit https://github.com/settings/personal-access-tokens, click **Generate new token**:
+### 1. Grant the gh CLI a `project` scope
 
-- **Token name:** `cairn-dev-mode-mcp` (or any label you'll recognize)
-- **Resource owner:** your user (`firaaz`)
-- **Repository access:** Only select repositories → `cairn`
-- **Permissions:**
-  - Repository → Contents: **Read-only** (or whatever you already give other tools)
-  - Repository → Issues: **Read-only**
-  - Account → Projects: **Read-only** (this is `read:project`)
+If gh isn't authenticated yet on this machine, run `gh auth login` and pick scopes including `project`. If gh is already logged in (e.g. `gh auth status` shows a token), just add the missing scope:
 
-Save the token in your password manager. Do not commit it anywhere.
+```sh
+gh auth refresh -h github.com -s project
+```
 
-### 2. Add the GitHub MCP server to your personal Claude config
+Verify: `gh auth status` should list `project` (and `repo`, `read:org`) under **Token scopes**.
 
-Edit `~/.claude.json` (NOT cairn's `.mcp.json` — that ships to consumers and would leak your PAT entry into their tooling). The entry below uses the `:latest` tag of the upstream image, which we recommend pulling once with `docker pull ghcr.io/github/github-mcp-server:latest` before first use:
+### 2. Install the MCP launcher script
+
+Save the following at `~/.claude/bin/github-mcp.sh` and `chmod +x` it. The wrapper pulls a fresh token from `gh auth token` on every MCP-server launch — no secret touches a config file.
+
+```sh
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "github-mcp.sh: gh CLI not found on PATH" >&2; exit 127
+fi
+if ! command -v docker >/dev/null 2>&1; then
+  echo "github-mcp.sh: docker not found on PATH" >&2; exit 127
+fi
+
+token="$(gh auth token 2>/dev/null || true)"
+if [[ -z "$token" ]]; then
+  echo "github-mcp.sh: gh auth token returned empty — run \`gh auth login\` first" >&2; exit 1
+fi
+
+exec docker run -i --rm \
+  -e "GITHUB_PERSONAL_ACCESS_TOKEN=$token" \
+  -e GITHUB_TOOLSETS=all \
+  ghcr.io/github/github-mcp-server:latest
+```
+
+Pull the image once: `docker pull ghcr.io/github/github-mcp-server:latest`.
+
+**Why `GITHUB_TOOLSETS=all`.** The upstream image ships a default toolset that excludes `projects` (GitHub Projects v2 board management) on some image versions. `/dev-mode` §4 reads from that board, so we force-enable everything to avoid silent degradation. If you want a tighter surface, replace `all` with a comma list (e.g. `repos,issues,pull_requests,projects`).
+
+Smoke test the wrapper outside Claude Code:
+
+```sh
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}' \
+  | ~/.claude/bin/github-mcp.sh
+```
+
+Expect log lines containing `starting server version=v…` and `server session connected`. EOF afterwards is normal.
+
+### 3. Point your personal Claude config at the launcher
+
+Edit `~/.claude.json` (NOT cairn's `.mcp.json` — that ships to consumers). Add:
 
 ```json
 {
   "mcpServers": {
     "github": {
-      "command": "docker",
-      "args": [
-        "run", "-i", "--rm",
-        "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server:latest"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "<PASTE-FINE-GRAINED-PAT-HERE>"
-      }
+      "command": "/Users/<you>/.claude/bin/github-mcp.sh"
     }
   }
 }
 ```
 
-Replace the placeholder with the PAT from step 1. The file is mode 600 (user-only); keep it that way.
+Restart Claude Code so it picks up the new `mcpServers.github` block — the MCP container is launched per-session and caches the token for the session's lifetime, so mid-session edits to either the wrapper or `gh`'s scopes don't take effect until restart.
 
-Restart Claude Code so it picks up the new MCP server. Verify Projects v2 tools appeared by searching for `projects_list` in the available tools after restart.
+Verify from inside Claude Code:
 
-> **Note:** The Docker MCP supersedes the `github@claude-plugins-official` plugin for /dev-mode purposes (and exposes a strict superset of its tools). If both are enabled, you'll get duplicate tool registrations under different namespaces — pick one and disable the other in `.claude/settings.json` to keep the tool list clean.
+1. `mcp__github__get_me` → expect your login + id (auth wired correctly).
+2. `mcp__github__projects_list` (any `projects_*` tool) appears in the tool list (toolset wired correctly).
+3. Call `projects_list` with your user as `owner` → expect 200, even if the list is empty (scope on the token is sufficient).
 
-### 3. Symlink `dev-mode.md` into your personal commands directory
+> **Note:** Docker MCP supersedes the `github@claude-plugins-official` plugin for /dev-mode purposes (and exposes a strict superset of its tools). If both are enabled, you'll get duplicate tool registrations under different namespaces — pick one and disable the other in `.claude/settings.json` to keep the tool list clean.
+
+### 4. Symlink `dev-mode.md` into your personal commands directory
 
 From the cairn repo root:
 
@@ -83,7 +116,7 @@ ln -s "$(pwd)/commands/claude-code/.local/dev-mode.md" ~/.claude/commands/dev-mo
 
 Idempotent guard: `[ -L ~/.claude/commands/dev-mode.md ] || ln -s ...`
 
-### 4. Create the cairn GH Project board
+### 5. Create the cairn GH Project board
 
 Manual GitHub UI step — there is no API-only flow that's worth scripting for a one-time setup.
 
@@ -99,7 +132,7 @@ Now `/dev-mode` will surface its contents under the GH PROJECTS section.
 
 After setup:
 
-1. `cd` into the cairn repo. Run `/dev-mode`. Expect a five-section dashboard. GH Projects should either populate from the board or surface the `MCP not configured` line — if it shows the latter despite step 2, restart Claude Code.
+1. `cd` into the cairn repo. Run `/dev-mode`. Expect a five-section dashboard. GH Projects should either populate from the board or surface the `MCP not configured` line — if it shows the latter despite step 3, restart Claude Code.
 2. `cd` to any non-cairn directory. Run `/dev-mode`. Expect the single-line `run from inside the cairn repo (any worktree)` bail.
 3. `cd` to a real cairn consumer (e.g. `~/Developer/lab/complex-rag-analysis`). Confirm `ls .claude/commands/` does **not** include `dev-mode.md`. Try `/dev-mode` in Claude Code — expect "command not found".
 
