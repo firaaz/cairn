@@ -9,7 +9,7 @@ Usage: `/dev-mode`
 Before any data gathering, verify `commands/claude-code/start-slice.md` exists in cwd. If absent, emit one line and stop:
 
 ```
-/dev-mode is cairn-internal — not in a cairn worktree.
+/dev-mode is cairn-internal — run from inside the cairn repo (any worktree).
 ```
 
 No git, file, or MCP calls below this guard.
@@ -37,11 +37,11 @@ GH PROJECTS (cairn board)
   In Progress (<n>)   <items>
   Blocked (<n>)       <items>
   Todo (top 3)        <items>
-  (or: GH Projects MCP not configured — see commands/claude-code/.local/README.md)
+  (or: GH Projects MCP not configured — see .local/README.md §2)
 
 DOC HEALTH
   Plan-docs >Nd:   <stale>/<total>   (oldest: <date>)
-  Lessons >Nd:     <stale>/<total>
+  Lessons:         <total>
   Memories >Nd:    <stale>/<total>
 ```
 
@@ -57,15 +57,15 @@ DOC HEALTH
 
 3. **Features** — enumerate `.claude/features/*.yaml`. For each: emit `<id>   <len(slices)> slices   "<name truncated to 40 chars>"`. Sort by id. Cap output at 8 entries; if more, append `… +N more` line.
 
-4. **GH Projects** — call MCP tool `mcp__github__projects_get` (or whichever tool the installed `github` MCP server exposes; check via `mcp__github__projects_list` first if unsure). Target the cairn board.
-   - On success: bucket items by status field into `In Progress` / `Blocked` / `Todo` / `Done`. Render counts; for In Progress and Blocked list all items as `#<num> <title>`; for Todo list top 3 by priority/order; omit `Done` from the dashboard (it's not load-bearing for "what's in flight").
-   - On any failure (MCP not registered, auth failure, network, board not found): render the single fallback line `GH Projects MCP not configured — see commands/claude-code/.local/README.md`. Do NOT prompt for credentials, do NOT retry.
+4. **GH Projects** — Projects v2 tools live behind the personal Docker MCP `ghcr.io/github/github-mcp-server` (registered in `~/.claude.json`, see `.local/README.md` §2). They are NOT in `github@claude-plugins-official` — the repo-enabled plugin covers issues/PRs/commits/files but is a strict subset of the Docker server.
+   - Tool discovery: try `mcp__github__projects_get` / `mcp__github__projects_list` (Docker MCP names). If neither is callable in the current session, render the fallback line and stop — do NOT call any plugin tool as a substitute.
+   - On success: target the `cairn` board; bucket items by status field into `In Progress` / `Blocked` / `Todo` / `Done`. Render counts; for In Progress and Blocked list all items as `#<num> <title>`; for Todo list top 3 by priority/order; omit `Done` from the dashboard (it's not load-bearing for "what's in flight").
+   - On any failure (tools absent, auth failure, network, board not found): render the single fallback line `GH Projects MCP not configured — see .local/README.md §2`. Do NOT prompt for credentials, do NOT retry.
 
-5. **Doc health** — three `find` calls, all excluding `.slice-system` to avoid the symlink loop:
-   - Plan-docs: `find docs/plans -maxdepth 1 -name '*.md' -mtime +${CAIRN_DEVMODE_PLAN_STALE_DAYS:-30}` for stale count; total via same find without `-mtime`.
+5. **Doc health** — counts and staleness, all excluding `.slice-system` to avoid the symlink loop. mtime is the staleness proxy — note that `git checkout` bumps mtime, so a freshly-checked-out worktree will show 0 stale even on logically-old files. This is a known approximation; the dashboard surfaces *recent activity*, not git-creation age.
+   - Plan-docs: `find docs/plans -maxdepth 1 -name '*.md' -mtime +${CAIRN_DEVMODE_PLAN_STALE_DAYS:-30}` for stale count; total via same find without `-mtime`. Oldest by mtime: `ls -t docs/plans/*.md | tail -1` then `stat` for the date. Render as `(oldest: YYYY-MM-DD)`.
    - Memories: `find ~/.claude/projects/-Users-mohammed-farook-Developer-lab-cairn/memory -maxdepth 1 -name '*.md' -mtime +${CAIRN_DEVMODE_MEMORY_STALE_DAYS:-60}` for stale; total without `-mtime`.
-   - Lessons: `docs/lessons.md` is a single file with multiple L-### entries. Stale = entries with a `created:` or `**date:**` field older than `${CAIRN_DEVMODE_LESSON_STALE_DAYS:-90}` days. If date parsing is non-trivial, fall back to total count only and render the threshold as `(by-date check unavailable)`.
-   - Oldest plan-doc date: `ls -t docs/plans/*.md | tail -1` then read mtime via `stat`. Render as `(oldest: YYYY-MM-DD)`.
+   - Lessons: `docs/lessons.md` is a single file; entries are `## L-NNN: <title>` headings with no per-entry date field. Render as count-only: `Lessons: <total>` (no stale check, no threshold). The `CAIRN_DEVMODE_LESSON_STALE_DAYS` knob is reserved for future use if a `created:` convention is added to lesson entries.
 
 ## Rendering
 
@@ -77,11 +77,12 @@ Order sections exactly as listed: WORKTREES → SLICE → FEATURES → GH PROJEC
 
 ## Environment knobs
 
-- `CAIRN_DEVMODE_PLAN_STALE_DAYS` (default 30)
-- `CAIRN_DEVMODE_LESSON_STALE_DAYS` (default 90)
-- `CAIRN_DEVMODE_MEMORY_STALE_DAYS` (default 60)
+- `CAIRN_DEVMODE_PLAN_STALE_DAYS` (default 30) — applied to plan-doc mtime
+- `CAIRN_DEVMODE_MEMORY_STALE_DAYS` (default 60) — applied to memory-file mtime
 
 Per cairn's no-hardcoded-knobs rule. These are local to this command — not documented in `docs/operational-reference.md` because `/dev-mode` is cairn-internal, not cairn-product.
+
+(`CAIRN_DEVMODE_LESSON_STALE_DAYS` is reserved; lessons currently render as count-only because `docs/lessons.md` entries carry no per-lesson date field. Add a `created: YYYY-MM-DD` line under each `## L-NNN` heading and re-introduce the knob if/when staleness becomes useful.)
 
 ## What this command does NOT do
 
