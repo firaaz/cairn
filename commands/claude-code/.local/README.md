@@ -121,10 +121,12 @@ Idempotent guard: `[ -L ~/.claude/commands/dev-mode.md ] || ln -s ...`
 Manual GitHub UI step — there is no API-only flow that's worth scripting for a one-time setup.
 
 1. Go to https://github.com/users/firaaz/projects (or your org page).
-2. Click **New project** → **Board**.
-3. Name it `cairn` (or note the actual name; it just needs to be discoverable by `projects_list`).
-4. Default columns: `Todo`, `In Progress`, `Done`. Add `Blocked` and `Archived`.
-5. Link it to the `cairn` repo (project settings → Add repository).
+2. Click **New project** → choose the **Kanban** or **Team planning** template. Both ship the same Status field defaults (`Backlog / Ready / In progress / In review / Done`); Team planning adds Priority / Size / Estimate / Start date / Target date as inert extras (`/dev-mode` only reads Status, so they cost nothing). Pick whichever you'll actually use.
+3. Name it **exactly** `cairn` — `/dev-mode` and any other cairn aid that talks to Projects v2 looks up the board by this name. The same name must be used on every machine so all your sessions see the same board.
+4. After creation, open Settings → Custom fields → Status and add `Blocked` as a sixth option (the presets ship five; `/dev-mode` renders a Blocked bucket and needs the option to exist for items to land there). Optional: also add `Archived` if you want to retire items without deleting them.
+5. Link it to the `cairn` repo (project settings → Manage access → Add repository).
+
+**One board, account-owned.** Because `firaaz` owns the board and every machine authenticates as `firaaz` via the gh-cli wrapper (§2), `gh project list --owner @me` (and `mcp__github__projects_list` once the Docker MCP is connected) resolves to the same project from every machine — no per-machine config needed. The project's number appears in its URL (`/projects/N`); record it locally if convenient, but the lookup contract is the **name**, not the number.
 
 Now `/dev-mode` will surface its contents under the GH PROJECTS section.
 
