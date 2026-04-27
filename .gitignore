@@ -18,6 +18,10 @@ venv/
 # Git worktrees (project-local, never tracked)
 .worktrees/
 
+# direnv — per-project env files hold secrets (PATs, etc.); never tracked
+.envrc
+.envrc.local
+
 # slice-artifact-preservation: pre-wipe snapshots of phase ephemerals.
 # Derived from .claude/current-slice/ at close; analytical use only.
 .claude/sweep-results/*/artifacts/
