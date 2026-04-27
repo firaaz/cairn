@@ -70,7 +70,7 @@ def populated_current_slice(tmp_path, monkeypatch):
         "handoff-phase-2.md",
         "handoff-phase-3.md",
         "handoff-phase-4.md",
-        "envelope-expansions.log",
+        "integration/envelope-expansions.log",
     ]
     for rel in files:
         p = cs / rel

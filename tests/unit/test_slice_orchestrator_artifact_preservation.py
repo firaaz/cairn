@@ -46,7 +46,7 @@ ARTIFACT_FILES = [
     "handoff-phase-2.md",
     "handoff-phase-3.md",
     "handoff-phase-4.md",
-    "envelope-expansions.log",
+    "integration/envelope-expansions.log",
 ]
 
 
@@ -92,7 +92,7 @@ def test_d2_phase_artifact_files_copied_byte_identical(populated_current_slice):
         "validation/approach.md",
         "implementation/notes.md",
         "integration/sweep-notes.md",
-        "envelope-expansions.log",
+        "integration/envelope-expansions.log",
     ):
         src = populated_current_slice / rel
         dst = target / rel

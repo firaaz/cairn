@@ -108,7 +108,7 @@ _ARTIFACT_RELPATHS = (
     "handoff-phase-2.md",
     "handoff-phase-3.md",
     "handoff-phase-4.md",
-    "envelope-expansions.log",
+    "integration/envelope-expansions.log",
 )
 
 
