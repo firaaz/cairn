@@ -23,7 +23,7 @@ brew install jq && uv tool install ruff
 
 ## New-code guidance
 
-**New code is Python, stdlib-only, function-based** — one-for-one Rust-mapping target for end-of-v1. Existing bash hooks stay until their own migration slices. No third-party deps, decorators, or metaprogramming.
+**New code is Python, function-based, with the v1 standing dep set as the only allowed dependencies** (pydantic, kuzudb, mistune, typer, fastmcp, pyyaml — see ADR `cairn-substrate-and-fastmcp`). Existing bash hooks stay until their own migration slices. No decorators or metaprogramming.
 
 **No hardcoded timeouts/sizes in consumer-facing scripts.** Cairn is consumed downstream (e.g. complex-rag-analysis, ~917s pytest); use env-var override with cairn-friendly default (`int(os.environ.get("CAIRN_<KNOB>", <default>))`) and document the var in `docs/operational-reference.md`.
 

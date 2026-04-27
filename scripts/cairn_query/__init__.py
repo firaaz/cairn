@@ -23,6 +23,25 @@ from .storage import KuzuStorage
 
 DEFAULT_DB_PATH = Path(".claude/cairn_query/index.kz")
 
+__all__ = [
+    "rebuild_from_sources",
+    "lookup",
+    "search",
+    "path_bindings",
+    "cypher",
+    "DEFAULT_DB_PATH",
+    "KuzuStorage",
+    "Decision",
+    "Entity",
+    "EntityType",
+    "Feature",
+    "Invariant",
+    "Lesson",
+    "OpRule",
+    "Slice",
+    "SpecSection",
+]
+
 
 def rebuild_from_sources(
     *,

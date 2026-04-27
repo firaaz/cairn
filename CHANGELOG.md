@@ -14,12 +14,13 @@ Squash-merges `feature/compression` (335 commits across the substrate v1, lever-
 - **Slice-pipeline orchestrator** at `scripts/slice_orchestrator/`: four-phase Intent → Validation → Implementation → Integration loop with per-phase agents (`.claude/agents/phase-{1-writer,2-skeptic,3-implementer,4-integrator}.md`), CLI at `python -m slice_orchestrator --brief|--resume|--legacy`, sweep-results artifact preservation, resume reconciliation.
 - **Role-keyed enforcement** (`checks/role_guard.py`): canonical-knowledge read-class lockdown across all four phase roles; envelope-bound write enforcement for `phase-3-implementer`. Bash-token extraction (`_bash_path_tokens`) covers `cat`/`head`/`grep` paths.
 - **Cost discipline**: per-phase model config (`AGENT_MODEL_CONFIG`) with extended-thinking budgets; Track-0 telemetry; lever-1 retune complete (~$18.71 baseline).
-- Lessons L-001 through L-014 (`docs/lessons.md`).
+- Lessons L-001 through L-015 (`docs/lessons.md`). L-015 (squash-merge / extractor coupling) added in the post-merge closeout commit.
 - `docs/upgrading-from-pre-compression.md` — 5-delta consumer upgrade guide.
+- [`docs/features/compression.md`](docs/features/compression.md) — feature closeout (post-merge per merge-protocol step 9).
 
 #### Changed
 
-- ADR `cairn-substrate-and-fastmcp` formally retires the **stdlib-only constraint** (D3) and the **Rust-mapping end-of-v1 target** (D4). Consumer `CLAUDE.md` files should retire those constraints slice-by-slice.
+- ADR `cairn-substrate-and-fastmcp` formally retires the **stdlib-only constraint** (D3) and the **Rust-mapping end-of-v1 target** (D4). cairn's own `CLAUDE.md:26` updated to the v1-standing-dep-set wording in the closeout commit; downstream consumers should retire those constraints slice-by-slice.
 - Orchestrator close: `_ARTIFACT_RELPATHS` now uses `integration/envelope-expansions.log` (was bare path).
 - `phase-1-writer.md` frontmatter restored to `tools: Write, Edit, Bash` — re-enables the documented Bash-heredoc escape under Claude Code's sensitive-file gate (Slice-2-fixup over-hardening reversal). `Grep`/`Glob` remain absent (canonical-knowledge hardening preserved via `_bash_path_tokens`).
 
@@ -37,11 +38,18 @@ Each delta in the upgrade doc has a one-line `Verify` snippet that confirms it l
 
 #### Deferred / Open findings
 
-- **L-015 candidate** (parallel-race): in-session phase-3 fan-out can race on shared git index — caused the audit-trail muddle in feature-branch commit `fd88b95` (S3 message, S4.a content). Mitigation: sequence cluster commits or use per-cluster worktrees. Promotion to a formal lesson deferred to next recurrence.
+- **Future-lesson candidate** (parallel-race): in-session phase-3 fan-out can race on shared git index — caused the audit-trail muddle in feature-branch commit `fd88b95` (S3 message, S4.a content). Mitigation: sequence cluster commits or use per-cluster worktrees. Promotion to a formal lesson deferred to next recurrence.
 - **F2** (scope-guard): `checks/scope-guard.sh:118` writes to bare `envelope-expansions.log`; post-S4.a, only the `integration/`-prefixed path is bundled at slice close. Audit-trail gap if `EXPAND_ENVELOPE=1` ever fires via the Edit hook (not via Python heredoc). Out-of-scope for the closing slice; future paper-cut surface.
 - One pre-existing OOS test failure: `test_inv004_turn1_token_budget` (env-dependent CC token measurement); not introduced by this merge.
+- **Substrate Slice 4 — SliceExtractor disk fallback** (post-merge surfaced). `scripts/cairn_query/extractors/slice.py:74` greps git log for slice-close commits with no disk fallback; the squash collapses those commits, leaving 4 of 5 `tests/unit/test_extractor_slice.py` tests RED on dev. Forward-fixed via `xfail(strict=True)` markers in the closeout commit; structural fix tracked as substrate Slice 4 (read from `.claude/sweep-results/` + `.claude/completed-slices/` in addition to git log). See L-015 + merge-protocol §Structural test-design mismatches.
 
 Phase-4 verification at slice close (feature-branch HEAD `7eaab1a`): 1065/1066 pytest pass (single OOS above); `validate_architecture.py` exit 0 (10 invariants verified); INV-003 + INV-008 PASS via substrate query; Closes-when items 1-12 PASS; item 13 (soft Phase-4 dogfood) SKIPPED per intent.
+
+#### Post-merge closeout (forward-fix on dev, 2026-04-27)
+
+- **`chore:` commit** — reset stale `.claude/current-slice/slice.yaml` to `id/name/status: none` stub; `git rm --cached .claude/handoff.md` (gitignored grandfather, per merge-protocol §Tree cleanup line 116).
+- **`docs:` closeout commit** — `docs/features/compression.md`; CLAUDE.md:26 line replaced with v1-standing-dep-set wording (ADR-mandated propagation); L-015 added; merge-protocol amended with §Structural test-design mismatches; ruff carry-over cleaned (24 → 0 errors); 4 `tests/unit/test_extractor_slice.py` tests `xfail(strict=True)`.
+- **Branches:** `feature/compression` renamed to `archive/compression` post-closeout; both `dev` and `archive/compression` pushed to origin.
 
 ### Identifier scheme merged to dev (2026-04-18)
 

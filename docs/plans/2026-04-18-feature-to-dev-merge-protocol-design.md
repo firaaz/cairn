@@ -242,6 +242,25 @@ chore: resolve <test-name> carry-over ahead of dev merge
 
 **Side effect:** any queued successor slice whose motivation was carry-over-failure gets retrimmed — its intent is now scoped to the broader fix, not the failure.
 
+## Structural test-design mismatches at the squash-merge boundary
+
+A class of test failure that does NOT manifest pre-merge (Checkpoint 1 green) but manifests post-merge (Checkpoint 2 red): tests that depend on the *commit-history representation* of slice/feature state, where the representation is changed by the squash itself. Example: an extractor greps `git log --grep='^slice: .* — complete$'` to enumerate slices; post-squash that grep returns zero on dev (per **Merge shape**, single squash with no per-slice subjects).
+
+This class differs from a pre-existing carry-over (resolvable by narrow patch on the feature branch) and from a substantive-bug regression (blocked by the merge gate). The Checkpoint-2 reset escape hatch (`git reset --hard HEAD~1`) does not help: re-merging produces the same red, because the squash *is* the cause.
+
+**Why forward-fix and not reset:** the structural mismatch is not introduced by the merge — it is *exposed* by the merge. The hard-reset escape hatch addresses introduction-class regressions. An exposure-class regression by definition cannot be unwound by reset, only by removing the coupling from the test/extractor code. Forward-fix on dev under xfail discipline preserves merge progress and tracks the fix without masking the regression.
+
+**Recovery procedure (forward-fix on dev):**
+
+1. Land a `chore:` commit covering any orthogonal Checkpoint-1 carry-overs missed pre-merge (ruff, etc.) so the protocol-mandated `docs:` commit stays interpretive.
+2. In the `docs:` closeout commit, mark the structurally-failing tests `@pytest.mark.xfail(strict=True, reason=...)` with the reason citing (a) the extraction site, (b) the squash-merge coupling, (c) the tracked follow-up slice that will restore extractor robustness. `strict=True` so the markers fail loudly when the follow-up slice ships and the tests go GREEN again.
+3. Add a lesson to `docs/lessons.md` naming the extractor-vs-history coupling pattern (first instance: L-015 — `scripts/cairn_query/extractors/slice.py:74`).
+4. Track the structural fix as a new slice. Typical shape: disk-fallback path for the extractor, reading from `.claude/sweep-results/` and `.claude/completed-slices/` (canonical slice state per ADR `slice-artifact-preservation`) in addition to git log. Out of scope for the merge.
+
+**Distinguishing this class from genuine post-merge regressions.** If a test fails post-squash and the failure is reproducible by re-running the same test against the *feature branch tip* (the pre-merge state), it is a pre-existing bug or a substantive regression — Checkpoint-2 reset still applies. The structural-mismatch class fails only at dev tip (or any post-squash linearization); it cannot be reproduced on the feature branch because the slice-shape commits are still present there.
+
+**Precedent:** first observed and forward-fixed at compression-merge (2026-04-27), commit `6cfa4d0` followed by closeout commit landing L-015 + the four xfail markers in `tests/unit/test_extractor_slice.py`. The disk-fallback follow-up is tracked as substrate Slice 4.
+
 ## Sequence & checkpoints
 
 ### Pre-flight (on `feature/<feature-id>`)

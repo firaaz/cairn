@@ -28,26 +28,26 @@ from __future__ import annotations
 # --- core: constants + pure helpers -----------------------------------------
 from .core import (
     AGENT_MODEL_CONFIG,
-    CLUSTERS_YAML,
-    CLUSTERS_YAML_LEGACY,
+    CLUSTERS_YAML,  # noqa: F401
+    CLUSTERS_YAML_LEGACY,  # noqa: F401
     DEBUG_DIR,
-    DEFAULT_HEARTBEAT_INTERVAL,
-    DEFAULT_HEARTBEAT_STALE,
+    DEFAULT_HEARTBEAT_INTERVAL,  # noqa: F401
+    DEFAULT_HEARTBEAT_STALE,  # noqa: F401
     DEFAULT_TIMEOUT_HARD,
-    INTENT_MD,
+    INTENT_MD,  # noqa: F401
     INV_009_COST_THRESHOLD_USD,
     INV_009_TOKEN_THRESHOLD,
-    NON_TERMINAL_STATUS,
+    NON_TERMINAL_STATUS,  # noqa: F401
     PERMISSION_MODE,
     PRICING_TABLE_2026_04_24,
     ROLE_FOR_PHASE,
     ROLE_TO_PHASE,
     SLICE_ID_REGEX,
-    SLICE_YAML,
-    STATUS_VALUES,
-    TERMINAL_STATUS,
-    TOKEN_CLASSES,
-    TRANSIENT_STDERR_RX,
+    SLICE_YAML,  # noqa: F401
+    STATUS_VALUES,  # noqa: F401
+    TERMINAL_STATUS,  # noqa: F401
+    TOKEN_CLASSES,  # noqa: F401
+    TRANSIENT_STDERR_RX,  # noqa: F401
     VALID_TRIAGER_ACTIONS,
     _active_pricing_table,
     _active_pricing_table_name,
@@ -88,7 +88,7 @@ from .telemetry import (
     _record_phase_cost,
     _register_atexit_terminal_writer,
     _start_heartbeat,
-    _state,
+    _state,  # noqa: F401
     _update_state,
     _write_cluster_log,
     _write_phase_log,
@@ -185,8 +185,8 @@ import yaml  # noqa: E402,F401
 # monkeypatches see the effect.
 # ---------------------------------------------------------------------------
 
-import sys as _sys
-import types as _types
+import sys as _sys  # noqa: E402
+import types as _types  # noqa: E402
 
 
 class _MirroringModule(_types.ModuleType):

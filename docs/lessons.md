@@ -277,3 +277,28 @@ The right choice depends on the pattern's frequency. Logged here as the watching
 
 **Mechanism**: this lesson names the pattern; the actionable directive lives in the **Load-bearing directive** paragraph above. Promotion to a Phase-2 prompt amendment (`.claude/agents/phase-2-skeptic.md`) is deferred — the directive is currently enforced by skeptic self-discipline plus operator review of `validation/approach.md`. If a future slice widens an enforcement set without surfacing inversion candidates and Phase 3 re-discovers the inversion, lift to a structural prompt edit modeled on L-008's "code, not prose" pattern.
 
+## L-015: Squash-merge collapses per-slice commits — extractors that depend on slice-shape commit history must have a disk-fallback path
+
+**Discovered**: 2026-04-27, post-squash of `feature/compression` into `dev` (commit `6cfa4d0`). Surfaced at Checkpoint-2 verification when 4 of 5 tests in `tests/unit/test_extractor_slice.py` flipped from GREEN (on the feature branch) to RED (on dev tip). Forward-fixed in the same `docs:` closeout commit that lands this lesson via `@pytest.mark.xfail(strict=True)` markers; the structural fix is tracked as substrate Slice 4.
+
+**Pattern**: Extraction code reads `git log --grep='^slice: .* — complete$'` (or any slice-shape commit-subject pattern) and silently returns zero results post-squash. The merge protocol (`docs/plans/2026-04-18-feature-to-dev-merge-protocol-design.md` §Merge-shape) collapses every intra-feature commit — including the per-slice `slice: <id> — complete` close commits the extractor depends on — into one `feat:` squash. The slice corpus on disk is unchanged; the *commit-history representation* of that corpus is destroyed at the merge boundary. Tests asserting "extractor returns ≥N slices," "extractor finds slice X," or "extractor emits PARENT edge to feature Y" silently fail at dev tip even though the underlying canonical state is intact.
+
+**Load-bearing directive**: Any extractor whose source-of-truth includes `git log` MUST have a disk-fallback path. Canonical slice state lives at `.claude/sweep-results/<slice-id>/` (per ADR `slice-artifact-preservation`) and `.claude/completed-slices/<slice-id>/` (failed/archived slices). Git log is a derived view — convenient on feature branches where slice-close commits are still present, but absent from dev by protocol design. The fallback is not optional: any extractor that breaks at the merge boundary also breaks any consumer that reads from dev (e.g. CI substrate rebuild on a dev runner).
+
+**Rationale (≤100w)**: Slice-shape commit subjects are an artifact of the slice pipeline's *internal* mechanics — they exist on feature branches, not on dev. The merge protocol §Merge-shape line 65 names this explicitly: intra-feature commits are session-state snapshots, not deliverables; preserving them in dev log is negative-signal. Coupling extraction to the internal commit shape conflates two layers (slice mechanics vs feature delivery) and inverts the protocol's intent: dev history is release-narrative; the canonical disk substrate (`.claude/sweep-results/`, `.claude/completed-slices/`) is where slice state actually lives. Extractors must read the substrate, not the substrate's pipeline-internal commit shape.
+
+**Concrete instance**: `scripts/cairn_query/extractors/slice.py:74` — single-source-of-truth git-log grep, no disk fallback. Surfaced via 4 of 5 tests in `tests/unit/test_extractor_slice.py` failing post-squash:
+
+- `test_extracts_at_least_four_slices` — asserts ≥4 slices; post-squash returns 0.
+- `test_extracts_lever_2_orchestrator_split` — asserts a specific compression slice present; post-squash returns 0.
+- `test_at_least_one_slice_touches_invariants` — asserts at least one slice has invariants_touched populated; post-squash empty corpus.
+- `test_emits_parent_edge_to_feature` — asserts PARENT edge for any compression slice; no nodes → no edges.
+
+The fifth test (`test_idempotent_at_fixed_head`) passes because both extractions return the same empty corpus.
+
+**Recovery (this incident)**: Forward-fix on dev under xfail discipline rather than the protocol's Checkpoint-2 hard-reset escape hatch. Reset would not help — the squash *is* the cause; re-merging produces the same red. The protocol now documents this class explicitly under §Structural test-design mismatches at the squash-merge boundary (added in the same closeout commit that lands this lesson). Substrate Slice 4 ships the structural fix (disk fallback in `slice.py`); xfail markers carry `strict=True` so they fail loudly when the slice lands and the tests go GREEN again.
+
+**Anti-pattern signals**: "git log is the natural source of truth," "the slice subjects are stable across the codebase," "the squash-merge is a one-time event — handle it once and move on," "this only matters at dev tip, not on feature branches where the orchestrator runs," "the extractor's own tests are GREEN on the feature branch, so the design is fine." All five are internally plausible. None survive Checkpoint-2 the first time a feature with extractors-vs-history coupling lands.
+
+**Mechanism**: this lesson names the pattern; substrate Slice 4 ships the structural fix in `scripts/cairn_query/extractors/slice.py`; the merge-protocol amendment ships the recovery procedure for the next instance. If another extractor type (decision, lesson, feature) is later added with the same git-log-only coupling, lift the disk-fallback into a shared helper rather than re-implementing per-extractor.
+

@@ -5,10 +5,10 @@ Exposes:
 - SnapshotLRU: in-process LRU keyed by git SHA
 - sources_changed_since: mtime fingerprint comparison
 """
+
 from __future__ import annotations
 
 from collections import OrderedDict
-from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +16,6 @@ import kuzu
 
 from .models import (
     Decision,
-    Entity,
     Feature,
     Invariant,
     Lesson,
@@ -135,24 +134,18 @@ def _flat_to_entity(entity_type: str, props: dict) -> Any:
         kwargs.setdefault("grep", "")
 
     elif entity_type == "decision":
-        kwargs["body_anchor"] = PathAnchor(
-            path=kwargs.pop("body_path", "") or ""
-        )
+        kwargs["body_anchor"] = PathAnchor(path=kwargs.pop("body_path", "") or "")
         # List fields not stored as node props
         for f in ("invariants_touched", "supersedes", "decision_points"):
             kwargs.setdefault(f, [])
 
     elif entity_type == "lesson":
-        kwargs["body_anchor"] = PathAnchor(
-            path=kwargs.pop("body_path", "") or ""
-        )
+        kwargs["body_anchor"] = PathAnchor(path=kwargs.pop("body_path", "") or "")
         for f in ("instances", "anti_patterns"):
             kwargs.setdefault(f, [])
 
     elif entity_type == "spec_section":
-        kwargs["body_anchor"] = PathAnchor(
-            path=kwargs.pop("body_path", "") or ""
-        )
+        kwargs["body_anchor"] = PathAnchor(path=kwargs.pop("body_path", "") or "")
 
     elif entity_type == "op_rule":
         line = kwargs.pop("body_line", None)
@@ -356,9 +349,7 @@ class SnapshotLRU:
 # ---------------------------------------------------------------------------
 
 
-def sources_changed_since(
-    manifest: dict[str, float], sources: list[Path]
-) -> bool:
+def sources_changed_since(manifest: dict[str, float], sources: list[Path]) -> bool:
     """Return True if any source's mtime differs from the manifest or is missing."""
     for src in sources:
         if not src.exists():
