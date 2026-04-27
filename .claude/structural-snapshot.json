@@ -1,4 +1,8 @@
 {
+  "checks/role_guard.py": {
+    "hash": "589df02c4593d4801c972ed05aac0a1507387536df2333c7be7f2a7058059896",
+    "size": 2998
+  },
   "commands/claude-code/catchup.full.md": {
     "hash": "f3fadb3e43f6e5ecf2ddfc34dff5fb447dcd69948acfa4d624a2fac147ea000b",
     "size": 9792
@@ -47,13 +51,17 @@
     "hash": "3c59e7dd067cad282accc7c27a010b4f5d5035cf85a672b7c8421005137a70b5",
     "size": 1308
   },
+  "commands/claude-code/start-slice-legacy.md": {
+    "hash": "7d077390ef818184796b7794b202899391c17d9aefbcf10d793bd61024a19e1e",
+    "size": 796
+  },
   "commands/claude-code/start-slice.full.md": {
     "hash": "09c142a76ac6717fc7bad30dee68b4a6ed6e95817fa946803000db8fa8d99cac",
     "size": 20443
   },
   "commands/claude-code/start-slice.md": {
-    "hash": "27471c05d2c046f392ea1ba221c58c98d20847101438aca6547b581f0921bbeb",
-    "size": 1903
+    "hash": "7ab28a8dd767efd4c63762b6578a812fe218894a9791ee53a8604dae9b70659e",
+    "size": 1649
   },
   "commands/claude-code/status.full.md": {
     "hash": "3e7ed7c5f843b358357447b293e317e8f47db6278941bbe495a22a8b3acaf69d",
@@ -64,8 +72,8 @@
     "size": 1339
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "045228aa737c657792f71fce425f92235d69c764115972e8a2b90b54f3ad0b24",
-    "size": 18357
+    "hash": "bc2f7ab5fb62bd8e62f97b8086add5cb6c36fa2704d8b7f7e9fb6d206ef0b8d6",
+    "size": 23821
   },
   "docs/adr/bootstrap-exception.md": {
     "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
@@ -74,6 +82,10 @@
   "docs/adr/cliff-failure-mode-and-v1-defenses.md": {
     "hash": "749b0a252b696eaf6db948cb07431618ab5cf198a0b8242d670fccf1a546a165",
     "size": 25505
+  },
+  "docs/adr/compression-infrastructure-bootstrap.md": {
+    "hash": "a741d5192b871214af93cae3b3d661fa8cea3143148ac2316c8d4f9f5869aa3a",
+    "size": 11297
   },
   "docs/adr/context-discipline-protocol.md": {
     "hash": "a35f2aafa25f381e40dcdd60eba382b7e9b1c30458da88732c11d515d7096c2b",
@@ -84,8 +96,8 @@
     "size": 6437
   },
   "docs/adr/d3-bypass-classification.md": {
-    "hash": "d9cc707c7190ec908d67c139a46fed549e9117fbe09ba7e12ce05fce1d82dde3",
-    "size": 10645
+    "hash": "8f537442317ddf08a0f695293110dfdbb0bbbbe40ea14a907c7baba4d580b29d",
+    "size": 10641
   },
   "docs/adr/feature-slice-model.md": {
     "hash": "194400340f3dafded111fe88017eda64100730b3f433998a04338d8cac9b248c",
@@ -96,8 +108,12 @@
     "size": 16093
   },
   "docs/adr/index.md": {
-    "hash": "09a292bad5e338d6018414c1a25246bfb7b42aae588021cbce0a5dc11c83863d",
-    "size": 1392
+    "hash": "133f0e8a7ab752fec6dad6d376d38590f0ad30c3ef2b7adb5158a7d6cb29dfee",
+    "size": 1903
+  },
+  "docs/adr/orchestrator-observability.md": {
+    "hash": "ef1a4cc025459d7705ce8cad54e9b8e216874c41d8ef61747c937534af2ed923",
+    "size": 14972
   },
   "docs/adr/parallelism-v1.md": {
     "hash": "f86951edf42f2a310804341a56a95e174c24577b82cfbab2aed034e69cc96f7c",
@@ -115,17 +131,25 @@
     "hash": "480dff8cf37db816409c48abafe7b3c8aedadf7b36017641888f787f949a34aa",
     "size": 5551
   },
+  "docs/adr/slice-close-contract.md": {
+    "hash": "dc1617a02c243e2cbac7551fc4fe837ffbf0cb4f919a9b9062d87397919be5a7",
+    "size": 29448
+  },
   "docs/dogfood-log.md": {
-    "hash": "be243b422e2632df3da78b2ad84a81271ce4ace4e60678e286dc61df20193e01",
-    "size": 292
+    "hash": "c79a5883d8047de98943d7cdf9e979f514782bacec5333e206d7cc0aba9d963b",
+    "size": 319
+  },
+  "docs/features/identifier-scheme.md": {
+    "hash": "390de86f6771dc3e8cde6325efccfcbde5e3a3e75be5b34ad3d83258a0c2bad7",
+    "size": 3516
   },
   "docs/lessons.md": {
-    "hash": "6b10f4fcc7ad92150a86cbb00a066fcbdf1bd8f82b1bd781d01fe5bdde01e2f9",
-    "size": 20493
+    "hash": "d07d65eb82f3da7afa5bc9c70b62f19e90f4c403c9c58d3e02e49465698c382f",
+    "size": 27449
   },
   "docs/operational-reference.md": {
-    "hash": "62d3e2a0f719e87ae686c3caa737a7aef4e8fb30ab694c69c855cf85fb6fff45",
-    "size": 28176
+    "hash": "dc8915eb5fe37fa812e6624d17de5e6185f355c5bd85d17b883a8ee6b1b342cb",
+    "size": 32309
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -171,9 +195,21 @@
     "hash": "1c69d233750e5979c98589d070d8d2afb79949af101c0477b6e200bf49c6582f",
     "size": 13700
   },
+  "docs/plans/2026-04-16-dogfood-observations.md": {
+    "hash": "c2c1f0398dcea673a422ed61d9c5cac54cfd1d691c85141d787ea582efb54530",
+    "size": 20840
+  },
   "docs/plans/2026-04-16-manual-dogfood-tmux-topology-design.md": {
     "hash": "8292aad178c519eedf0eb026ab821b4a63439f7a7c14833a8b91ba902dbee6c2",
     "size": 9890
+  },
+  "docs/plans/2026-04-16-manual-parallel-dogfood.md": {
+    "hash": "a2d13a4fc2e4ee62bdc223b6f2f27015fff3ebeca69126f8e36191942fb02181",
+    "size": 10237
+  },
+  "docs/plans/2026-04-16-slice-018-d3-oob.md": {
+    "hash": "eaf327e5ec0669500ad96667d42be68afadd141776f82fa1a1b1af06d0bfae74",
+    "size": 1775
   },
   "docs/plans/2026-04-17-coordinator-worker-communication-design.md": {
     "hash": "9f36731891c8253cbea626a58f61c904a6c869a39bcd36a5ae5f1464f5c43af3",
@@ -219,6 +255,14 @@
     "hash": "e0057bd272c33db4ae8d2e5a7334f63dac7e53241ffe72fd95f8189298535ec2",
     "size": 13505
   },
+  "docs/plans/2026-04-18-feature-to-dev-merge-protocol-design.md": {
+    "hash": "e438e557d48aa031f0bbca37eaf1f911727f9629f28a353b9af0f20ca17fc945",
+    "size": 18378
+  },
+  "docs/plans/2026-04-18-feature-to-dev-merge-protocol-plan.md": {
+    "hash": "c29b281204f70a5df69de4963dd57dffb5b72c3624636a446cef47ff9e0585e2",
+    "size": 32493
+  },
   "docs/plans/2026-04-18-session-compression-audit.md": {
     "hash": "60171be6e5421dc2080021894cb24f94ae96823918e890417f85de05955051f3",
     "size": 8574
@@ -230,6 +274,30 @@
   "docs/plans/2026-04-18-slice-compression-protocol-plan.md": {
     "hash": "6b52708d52a91ffe443308710df3b9298fed0e66dbe6276b22b9a0da31134dd4",
     "size": 58150
+  },
+  "docs/plans/2026-04-20-a1-spike-results.md": {
+    "hash": "7553b0101b88dd4b3c621489c9a3f95cf93ea23f3f3795ec3cb34aec0253ca00",
+    "size": 5045
+  },
+  "docs/plans/2026-04-20-compression-pipeline-hardening-design.md": {
+    "hash": "65683678dac671557001c566147991dfa96fe0e256e08fcd18400ada1018a657",
+    "size": 20274
+  },
+  "docs/plans/2026-04-20-compression-pipeline-hardening-plan.md": {
+    "hash": "7e48c78d6b77c3d14a02369381f59eb68369703763a12c7ac5ffb2202b75fb82",
+    "size": 47550
+  },
+  "docs/plans/2026-04-20-observability-and-close-slice-brainstorm.md": {
+    "hash": "6dc54738acca1172fb86124892aafaa0f5ba5c7983b707a2d58249f543888ac1",
+    "size": 20743
+  },
+  "docs/plans/2026-04-20-observability-and-close-slice-design.md": {
+    "hash": "7db5ea41e4bd5672ba12bec15b746c348374c2b71c55824e00ec3daecd79c089",
+    "size": 35489
+  },
+  "docs/plans/2026-04-20-observability-and-close-slice-plan.md": {
+    "hash": "965a51c15f37025d692f98418a0835b407bf5be788d12acaa890c62a604474f2",
+    "size": 31417
   },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
@@ -255,6 +323,10 @@
     "hash": "1f7c9562cb3cec07632bac7c004cb65c4b0f3366235bb868bb6a0dd732d1c294",
     "size": 5014
   },
+  "scripts/slice_orchestrator.py": {
+    "hash": "945edddffcc1fcf46ff2291353304b534d497b720268db20fcb9478629ec502e",
+    "size": 60170
+  },
   "scripts/snapshot_diff.py": {
     "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
     "size": 5832
@@ -262,6 +334,18 @@
   "scripts/validate_architecture.py": {
     "hash": "ba0743516eed8453418a088cdb86218875348deaf84e4153ea320fbdc6141e8d",
     "size": 16162
+  },
+  "tests/integration/__init__.py": {
+    "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size": 0
+  },
+  "tests/integration/test_compressed_slice_end_to_end.py": {
+    "hash": "999cf72eea6aa105d1f79046101b2c3192d0864cfcda8b265fa01d8e92ef34de",
+    "size": 9667
+  },
+  "tests/integration/test_signal_observability.py": {
+    "hash": "43372c5e58f2f8a46f66d27645c0827c81feeada622c804e9d5b9aaee6943128",
+    "size": 5561
   },
   "tests/unit/efficiency_program/__init__.py": {
     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -300,28 +384,52 @@
     "size": 8746
   },
   "tests/unit/test_adr_rename_sweep.py": {
-    "hash": "82af52d3bac2d06beec4752865107f4d399cef9a019a5fea54ec52f1c92db768",
-    "size": 18255
+    "hash": "0e2775fddcc1814a6f39e99bb7a589c2b87df00b8a92d4581dd6d1aa7874a730",
+    "size": 33766
+  },
+  "tests/unit/test_agent_prompt_updates.py": {
+    "hash": "2a6d13ad0c0f9f489bcaf606ed0f61bd462b778fe9f06c7b70ab54c36b1a7dfd",
+    "size": 3443
+  },
+  "tests/unit/test_close_slice_hardened.py": {
+    "hash": "53244b6008c7199c9ae63427ced0bb45579ac1e20cab554d3d646b1f92dcbfb8",
+    "size": 11402
+  },
+  "tests/unit/test_close_slice_invocation.py": {
+    "hash": "0a26f514cd3e82fd2f5b92813b360e1e772b76c9c8504250d220540dee67775e",
+    "size": 4317
   },
   "tests/unit/test_context_budget.py": {
-    "hash": "b162e0c3292b5946e8c536f7a4b7c5d596737b4c8864eda07feffebc8a691bae",
-    "size": 9480
+    "hash": "d5d31ac13a07dc3f88ac2942b7d1680b957e605f7b6a192ba96c61c011d57492",
+    "size": 11448
   },
   "tests/unit/test_context_discipline_protocol.py": {
     "hash": "96a847111618f7f5364f70faf2bcc834f87db4cf1a231173a605ed257eccbf64",
     "size": 13016
+  },
+  "tests/unit/test_cross_slice_isolation.py": {
+    "hash": "61a059cbeab7ab566290fb39ccb60a0c0f8f1fe8be909a1d5136abbbd5e06168",
+    "size": 3607
   },
   "tests/unit/test_d1_gate.py": {
     "hash": "f6a687d16af2c9e3013d9c5860d19007af05d423ee3a85788d0b15c84b4ac0df",
     "size": 12100
   },
   "tests/unit/test_d3_bypass_log_format.py": {
-    "hash": "25deccd9be3afb8f886ed76aef7f4606369daa1d8adaf072b3bbe66e5e3e30be",
-    "size": 5289
+    "hash": "a503d29a8ec6f90b6c0af51b0b97989db8106c2bae48d0b290bbf8e67c04e76d",
+    "size": 5417
+  },
+  "tests/unit/test_dispatch_contract_separation.py": {
+    "hash": "ac51b8a14cd90cccff73a6521dd55069fb442e552c5274ba832c618070bb737e",
+    "size": 7462
   },
   "tests/unit/test_dogfood_evaluate.py": {
     "hash": "655a927b0dffdd78efeef0e94a5b25f2d68f1e6205766dd1c94c4a67109f48af",
     "size": 27516
+  },
+  "tests/unit/test_failed_classification_backoff.py": {
+    "hash": "e1ca25a28be9059c6191a49ab29cf2d15c96cbf6c45764d71344405a12c531bb",
+    "size": 5547
   },
   "tests/unit/test_feature_cross_index.py": {
     "hash": "d69b597bcac5506012f96ce826f773a9275f197ba05407ae7d5c752231a3efc5",
@@ -339,6 +447,14 @@
     "hash": "0ffec1b22a38e96242548959bcf0759d4f36066ec469e3a523a9c31c777100db",
     "size": 8976
   },
+  "tests/unit/test_git_helper_check.py": {
+    "hash": "2974d5ac626a6d36477ffb25c122cbcbc1105dd6e2ebfe8f4c0779b04a1ca6ff",
+    "size": 2193
+  },
+  "tests/unit/test_heartbeat.py": {
+    "hash": "a057d1faa77626110988c05d6581129c05df6c6f52d38f09bbe908583ff5dc9b",
+    "size": 6168
+  },
   "tests/unit/test_hook_relpath_bypass.py": {
     "hash": "4deb6402c26aaeb9768ba49ee34961106b8f9a78bbfb164ac4e9dbc285075c31",
     "size": 24585
@@ -346,6 +462,10 @@
   "tests/unit/test_hook_tolerance.py": {
     "hash": "d1f9fdd7d94d8f1655aec32c904c452c10d3d8f9fe8044f174d57312f8920015",
     "size": 17240
+  },
+  "tests/unit/test_housekeeping_post_slice_a_tidy.py": {
+    "hash": "ca719ade0fb6188332236d6e6be98a6f05ce13e4264d5feb02c347ed064d05db",
+    "size": 4956
   },
   "tests/unit/test_identifier_scheme_sweep.py": {
     "hash": "86380c2920a45ba008ad86a60938d63f91b8fa95f27f49cff85a74030bfb6baa",
@@ -364,16 +484,76 @@
     "size": 6971
   },
   "tests/unit/test_invariant_assertions.py": {
-    "hash": "c61de0bca3fb9919a2bc747c2351d62143d0c70217283e8c8553610476577db0",
-    "size": 50807
+    "hash": "df10429d72298807cf7d525ea03c9376819023524d73941ecea701c9406618b7",
+    "size": 50872
+  },
+  "tests/unit/test_malformed_slice_yaml.py": {
+    "hash": "0f98ff7e010fbc1d07238e37eb49c3f79f3086c5be7bd7e53d7486e431d6da6c",
+    "size": 1799
+  },
+  "tests/unit/test_multiline_json_tail.py": {
+    "hash": "96d4b8ccf6ac10324ffe52d1b5faa1da5c89a61d7ee9ece8b366438d791b6c01",
+    "size": 3342
+  },
+  "tests/unit/test_observability_writer.py": {
+    "hash": "2a734d75d5a69dc55579bb43a264c25f8f35b6179394d8f63da4d3e93868df24",
+    "size": 7604
+  },
+  "tests/unit/test_orchestrator_bug_fixes.py": {
+    "hash": "a32821756fcd709f2b414be374134bec38a5c025eb90db62fb297c5dabbabe47",
+    "size": 13611
+  },
+  "tests/unit/test_orchestrator_live_stderr.py": {
+    "hash": "4c5dcf19953ce772e506c13234ddbbf950576090cf7e13cee9bcdb4206df3ff9",
+    "size": 6677
+  },
+  "tests/unit/test_phase_3_empty_cluster_guard.py": {
+    "hash": "2fabaed98a325c4eb18f3f7f55970bb62c5893f73462e345d9099307ee0f6170",
+    "size": 4489
+  },
+  "tests/unit/test_phase_3_per_cluster_logs.py": {
+    "hash": "f38b7d10602d07c83550e5f04fe82d88d0ed2c46666357b55c57ab54b77d9afb",
+    "size": 3372
   },
   "tests/unit/test_phase_rethink.py": {
-    "hash": "2d8aa1ce650c398fd3c8bf9df9ffb57cf99c4f7f834cddf364634b56fb61dbf1",
-    "size": 11133
+    "hash": "a1daec1cd0d44c0d99f79b63443cf992bbcb4332136363445e5f1e9d3eb5c935",
+    "size": 11529
+  },
+  "tests/unit/test_post_timeout_reconcile.py": {
+    "hash": "8fceeeb93d1753e5734b267892742b610f08a9bed2bc9713bfd166632bed3805",
+    "size": 3800
   },
   "tests/unit/test_progressive_disclosure.py": {
     "hash": "332c7165979e57cfe38a7c65a702b07ca558cd28a23229c24c51a5b638bdff46",
     "size": 8536
+  },
+  "tests/unit/test_redispatch_cap.py": {
+    "hash": "7fc13aa4792635ddc7b323d39682837e963a8593e437f5150b43fec29ad7c6c3",
+    "size": 3245
+  },
+  "tests/unit/test_redispatch_persistence.py": {
+    "hash": "388502d7c4dbcaace0cd365b2d39a5b13661a0770cd8a4b7c689e85b57e4d2f0",
+    "size": 5220
+  },
+  "tests/unit/test_resume_reconcile.py": {
+    "hash": "086d93c9062e9edaac346262b1d1898cdddc834e6480ec212c9c2706b642bb52",
+    "size": 9983
+  },
+  "tests/unit/test_role_guard.py": {
+    "hash": "c8f1ec544895eb8ee14148efba955094c3be7a919325bf92ac28986a2c014f3c",
+    "size": 6532
+  },
+  "tests/unit/test_role_guard_envelope_json.py": {
+    "hash": "7c2cc53bb535133a76f6ee262d63044427daedbf69fc7fb41ef92e066e0f2573",
+    "size": 2614
+  },
+  "tests/unit/test_role_guard_wired.py": {
+    "hash": "7820093d9fa9cfddfd5a29391263fb052a012a725b11bd5b88fe6e053053850e",
+    "size": 3818
+  },
+  "tests/unit/test_signal_handler.py": {
+    "hash": "673e634ea5a4c57bd55c7aa5fe66578be9184130223b1a1258c2df007f0bdd98",
+    "size": 3842
   },
   "tests/unit/test_slice_003_precursor.py": {
     "hash": "32b73f194510ebc54a8f3cbab374026042869b0519bfbc9ee22aef19e3035b83",
@@ -383,16 +563,36 @@
     "hash": "4925964d367989e830f00553e76b59ea0c7bf01ce1f1c3fe7cf2185c0d8960cd",
     "size": 17472
   },
+  "tests/unit/test_slice_id_derivation.py": {
+    "hash": "6e32b9f118ab0c3f9a0fbc270de4e2cfb6e39ef5a3c6ffbc2ae4e886ae4fe344",
+    "size": 1546
+  },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
     "size": 20429
+  },
+  "tests/unit/test_state_schema.py": {
+    "hash": "f7a9788a999435676e8d26aeff37b4469dc888c2e5f61bf8f63c3287657bc87a",
+    "size": 2942
   },
   "tests/unit/test_sweep_debt_cleanup.py": {
     "hash": "44b5d2998f6d2fc39f0b0dac5b225e3345896edb2a1ca822bf02d8fd63e86f12",
     "size": 5890
   },
+  "tests/unit/test_triager_superseded_heuristic.py": {
+    "hash": "b4a87ec934207f20ffc6761450a83037ea1e23492d5f8d9dd9e70e71a5cd4467",
+    "size": 14405
+  },
   "tests/unit/test_validate_architecture.py": {
     "hash": "63b918c4a3eb3bbf5db4668bf9b4972b9e9956f66ac1613039e3c075e980642a",
     "size": 24662
+  },
+  "tests/unit/test_yaml_brief_round_trip.py": {
+    "hash": "cb3bbddc089af38a7e0e66a763f82a305757b3799db41b934846b1848b751eca",
+    "size": 2092
+  },
+  "tests/unit/test_yaml_clusters_schema.py": {
+    "hash": "4cb16e83828256c330e2b965a84792b858712810b5228ce71b5863db4a6d7d7f",
+    "size": 1920
   }
 }

@@ -13,3 +13,8 @@
 | phase-pipeline-evaluation | Phase Pipeline Evaluation — Confirmation of Four-Phase Structure | accepted | firm | process | 2026-04-13 |
 | identifier-scheme | Identifier scheme — id + name two-field model | accepted | firm | naming | 2026-04-15 |
 | d3-bypass-classification | D3 bypass classification — three-class reason schema + envelope exemptions | accepted | provisional | scope | 2026-04-16 |
+| compression-infrastructure-bootstrap | Compression-infrastructure bootstrap — narrow authorization for role_guard.py hook | accepted | provisional | process | 2026-04-19 |
+| slice-close-contract | Slice-close contract — idempotent close, sole commit source, cross-slice isolation | accepted | firm | process | 2026-04-20 |
+| orchestrator-observability | Orchestrator observability — JSON canonical, MD derived, forward-compat schema, deferred retention | accepted | provisional | process | 2026-04-20 |
+| slice-artifact-preservation | Slice artifact preservation — pre-wipe snapshots of phase ephemerals | accepted | firm | process | 2026-04-26 |
+| cairn-substrate-and-fastmcp | Cairn substrate — v1 dep set, FastMCP adapter, agent-context structural lockdown | accepted | firm | architecture | 2026-04-26 |

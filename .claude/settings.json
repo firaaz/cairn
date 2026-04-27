@@ -14,7 +14,13 @@
       "Bash(uv run pytest *)",
       "Bash(uv run ruff *)",
       "Bash(shellcheck *)",
-      "Bash(jq *)"
+      "Bash(jq *)",
+      "Write(.claude/current-slice/validation/**)",
+      "Write(.claude/current-slice/implementation/**)",
+      "Write(.claude/current-slice/integration/**)",
+      "Edit(.claude/current-slice/validation/**)",
+      "Edit(.claude/current-slice/implementation/**)",
+      "Edit(.claude/current-slice/integration/**)"
     ]
   },
   "hooks": {
@@ -44,6 +50,15 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.slice-system/checks/scope-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python $CLAUDE_PROJECT_DIR/.slice-system/checks/role_guard.py"
           }
         ]
       }

@@ -23,6 +23,7 @@ Rendered below the lite dashboard when loaded:
 2. **ADR registry** — `ls docs/adr/*.md`; for each, print `id · name · status · firmness`.
 3. **Feature registry** — `.claude/features/*.yaml`; for each, print `id · name · slice count · last-slice-status`.
 4. **Active slice dump** — full `slice.yaml` contents, plus the file list under `.claude/current-slice/` with sizes.
+5. **Cost (this slice)** — one line pulled from the active slice's `<slug>-result.json` (`tokens_total`, `cost_total_usd`, `model_by_phase`) or the last-closed slice's result if no slice is active. Per-slice only — the expanded view reports one cost line for the current or most recent slice. Prior slices' totals are not summed in. INV-009 advisory at introduction (warn on provisional thresholds; fails loudly once thresholds go numeric).
 
 ### Debug
 

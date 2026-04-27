@@ -64,6 +64,23 @@ case "$status" in
   complete|failed) emit_generic ;;
 esac
 
+# Translate orchestrator schema to the phase-name format expected by the
+# case below. The slice orchestrator (scripts/slice_orchestrator/) writes
+# status="in-progress" + current_phase=<int>; the legacy prose protocol
+# wrote status=<phase-name> directly. Both shapes must work — without
+# this translation, a Phase-4 integrator agent dispatched by the
+# orchestrator reads a "No active slice" SessionStart line and may refuse
+# to run despite the slice being live.
+current_phase=$(sed -n 's/^current_phase:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$SLICE_YAML" 2>/dev/null | head -n1) || current_phase=""
+if [ "$status" = "in-progress" ] && [ -n "$current_phase" ]; then
+  case "$current_phase" in
+    1) status="1-intent" ;;
+    2) status="2-validation" ;;
+    3) status="3-implementation" ;;
+    4) status="4-integration" ;;
+  esac
+fi
+
 case "$status" in
   1-intent)
     phase_num=1

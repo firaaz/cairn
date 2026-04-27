@@ -13,6 +13,14 @@ venv/
 # Local dev state
 .claude/handoff.md
 .claude/adr-editorial-fixes.log
+.claude/orchestrator-debug/
 
 # Git worktrees (project-local, never tracked)
 .worktrees/
+
+# slice-artifact-preservation: pre-wipe snapshots of phase ephemerals.
+# Derived from .claude/current-slice/ at close; analytical use only.
+.claude/sweep-results/*/artifacts/
+
+# substrate index (derived; rebuildable from sources)
+.claude/cairn_query/

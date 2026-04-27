@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cairn-knowledge": {
+      "command": "python",
+      "args": ["-m", "mcp_servers.cairn_knowledge"],
+      "transport": "stdio"
+    }
+  }
+}

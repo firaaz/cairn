@@ -330,6 +330,99 @@ Three hooks wired in `.claude/settings.json`:
 
 Hooks are friction-plus-walls, not security boundaries. A determined or careless agent can route around the friction layer; the wall layer (the explicit patterns above) holds.
 
+## Cost telemetry (Track 0)
+
+Track 0 of the cost-discipline program lands per-phase token-usage and dollar-cost telemetry in the orchestrator's observability artifact. Three operator-facing surfaces:
+
+### PRICING_TABLE_<date> constant convention
+
+`scripts/slice_orchestrator/core.py` carries a dated module-level constant whose name matches the regex `^PRICING_TABLE_\d{4}_\d{2}_\d{2}$` (example: `PRICING_TABLE_2026_04_24`). The dating is **load-bearing**: pricing changes ship as **new** dated constants in visible commits, not silent edits to a single mutable table. `_init_state_dict` deep-copies the current dated table into the per-slice `pricing_snapshot` field so archived slices stay reinterpretable at their cost-at-the-time. When a vendor price changes, a dedicated housekeeping slice lands a new `PRICING_TABLE_<new-date>` constant and retires the old one by reference only — prior slices' `pricing_snapshot` values continue to reflect the pricing in force at the time they ran.
+
+Shape per model entry: `{"input_per_1k": float, "cache_creation_per_1k": float, "cache_read_per_1k": float, "output_per_1k": float}` — all four token classes must be priced for every dispatched model.
+
+### INV-009 — cost-per-slice budget (provisional, advisory-only at introduction)
+
+INV-009 asserts `tokens_total ≤ INV_009_TOKEN_THRESHOLD` AND `cost_total_usd ≤ INV_009_COST_THRESHOLD_USD` against the active slice's `<slug>-result.json`. Both module constants default to `None` at introduction — the check emits a `UserWarning` ("INV-009 advisory: thresholds TBD at introduction") and does not fail. INV-009 is **advisory-only** while thresholds are `None`; once a rebaseline slice substitutes numeric values, the same check body raises on breach.
+
+**Rebaseline procedure** (mirrors INV-004's re-baseline precedent). When either (a) a compounding floor change lands that crosses the then-current threshold, or (b) the first set of numeric thresholds needs choosing, a dedicated `housekeeping/inv009-rebaseline-<reason>` slice:
+
+1. Re-runs telemetry against three recent closed slices (or accepts the forward-only baseline of the next three slices).
+2. Sets thresholds at `ceil(p75 × 1.25)` of those data points.
+3. Records baseline data points in `docs/adr/cost-per-slice-budget.md`.
+4. Flips `INV_009_COST_THRESHOLD_USD` / `INV_009_TOKEN_THRESHOLD` from `None` to the numeric values.
+
+INV-009 promotes from `firmness: provisional` to `firm` after either one rebaseline cycle demonstrates discipline, or a consumer project other than portfolio adopts the invariant (see `docs/adr/cost-per-slice-budget.md`).
+
+### Cost section in `<slug>-result.md` and one-line `/status` surfacing
+
+The `_generate_result_md` projection of the observability state emits a `## Cost` section on terminal transitions (cadence unchanged per `orchestrator-observability` D5). Content:
+
+- One totals line: `Total: <N> tokens, $<X.XX> USD`.
+- One table: `phase | model | tokens | USD` — one row per populated phase in `phases_completed`.
+- One footer: `pricing: PRICING_TABLE_<date>` (constant name, not the full table).
+
+`/status` surfaces one cost line — **per-slice only, not cumulative** (see `docs/adr/cost-per-slice-budget.md` §OQ#2). When a slice is active, it shows that slice's running cost; when none is active, it shows the last-closed slice's total. The expanded `/status full` view adds model attribution from `model_by_phase`. INV-004's token budget on `/status` output is preserved — one line each, bounded.
+
+## Environment variables
+
+Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "no hardcoded timeouts/sizes in consumer-facing scripts" — every script that reads a knob falls back to a documented default.
+
+| Var | Default | Read by | Purpose |
+|---|---|---|---|
+| `CAIRN_PHASE_1_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Hard ceiling on a `phase-1-writer` dispatch. Returns `FAILED` with a timeout summary on overrun. |
+| `CAIRN_PHASE_2_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for `phase-2-skeptic`. |
+| `CAIRN_PHASE_3_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for each parallel `phase-3-implementer` cluster dispatch. |
+| `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for `phase-4-integrator`. |
+| `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
+| `CAIRN_HEARTBEAT_INTERVAL` | `10.0` (s) | `scripts/slice_orchestrator/` | Cadence (seconds) at which the orchestrator heartbeat daemon touches `.claude/current-slice/.heartbeat` with a UTC ISO timestamp. Lower = finer-grained liveness, more write pressure. Per ADR `orchestrator-observability`. |
+
+#### Triager superseded-test heuristic (advisory)
+
+Before `dispatch_triager` invokes the `issue-triager` agent, the orchestrator reads the RAISE_ISSUE commit body (`git log -1 --format=%B <hash>`) and `.claude/current-slice/intent.md`, then runs `detect_superseded_test_signal` in `scripts/slice_orchestrator/core.py`. On a hit, an advisory `supersession_hint = {"hint": "likely_superseded", "evidence": [...]}` is added to the JSON inputs handed to the triager. The hint fires when the commit body contains any of:
+
+- `\bsuperseded?\b` (root `supersede`/`superseded`; trailing `s` as in `supersedes` deliberately excluded);
+- `\bINV-\d{3}\b` (fires regardless of intent);
+- `\bDC-\d+\b` **and** the same `DC-<n>` token appears in the current slice's `intent.md` (AND-gated so unrelated DC references in quoted ADR prose do not fire).
+
+Matching is case-insensitive. The hint is **advisory**: the orchestrator does not second-guess the triager's final action — it only surfaces the signal so the triager can prefer `ESCALATE_TO_USER` with rationale "test-amendment recommended" over `RE_DISPATCH`-to-Phase-2 when pre-existing tests are named that a firm contract just landed supersedes. Fails open: any git/filesystem error leaves the triager inputs pristine. Pattern traced to memory `triager_misroute_on_superseded_tests.md` (2026-04-20→21).
+
+| `CAIRN_HEARTBEAT_STALE` | `30.0` (s) | `scripts/slice_orchestrator/` | Staleness threshold (seconds) after which a `.heartbeat` timestamp is treated as advisory-stale by slice-close-contract D4 tooling. Should be ≥ 2× `CAIRN_HEARTBEAT_INTERVAL`. |
+| `CAIRN_LEGACY_START_SLICE` | unset | `commands/claude-code/start-slice.md` | When set to any non-empty value, `/start-slice` defers to `start-slice-legacy.md`'s prose protocol instead of invoking the orchestrator. Equivalent to passing `--legacy`. |
+| `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → hook is a no-op (non-compressed slices unaffected). |
+| `AGENT_ENVELOPE` | unset | `checks/role_guard.py`, `scripts/slice_orchestrator/dispatch.py` | Two accepted shapes. **JSON array** (phase-3-implementer): list of regex strings controlling allowed write paths; empty/unset denies all writes. **JSON object** (phase-1-writer, set by the orchestrator at dispatch): `{"paths": [...], "cairn_query_snapshot": "<sha>"}` — `paths` grants Read on locked-down canonical-knowledge sources (ADR D9 envelope-grant escape), `cairn_query_snapshot` pins the corpus snapshot for the MCP session. On git failure, `cairn_query_snapshot` is the sentinel `unknown-sha-<ISO8601>` (ADR D12). |
+| `EXPAND_ENVELOPE` | unset | `checks/scope-guard.sh` | Override for the slice envelope; logs to `.claude/current-slice/envelope-expansions.log`. |
+| `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; logs to `.claude/adr-editorial-fixes.log`. |
+| `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in flag. When set (any non-empty value), `test_inv004_turn1_token_budget` rewrites `docs/plans/measurements/2026-04-12-slice-003.txt` with the fresh turn-1 reading. Unset by default so a plain `uv run pytest` leaves the tracked measurement file alone. |
+| `CAIRN_QUERY_DB` | `.claude/cairn_query/index.kz` | `scripts/cairn_query/` | Path to the kuzudb index for `cairn_query`. Override to point at a scratch location during tests or when running multiple corpus variants in parallel. Set via `CAIRN_QUERY_DB=/tmp/my.kz python -m cairn_query rebuild`. |
+
+#### Per-phase model and effort overrides
+
+`CAIRN_MODEL_<ROLE>` and `CAIRN_EFFORT_<ROLE>` let the operator swap the model or thinking-effort level for any agent role without touching `AGENT_MODEL_CONFIG`. Key derivation: `role.upper().replace("-", "_")`. An **empty string does not override** — the dict default is used (same `or`-fallback semantics as all other `CAIRN_*` knobs).
+
+Defaults come from `AGENT_MODEL_CONFIG` in `scripts/slice_orchestrator/core.py`. Unknown roles fall back to `claude-opus-4-7` / `high`.
+
+| Var | Default (from `AGENT_MODEL_CONFIG`) | Read by | Purpose |
+|---|---|---|---|
+| `CAIRN_MODEL_PHASE_1_WRITER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-1-writer`. |
+| `CAIRN_EFFORT_PHASE_1_WRITER` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-1-writer`. |
+| `CAIRN_MODEL_PHASE_2_SKEPTIC` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-2-skeptic`. |
+| `CAIRN_EFFORT_PHASE_2_SKEPTIC` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-2-skeptic`. |
+| `CAIRN_MODEL_PHASE_3_IMPLEMENTER` | `claude-sonnet-4-6` | `scripts/slice_orchestrator/` | Override model for `phase-3-implementer`. Lever 1 cost reduction: Sonnet is ~5× cheaper than Opus for implementation work. |
+| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-3-implementer`. (Retuned `medium → high` by `cost-discipline/lever-1-tier-retune` after the prior `compression/learnings-capture` slice's Phase-3 cluster fan-out worker reported OK without RED-test gating; Sonnet retained, effort bumped to restore reasoning depth.) |
+| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-4-integrator`. (Retuned `claude-sonnet-4-6 → claude-opus-4-7` by `cost-discipline/lever-1-tier-retune`; Phase 4 is the audit boundary, judgment quality rides Opus while `effort=low` keeps the cost delta narrow.) |
+| `CAIRN_EFFORT_PHASE_4_INTEGRATOR` | `low` | `scripts/slice_orchestrator/` | Override effort level for `phase-4-integrator`. |
+| `CAIRN_MODEL_ISSUE_TRIAGER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `issue-triager`. |
+| `CAIRN_EFFORT_ISSUE_TRIAGER` | `medium` | `scripts/slice_orchestrator/` | Override effort level for `issue-triager`. |
+
+The resolved model (after env-var override) is recorded in `model_by_phase[role]` inside the slice state, so cost attribution in `<slug>-result.json` reflects what was actually dispatched (INV-009 honesty). To restore pre-Lever-1 parity (all phases on Opus/high), set:
+
+```
+CAIRN_MODEL_PHASE_3_IMPLEMENTER=claude-opus-4-7
+CAIRN_EFFORT_PHASE_3_IMPLEMENTER=high
+CAIRN_MODEL_PHASE_4_INTEGRATOR=claude-opus-4-7
+CAIRN_EFFORT_PHASE_4_INTEGRATOR=high
+```
+
 ## Cairn repo internals (load on demand)
 
 This section documents cairn's own repo layout and working practices. It is deliberately not in `CLAUDE.md` — CLAUDE.md is a safety cheat sheet, not a README. Load this section when doing non-trivial work on cairn itself.

@@ -1,21 +1,22 @@
 """Phase 2 validation tests for SLICE-003 — context budget (INV-004).
 
 Live measurement: spawns a CC session with "hi" in cairn root, reads
-turn-1 token count from session JSONL, asserts ≤30k. Records CC version
+turn-1 token count from session JSONL, asserts ≤40k. Records CC version
 and measurement delta. Skips if `claude` CLI is not on PATH.
 
 Pytest + stdlib only.
 """
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
 import pytest
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
-BUDGET_HARD = 30_000
-BUDGET_ASPIRATIONAL = 25_000
+BUDGET_HARD = 40_000
+BUDGET_ASPIRATIONAL = 33_000
 D1_BASELINE = 27_314
 MEASUREMENT_FILE = (
     CAIRN_ROOT / "docs" / "plans" / "measurements" / "2026-04-12-slice-003.txt"
@@ -84,6 +85,11 @@ def _run_and_measure() -> tuple[int, str]:
 
 
 def _record_measurement(tokens: int, version: str) -> None:
+    # B4: gate the tracked-file write behind an opt-in env var so a default
+    # `uv run pytest` invocation does not dirty docs/plans/measurements/.
+    # Baseline re-runs set CAIRN_RECORD_MEASUREMENTS=1 explicitly.
+    if not os.environ.get("CAIRN_RECORD_MEASUREMENTS"):
+        return
     MEASUREMENT_FILE.parent.mkdir(parents=True, exist_ok=True)
     delta = tokens - D1_BASELINE
     pct = delta / D1_BASELINE * 100
@@ -100,7 +106,7 @@ def _record_measurement(tokens: int, version: str) -> None:
 
 @pytest.mark.skipif(not _claude_available(), reason="claude CLI not on PATH")
 def test_inv004_turn1_token_budget():
-    """INV-004 — turn-1 total context ≤30,000 tokens on a fresh 'hi' session."""
+    """INV-004 — turn-1 total context ≤40,000 tokens on a fresh 'hi' session."""
     tokens, version = _run_and_measure()
     _record_measurement(tokens, version)
 
@@ -114,11 +120,16 @@ def test_inv004_turn1_token_budget():
 
 
 def test_inv004_architecture_rebaselined():
-    """INV-004 paragraph in ARCHITECTURE.md reflects the `housekeeping/inv004-rebaseline` re-baseline.
+    """INV-004 paragraph in ARCHITECTURE.md reflects the `housekeeping/inv004-rebaseline-cc-2.1.116` re-baseline.
 
     Isolates the paragraph starting at ``**INV-004**`` and ending at the first
-    subsequent blank line, then asserts the re-baselined ceiling and provenance
-    citations are present while the stale ``≤22,000`` literal is gone.
+    subsequent blank line, then asserts the re-baselined ceiling (≤40,000 total
+    tokens) and provenance citations are present.
+
+    Banished-literal guards (pinned by test_inv004_regression_guards_preserved):
+    the stale ``≤22,000`` literal is gone (pre-rebaseline baseline);
+    the stale ``≤30,000`` literal is gone (CC 2.1.110 rebaseline, now superseded
+    by CC 2.1.116 under this slice).
 
     Independent of the ``claude`` CLI; runs unconditionally.
     """
@@ -141,28 +152,38 @@ def test_inv004_architecture_rebaselined():
     )
     paragraph = "\n".join(lines[start:end])
 
-    assert "≤30,000 total tokens" in paragraph, (
-        f"INV-004 missing re-baselined ceiling '≤30,000 total tokens'.\n"
+    assert "≤40,000 total tokens" in paragraph, (
+        f"INV-004 missing re-baselined ceiling '≤40,000 total tokens'.\n"
         f"Paragraph: {paragraph!r}"
     )
     assert "≤22,000" not in paragraph, (
         f"INV-004 still contains stale '≤22,000' literal.\nParagraph: {paragraph!r}"
     )
+    assert "≤30,000" not in paragraph, (
+        f"INV-004 still contains stale '≤30,000' literal.\nParagraph: {paragraph!r}"
+    )
     assert "housekeeping/inv004-rebaseline" in paragraph, (
         f"INV-004 missing 'housekeeping/inv004-rebaseline' provenance citation.\nParagraph: {paragraph!r}"
+    )
+    assert "housekeeping/inv004-rebaseline-cc-2.1.116" in paragraph, (
+        f"INV-004 missing 'housekeeping/inv004-rebaseline-cc-2.1.116' provenance citation.\nParagraph: {paragraph!r}"
     )
     assert "2.1.110" in paragraph, (
         f"INV-004 missing '2.1.110' provenance citation.\nParagraph: {paragraph!r}"
     )
+    assert "2.1.116" in paragraph, (
+        f"INV-004 missing '2.1.116' provenance citation.\nParagraph: {paragraph!r}"
+    )
 
 
 def test_inv004_invariant_check_block_description_rebaselined():
-    """INV-004 invariant-check block description points at the 30k budget.
+    """INV-004 invariant-check block description points at the 40k budget.
 
     Isolates the fenced ``invariant-check INV-004`` block in ARCHITECTURE.md
-    and asserts its body names the re-baselined ceiling ("30k token budget"),
-    not the stale ("22k token budget"). Block-scoped so unrelated occurrences
-    of "22k" elsewhere in ARCHITECTURE.md cannot mask drift here.
+    and asserts its body names the re-baselined ceiling ("40k token budget"),
+    not the stale ("22k token budget") or the superseded ("30k token budget")
+    literals. Block-scoped so unrelated occurrences of "22k"/"30k" elsewhere in
+    ARCHITECTURE.md cannot mask drift here.
     """
     arch = (CAIRN_ROOT / "docs" / "ARCHITECTURE.md").read_text()
     lines = arch.splitlines()
@@ -192,9 +213,9 @@ def test_inv004_invariant_check_block_description_rebaselined():
     )
     block = "\n".join(lines[start : end + 1])
 
-    assert "machine-checks the 30k token budget" in block, (
+    assert "machine-checks the 40k token budget" in block, (
         "INV-004 invariant-check block missing re-baselined description "
-        "'machine-checks the 30k token budget'.\n"
+        "'machine-checks the 40k token budget'.\n"
         f"Block: {block!r}"
     )
     assert "machine-checks the 22k token budget" not in block, (
@@ -202,10 +223,15 @@ def test_inv004_invariant_check_block_description_rebaselined():
         "'machine-checks the 22k token budget'.\n"
         f"Block: {block!r}"
     )
+    assert "machine-checks the 30k token budget" not in block, (
+        "INV-004 invariant-check block still contains superseded description "
+        "'machine-checks the 30k token budget' (CC 2.1.110 baseline).\n"
+        f"Block: {block!r}"
+    )
 
 
 def test_inv004_turn1_token_budget_docstring_rebaselined():
-    """test_inv004_turn1_token_budget docstring reflects the 30,000 ceiling.
+    """test_inv004_turn1_token_budget docstring reflects the 40,000 ceiling.
 
     Text-level scan of test_context_budget.py (not __doc__ attribute) to avoid
     importing the module, which would trigger the `claude` CLI skip fixture.
@@ -235,14 +261,19 @@ def test_inv004_turn1_token_budget_docstring_rebaselined():
         "no non-blank line after def test_inv004_turn1_token_budget"
     )
 
-    assert "\u226430,000 tokens" in docstring_line, (
+    assert "\u226440,000 tokens" in docstring_line, (
         "test_inv004_turn1_token_budget docstring missing re-baselined "
-        "'\u226430,000 tokens' ceiling.\n"
+        "'\u226440,000 tokens' ceiling.\n"
         f"Docstring line: {docstring_line!r}"
     )
     assert "\u226422,000 tokens" not in docstring_line, (
         "test_inv004_turn1_token_budget docstring still contains stale "
         "'\u226422,000 tokens' literal.\n"
+        f"Docstring line: {docstring_line!r}"
+    )
+    assert "\u226430,000 tokens" not in docstring_line, (
+        "test_inv004_turn1_token_budget docstring still contains superseded "
+        "'\u226430,000 tokens' literal (CC 2.1.110 baseline).\n"
         f"Docstring line: {docstring_line!r}"
     )
 
@@ -261,9 +292,14 @@ def test_inv004_regression_guards_preserved():
     src = Path(__file__).read_text()
 
     required = [
+        # CC 2.1.110 (22k) baseline regression guards — original ``housekeeping/inv004-rebaseline`` slice.
         "the stale ``\u226422,000`` literal is gone",
         'assert "\u226422,000" not in paragraph',
         "INV-004 still contains stale '\u226422,000' literal",
+        # CC 2.1.116 (30k) baseline regression guards — ``housekeeping/inv004-rebaseline-cc-2.1.116`` slice.
+        "the stale ``\u226430,000`` literal is gone",
+        'assert "\u226430,000" not in paragraph',
+        "INV-004 still contains stale '\u226430,000' literal",
     ]
 
     missing = [s for s in required if s not in src]

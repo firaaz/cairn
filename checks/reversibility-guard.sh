@@ -77,11 +77,6 @@ if [ "$TOOL" = "Edit" ]; then
   case "$CANONICAL" in
     docs/adr/index.md) ;;
     docs/adr/*.md)
-      # Allow editorial fixes (typos, formatting, broken links) when explicitly flagged
-      if [ "${ADR_EDITORIAL_FIX:-}" = "1" ]; then
-        echo "ADR_EDITORIAL_FIX: allowing edit to $FILE" >> .claude/adr-editorial-fixes.log 2>/dev/null || true
-        exit 0
-      fi
       OLD=$(echo "$INPUT" | jq -r '.tool_input.old_string')
       # Allow edits that touch only YAML frontmatter fields
       # (status:, superseded-by:, superseded_by:, firmness:)
@@ -89,6 +84,20 @@ if [ "$TOOL" = "Edit" ]; then
       # on a later line could be a body edit disguised as a frontmatter change.
       if echo "$OLD" | head -1 | grep -qE '^(status:|superseded-by:|superseded_by:|firmness:)'; then
         exit 0
+      fi
+      # Editorial-fix escape hatch: ADR_EDITORIAL_FIX=1 narrowed to ADDITIVE
+      # edits where new_string contains old_string. A leaked shell
+      # ADR_EDITORIAL_FIX=1 no longer masks wholesale body rewrites; typo
+      # patches (append/insert of annotation markers) and footnote additions
+      # remain unblocked. Full replacements require /new-adr supersede per
+      # append-only invariant. Prevents pytest session-env leaks from
+      # spuriously greenlighting deny-path tests.
+      if [ "${ADR_EDITORIAL_FIX:-}" = "1" ]; then
+        NEW=$(echo "$INPUT" | jq -r '.tool_input.new_string')
+        if [[ "$NEW" == *"$OLD"* ]]; then
+          echo "ADR_EDITORIAL_FIX: allowing edit to $FILE" >> .claude/adr-editorial-fixes.log 2>/dev/null || true
+          exit 0
+        fi
       fi
       jq -n --arg reason "REVERSIBILITY GUARD: ADR body is append-only. Only frontmatter updates (status, superseded-by) are permitted. Use /new-adr supersede to create a replacement." \
         '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$reason}}'

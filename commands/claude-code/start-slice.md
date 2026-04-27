@@ -1,33 +1,25 @@
 # /start-slice
 
-Begin or advance a slice through Intent → Validation → Implementation → Integration.
+Thin dispatcher → `python -m slice_orchestrator` (package at `scripts/slice_orchestrator/`). Drives a slice through Intent → Validation → Implementation → Integration via per-phase `claude -p --agent <role>` agents.
 
-Usage: `/start-slice` (new) | `/start-slice phase 2|3|4` (advance) | `/start-slice complete` (finish) | `/start-slice failed` (archive)
-
-## Rules
-
-1. Read `.slice-system/docs/operational-reference.md` for target phase.
-2. Read `.claude/current-slice/slice.yaml` for current state. Missing = new slice.
-3. Phase 1: write intent.md (YAML envelope + what/why/spec + verification). No source reads (greenfield) or public interfaces only (modification).
-4. Phase 2: enumerate ambiguities, write tests to `tests/`, approach.md to validation/.
-5. Phase 3: input is intent.md + tests only. Pass the suite. Record decisions in implementation/notes.md.
-6. Phase 4: full test suite + validator + invariant evidence table. Failure = fail the slice, not patch.
+Usage: `/start-slice <brief>` (new), `/start-slice --resume` (continue current), `/start-slice --legacy` (prose fallback).
 
 ## Step 3
 
-Gate before advancing: Phase 2 needs intent.md + adrs-referenced committed (empty adrs-referenced passes trivially). Phase 3 needs tests committed. Phase 4 needs source committed. On failure, name every missing ADR slug. On pass: update slice.yaml, print Phase Skill Guide role/skills.
+Gate before advancing. Phase 2 needs `intent.md` + `adrs-referenced` committed (empty `adrs-referenced` passes trivially). Phase 3 needs the validation suite committed. Phase 4 needs the source committed. On failure, name every missing ADR slug and stop. On pass, advance the slice and print the Phase Skill Guide row for the next role.
 
 ## Step 7
 
-Completion wipes `.claude/current-slice/`. Run D1 + D3 gates before wipe (see full ref). Check sweep.yaml for due sweep.
+Completion wipes `.claude/current-slice/`. The orchestrator removes every file under that directory in the close commit (`slice.yaml` is overwritten by the next slice). No archive directory — git history covers the post-mortem case.
 
 ## Step 8
 
-Failed slice recovery: set `status: failed` in slice.yaml, commit, archive to `.claude/completed-slices/<ID>-failed/`, recreate empty current-slice. Fresh slice with failure as input context.
+Failed slice recovery: orchestrator sets `status: failed` in `slice.yaml`, archives the directory to `.claude/completed-slices/<id>-failed/`, and exits non-zero. The next slice can use the failed slice as input context.
+
+## Legacy escape hatch
+
+`/start-slice --legacy` (or env `CAIRN_LEGACY_START_SLICE=1`) bypasses the orchestrator and follows `start-slice-legacy.md`, which points at the canonical prose protocol in `start-slice.full.md`. Retained until ≥5 clean compressed slices have landed (compression design §10).
 
 ## Load full
 
-- If initializing a new slice: read start-slice.full.md for directory structure, slice.yaml template, and intent-writing guide.
-- If gate fails: read start-slice.full.md for D3 gate semantics and remediation commands.
-- If running `/start-slice complete`: read start-slice.full.md for the completion sequence.
-- If running `/start-slice failed`: read start-slice.full.md for the archive protocol.
+- Always: read start-slice.full.md for the full prose protocol — phase-by-phase rules, gate semantics, slice.yaml schema, completion sequence, and failed-slice archive protocol.

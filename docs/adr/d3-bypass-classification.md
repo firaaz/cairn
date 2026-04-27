@@ -21,7 +21,7 @@ Accepted.
 
 ## Context
 
-[cliff-failure-mode-and-v1-defenses D3](003-cliff-failure-mode-and-v1-defenses.md) established an automated unknown-unknown backstop with a bypass escape hatch (`D3_GATE_BYPASS=1`). The bypass mechanism was elaborated in `commands/claude-code/start-slice.full.md:224` using a rolling-window rule inherited from D1: three bypasses in the last ten slices triggers a warning that "the gates are producing more noise than signal" and a design review is recommended.
+[cliff-failure-mode-and-v1-defenses D3](cliff-failure-mode-and-v1-defenses.md) established an automated unknown-unknown backstop with a bypass escape hatch (`D3_GATE_BYPASS=1`). The bypass mechanism was elaborated in `commands/claude-code/start-slice.full.md:224` using a rolling-window rule inherited from D1: three bypasses in the last ten slices triggers a warning that "the gates are producing more noise than signal" and a design review is recommended.
 
 The threshold fired on 2026-04-16 at the close of `housekeeping/inv004-rebaseline`. Integration sweep #11 (`.claude/sweep-results/2026-04-16-sweep.md`) surfaced the three bypasses:
 
