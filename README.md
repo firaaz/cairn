@@ -30,6 +30,7 @@ Post-v1, the symlink converts to a git submodule pinned at a tagged version.
 
 ## Documentation
 
+- `docs/why-cairn.md` — the problem, the bet, the mechanism (start here)
 - `docs/vision.md` — the six commitments for v1 and success criteria
 - `docs/roadmap.md` — ordered slice sequence toward v1
 - `docs/spec-v1.md` — canonical spec (Layer 2, not auto-loaded)
