@@ -28,3 +28,7 @@ venv/
 
 # substrate index (derived; rebuildable from sources)
 .claude/cairn_query/
+
+# stray kuzu db file written to repo root by some client opening a relative
+# path; not produced by cairn_query CLI or the cairn-knowledge MCP server.
+.cairn-kuzu
