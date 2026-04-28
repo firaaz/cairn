@@ -18,3 +18,4 @@
 | orchestrator-observability | Orchestrator observability — JSON canonical, MD derived, forward-compat schema, deferred retention | accepted | provisional | process | 2026-04-20 |
 | slice-artifact-preservation | Slice artifact preservation — pre-wipe snapshots of phase ephemerals | accepted | firm | process | 2026-04-26 |
 | cairn-substrate-and-fastmcp | Cairn substrate — v1 dep set, FastMCP adapter, agent-context structural lockdown | accepted | firm | architecture | 2026-04-26 |
+| board-as-roadmap-substrate | Board as roadmap substrate — four-layer model + declarative reconciliation | accepted | provisional | process | 2026-04-28 |

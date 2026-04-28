@@ -2,7 +2,7 @@
 
 date: 2026-04-27
 branch: feature/board-roadmap-integration
-status: pre-decision (conversation capture; run `/decision` to ratify)
+status: superseded by ADR `board-as-roadmap-substrate` (2026-04-28)
 
 ## Why this exists
 
