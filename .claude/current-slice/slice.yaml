@@ -1,3 +1,20 @@
-id: none
-name: "No active slice"
-status: none
+id: agent-correctness/under-specified-clarify
+name: agent-correctness/under-specified-clarify
+status: in-progress
+current_phase: 1
+brief: "agent-correctness/under-specified-clarify \u2014 when the agent receives a\
+  \ query that references a visa lookup but does not pin the keying dimensions (nationality,\
+  \ passport_type, visa_type), classify the query as under-specified at the planner\
+  \ layer and emit ONE deterministic clarifying question for the missing dimension(s)\
+  \ instead of running an exhaustive multi-row retrieval. This is the deferred slice-B\
+  \ from docs/plans/2026-04-24-allowed-list-grounded-negatives-design.md (worktree\
+  \ .worktrees/two-layer-clarify/). Build on the L1 query-shape approach that landed\
+  \ cleanly in the failed parent slice (ef14d8b PlannerDecision route \u2208 {needs_retrieval,\
+  \ clarify, no_retrieval} + missing_dimensions: list[Literal]). Avoid the L2 ToolCallPart.args\
+  \ trap that caused the Phase-4 fail (7e5a38d) \u2014 do NOT inspect tool_args dict\
+  \ keys for keying dims; the live MCP tools take sql/dataset only. Trigger evidence:\
+  \ 2026-04-28 live replay of \"me and my parents are from egypt... do I need a visa\
+  \ beforehand?\" answered exhaustively across passport_type=ordinary/official/diplomatic\
+  \ instead of asking which one applies. Out of scope: zero-row grounded-negatives\
+  \ on allowed-list datasets (that is slice-A in the sibling worktree); search() under-specification;\
+  \ visa_config/visa_descriptions clarify; UI streaming."
