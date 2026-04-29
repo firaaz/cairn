@@ -1,3 +1,25 @@
-id: none
-name: "No active slice"
-status: none
+id: substrate/root-resolver
+name: substrate/root-resolver
+status: in-progress
+current_phase: 1
+brief: "Lift the canonical project-root resolver into scripts/_root.py and migrate\
+  \ every cwd-coupled path call site to use it. Tracking: firaaz/cairn#3 (rank 2 of\
+  \ 22). Lesson: L-017. Audit findings: F-039, F-040, F-041, F-042, F-048, F-049,\
+  \ F-050, F-510, F-511, F-512, F-513, F-514, F-515.\n\nSource pattern (correct):\
+  \ scripts/validate_architecture.py:_repo_root \u2014 CLAUDE_PROJECT_DIR env var\
+  \ \u2192 git rev-parse --show-toplevel \u2192 loud error. Explicit __file__-resolution\
+  \ ban (the .slice-system symlink canonicalizes wrong).\n\nMigration targets:\n-\
+  \ scripts/slice_orchestrator/{core,lifecycle,dispatch,telemetry}.py \u2014 all Path(\"\
+  .claude/...\") literals.\n- scripts/cairn_query/__init__.py \u2014 _DEFAULT_DB_PATH\
+  \ and extractor entrypoints (currently take no root arg).\n- scripts/cairn_query/extractors/*.py\
+  \ \u2014 Path(\".claude/features\") literals + bare subprocess.run git calls without\
+  \ cwd=.\n- scripts/snapshot_diff.py \u2014 replace Path.cwd() fallback in _resolve_root.\n\
+  - mcp_servers/cairn_knowledge/server.py \u2014 DB and corpus paths.\n\nAll subprocess.run([...git...])\
+  \ calls get an explicit cwd=root. Add a CONTRIBUTING-style note to docs/operational-reference.md\
+  \ declaring the CLAUDE_PROJECT_DIR contract. Wire a lint/CI check that fails the\
+  \ build on Path(\".claude\") or Path.cwd() outside _root.py and tests/.\n\nOut of\
+  \ scope: slash-command markdown drift (issue #20/#21), upgrade-doc env-var headers,\
+  \ MCP corpus tenancy model (issue #14).\n\nWhy it matters: ~25 of 135 audit findings\
+  \ collapse here. CWD-trap is already live (4 misrouted commits, divergent kuzu DBs\
+  \ between cairn and complex-rag-analysis). Every downstream substrate slice (consumer\
+  \ tenancy, MCP boundary, AGENT_ENVELOPE) assumes a stable root resolver."
