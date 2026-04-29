@@ -423,6 +423,24 @@ CAIRN_MODEL_PHASE_4_INTEGRATOR=claude-opus-4-7
 CAIRN_EFFORT_PHASE_4_INTEGRATOR=high
 ```
 
+## Project-root resolution
+
+`scripts/_root.py:project_root()` is the single source of truth for all path construction in `scripts/` and `mcp_servers/`. Every `Path(".claude/...")` literal and `Path.cwd()` fallback in production code routes through it.
+
+**Resolution precedence:**
+
+1. `CLAUDE_PROJECT_DIR` env var — if set and non-empty, returns `Path(value).resolve()`.
+2. `git rev-parse --show-toplevel` from `os.getcwd()` — subprocess with `cwd=os.getcwd()`, returns `Path(stdout.strip()).resolve()`.
+3. `RuntimeError` — loud message naming both mechanisms and the originating error.
+
+**Symlink trap (L-017).** Cairn ships a `.slice-system → .` self-symlink. Any `Path(__file__).parent` chain run from a file reached through that symlink resolves to the consumer-side path, not the cairn root. `project_root()` avoids this by never using `__file__` — it uses only env-var and git.
+
+**Call-site rules.** Replace every `Path(".claude/...")` literal with `project_root() / ".claude" / ...`; replace every `Path.cwd()` with `project_root()`; add `cwd=project_root()` to every `subprocess.run(["git", ...])` call.
+
+**Test exemption.** Files under `tests/` are exempt — they use `tmp_path` and synthetic roots freely.
+
+**`CLAUDE_PROJECT_DIR`** must be set to the absolute repo root when running cairn scripts from a working directory other than the root. The orchestrator sets it automatically for spawned agent sessions; operators running scripts directly should export it when `cd`-ing away from the root.
+
 ## Cairn repo internals (load on demand)
 
 This section documents cairn's own repo layout and working practices. It is deliberately not in `CLAUDE.md` — CLAUDE.md is a safety cheat sheet, not a README. Load this section when doing non-trivial work on cairn itself.
