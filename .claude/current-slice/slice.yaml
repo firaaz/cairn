@@ -1,0 +1,14 @@
+id: substrate/orchestrator-paths
+name: substrate/orchestrator-paths
+status: in-progress
+current_phase: 1
+brief: "Issue #24 \u2014 orchestrator-paths cluster (root-resolver follow-up 1/2).\
+  \ Migrate scripts/slice_orchestrator/{core,lifecycle,dispatch,telemetry}.py and\
+  \ 3 scope-overflow targets (scripts/integration_gate.py, scripts/validate_architecture.py,\
+  \ scripts/dogfood_evaluate.py) off Path('.claude/...') literals, Path.cwd(), and\
+  \ bare git subprocess calls to project_root()-based resolution. Run scripts/lint_paths.py\
+  \ to exit 0. Remove 4 strict-xfail markers in tests/unit/test_root_resolver_migration.py\
+  \ (parametrized + module-level) and 1 in tests/unit/test_path_discipline_lint.py.\
+  \ Out of scope: mcp-server cluster (issue #25). Input context: .claude/completed-slices/substrate-root-resolver-failed/\
+  \ \u2014 read intent.md and validation/coupling-clusters.yaml. Suggested slice id:\
+  \ substrate/orchestrator-paths."
