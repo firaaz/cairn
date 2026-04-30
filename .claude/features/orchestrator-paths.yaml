@@ -1,0 +1,36 @@
+id: orchestrator-paths
+name: orchestrator-paths
+status: in-progress
+tracking: firaaz/cairn#24
+predecessor: substrate/root-resolver
+lesson: L-017
+audit-findings:
+  - F-039
+  - F-040
+  - F-041
+  - F-042
+  - F-048
+  - F-049
+  - F-050
+slices:
+  - id: substrate/orchestrator-paths
+    status: phase-1
+charter: |
+  Close the orchestrator half of the root-resolver migration deferred when
+  substrate/root-resolver failed mid-phase-3. Migrate
+  scripts/slice_orchestrator/{core,lifecycle,dispatch,telemetry}.py and the
+  three scope-overflow callers (scripts/integration_gate.py,
+  scripts/validate_architecture.py, scripts/dogfood_evaluate.py) off
+  Path(".claude/...") literals, Path.cwd() fallbacks, and bare git
+  subprocess calls onto scripts/_root.project_root(). Unmark the four
+  strict-xfail entries in tests/unit/test_root_resolver_migration.py
+  covering this cluster plus the single strict-xfail in
+  tests/unit/test_path_discipline_lint.py. Path-plumbing only — no
+  behavioral changes to orchestrator dispatch, integration-gate decisions,
+  arch-validate findings, or dogfood evaluation output.
+out-of-scope:
+  - mcp_servers/cairn_knowledge/server.py (issue #25)
+  - scripts/cairn_query/** (separate cluster)
+  - scripts/snapshot_diff.py (separate cluster)
+  - docs/operational-reference.md edits
+  - changes to scripts/_root.py or scripts/lint_paths.py
