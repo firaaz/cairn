@@ -1,7 +1,7 @@
 id: substrate/orchestrator-paths
 name: substrate/orchestrator-paths
 status: in-progress
-current_phase: 1
+current_phase: 4
 brief: "Issue #24 \u2014 orchestrator-paths cluster (root-resolver follow-up 1/2).\
   \ Migrate scripts/slice_orchestrator/{core,lifecycle,dispatch,telemetry}.py and\
   \ 3 scope-overflow targets (scripts/integration_gate.py, scripts/validate_architecture.py,\
