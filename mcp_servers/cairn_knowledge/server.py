@@ -17,10 +17,14 @@ from typing import Any
 
 import fastmcp
 
-# Ensure cairn_query (in scripts/) is importable inside the subprocess.
-_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-_SCRIPTS = _REPO_ROOT / "scripts"
-for _p in (str(_REPO_ROOT), str(_SCRIPTS)):
+# Bootstrap sys.path so `import cairn_query` works inside the MCP subprocess.
+# Anchored at __file__-relative (the cairn package's location on disk), NOT at
+# project_root() — the consumer's project does not contain scripts/cairn_query/.
+# See scripts/_root.py:package_root() for the canonical name; we cannot import
+# it here because we are bootstrapping sys.path for that very import.
+_PACKAGE_ROOT = Path(__file__).resolve().parent.parent.parent
+_SCRIPTS = _PACKAGE_ROOT / "scripts"
+for _p in (str(_PACKAGE_ROOT), str(_SCRIPTS)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 

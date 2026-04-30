@@ -218,10 +218,17 @@ def test_project_root_through_slice_system_symlink(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def test_root_module_does_not_use_file_dunder_for_root_inference():
-    """Intent §Specification explicitly bans __file__-based project-root
-    resolution in scripts/_root.py — the .slice-system symlink trap.
+def test_project_root_function_does_not_use_file_dunder_for_root_inference():
+    """Intent §Specification bans __file__-based resolution within project_root().
+    The .slice-system symlink would canonicalize wrong (L-017).
+
+    Note: package_root() in the same module legitimately uses __file__ — that's
+    package-location inference, a different concept (see module docstring's
+    two-roots disambiguation). This test scopes the ban to project_root()'s
+    function body via AST, not the whole module.
     """
+    import ast
+
     cairn_root = Path(__file__).resolve().parent.parent.parent
     src = cairn_root / "scripts" / "_root.py"
     assert src.exists(), (
@@ -229,11 +236,26 @@ def test_root_module_does_not_use_file_dunder_for_root_inference():
         f"requires this module at {src}"
     )
 
-    text = src.read_text()
-    # The intent specifically bans Path(__file__).parent... chains.
-    assert "__file__" not in text, (
-        "scripts/_root.py contains __file__ — banned for project-root inference "
-        "per intent §Specification (L-017 root cause)"
+    tree = ast.parse(src.read_text())
+    project_root_fn = next(
+        (
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == "project_root"
+        ),
+        None,
+    )
+    assert project_root_fn is not None, "project_root() function missing from _root.py"
+
+    file_dunder_uses = [
+        node.lineno
+        for node in ast.walk(project_root_fn)
+        if isinstance(node, ast.Name) and node.id == "__file__"
+    ]
+    assert not file_dunder_uses, (
+        f"project_root() body uses __file__ at lines {file_dunder_uses} — banned "
+        "for project-root inference per intent §Specification (L-017 root cause). "
+        "If you need package-location inference, use package_root() instead."
     )
 
 
