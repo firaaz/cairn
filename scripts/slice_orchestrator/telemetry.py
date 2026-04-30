@@ -20,6 +20,8 @@ import sys
 import threading
 from pathlib import Path
 
+from _root import project_root
+
 from .core import (
     DEBUG_DIR,
     DEFAULT_HEARTBEAT_INTERVAL,
@@ -60,7 +62,7 @@ def _init_state_dict(slice_id):
         {
             "schema_version": "1.0",
             "slice_id": slice_id,
-            "worktree_path": str(Path.cwd()),
+            "worktree_path": str(project_root()),
             "orchestrator_pid": os.getpid(),
             "started_at": _iso_now(),
             "ended_at": None,
@@ -139,7 +141,7 @@ def _observability_paths(slice_id):
         "result_json": DEBUG_DIR / f"{slug}-result.json",
         "result_md": DEBUG_DIR / f"{slug}-result.md",
         "index_jsonl": DEBUG_DIR / "index.jsonl",
-        "heartbeat": Path(".claude/current-slice/.heartbeat"),
+        "heartbeat": project_root() / ".claude" / "current-slice" / ".heartbeat",
     }
 
 

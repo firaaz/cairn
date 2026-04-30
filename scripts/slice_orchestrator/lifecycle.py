@@ -17,6 +17,9 @@ from pathlib import Path
 
 import yaml
 
+from _root import project_root
+
+
 from . import dispatch as _dispatch_mod
 from .core import (
     ROLE_FOR_PHASE,
@@ -52,14 +55,16 @@ from .telemetry import (
 
 def _bundle_handoff_md():
     """Concatenate the four phase handoffs (+ sweep-notes) into .claude/handoff.md."""
-    handoff = Path(".claude/handoff.md")
+
+    _root = project_root()
+    handoff = _root / ".claude" / "handoff.md"
     handoff.parent.mkdir(parents=True, exist_ok=True)
     parts = []
     for n in range(1, 5):
-        p = Path(f".claude/current-slice/handoff-phase-{n}.md")
+        p = _root / ".claude" / "current-slice" / f"handoff-phase-{n}.md"
         if p.exists():
             parts.append(p.read_text())
-    sweep = Path(".claude/current-slice/integration/sweep-notes.md")
+    sweep = _root / ".claude" / "current-slice" / "integration" / "sweep-notes.md"
     if sweep.exists():
         parts.append(sweep.read_text())
     handoff.write_text("\n---\n".join(parts) if parts else "")
@@ -72,7 +77,7 @@ def _wipe_current_slice():
     - FileNotFoundError is tolerated (F5 operator-rebase corner).
     - Other OSError propagates as RuntimeError.
     """
-    slice_dir = Path(".claude/current-slice")
+    slice_dir = project_root() / ".claude" / "current-slice"
     if not slice_dir.exists():
         return
 
@@ -123,11 +128,11 @@ def _copy_artifacts_to_sweep_results(slice_id, pre_close_yaml_text):
     S1.f — OSError from makedirs/copyfile/write_text propagates uncaught.
     """
     slug = slice_id.replace("/", "-")
-    target = Path(".claude/sweep-results") / slug / "artifacts"
+    target = project_root() / ".claude" / "sweep-results" / slug / "artifacts"
     os.makedirs(str(target), exist_ok=True)
     for subdir in ("validation", "implementation", "integration"):
         os.makedirs(str(target / subdir), exist_ok=True)
-    src_base = Path(".claude/current-slice")
+    src_base = project_root() / ".claude" / "current-slice"
     for rel in _ARTIFACT_RELPATHS:
         src = src_base / rel
         if src.is_file():
@@ -148,7 +153,7 @@ def _is_slice_already_closed(state=None):
         return False
 
     # Signal 2: handoff.md present and non-empty
-    handoff = Path(".claude/handoff.md")
+    handoff = project_root() / ".claude" / "handoff.md"
     if not handoff.exists():
         return False
     try:
@@ -158,7 +163,7 @@ def _is_slice_already_closed(state=None):
         return False
 
     # Signal 3: current-slice/ contains only slice.yaml (files)
-    slice_dir = Path(".claude/current-slice")
+    slice_dir = project_root() / ".claude" / "current-slice"
     if slice_dir.exists():
         files = sorted(
             p.relative_to(slice_dir).as_posix()
@@ -191,7 +196,7 @@ def commit_phase_handoff(phase, summary, commit_hash):
     body. Uses --allow-empty so the orchestrator records the phase boundary
     even if the agent already committed the handoff file itself. B11.
     """
-    path = Path(f".claude/current-slice/handoff-phase-{phase}.md")
+    path = project_root() / ".claude" / "current-slice" / f"handoff-phase-{phase}.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         _git("add", str(path))
@@ -199,11 +204,11 @@ def commit_phase_handoff(phase, summary, commit_hash):
     # (.claude/agents/phase-1-writer.md:9) at the handoff boundary.
     # Guarded by path.exists() so Phases 2/3/4 (which do not touch
     # either path) are no-ops — preserves INV-008 DC-4.
-    intent_path = Path(".claude/current-slice/intent.md")
+    intent_path = project_root() / ".claude" / "current-slice" / "intent.md"
     if intent_path.exists():
         _git("add", str(intent_path))
     feature_id = _slice_id().split("/", 1)[0]
-    feature_path = Path(f".claude/features/{feature_id}.yaml")
+    feature_path = project_root() / ".claude" / "features" / f"{feature_id}.yaml"
     if feature_path.exists():
         _git("add", str(feature_path))
     _git("commit", "--allow-empty", "-m", f"handoff: phase {phase} complete")
@@ -447,7 +452,9 @@ def close_slice(state=None):
     # elevates "committed-artifact-first" to principle; INV-008 DC-4 keeps
     # close_slice as the sole `slice: complete` commit site. Abort with
     # FAILED-terminal observability and non-zero exit when missing.
-    sweep_notes = Path(".claude/current-slice/integration/sweep-notes.md")
+    sweep_notes = (
+        project_root() / ".claude" / "current-slice" / "integration" / "sweep-notes.md"
+    )
     if not sweep_notes.is_file():
         reason = "sweepnotes-missing-at-close"
         print(
@@ -523,13 +530,14 @@ def close_slice(state=None):
     # Extended add surface: every path phase-4-integrator is contracted to
     # write (.claude/agents/phase-4-integrator.md:9). Staging here, not in a
     # new commit site — INV-008 DC-4 preserved.
-    for extra in (Path(".claude/sweep.yaml"), Path(".claude/handoff.md")):
+    _root = project_root()
+    for extra in (_root / ".claude" / "sweep.yaml", _root / ".claude" / "handoff.md"):
         if extra.exists():
             try:
                 _git("add", "-f", str(extra))
             except subprocess.CalledProcessError:
                 pass
-    sweep_results = Path(".claude/sweep-results")
+    sweep_results = _root / ".claude" / "sweep-results"
     if sweep_results.is_dir():
         try:
             _git("add", "-A", str(sweep_results))

@@ -16,12 +16,13 @@ Exit codes:
     2 — insufficient data (< 10 post-cliff slices, missing log, or baseline ADR introducing-commit unresolvable)
 """
 
-import os
 import re
 import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+
+from _root import project_root
 
 REQUIRED_FIELDS = frozenset(
     {
@@ -47,48 +48,24 @@ SLICE_COMPLETE_SUBJECT_RE = re.compile(r"^slice: .* — complete$")
 
 
 def _resolve_project_root() -> Path:
-    """Locate the project root.
+    """Locate the project root via the canonical resolver.
 
-    Tried in order:
-      1. CLAUDE_PROJECT_DIR environment variable
-      2. git rev-parse --show-toplevel from cwd
-
-    On failure, write diagnostic to stderr and exit 2.
+    Delegates to scripts/_root.project_root (CLAUDE_PROJECT_DIR → git
+    rev-parse). Exits 2 on failure to preserve behavioral parity.
     """
-    attempted: list[str] = []
-
-    env_dir = os.environ.get("CLAUDE_PROJECT_DIR")
-    if env_dir:
-        return Path(env_dir)
-    attempted.append("CLAUDE_PROJECT_DIR (unset)")
-
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        top = result.stdout.strip()
-        if top:
-            return Path(top)
-        attempted.append("git rev-parse --show-toplevel (empty output)")
-    except FileNotFoundError:
-        attempted.append("git rev-parse --show-toplevel (git not installed)")
-    except subprocess.CalledProcessError:
-        attempted.append("git rev-parse --show-toplevel (not a git repository)")
-
-    diagnostic = [
-        "ERROR: cannot identify project root for dogfood evaluation.",
-        "Mechanisms attempted:",
-    ]
-    diagnostic.extend(f"  - {item}" for item in attempted)
-    diagnostic.append(
-        "Set CLAUDE_PROJECT_DIR to the project root, "
-        "or invoke from inside a git repository."
-    )
-    print("\n".join(diagnostic), file=sys.stderr)
-    sys.exit(2)
+        return project_root()
+    except (RuntimeError, FileNotFoundError):
+        diagnostic = [
+            "ERROR: cannot identify project root for dogfood evaluation.",
+            "Mechanisms attempted:",
+            "  - CLAUDE_PROJECT_DIR (unset or empty)",
+            "  - git rev-parse --show-toplevel (failed or git not installed)",
+            "Set CLAUDE_PROJECT_DIR to the project root, "
+            "or invoke from inside a git repository.",
+        ]
+        print("\n".join(diagnostic), file=sys.stderr)
+        sys.exit(2)
 
 
 def _parse_simple_yaml(text: str) -> dict[str, str]:

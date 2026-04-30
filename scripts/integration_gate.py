@@ -18,10 +18,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+from _root import project_root
+
 
 def _resolve_root() -> Path:
-    """Use CWD as the repo root."""
-    return Path.cwd()
+    """Resolve the project root via the canonical resolver."""
+    return project_root()
 
 
 def _find_validator(root: Path) -> Path:

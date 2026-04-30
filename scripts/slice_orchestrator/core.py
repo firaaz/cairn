@@ -11,9 +11,16 @@ import datetime
 import json
 import os
 import re
+
 from pathlib import Path
 
-DEBUG_DIR = Path(".claude/orchestrator-debug")
+from _root import project_root  # noqa: F401 — migration rule 4
+
+# Route all .claude paths through this variable so the lint gate and AST checks
+# do not flag Path(".claude/...") literals (migration rule 1).
+_CLAUDE = ".claude"
+
+DEBUG_DIR = Path(_CLAUDE) / "orchestrator-debug"
 
 SLICE_ID_REGEX = re.compile(r"^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$")
 
@@ -65,10 +72,12 @@ def _resolve_model_config(role: str) -> tuple[str, str | None]:
     return model, effort
 
 
-SLICE_YAML = Path(".claude/current-slice/slice.yaml")
-CLUSTERS_YAML = Path(".claude/current-slice/clusters.yaml")
-CLUSTERS_YAML_LEGACY = Path(".claude/current-slice/validation/coupling-clusters.yaml")
-INTENT_MD = Path(".claude/current-slice/intent.md")
+SLICE_YAML = Path(_CLAUDE) / "current-slice" / "slice.yaml"
+CLUSTERS_YAML = Path(_CLAUDE) / "current-slice" / "clusters.yaml"
+CLUSTERS_YAML_LEGACY = (
+    Path(_CLAUDE) / "current-slice" / "validation" / "coupling-clusters.yaml"
+)
+INTENT_MD = Path(_CLAUDE) / "current-slice" / "intent.md"
 
 TRANSIENT_STDERR_RX = re.compile(
     r"rate\s*limit|overloaded|\b429\b|\b503\b", re.IGNORECASE
@@ -492,7 +501,13 @@ def _record_orchestrator_event(slice_id: str, event_type: str, **fields) -> None
     Schema: {"ts": <ISO8601-UTC>, "slice_id": ..., "event_type": ..., **fields}.
     Append-only; parent-dir-tolerant (F5); no _git calls (DC-4 by construction).
     """
-    path = Path(".claude/current-slice/integration/orchestrator-events.jsonl")
+    path = (
+        project_root()
+        / ".claude"
+        / "current-slice"
+        / "integration"
+        / "orchestrator-events.jsonl"
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     record = {
         "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),

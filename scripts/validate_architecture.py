@@ -19,61 +19,32 @@ Exit codes:
     2 — missing required files, or project root could not be resolved
 """
 
-import os
 import re
-import subprocess
 import sys
 from pathlib import Path
 
+from _root import project_root
+
 
 def _resolve_project_root() -> Path:
-    """Locate the consumer project's repo root.
+    """Locate the consumer project's repo root via the canonical resolver.
 
-    Tried in order:
-      1. CLAUDE_PROJECT_DIR environment variable
-      2. `git rev-parse --show-toplevel` from the current working directory
-
-    On failure, write a diagnostic to stderr and exit 2. There is no
-    fallback based on this script's own location: consumers use cairn via
-    a `.slice-system` symlink, and any `__file__`-based resolution
-    canonicalizes through that symlink back to cairn's install — causing
-    the validator to silently read cairn's own substrate instead of the
-    caller's. A loud failure is strictly better than that false-green.
+    Delegates to scripts/_root.project_root (CLAUDE_PROJECT_DIR → git
+    rev-parse). Exits 2 on failure to preserve behavioral parity.
     """
-    attempted: list[str] = []
-
-    env_dir = os.environ.get("CLAUDE_PROJECT_DIR")
-    if env_dir:
-        return Path(env_dir)
-    attempted.append("CLAUDE_PROJECT_DIR (unset)")
-
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        top = result.stdout.strip()
-        if top:
-            return Path(top)
-        attempted.append("git rev-parse --show-toplevel (empty output)")
-    except FileNotFoundError:
-        attempted.append("git rev-parse --show-toplevel (git not installed)")
-    except subprocess.CalledProcessError:
-        attempted.append("git rev-parse --show-toplevel (not a git repository)")
-
-    diagnostic_lines = [
-        "ERROR: cannot identify project root for architecture validation.",
-        "Mechanisms attempted:",
-    ]
-    diagnostic_lines.extend(f"  - {item}" for item in attempted)
-    diagnostic_lines.append(
-        "Set CLAUDE_PROJECT_DIR to the project root, "
-        "or invoke from inside a git repository."
-    )
-    print("\n".join(diagnostic_lines), file=sys.stderr)
-    sys.exit(2)
+        return project_root()
+    except (RuntimeError, FileNotFoundError):
+        diagnostic_lines = [
+            "ERROR: cannot identify project root for architecture validation.",
+            "Mechanisms attempted:",
+            "  - CLAUDE_PROJECT_DIR (unset or empty)",
+            "  - git rev-parse --show-toplevel (failed or git not installed)",
+            "Set CLAUDE_PROJECT_DIR to the project root, "
+            "or invoke from inside a git repository.",
+        ]
+        print("\n".join(diagnostic_lines), file=sys.stderr)
+        sys.exit(2)
 
 
 PROJECT_ROOT = _resolve_project_root()

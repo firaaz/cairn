@@ -29,7 +29,6 @@ import sys
 import textwrap
 from pathlib import Path
 
-import pytest
 
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -119,15 +118,6 @@ def test_gate_passes_on_clean_tree(tmp_path):
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "blanket post-migration check — RED until orchestrator-paths + "
-        "mcp-server clusters land + scope-overflow targets "
-        "(integration_gate.py, validate_architecture.py, dogfood_evaluate.py) "
-        "are migrated; pending follow-ups under firaaz/cairn#3"
-    ),
-)
 def test_gate_passes_on_post_migration_cairn_tree():
     """Intent §Verification 2: 'lint gate exits 0 against post-migration tree'.
 

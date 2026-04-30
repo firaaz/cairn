@@ -16,7 +16,8 @@ import subprocess
 import sys
 import threading
 import time
-from pathlib import Path
+
+from _root import project_root
 
 from .core import (
     CLUSTERS_YAML,
@@ -381,7 +382,7 @@ def _resolve_supersession_hint(issue_hash):
     except Exception:
         return None
     summary = proc.stdout or ""
-    intent_path = Path(".claude/current-slice/intent.md")
+    intent_path = project_root() / ".claude" / "current-slice" / "intent.md"
     try:
         intent_text = intent_path.read_text() if intent_path.exists() else ""
     except OSError:
