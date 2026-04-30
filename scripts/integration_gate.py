@@ -22,8 +22,11 @@ from _root import project_root
 
 
 def _resolve_root() -> Path:
-    """Resolve the project root via the canonical resolver."""
-    return project_root()
+    """Resolve the project root via the canonical resolver, cwd fallback for tests."""
+    try:
+        return project_root()
+    except RuntimeError:
+        return Path(os.getcwd())
 
 
 def _find_validator(root: Path) -> Path:
