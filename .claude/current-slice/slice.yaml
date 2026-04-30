@@ -1,6 +1,7 @@
 id: substrate/root-resolver
 name: substrate/root-resolver
-status: in-progress
+status: failed
+failure-reason: "Concurrent-orchestrator state collision mid-phase-3. A parallel claude session in /Users/mohammed.farook/Developer/lab/complex-rag-analysis (consumer project) was running its own slice_orchestrator and writing into cairn's .claude/ tree because of L-017 (path resolution drift). slice.yaml was overwritten mid-run; subsequent phase-3 retries dispatched under a foreign slice_id and timed out (1800s) after six attempts. Surviving phase-3 cluster work salvaged into commit f9f8866; orchestrator-paths and mcp-server clusters never landed and are deferred to firaaz/cairn#3 follow-ups."
 current_phase: 1
 brief: "Lift the canonical project-root resolver into scripts/_root.py and migrate\
   \ every cwd-coupled path call site to use it. Tracking: firaaz/cairn#3 (rank 2 of\
