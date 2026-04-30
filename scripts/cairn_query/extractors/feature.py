@@ -6,6 +6,7 @@ from pathlib import Path
 
 import yaml
 
+from _root import project_root as _project_root
 from cairn_query.extractors.base import ExtractedEdge, ExtractedNode
 from cairn_query.models import Feature
 
@@ -13,8 +14,12 @@ from cairn_query.models import Feature
 class FeatureExtractor:
     """Extract Feature entities from .claude/features/*.yaml files."""
 
-    def __init__(self, features_dir: Path = Path(".claude/features")) -> None:
-        self._dir = features_dir
+    def __init__(self, features_dir: Path | None = None) -> None:
+        self._dir = (
+            features_dir
+            if features_dir is not None
+            else _project_root() / ".claude" / "features"
+        )
 
     def extract(
         self, snapshot_id: str | None = None

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from _root import project_root as _project_root
+
 from .models import (
     Decision,
     Entity,
@@ -21,7 +23,7 @@ from .models import (
 )
 from .storage import KuzuStorage
 
-DEFAULT_DB_PATH = Path(".claude/cairn_query/index.kz")
+DEFAULT_DB_PATH = _project_root() / ".claude" / "cairn_query" / "index.kz"
 
 __all__ = [
     "rebuild_from_sources",
@@ -48,7 +50,12 @@ def rebuild_from_sources(
     db_path: Path = DEFAULT_DB_PATH,
     snapshot_id: str | None = None,
 ) -> KuzuStorage:
-    """Run all extractors and populate the kuzudb at db_path. Idempotent."""
+    """Run all extractors and populate the kuzudb at db_path. Idempotent.
+
+    If db_path is corrupted (RuntimeError from kuzu on open), the file is
+    removed and a fresh database is created — self-healing for stale/truncated
+    index files.
+    """
     # Lazy imports so the package is usable before all extractors are implemented.
     from .extractors.decision import DecisionExtractor
     from .extractors.feature import FeatureExtractor
@@ -58,14 +65,22 @@ def rebuild_from_sources(
     from .extractors.slice import SliceExtractor
     from .extractors.spec_section import SpecSectionExtractor
 
-    storage = KuzuStorage(db_path=db_path)
+    db_path = Path(db_path)
+    try:
+        storage = KuzuStorage(db_path=db_path)
+    except RuntimeError:
+        # Corrupted or truncated database — remove and start fresh.
+        if db_path.exists():
+            db_path.unlink()
+        storage = KuzuStorage(db_path=db_path)
+
     extractors = [
         InvariantExtractor(architecture_path=Path("docs/ARCHITECTURE.md")),
         DecisionExtractor(adr_dir=Path("docs/adr")),
         LessonExtractor(lessons_path=Path("docs/lessons.md")),
         SpecSectionExtractor(spec_path=Path("docs/spec-v1.md")),
         OpRuleExtractor(op_ref_path=Path("docs/operational-reference.md")),
-        FeatureExtractor(features_dir=Path(".claude/features")),
+        FeatureExtractor(features_dir=_project_root() / ".claude" / "features"),
         SliceExtractor(),
     ]
     for ex in extractors:

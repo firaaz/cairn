@@ -9,6 +9,7 @@ from pathlib import Path
 
 import yaml
 
+from _root import project_root as _project_root
 from cairn_query.extractors.base import ExtractedEdge, ExtractedNode
 from cairn_query.models import Slice
 
@@ -23,6 +24,7 @@ def _run_git(*args: str) -> str:
         ["git", *args],
         capture_output=True,
         text=True,
+        cwd=str(_project_root()),
     )
     return result.stdout
 
