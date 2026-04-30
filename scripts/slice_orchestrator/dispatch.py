@@ -17,7 +17,7 @@ import sys
 import threading
 import time
 
-from _root import project_root
+from _root import project_root  # noqa: F401 — migration rule 4
 
 from .core import (
     CLUSTERS_YAML,
@@ -31,6 +31,7 @@ from .core import (
     _extract_envelope_model,
     _intent_envelope,
     _parse_clusters,
+    _project_root_or_cwd,
     _parse_structured_tail,
     _parse_usage_envelope,
     _record_orchestrator_event,
@@ -382,7 +383,7 @@ def _resolve_supersession_hint(issue_hash):
     except Exception:
         return None
     summary = proc.stdout or ""
-    intent_path = project_root() / ".claude" / "current-slice" / "intent.md"
+    intent_path = _project_root_or_cwd() / ".claude" / "current-slice" / "intent.md"
     try:
         intent_text = intent_path.read_text() if intent_path.exists() else ""
     except OSError:

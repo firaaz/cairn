@@ -20,7 +20,7 @@ import sys
 import threading
 from pathlib import Path
 
-from _root import project_root
+from _root import project_root  # noqa: F401 — migration rule 4
 
 from .core import (
     DEBUG_DIR,
@@ -30,6 +30,7 @@ from .core import (
     _active_pricing_table,
     _cost_for_tokens,
     _iso_now,
+    _project_root_or_cwd,
     _slice_id_slug,
     _utc_timestamp,
 )
@@ -62,7 +63,7 @@ def _init_state_dict(slice_id):
         {
             "schema_version": "1.0",
             "slice_id": slice_id,
-            "worktree_path": str(project_root()),
+            "worktree_path": str(_project_root_or_cwd()),
             "orchestrator_pid": os.getpid(),
             "started_at": _iso_now(),
             "ended_at": None,
@@ -141,7 +142,10 @@ def _observability_paths(slice_id):
         "result_json": DEBUG_DIR / f"{slug}-result.json",
         "result_md": DEBUG_DIR / f"{slug}-result.md",
         "index_jsonl": DEBUG_DIR / "index.jsonl",
-        "heartbeat": project_root() / ".claude" / "current-slice" / ".heartbeat",
+        "heartbeat": _project_root_or_cwd()
+        / ".claude"
+        / "current-slice"
+        / ".heartbeat",
     }
 
 

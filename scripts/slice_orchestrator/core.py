@@ -20,6 +20,21 @@ from _root import project_root  # noqa: F401 — migration rule 4
 # do not flag Path(".claude/...") literals (migration rule 1).
 _CLAUDE = ".claude"
 
+
+def _project_root_or_cwd() -> Path:
+    """project_root() with cwd fallback for test fixtures.
+
+    Production runs set CLAUDE_PROJECT_DIR or invoke from a git repo, so
+    project_root() succeeds. Test fixtures using ``monkeypatch.chdir(tmp_path)``
+    without git get cwd — matches pre-migration ``Path.cwd()`` semantics for
+    behavioral parity per intent §Verification(3).
+    """
+    try:
+        return project_root()
+    except RuntimeError:
+        return Path(os.getcwd())
+
+
 DEBUG_DIR = Path(_CLAUDE) / "orchestrator-debug"
 
 SLICE_ID_REGEX = re.compile(r"^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$")
@@ -502,7 +517,7 @@ def _record_orchestrator_event(slice_id: str, event_type: str, **fields) -> None
     Append-only; parent-dir-tolerant (F5); no _git calls (DC-4 by construction).
     """
     path = (
-        project_root()
+        _project_root_or_cwd()
         / ".claude"
         / "current-slice"
         / "integration"
