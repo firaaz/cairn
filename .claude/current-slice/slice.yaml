@@ -1,0 +1,24 @@
+id: substrate/phase-2-staging-untracked-enumeration
+name: substrate/phase-2-staging-untracked-enumeration
+status: in-progress
+current_phase: 1
+brief: "Slice id: substrate/phase-2-staging-untracked-enumeration\n\nIssue #26 follow-up.\
+  \ The partial fix at scripts/slice_orchestrator/lifecycle.py:232-243 (commit ae9e6c8)\
+  \ discovers phase-2-skeptic test writes via `git diff --name-only <phase-1-sha>\
+  \ -- tests/unit/`. `git diff` excludes UNTRACKED files, so the first time a skeptic\
+  \ creates a brand-new test file it never gets staged at the phase-2 boundary commit\
+  \ \u2014 recreating the original bug for greenfield test files.\n\nFix shape: extend\
+  \ the phase-2 staging block in lifecycle.py to also enumerate untracked tests via\
+  \ `git ls-files --others --exclude-standard -- tests/unit/`, union with the existing\
+  \ diff-based set, preserve the path.exists() idempotency guard. INV-008 DC-3 (idempotent)\
+  \ and DC-4 (single phase-boundary commit) hold by construction \u2014 additive widening\
+  \ of the same commit, no new commits emitted.\n\nRegression surface already in tree:\
+  \ tests/unit/test_phase_2_handoff_staging_surface.py (R1-R4, commit af0b5e0). The\
+  \ new RED test must cover the gap: an untracked test file present at the phase-1\
+  \ boundary becomes staged in the phase-2 boundary commit. Existing R1-R4 cases must\
+  \ continue passing.\n\nOut of scope: any phase other than 2; test paths outside\
+  \ tests/unit/; modifying the phase-1 boundary SHA discovery; squash-merge handling\
+  \ (L-015 / substrate Slice 4 territory); pre-existing reds.\n\nInvariants touched:\
+  \ INV-008 (preserved). ADRs referenced: none required.\n\nAdjacent context: memory\
+  \ issue_26_untracked_blind_spot.md; .claude/handoff.md \"Next\"; failed predecessor\
+  \ archived at .claude/completed-slices/substrate-phase-2-skeptic-stage-surface-failed-2/."
