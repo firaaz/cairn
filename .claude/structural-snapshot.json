@@ -1,7 +1,7 @@
 {
   "checks/role_guard.py": {
-    "hash": "b3bc548d5af4b23ee9a5836dad61e281255385eae9a95d358d2b5e8a75791689",
-    "size": 7840
+    "hash": "fbb8bde30815982a92b4a5afaf9fce57a094c0dc89ca0836b2df83521e48dbb2",
+    "size": 8373
   },
   "commands/claude-code/.local/README.md": {
     "hash": "5b341b1a6d17afb18954b61769ab03979a4c2857db4d882c4fbb91286c2a8442",
@@ -80,8 +80,8 @@
     "size": 1719
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "fe9e97e6a6cc6ccc51ea437a2aa0264dd61701493d93e8b94bae545107e0b30d",
-    "size": 29338
+    "hash": "1cb384b40362b040b16c49470ed22d073838e08851cf9b9c754f3c40e9cdca42",
+    "size": 30948
   },
   "docs/adr/board-as-roadmap-substrate.md": {
     "hash": "7d0feb15c1a914c607585fab95342685fa6b9008038b4ad82692fb14b54077a5",
@@ -128,8 +128,12 @@
     "size": 16093
   },
   "docs/adr/index.md": {
-    "hash": "3d257e14e87c510575cbae30efd4526dbc6898c0e9aea56aacb98d9e68230ba3",
-    "size": 2370
+    "hash": "21d9c0986a0daca9ef95c5611a54788163099b2b07a23df5c9a5bdcf32218b86",
+    "size": 2639
+  },
+  "docs/adr/invariant-binding-strategy.md": {
+    "hash": "9f08cfcc0b56bc3438fe90e1498285339b414348137a198796205b9323fff08a",
+    "size": 11438
   },
   "docs/adr/orchestrator-observability.md": {
     "hash": "ef1a4cc025459d7705ce8cad54e9b8e216874c41d8ef61747c937534af2ed923",
@@ -146,6 +150,10 @@
   "docs/adr/phase-pipeline-evaluation.md": {
     "hash": "85ae982174f6bdb90ba8014bcae4f0782286215b6b9a3a700edda69c2f6c72cf",
     "size": 10928
+  },
+  "docs/adr/pipeline-substrate-naming.md": {
+    "hash": "c901a5c54c1cfa5fcb69cb15f9332b861bfdc4e09df72f8c76082b634f024d80",
+    "size": 8042
   },
   "docs/adr/semantic-identity.md": {
     "hash": "480dff8cf37db816409c48abafe7b3c8aedadf7b36017641888f787f949a34aa",
@@ -176,8 +184,8 @@
     "size": 3516
   },
   "docs/lessons.md": {
-    "hash": "980548ce6f7a9509dc0e7887175792945f023b7fde77627cc47d8492a0232d17",
-    "size": 102978
+    "hash": "7148b9237555ce14677cd73149a8356a08b5e4e472700b6bd608f6e66e09b23e",
+    "size": 103558
   },
   "docs/operational-reference.md": {
     "hash": "eb3a2147accfb532b7e8ae9e44fe5a75578ce0f76269717a8b72b6b393cbf4ea",
@@ -463,6 +471,10 @@
     "hash": "e39b157ef7ec9686cdaf5d4a2d2b5298118087e66cec0425466222be9141526b",
     "size": 5672
   },
+  "scripts/checks_role_guard_module.py": {
+    "hash": "d52814b9d61d97a46941cb2b575add507c681f1007bedf66045875c4de6914d9",
+    "size": 922
+  },
   "scripts/dogfood_evaluate.py": {
     "hash": "d6a68c3170a81a33ce4b85e518a5f3c01ffa13f808e799acba5dcbfbaa91bdf3",
     "size": 8676
@@ -512,8 +524,8 @@
     "size": 6259
   },
   "scripts/validate_architecture.py": {
-    "hash": "48ae4acb0295836235a824c18adb8d922a60cd7ff3589521b90708d49254fc2f",
-    "size": 15159
+    "hash": "5c31a25fdcc24a963ba27d2702861f39794e99cf351b5af71c1ca4fe93aa4ed4",
+    "size": 22994
   },
   "tests/integration/__init__.py": {
     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -726,6 +738,10 @@
   "tests/unit/test_integration_gate_timeout.py": {
     "hash": "9ee716bb31cbf0719cf49dd155bdda3627a30f9a3c8c0c2702ef8bb710fa9ea5",
     "size": 6971
+  },
+  "tests/unit/test_inv_003_phase_topology.py": {
+    "hash": "e8be38c51ce89052fbf55c999987587d4dc5cdf16712b390bf807e1370c1f423",
+    "size": 23178
   },
   "tests/unit/test_invariant_assertions.py": {
     "hash": "32afa489f6997662bba478d80eb9f7e6a5341a80c40d403fa9d843522fd21860",
