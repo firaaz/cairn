@@ -1,25 +1,21 @@
 ---
-slice: none
-phase: n/a
+slice: v1-defense-d2/inv-001-binding-implementation
+phase: 3
 branch: feature/compression-followup
-as-of: 2026-05-02 sweep-6
+as-of: 2026-05-02 phase-3 complete (re-dispatched)
 ---
 
 ## State
-Sweep #6 of 2026-05-02 PASS-with-known-debt, following close of `v1-defense-d2/inv-003-phase-topology-binding` at `c90a169`. INV-003 bound to true four-way machine-check; v1-defense-D2 progress 1/3. Snapshot refreshed; full pytest 1222 passed (excluding the 2 known L-015 cases).
+Phase 3 implementation complete. Commit `fce0b5d` landed the full envelope: `scripts/validate_architecture.py` (+130: `_load_substrate_registry`, `_SUBSTRATE_VERIFIERS`, `_run_git_log_walk_assertion`, dispatcher), `.claude/pipeline-substrate-registry.yaml` (9 D3 entries), `docs/ARCHITECTURE.md` INV-001 block switched to `git-log-walk` with `<pending-slice-close-sha>` placeholder. T1–T8 GREEN; full suite 1231 passed (7 pre-existing failures, all out-of-scope).
 
 ## Next
-Run `/start-slice v1-defense-d2/inv-001-002-binding-implementation` per `invariant-binding-strategy` D1–D8.
+Phase 4 integration audit: verify Phase 4 evidence checklist per `docs/plans/2026-05-02-inv-001-binding-plan.md` §Phase 4; close slice if all 8 items pass.
 
 ## Blocked / Pending
-- INV-001 + INV-002 binding implementation → next slice (the only un-time-boxed v1 commitment remaining)
-- L-015 extractor disk-fallback → 2 XPASS(strict) failures, substrate Slice 4
-- INV-004 rebaseline for CC 2.1.126 → housekeeping/inv004-rebaseline-cc-2.1.126 (intermittent)
-- Phase-2-skeptic write-timing bug → memory `phase_2_skeptic_write_timing_bug.md`
-- Phase-3 implementer 1800s timeout pattern → candidate slice if recurring (observed once at `c90a169` arc)
+- L-015 extractor disk-fallback — 2 XPASS(strict), substrate Slice 4
+- INV-002 / INV-008 bindings — slice 2 of v1-defense-d2 split
+- Phase-2-skeptic write-timing bug — memory `phase_2_skeptic_write_timing_bug.md`
 
 ## Pointers
-- `.claude/sweep-results/2026-05-02-sweep-6.md` — this sweep's full report
-- `docs/adr/invariant-binding-strategy.md` — read before opening (1+2) slice; D1–D8 enumerate binding contract
-- `docs/adr/pipeline-substrate-naming.md` — registry shape + initial entries; INV-001 binding consumes it
-- `scripts/validate_architecture.py:454-560` — `validate_phase_topology()`, the precedent for `git-log-walk` and `structural-parser`
+- `.claude/current-slice/handoff-phase-3.md` — Phase 3 evidence + checklist
+- `docs/plans/2026-05-02-inv-001-binding-plan.md` §Phase 4 — evidence items
