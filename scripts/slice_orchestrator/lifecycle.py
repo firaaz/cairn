@@ -189,6 +189,17 @@ def _is_slice_already_closed(state=None):
     return True
 
 
+def _git_stdout(result):
+    """Extract text from a _git() return value.
+
+    Real _git returns subprocess.CompletedProcess (has .stdout); test stubs
+    return a plain string.  Normalises both to str so callers are agnostic.
+    """
+    if hasattr(result, "stdout"):
+        return result.stdout or ""
+    return str(result) if result else ""
+
+
 def commit_phase_handoff(phase, summary, commit_hash):
     """Stage + commit the phase agent's handoff-phase-N.md.
 
@@ -213,6 +224,23 @@ def commit_phase_handoff(phase, summary, commit_hash):
     feature_rel = f".claude/features/{feature_id}.yaml"
     if (root / feature_rel).exists():
         _git("add", feature_rel)
+    # Issue #26: stage phase-2-skeptic RED test writes under tests/unit/.
+    # Discovery is diff-based against the Phase-1 boundary SHA — not
+    # slug-glob — so naming-convention drift cannot cause misses (R2).
+    # path.exists() guard makes re-runs idempotent (INV-008 DC-3).
+    # Content widening only; commit count is unchanged (INV-008 DC-4).
+    if phase == 2:
+        phase1_sha = _git_stdout(
+            _git("log", "--grep=handoff: phase 1 complete", "-1", "--format=%H")
+        ).strip()
+        if phase1_sha:
+            diff_out = _git_stdout(
+                _git("diff", "--name-only", phase1_sha, "--", "tests/unit/")
+            )
+            for rel in diff_out.splitlines():
+                rel = rel.strip()
+                if rel and (root / rel).exists():
+                    _git("add", rel)
     _git("commit", "--allow-empty", "-m", f"handoff: phase {phase} complete")
 
 
