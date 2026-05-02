@@ -1,7 +1,8 @@
 id: substrate/phase-2-skeptic-stage-surface
 name: substrate/phase-2-skeptic-stage-surface
-status: in-progress
-current_phase: 1
+status: failed
+current_phase: 4
+failure-reason: "Phase 4 RAISE_ISSUE on bisect-anchor (test file in P3 commit af0b5e0, not P2 boundary f61a50e). Two distinct substrate bugs identified: (1) lifecycle.py at ae9e6c8 uses git diff which excludes untracked files — first-time test files never get staged; (2) phase-2-skeptic on this redispatch did not write tests during P2 (sequencing/agent-prompt issue). Fix is functionally in tree (R1-R4 PASS unit tests, ae9e6c8 covers tracked-modified case) but bisect-anchor cannot be met without fixing bug 1 first. Both issues filed for follow-up; this slice closes failed."
 brief: "substrate/phase-2-skeptic-stage-surface \u2014 issue #26 self-application\
   \ validation. RE_DISPATCH from prior failed slice (cb45e7b archive) per triager\
   \ 2026-05-02. The lifecycle.py fix is already on HEAD at ae9e6c8 (extends commit_phase_handoff\
