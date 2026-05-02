@@ -1,0 +1,5 @@
+clusters:
+  - name: d3-bypass-log-substrate-and-tests
+    files:
+      - '^\.claude/d3-bypasses\.log$'
+      - '^tests/unit/test_d3_bypass_log_format\.py$'
