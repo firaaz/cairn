@@ -1,57 +1,25 @@
-# Phase 4 handoff — v1-defense-d3/bypass-log-test-resilience
-
-Phase 4 (Auditor) integration gate complete. Outcome: **OK**.
-
-- `.claude/d3-bypasses.log` lines 18–19 backfilled with `pre-existing:` token (commit `0c24e26`); lines 1–17 byte-immutable.
-- `pytest tests/unit/test_d3_bypass_log_format.py` → 18 passed.
-- Full `pytest` → 1191 passed, 3 pre-existing failures (INV-004 budget drift, extractor squash-merge L-015) all unrelated to this slice.
-- `validate_architecture.py` → ALL CHECKS PASSED.
-
-See `integration/sweep-notes.md` for V1–V7 evidence rows.
-
-Ready for `close_slice`.
-
 ---
-# Sweep notes — v1-defense-d3/bypass-log-test-resilience (Phase 4)
+slice: none
+phase: n/a
+branch: feature/compression-followup
+as-of: 2026-05-02 sweep-5
+---
 
-## Invariants
+## State
+Sweep #5 of 2026-05-02 PASS-with-known-debt at the sweep commit, following close of `v1-defense-d3/bypass-log-test-resilience` at `de62863`. The slice took an inverse-shape fix vs. the proposed Next: instead of relaxing `test_d3_bypass_log_format` for legacy unclassified entries, Phase 3 backfilled `pre-existing:` tokens onto `.claude/d3-bypasses.log` lines 18–19 (commit `0c24e26`) and added three new pin tests (S1/S2/S5) that catch silent reclassification by name. End state matches the goal: target test 18/18 green, sweep-noise eliminated. Snapshot baseline refreshed; no new debt.
 
-`invariants-touched: []` per intent.md frontmatter — no invariant rows required. `validate_architecture.py` PASSED (10 invariants, 18 ADRs).
+## Next
+No firm Next. Operator choice among three open debts (any closes a tracked failing test):
+- substrate Slice 4 (L-015 extractor disk-fallback) — closes the two `test_extractor_slice` XPASS(strict) cases.
+- INV-004 rebaseline for CC 2.1.126 — closes `test_inv004_turn1_token_budget` (453,828 > 40,000).
+- Phase-2-skeptic write-timing bug — addresses pipeline propagation risk (memory-tracked).
 
-## Substrate verification (intent V1–V4)
+## Blocked / Pending
+- `test_extractor_slice` XPASS(strict) — `test_extracts_at_least_four_slices` + `test_emits_parent_edge_to_feature` → substrate Slice 4 (L-015)
+- `test_inv004_turn1_token_budget` budget drift (CC 2.1.126) → housekeeping/inv004-rebaseline-cc-2.1.126
+- Phase-2-skeptic write-timing bug → memory `phase_2_skeptic_write_timing_bug.md`
 
-| ID | Check | Status | Evidence |
-|----|-------|--------|----------|
-| V1 | line 18 matches `pre-existing:` regex | PASS | `.claude/d3-bypasses.log:18` |
-| V2 | line 19 matches `pre-existing:` regex | PASS | `.claude/d3-bypasses.log:19` |
-| V3 | only lines 18–19 changed vs phase-1 baseline; lines 1–17 byte-identical | PASS | commit `0c24e26` diff scope |
-| V4 | exactly one trailing `\n` | PASS | `tail -c 2 .claude/d3-bypasses.log` → `p \n` |
-
-Note: log now has 21 lines (lines 20–21 appended by a separate later slice `compression/upgrade-doc-bug-fixes` 2026-05-02); both carry `pre-existing:` token and pass the regex test.
-
-## Behavioral verification (intent V5–V7)
-
-| ID | Check | Status | Evidence |
-|----|-------|--------|----------|
-| V5 | `pytest tests/unit/test_d3_bypass_log_format.py -x` green | PASS | 18 passed in 0.03s |
-| V6 | `test_log_has_at_least_four_lines` passes | PASS | included in V5 run |
-| V7 | `test_slice_017_line_byte_identical` passes | PASS | included in V5 run |
-
-## Full suite
-
-- `uv run pytest`: **1191 passed, 3 skipped, 2 xfailed, 3 failed** in 194s.
-- `uv run python scripts/validate_architecture.py`: **ALL CHECKS PASSED**.
-
-### Pre-existing failures (out of scope)
-
-| Test | Class | Notes |
-|------|-------|-------|
-| `test_context_budget.py::test_inv004_turn1_token_budget` | pre-existing | INV-004 turn-1 budget drift CC 2.1.126 (453,828 > 40,000); tracked since SLICE-016 (log line 3). Not slice-caused. |
-| `test_extractor_slice.py::test_extracts_at_least_four_slices` | pre-existing | XPASS(strict) — squash-merge collapses per-slice close commits; tracked as L-015. |
-| `test_extractor_slice.py::test_emits_parent_edge_to_feature` | pre-existing | Same root cause as above (L-015). |
-
-None caused by this slice — failures unrelated to `.claude/d3-bypasses.log` or its tests.
-
-## Outcome
-
-OK — substrate well-formed, target test green, no in-scope regressions.
+## Pointers
+- `.claude/sweep-results/2026-05-02-sweep-5.md` — this sweep's full report; read if reopening any pending item
+- `.claude/sweep-results/v1-defense-d3-bypass-log-test-resilience/` — slice artifacts (intent/validation/integrator notes)
+- `tests/unit/test_d3_bypass_log_format.py:160-216` — new S1/S2/S5 pin tests for line-18/19 reclassification guard

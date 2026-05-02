@@ -628,8 +628,8 @@
     "size": 12100
   },
   "tests/unit/test_d3_bypass_log_format.py": {
-    "hash": "a503d29a8ec6f90b6c0af51b0b97989db8106c2bae48d0b290bbf8e67c04e76d",
-    "size": 5417
+    "hash": "0829751639df61352de8991b9e0ac1b28615162b009beafa2fa06e02c8e9f4c3",
+    "size": 7744
   },
   "tests/unit/test_dispatch_contract_separation.py": {
     "hash": "ac51b8a14cd90cccff73a6521dd55069fb442e552c5274ba832c618070bb737e",
