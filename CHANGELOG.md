@@ -11,7 +11,7 @@ Squash-merges `feature/compression` (335 commits across the substrate v1, lever-
 #### Added
 
 - **Knowledge substrate v1**: `cairn-knowledge` MCP server (stdio transport per ADR `cairn-substrate-and-fastmcp` D6), `scripts/cairn_query/` package backing four query tools (`lookup`, `search`, `path_bindings`, `cypher`), kuzu graph store. Read-only (mutation surface deferred per D7).
-- **Slice-pipeline orchestrator** at `scripts/slice_orchestrator/`: four-phase Intent → Validation → Implementation → Integration loop with per-phase agents (`.claude/agents/phase-{1-writer,2-skeptic,3-implementer,4-integrator}.md`), CLI at `python -m slice_orchestrator --brief|--resume|--legacy`, sweep-results artifact preservation, resume reconciliation.
+- **Slice-pipeline orchestrator** at `scripts/slice_orchestrator/`: four-phase Intent → Validation → Implementation → Integration loop with per-phase agents (`.claude/agents/phase-{1-writer,2-skeptic,3-implementer,4-integrator}.md`), CLI at `PYTHONPATH=scripts uv run python -m slice_orchestrator --brief|--resume|--legacy`, sweep-results artifact preservation, resume reconciliation.
 - **Role-keyed enforcement** (`checks/role_guard.py`): canonical-knowledge read-class lockdown across all four phase roles; envelope-bound write enforcement for `phase-3-implementer`. Bash-token extraction (`_bash_path_tokens`) covers `cat`/`head`/`grep` paths.
 - **Cost discipline**: per-phase model config (`AGENT_MODEL_CONFIG`) with extended-thinking budgets; Track-0 telemetry; lever-1 retune complete (~$18.71 baseline).
 - Lessons L-001 through L-015 (`docs/lessons.md`). L-015 (squash-merge / extractor coupling) added in the post-merge closeout commit.
