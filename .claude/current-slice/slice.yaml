@@ -1,7 +1,7 @@
 id: substrate/phase-2-skeptic-stage-surface
 name: substrate/phase-2-skeptic-stage-surface
-status: in-progress
-current_phase: 1
+status: raise-issue
+current_phase: 3
 brief: "substrate/phase-2-skeptic-stage-surface \u2014 issue #26 fix. The orchestrator's\
   \ commit_phase_handoff (scripts/slice_orchestrator/lifecycle.py) does not include\
   \ phase-2-skeptic's RED test writes when current_phase==2, so Phase 2's tests under\
