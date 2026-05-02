@@ -60,16 +60,16 @@
     "size": 1308
   },
   "commands/claude-code/start-slice-legacy.md": {
-    "hash": "575743c3f8f2ea3acafc69a0bdedb36c6b16305b22bbb1540931f73b6e86e5e0",
-    "size": 845
+    "hash": "39f6a8ca2ff058da5f3c728574030bd6fb3314f1964f502f069276c0687648ec",
+    "size": 871
   },
   "commands/claude-code/start-slice.full.md": {
     "hash": "a1ccf59df544272826f3998570bb5e00f68a597e57cec052c24bb3338a01a24a",
     "size": 20747
   },
   "commands/claude-code/start-slice.md": {
-    "hash": "c7d06bb69cc2ef87de40a897a37f083abbd1549b3004ebb8cfbaed149117d083",
-    "size": 1691
+    "hash": "b31ac275f005e78b894de516205e0bcd151ee0d24dad9722af7498870ee716fd",
+    "size": 1717
   },
   "commands/claude-code/status.full.md": {
     "hash": "358d274d0d436e9ca0d58a8856e03c7dc27b8337a72c391f2c43a38d6752a65e",
@@ -168,8 +168,8 @@
     "size": 319
   },
   "docs/features/compression.md": {
-    "hash": "1f44c0656b4623e0f747f7e90db1db6a6b9035ace313c12745b4d1efe511d449",
-    "size": 8469
+    "hash": "c1f418e52e3bcfd16ecfaa84ecc9c8403a73acd1abda63a0e79b920e2bbee7c2",
+    "size": 8495
   },
   "docs/features/identifier-scheme.md": {
     "hash": "390de86f6771dc3e8cde6325efccfcbde5e3a3e75be5b34ad3d83258a0c2bad7",
@@ -938,6 +938,10 @@
   "tests/unit/test_snapshot_lru.py": {
     "hash": "32303c09b7836080f864b0b0bbd9aedf14961adb6e13feaa86fc9737c5dc1f85",
     "size": 1860
+  },
+  "tests/unit/test_start_slice_dispatcher_doc.py": {
+    "hash": "2a68a15c4f87c45f8446635d041a24b6d97826e32a758a7a8ccb1bbe84dac176",
+    "size": 4776
   },
   "tests/unit/test_state_schema.py": {
     "hash": "f7a9788a999435676e8d26aeff37b4469dc888c2e5f61bf8f63c3287657bc87a",
