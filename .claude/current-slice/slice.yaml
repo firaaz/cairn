@@ -1,5 +1,56 @@
-id: v1-defense-d3/bypass-log-test-resilience
-name: v1-defense-d3/bypass-log-test-resilience
-status: complete
-current_phase: 4
-brief: v1-defense-d3/bypass-log-test-resilience
+id: v1-defense-d2/inv-003-phase-topology-binding
+name: v1-defense-d2/inv-003-phase-topology-binding
+status: in-progress
+current_phase: 1
+brief: "v1-defense-d2/inv-003-phase-topology-binding\n\nUpgrade INV-003 from advisory\
+  \ grep proxy to true machine-checkable binding via a four-way cross-reference structural\
+  \ check, satisfying v1-defense-D2 for INV-003.\n\nINV-003 verbatim (docs/ARCHITECTURE.md:31):\
+  \ \"Every slice runs through exactly four phases in order \u2014 Intent (Reader),\
+  \ Validation (Skeptic), Implementation (Builder), Integration (Auditor). Each phase's\
+  \ role and anti-behaviors are surfaced at phase entry by /catchup and /start-slice\
+  \ via docs/operational-reference.md \xA7 Phase Skill Guide. Phase count, names,\
+  \ and role assignments are locked; changes require a superseding ADR. Roles are\
+  \ instructed in protocol text and not hook-enforced, with one narrow named exception:\
+  \ role-keyed write-path enforcement via checks/role_guard.py is authorized for the\
+  \ compression feature's orchestrator dispatch per compression-infrastructure-bootstrap...\"\
+  \n\nCurrent proxy (ARCHITECTURE.md:33-39): grep for literal \"### Phase 1: Intent\"\
+  \ in docs/operational-reference.md. Catches deletion, not violation.\n\nBinding\
+  \ shape: bespoke validate_phase_topology() function added to scripts/validate_architecture.py\
+  \ (NOT one of the new git-log-walk/structural-parser types from invariant-binding-strategy\
+  \ \u2014 that ADR explicitly scopes INV-003 out). The function asserts the (phase,\
+  \ role) set declared in four sources is identical:\n\n1. scripts/slice_orchestrator/core.py:42-47\
+  \ ROLE_FOR_PHASE dict \u2014 authoritative source per the recon\n2. docs/operational-reference.md\
+  \ \xA7 Phase Skill Guide table (regex-extract two tables at :80-85 and :91-96)\n\
+  3. .claude/agents/phase-{1..4}-*.md filenames (glob, parse phase ordinal and role\
+  \ from filename)\n4. checks/role_guard.py ROLE_POLICIES + ROLE_DENY_READ keys (lines\
+  \ 42-66)\n\nFailure modes the binding catches: phase added/removed in one source\
+  \ but not propagated; role renamed in one place; role_guard policy key drift; prompt\
+  \ file added without orchestrator entry; orchestrator entry added without prompt\
+  \ file.\n\nAsymmetry to surface (recon finding): phase-3-implementer has NO static\
+  \ ROLE_POLICIES entry \u2014 relies on AGENT_ENVELOPE-driven gate per compression-infrastructure-bootstrap.\
+  \ Decide in this slice whether (a) the binding should require static ROLE_POLICIES\
+  \ entry for all four roles (asymmetry is a gap; add a phase-3 entry) OR (b) the\
+  \ binding accepts envelope-grant-only as legitimate per compression-infrastructure-bootstrap\
+  \ (asymmetry is intentional; binding tolerates it). Operator recommendation: (b)\
+  \ with explicit comment in role_guard.py naming the asymmetry as intentional. This\
+  \ is a decision point the slice should resolve.\n\nADRs referenced: compression-infrastructure-bootstrap\
+  \ (provisional, defines role_guard authorization), phase-lock-and-role-declaration\
+  \ (firm, defines four-phase pipeline lock), cliff-failure-mode-and-v1-defenses (firm,\
+  \ defines D2). Empty adrs-created.\n\nEnvelope:\n- scripts/validate_architecture.py\
+  \ (add validate_phase_topology + invocation; new assertion type \"phase-topology\"\
+  \ or direct function call)\n- docs/ARCHITECTURE.md (replace INV-003 grep proxy with\
+  \ new assertion block; update D2 paragraph)\n- tests/unit/test_inv_003_phase_topology.py\
+  \ (new RED file: at least four tests covering the four sources matching, plus negative\
+  \ cases \u2014 drop a phase, rename a role, drift a ROLE_POLICIES key)\n- checks/role_guard.py\
+  \ (only if (a) chosen \u2014 add phase-3 static entry; if (b) chosen, add an explanatory\
+  \ comment naming the asymmetry)\n\nOut of scope:\n- INV-001 binding (separate slice\
+  \ via invariant-binding-strategy ADR)\n- INV-002 binding (separate slice via invariant-binding-strategy\
+  \ ADR)\n- The new git-log-walk and structural-parser assertion types (also separate\
+  \ slice)\n- Anti-behavior text matching across prompts vs Skill Guide (string-match\
+  \ prose; out-of-scope per recon Q3)\n- Refactoring slice_orchestrator/core.py ROLE_FOR_PHASE\
+  \ shape\n\nInvariants touched: INV-003 (proxy replaced with true binding).\n\nAdjacent\
+  \ context: invariant-binding-strategy ADR + pipeline-substrate-naming ADR landed\
+  \ 2026-05-02 at 05bafd7. INV-001 and INV-002 are explicitly OUT of this slice's\
+  \ scope. The relevant cross-reference sources are confirmed at: scripts/slice_orchestrator/core.py:42-47,\
+  \ docs/operational-reference.md:80-85 + 91-96, .claude/agents/phase-{1..4}-*.md,\
+  \ checks/role_guard.py:42-66."
