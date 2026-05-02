@@ -12,3 +12,6 @@ slices:
   - id: v1-defense-d2/inv-003-phase-topology-binding
     added: 2026-05-02
     after: [v1-defense-d2/assertion-block-migration]
+  - id: v1-defense-d2/inv-001-binding-implementation
+    added: 2026-05-02
+    after: [v1-defense-d2/inv-003-phase-topology-binding]
