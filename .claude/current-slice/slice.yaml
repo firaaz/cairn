@@ -1,8 +1,8 @@
 id: compression/upgrade-doc-bug-fixes
 name: "compression/upgrade-doc-bug-fixes"
-status: integration
+status: complete
 started: 2026-05-02
-completed: null
+completed: 2026-05-02
 invariants-touched: []
 adrs-referenced: []
 adrs-created: []
