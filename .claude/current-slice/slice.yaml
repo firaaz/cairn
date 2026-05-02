@@ -1,7 +1,8 @@
 id: substrate/phase-2-skeptic-stage-surface
 name: substrate/phase-2-skeptic-stage-surface
-status: raise-issue
-current_phase: 3
+status: failed
+current_phase: 4
+failure-reason: "Phase 4: bisect-anchor unsatisfiable due to chicken-and-egg self-application gap. Fix in ae9e6c8 functionally correct (4/4 R1-R4 PASS, INV-008 PASS, 1177 tests pass) but the slice's own Phase-2 boundary commit cannot contain the test file because the bug being fixed was active during this slice's Phase 2. Triager (2026-05-02) routed RE_DISPATCH to Phase 1 from current HEAD."
 brief: "substrate/phase-2-skeptic-stage-surface \u2014 issue #26 fix. The orchestrator's\
   \ commit_phase_handoff (scripts/slice_orchestrator/lifecycle.py) does not include\
   \ phase-2-skeptic's RED test writes when current_phase==2, so Phase 2's tests under\
