@@ -50,11 +50,6 @@ _ORCHESTRATOR_XFAIL_REASON = (
     "orchestrator-paths cluster pending follow-up (firaaz/cairn#3): "
     "substrate/root-resolver slice abandoned mid-phase-3"
 )
-_MCP_SERVER_XFAIL_REASON = (
-    "mcp-server cluster pending follow-up (firaaz/cairn#3): "
-    "substrate/root-resolver slice abandoned mid-phase-3"
-)
-
 MIGRATION_TARGETS = [
     SCRIPTS / "slice_orchestrator" / "core.py",
     SCRIPTS / "slice_orchestrator" / "lifecycle.py",
@@ -387,26 +382,116 @@ def test_orchestrator_modules_have_no_dotclaude_literals():
     )
 
 
-@pytest.mark.xfail(strict=True, reason=_MCP_SERVER_XFAIL_REASON)
-def test_mcp_server_does_not_use_file_dunder_for_root_inference():
-    """mcp_servers/cairn_knowledge/server.py currently builds _REPO_ROOT via
-    Path(__file__).resolve().parent.parent.parent for sys.path injection AND
-    DB/corpus paths. Per intent's L-017 ban, project-root inference must
-    instead route through scripts/_root.project_root().
+def test_package_root_and_project_root_resolve_to_different_paths_outside_cairn(
+    tmp_path, monkeypatch
+):
+    """The two-roots disambiguation: package_root() points at cairn's checkout
+    on disk (always); project_root() points at the consumer's project (via
+    CLAUDE_PROJECT_DIR or git toplevel from cwd). Outside the cairn tree they
+    MUST differ — that is what the L-017 fix turns on.
     """
-    src = (MCP / "cairn_knowledge" / "server.py").read_text()
-    # The L-017 marker: a parent.parent.parent chain off __file__ that is
-    # then used as a project-root surrogate.
-    pattern = re.compile(r"Path\(__file__\)\.resolve\(\)\.parent\.parent\.parent")
-    assert not pattern.search(src), (
-        "mcp_servers/cairn_knowledge/server.py still uses "
-        "Path(__file__).resolve().parent.parent.parent for project-root inference. "
-        "This is the L-017 trap — replace with project_root()."
+    import sys
+
+    sys.path.insert(0, str(SCRIPTS))
+    try:
+        from _root import package_root, project_root  # type: ignore[import-not-found]
+    finally:
+        sys.path.remove(str(SCRIPTS))
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(tmp_path))
+
+    pkg = package_root()
+    proj = project_root()
+
+    assert pkg == CAIRN_ROOT, (
+        f"package_root() must always return the cairn checkout; got {pkg}"
     )
-    assert "project_root" in src, (
-        "mcp_servers/cairn_knowledge/server.py must import/use project_root() "
-        "for DB and corpus paths per slice brief."
+    assert proj == tmp_path.resolve(), (
+        f"project_root() must respect CLAUDE_PROJECT_DIR; got {proj}"
     )
+    assert pkg != proj, (
+        "package_root() and project_root() must differ outside the cairn tree — "
+        "this is the L-017 disambiguation. Same value means the test fixture "
+        "did not actually exit the cairn tree."
+    )
+
+
+def test_corpus_extractors_anchor_at_package_root_not_consumer_cwd(
+    tmp_path, monkeypatch
+):
+    """L-017 contract for the MCP corpus channel.
+
+    The MCP server serves *cairn's* methodology corpus (ADRs, lessons, spec,
+    INV docs) to all consumers regardless of which consumer launched it.
+    Therefore the corpus extractor paths in cairn_query.rebuild_from_sources
+    MUST anchor at package_root() (where cairn's code+docs live on disk),
+    NOT at cwd or project_root() (which point at the consumer).
+
+    This test sets cwd and CLAUDE_PROJECT_DIR to a tmp_path that contains no
+    docs/. If extractors read cwd-relatively or project_root()-relatively, the
+    rebuild produces an empty corpus and the lookup raises. If extractors
+    correctly anchor at package_root(), they read cairn's docs/ARCHITECTURE.md
+    and the lookup succeeds.
+    """
+    import sys
+
+    sys.path.insert(0, str(SCRIPTS))
+    try:
+        import cairn_query  # type: ignore[import-not-found]
+    finally:
+        sys.path.remove(str(SCRIPTS))
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(tmp_path))
+
+    db_path = tmp_path / "index.kz"
+    storage = cairn_query.rebuild_from_sources(db_path=db_path)
+
+    # cairn's docs/ARCHITECTURE.md declares INV-008. tmp_path/docs/ does not
+    # exist. If the lookup succeeds, extractors anchored at package_root().
+    inv = cairn_query.lookup(storage, "invariant", "INV-008")
+    assert inv is not None, (
+        "INV-008 not found — corpus extractors did not anchor at package_root(). "
+        "This is the L-017 leak: extractors are reading the consumer's docs/ "
+        "instead of cairn's."
+    )
+
+
+def test_mcp_server_uses_package_root_for_sys_path_bootstrap():
+    """sys.path bootstrap in mcp_servers/cairn_knowledge/{server,tools}.py
+    MUST anchor at __file__-relative (package location), NOT at project_root().
+
+    Reason: the MCP server is launched as a subprocess in consumer projects.
+    `import cairn_query` resolves through sys.path, which must point at the
+    cairn package's actual disk location — the consumer's project does not
+    contain scripts/cairn_query/. Replacing this with project_root() would
+    break the import chain in exactly the consumer scenario the migration
+    targets. See `scripts/_root.py:package_root()` for the canonical name;
+    these files cannot import it (chicken-and-egg with sys.path bootstrap).
+    """
+    for path in (
+        MCP / "cairn_knowledge" / "server.py",
+        MCP / "cairn_knowledge" / "tools.py",
+    ):
+        src = path.read_text()
+        # The bootstrap chain MUST be __file__-relative (package location).
+        bootstrap = re.compile(
+            r"_PACKAGE_ROOT\s*=\s*Path\(__file__\)\.resolve\(\)\.parent\.parent\.parent"
+        )
+        assert bootstrap.search(src), (
+            f"{path.relative_to(CAIRN_ROOT)} must bootstrap sys.path via "
+            "_PACKAGE_ROOT = Path(__file__).resolve().parent.parent.parent. "
+            "This is the package's location on disk, not a project_root() "
+            "surrogate — see the file's bootstrap-comment for why."
+        )
+        # And the constant MUST flow into sys.path injection (not into a
+        # .claude/... construction or anything project-state-shaped).
+        assert "_SCRIPTS = _PACKAGE_ROOT" in src and "sys.path" in src, (
+            f"{path.relative_to(CAIRN_ROOT)} must use _PACKAGE_ROOT only for "
+            "sys.path bootstrap. Any other downstream use risks the L-017 "
+            "anti-pattern (package-root used as project-root surrogate)."
+        )
 
 
 # ---------------------------------------------------------------------------

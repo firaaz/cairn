@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from _root import package_root as _package_root
 from _root import project_root as _project_root
 
 from .models import (
@@ -74,12 +75,20 @@ def rebuild_from_sources(
             db_path.unlink()
         storage = KuzuStorage(db_path=db_path)
 
+    # Corpus paths anchor at package_root() — these read cairn's own ADRs,
+    # lessons, spec, and INV docs, which the MCP server serves to all consumers
+    # regardless of which consumer launched it. Using project_root() here would
+    # point at the consumer's docs/, which is the L-017 leak.
+    # Feature paths anchor at project_root() — features are project-local
+    # (each consumer has its own .claude/features/) and not part of the cairn
+    # methodology corpus.
+    _pkg = _package_root()
     extractors = [
-        InvariantExtractor(architecture_path=Path("docs/ARCHITECTURE.md")),
-        DecisionExtractor(adr_dir=Path("docs/adr")),
-        LessonExtractor(lessons_path=Path("docs/lessons.md")),
-        SpecSectionExtractor(spec_path=Path("docs/spec-v1.md")),
-        OpRuleExtractor(op_ref_path=Path("docs/operational-reference.md")),
+        InvariantExtractor(architecture_path=_pkg / "docs" / "ARCHITECTURE.md"),
+        DecisionExtractor(adr_dir=_pkg / "docs" / "adr"),
+        LessonExtractor(lessons_path=_pkg / "docs" / "lessons.md"),
+        SpecSectionExtractor(spec_path=_pkg / "docs" / "spec-v1.md"),
+        OpRuleExtractor(op_ref_path=_pkg / "docs" / "operational-reference.md"),
         FeatureExtractor(features_dir=_project_root() / ".claude" / "features"),
         SliceExtractor(),
     ]
@@ -90,13 +99,30 @@ def rebuild_from_sources(
         for e in edges:
             storage.upsert_edge(
                 e.predicate,
-                from_path=e.from_path,
+                from_path=_relativize_corpus_path(e.from_path, _pkg),
                 from_node_type=e.from_node_type,
                 from_id=e.from_id,
                 to_node_type=e.to_node_type,
                 to_id=e.to_id,
             )
     return storage
+
+
+def _relativize_corpus_path(raw: str | None, pkg: Path) -> str | None:
+    """Normalize a corpus-rooted absolute path back to its package-relative form.
+
+    Extractors now receive package-anchored absolute paths and emit
+    ``from_path=str(self.path)``. Stored binding identities must stay stable
+    across machines — so reduce ``/abs/path/to/cairn/docs/ARCHITECTURE.md`` to
+    ``docs/ARCHITECTURE.md``. Paths outside the cairn package (project-local
+    feature yaml, slice yaml) pass through unchanged.
+    """
+    if raw is None:
+        return None
+    try:
+        return str(Path(raw).relative_to(pkg))
+    except ValueError:
+        return raw
 
 
 def lookup(storage: KuzuStorage, entity_type: str, id: str) -> Entity:

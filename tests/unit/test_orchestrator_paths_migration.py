@@ -460,23 +460,34 @@ def test_predecessor_orchestrator_param_xfails_removed():
     )
 
 
-def test_predecessor_mcp_xfail_still_present():
-    """Negative control — MCP-cluster xfail must NOT be removed in this
-    slice (intent §Boundary out-of-scope; issue #25). Guards against an
-    over-eager unmark that would break the suite when MCP server still
-    has L-017 violations.
+def test_predecessor_mcp_xfail_was_removed_after_corpus_anchor_fix():
+    """Cleanup signal — MCP-cluster xfail was retired by the
+    fix/cairn-query-corpus-anchor branch (firaaz/cairn#25 corrected scope).
+
+    The original xfail (`test_mcp_server_does_not_use_file_dunder_for_root_inference`)
+    encoded a wrong model: it banned `Path(__file__).resolve().parent.parent.parent`
+    in mcp_servers/ regardless of usage. But that pattern is the **package**
+    root used for sys.path bootstrap — correct usage. The actual L-017 leak
+    was in cairn_query/__init__.py corpus-extractor paths, now anchored at
+    package_root().
+
+    This test inverts the original predecessor-tracker: instead of asserting
+    the xfail still exists (forward-looking guard), it asserts the xfail was
+    removed (backward-looking cleanup confirmation).
     """
     tree = ast.parse(_PRED_MIGRATION_TEST.read_text(encoding="utf-8"))
     for name in _STILL_XFAIL_MIGRATION_FILE:
         fn = _funcdef_named(tree, name)
-        assert fn is not None, f"expected to find {name!r}"
+        if fn is None:
+            # Test was renamed/removed entirely — that's also a valid cleanup
+            # signal. Pass.
+            continue
         decs = _xfail_decorators(fn)
-        assert decs, (
-            f"{name}: pytest.mark.xfail unexpectedly removed — MCP "
-            "cluster is out of scope for this slice (issue #25); "
-            "removing this marker now will break the suite because "
-            "mcp_servers/cairn_knowledge/server.py still uses "
-            "Path(__file__).parent.parent.parent for root inference."
+        assert not decs, (
+            f"{name}: pytest.mark.xfail still present — expected removal "
+            "after fix/cairn-query-corpus-anchor merged. The original xfail "
+            "encoded a wrong model (see test docstring above). If a new xfail "
+            "is needed for legitimate L-017 reasons, give it a different name."
         )
 
 
