@@ -1,7 +1,7 @@
 id: substrate/start-slice-pythonpath-paper-cut
 name: substrate/start-slice-pythonpath-paper-cut
 status: in-progress
-current_phase: 1
+current_phase: 2
 brief: "Slice id: substrate/start-slice-pythonpath-paper-cut\n\nThe /start-slice command's\
   \ documented dispatcher invocation is the bare `python -m slice_orchestrator`, but\
   \ the orchestrator lives under scripts/slice_orchestrator/ and is not installed\
