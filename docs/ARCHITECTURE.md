@@ -13,10 +13,9 @@ This document is a **derived view** synthesized from the ADR corpus in `docs/adr
 **INV-001** All cairn development after the bootstrap commit flows through `/decision` or `/start-slice`. Direct commits to this repo are not permitted except as recorded in a superseding ADR. Pipeline-substrate commits emitted by registered substrate tools are a third legitimate class per `pipeline-substrate-naming` (registry at `.claude/pipeline-substrate-registry.yaml`). True machine-checkable binding via `git-log-walk` assertion type defined by `invariant-binding-strategy` (D1–D3); the assertion block below remains a deletion-detection proxy until the implementing slice lands. (bootstrap-exception; pipeline-substrate-naming; invariant-binding-strategy)
 
 ```invariant-check INV-001
-type: git-log-walk
-binding-effective-from: <pending-slice-close-sha>
-registry: ".claude/pipeline-substrate-registry.yaml"
-description: "True INV-001 binding via authorization-by-name walk over commits since binding-effective-from. Replaces prior file-exists proxy. Placeholder is substituted with the slice-close SHA by a single follow-up `docs:` commit (manual or via /refresh-architecture)."
+type: file-exists
+target: "commands/claude-code/start-slice.md"
+description: "Verifies /start-slice command exists as the mechanism enabling this invariant"
 ```
 
 **INV-002** Session-to-session context transfer obeys a three-layer context discipline protocol: (a) `.claude/handoff.md` is a pointer artifact bounded at 150–400 tokens with fixed section structure and a forbidden-sections list, (b) `/catchup` reads only a fixed five-item list into main context and gates further reads behind explicit Tier 2 admission criteria dispatched via subagent, and (c) `/start-slice` wipes `.claude/current-slice/` on transition to `status: complete` so each slice inherits no residue from its predecessor. True machine-checkable binding via `structural-parser` assertion type for sub-clause (a) and `test-ref` delegation for sub-clauses (b)/(c) defined by `invariant-binding-strategy` (D1, D4–D6); the assertion block below remains a deletion-detection proxy until the implementing slice lands. (context-discipline-protocol; invariant-binding-strategy)
