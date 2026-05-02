@@ -80,13 +80,28 @@ def _init_project(tmp_path: Path) -> Path:
     return slice_dir
 
 
-def _patched_so(monkeypatch, tmp_path, diff_paths: list[str] | None = None):
+def _patched_so(
+    monkeypatch,
+    tmp_path,
+    diff_paths: list[str] | None = None,
+    untracked_paths: list[str] | None = None,
+):
     """Patch the orchestrator to read SLICE_YAML from the fixture and stub
     ``_git`` so commits never touch disk.
 
     ``diff_paths`` is the simulated output of ``git diff --name-only
-    <phase-1-boundary> -- tests/unit/`` (one path per line). Any ``_git``
-    invocation whose first arg is ``"diff"`` returns the joined paths;
+    <phase-1-boundary> -- tests/unit/`` (one path per line) — discovers
+    *tracked* tree changes.
+
+    ``untracked_paths`` is the simulated output of ``git ls-files --others
+    --exclude-standard -- tests/unit/`` (one path per line) — discovers
+    *untracked* working-tree paths the diff would silently drop. Default
+    ``None`` → empty, preserves R1–R4 behaviour (those cases never
+    exercised the ls-files arm; the orchestrator returning "" matches the
+    pre-fix observable).
+
+    Any ``_git`` invocation whose first arg is ``"diff"`` returns the
+    joined diff paths; ``"ls-files"`` returns the joined untracked paths;
     ``"log"`` / ``"rev-parse"`` return a dummy SHA so any boundary-SHA
     resolution path the implementer chooses still gets a well-formed
     answer; everything else returns ``""`` (matching the existing
@@ -96,6 +111,7 @@ def _patched_so(monkeypatch, tmp_path, diff_paths: list[str] | None = None):
     of every ``_git`` invocation as a list of positional args.
     """
     diff_paths = list(diff_paths or [])
+    untracked_paths = list(untracked_paths or [])
     slice_dir = _init_project(tmp_path)
     monkeypatch.chdir(tmp_path)
     import slice_orchestrator as so
@@ -111,6 +127,8 @@ def _patched_so(monkeypatch, tmp_path, diff_paths: list[str] | None = None):
         head = args[0]
         if head == "diff":
             return "\n".join(diff_paths) + ("\n" if diff_paths else "")
+        if head == "ls-files":
+            return "\n".join(untracked_paths) + ("\n" if untracked_paths else "")
         if head in ("log", "rev-parse"):
             return "deadbee0\n"
         return ""
@@ -288,4 +306,141 @@ def test_phase_2_stages_test_file_and_handoff_md_together(monkeypatch, tmp_path)
         "Phase-2 boundary must produce at most one git commit "
         "(INV-008 DC-4 — extension widens commit content, not count); "
         f"commit calls observed: {commit_calls!r}"
+    )
+
+
+# ---------- R5 — untracked test file stages (issue #26 residual half) -------
+
+
+def test_phase_2_stages_untracked_test_file(monkeypatch, tmp_path):
+    """When phase-2-skeptic created a brand-new ``tests/unit/`` file that
+    is *untracked* at the Phase-1 boundary commit, ``commit_phase_handoff(2,
+    ...)`` MUST stage it at the Phase-2 boundary commit.
+
+    ``git diff --name-only <phase-1-sha> -- tests/unit/`` — the discovery
+    mechanism currently in tree at ``ae9e6c8`` — silently drops untracked
+    paths by design. The skeptic's most common write is a *brand-new*
+    RED file; under the current implementation that file is orphaned out
+    of the Phase-2 boundary commit (the bisect anchor breaks for
+    greenfield tests). The fix is the canonical Git idiom for "all paths
+    the working tree adds relative to HEAD": union the diff-based set
+    with ``git ls-files --others --exclude-standard -- tests/unit/``.
+
+    Today: RED — the orchestrator never invokes ``ls-files`` and the
+    untracked path never reaches ``_git("add", …)``.
+    """
+    untracked = ["tests/unit/test_brand_new_red_from_skeptic.py"]
+    so, slice_dir, calls = _patched_so(
+        monkeypatch,
+        tmp_path,
+        diff_paths=[],
+        untracked_paths=untracked,
+    )
+
+    _seed_test_file(tmp_path, untracked[0])
+    (slice_dir / "handoff-phase-2.md").write_text("---\nphase: 2\n---\nbody\n")
+
+    so.commit_phase_handoff(2, "phase-2 summary", "cafef00d")
+
+    staged = _adds(calls)
+    assert untracked[0] in staged, (
+        "untracked phase-2-skeptic test write "
+        f"`{untracked[0]}` must be staged at the Phase-2 handoff boundary "
+        "via `git ls-files --others --exclude-standard -- tests/unit/` "
+        "(today silently dropped — `git diff` excludes untracked by "
+        f"design; staged paths were {staged!r})"
+    )
+
+    # INV-008 DC-4: untracked-only path must NOT introduce a second
+    # commit at the Phase-2 boundary; widening is over commit content.
+    commit_calls = [c for c in calls if c and c[0] == "commit"]
+    assert len(commit_calls) <= 1, (
+        "Phase-2 boundary must produce at most one git commit "
+        "(INV-008 DC-4 — untracked-enumeration widens content, not "
+        f"count); commit calls observed: {commit_calls!r}"
+    )
+
+
+# ---------- R6 — untracked + modified-tracked union both stage --------------
+
+
+def test_phase_2_stages_union_of_untracked_and_modified_tracked(monkeypatch, tmp_path):
+    """The Phase-2 staging set is the *union* of (a) ``git diff --name-only
+    <phase-1-sha> -- tests/unit/`` (modified-tracked) and (b)
+    ``git ls-files --others --exclude-standard -- tests/unit/``
+    (untracked). When the skeptic both modifies an existing test and
+    writes a new one, both paths must stage at the same Phase-2 boundary
+    commit — neither half of the union may shadow the other.
+
+    Today: RED — only the diff-based half is iterated; the untracked
+    path is silently dropped.
+    """
+    modified_tracked = ["tests/unit/test_existing_modified_by_skeptic.py"]
+    untracked = ["tests/unit/test_new_file_from_skeptic.py"]
+    so, slice_dir, calls = _patched_so(
+        monkeypatch,
+        tmp_path,
+        diff_paths=modified_tracked,
+        untracked_paths=untracked,
+    )
+
+    for rel in modified_tracked + untracked:
+        _seed_test_file(tmp_path, rel)
+    (slice_dir / "handoff-phase-2.md").write_text("---\nphase: 2\n---\nbody\n")
+
+    so.commit_phase_handoff(2, "phase-2 summary", "cafef00d")
+
+    staged = _adds(calls)
+    expected = set(modified_tracked) | set(untracked)
+    missing = sorted(expected - set(staged))
+    assert not missing, (
+        "Phase-2 staging must be the UNION of diff-based (modified-"
+        "tracked) and ls-files-based (untracked) discovery against the "
+        "Phase-1 boundary; neither half may shadow the other. Missing "
+        f"from stage list: {missing!r} (staged paths were {staged!r})"
+    )
+
+    commit_calls = [c for c in calls if c and c[0] == "commit"]
+    assert len(commit_calls) <= 1, (
+        "Phase-2 boundary must produce at most one git commit "
+        "(INV-008 DC-4); commit calls observed: {!r}".format(commit_calls)
+    )
+
+
+# ---------- R7 — DC-3 idempotency: ls-files path absent on disk is no-op ----
+
+
+def test_phase_2_untracked_path_absent_on_disk_is_no_op(monkeypatch, tmp_path):
+    """INV-008 DC-3 idempotency precondition. ``git ls-files --others
+    --exclude-standard`` reports paths that exist *at discovery time*; a
+    re-invocation after a downstream cleanup (or any race in which the
+    path is removed between discovery and staging) must be silently
+    dropped — not raise — so re-running ``commit_phase_handoff(2, …)``
+    against an empty working tree is a no-op.
+
+    Contract: the ``path.exists()`` guard already in tree at
+    ``lifecycle.py:242`` must apply uniformly to *both* halves of the
+    union (diff-based AND ls-files-based). Pinning this guards against
+    a Phase-3 implementation that iterates ls-files output unguarded
+    and crashes on a missing path.
+    """
+    phantom = ["tests/unit/test_path_reported_but_absent.py"]
+    so, slice_dir, calls = _patched_so(
+        monkeypatch,
+        tmp_path,
+        diff_paths=[],
+        untracked_paths=phantom,
+    )
+
+    # Deliberately do NOT seed the file on disk — simulate a path that
+    # ls-files reported but that has since been removed.
+    (slice_dir / "handoff-phase-2.md").write_text("---\nphase: 2\n---\nbody\n")
+
+    so.commit_phase_handoff(2, "phase-2 summary", "cafef00d")
+
+    staged = _adds(calls)
+    assert phantom[0] not in staged, (
+        "ls-files-reported path that does not exist on disk must NOT be "
+        "staged (DC-3 idempotency precondition — `path.exists()` guard "
+        f"applies to the ls-files arm too); staged paths were {staged!r}"
     )
