@@ -1,0 +1,9 @@
+id: substrate
+name: "Substrate — orchestrator/hook plumbing fixes"
+intent: "Substrate-level paper-cuts and bugs in the slice pipeline plumbing — scope-guard allowlists, hook subject regexes, orchestrator phase-boundary staging, documented invocations. Distinct from housekeeping (drift cleanup) and from feature-level work in that the touches are to the methodology substrate itself."
+shaped-from: "docs/plans/2026-05-02-substrate-papercut-bundle-design.md"
+created: 2026-05-02
+slices:
+  - id: substrate/papercut-bundle
+    added: 2026-05-02
+    intent: "Three single-line substrate paper-cuts from the 2026-05-02 sweep, bundled because each touches a disjoint module: (1) checks/scope-guard.sh admin-allowlist case adds .claude/d1-bypasses.log and .claude/d3-bypasses.log so Write/Edit on bypass logs exits 0 without EXPAND_ENVELOPE=1 or Bash-heredoc; (2) commands/claude-code/integration-sweep.md changes documented invocation from 'python3 scripts/integration_gate.py' to 'uv run python scripts/integration_gate.py' (gate imports pydantic, .venv-only); (3) scripts/verify_handoff.sh check (c) accepts 'sweep: ' as a fourth commit-subject prefix and updates the 'expected one of:' error string. Two regression tests (scope-guard parametrized over both logs; verify_handoff against a sweep: HEAD); paper-cut #2 has no test (pure doc). Out of scope: integration_gate.py internals, pre-commit hook chain extension, issue #26 (next slice substrate/phase-2-skeptic-stage-surface), and pre-existing reds tracked elsewhere. Sweep paper-cut #3 (malformed sweep.yaml) reclassified out of scope per design plan: pre-fix data from commit 6cfa4d0, not an active bug. Invariants touched: none."
