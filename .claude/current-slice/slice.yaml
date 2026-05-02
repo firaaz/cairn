@@ -1,7 +1,7 @@
 id: v1-defense-d2/inv-003-phase-topology-binding
 name: v1-defense-d2/inv-003-phase-topology-binding
-status: in-progress
-current_phase: 2
+status: complete
+current_phase: 4
 brief: "v1-defense-d2/inv-003-phase-topology-binding\n\nUpgrade INV-003 from advisory\
   \ grep proxy to true machine-checkable binding via a four-way cross-reference structural\
   \ check, satisfying v1-defense-D2 for INV-003.\n\nINV-003 verbatim (docs/ARCHITECTURE.md:31):\

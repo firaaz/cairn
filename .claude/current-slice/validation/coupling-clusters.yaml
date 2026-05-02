@@ -1,7 +1,0 @@
-clusters:
-  - name: phase-topology-binding
-    files:
-      - '^scripts/validate_architecture\.py$'
-      - '^docs/ARCHITECTURE\.md$'
-      - '^checks/role_guard\.py$'
-      - '^tests/unit/test_inv_003_phase_topology\.py$'
