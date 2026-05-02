@@ -1,23 +1,38 @@
+# Phase 4 handoff — substrate/start-slice-pythonpath-paper-cut
+
+Integration gate PASS. Docs-only fix replacing bare `python -m slice_orchestrator` with `PYTHONPATH=scripts uv run python -m slice_orchestrator` across the four envelope files. RED test green; full suite 1188 pass / 3 pre-existing fail (unrelated); architecture invariants pass.
+
+Outcome: OK — close_slice may produce terminal `slice: complete` commit.
+
 ---
-slice: none
-phase: complete
-branch: feature/compression-followup
-as-of: 2026-05-02 3f0ae1d
----
+# Sweep notes — substrate/start-slice-pythonpath-paper-cut
 
-## State
-Sweep #3 of 2026-05-02 PASS-with-known-debt at `3f0ae1d` (invariant + ruff PASS; pytest fails only on already-filed `test_d3_bypass_log_format` line 18). `sweep.yaml` advanced to `substrate/phase-2-staging-untracked-enumeration`. No new debt; no stale handoff entries.
+## Invariants
 
-## Next
-Open slice for the `python -m slice_orchestrator` `PYTHONPATH=scripts` paper-cut at `commands/claude-code/start-slice.md:3`.
+| ID | Statement | Status | Evidence |
+|----|-----------|--------|----------|
+| (none) | Slice declares `invariants-touched: none` (docs-only change) | N/A | brief: "Invariants touched: none." |
 
-## Blocked / Pending
-- `start-slice.md:3` invocation needs `PYTHONPATH=scripts` prefix → file substrate paper-cut next slice
-- `test_d3_bypass_log_format` line-18 → `v1-defense-d3/bypass-log-test-resilience`
-- `test_extractor_slice::test_emits_parent_edge_to_feature` XPASS-strict → substrate Slice 4 (L-015)
-- Phase-2-skeptic write-timing bug → memory `phase_2_skeptic_write_timing_bug.md`
+## Test suite
 
-## Pointers
-- `.claude/sweep-results/2026-05-02-sweep-3.md` — this sweep's full report; read if reopening any pending item
-- `commands/claude-code/start-slice.md:1-3` — bare `python -m slice_orchestrator` line that needs the env prefix
-- `scripts/slice_orchestrator/lifecycle.py:227-247` — post-fix phase-2 staging block (issue #26 closed shape)
+- Slice RED test PASSES (now GREEN): `tests/unit/test_start_slice_dispatcher_doc.py` — 8/8 passed.
+- Full `uv run pytest`: 1188 passed, 3 failed, 3 skipped, 2 xfailed (149s).
+- All 3 failures are **pre-existing**, unrelated to this docs-only envelope:
+  - `test_d3_bypass_log_format.py::test_every_line_matches_classified_regex` — bypass-log line 18 has unclassified text from prior slice.
+  - `test_extractor_slice.py::test_extracts_at_least_four_slices` — XPASS(strict); known dev squash-merge issue (L-015, substrate Slice 4).
+  - `test_extractor_slice.py::test_emits_parent_edge_to_feature` — same XPASS(strict) cause.
+- `scripts/validate_architecture.py`: ALL CHECKS PASSED (10 invariants, 18 ADR files).
+
+## Envelope discipline
+
+Phase-3 commit `134b3c6` modifies only the four envelope files:
+- `commands/claude-code/start-slice.md`
+- `commands/claude-code/start-slice-legacy.md`
+- `CHANGELOG.md`
+- `docs/features/compression.md`
+
+Plus the Phase-2 RED at `tests/unit/test_start_slice_dispatcher_doc.py` (commit `2df0044`). No source under `scripts/slice_orchestrator/` modified — matches brief's docs-only fix shape.
+
+## Outcome
+
+OK — invariants N/A; slice test green; envelope respected; pre-existing reds out of scope.

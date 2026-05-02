@@ -1,8 +1,0 @@
-clusters:
-  - name: dispatcher-prose-canonical-form
-    files:
-      - '^commands/claude-code/start-slice\.md$'
-      - '^commands/claude-code/start-slice-legacy\.md$'
-      - '^CHANGELOG\.md$'
-      - '^docs/features/compression\.md$'
-      - '^tests/unit/test_start_slice_dispatcher_doc\.py$'
