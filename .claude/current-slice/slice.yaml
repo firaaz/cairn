@@ -1,6 +1,6 @@
 id: compression/upgrade-doc-bug-fixes
 name: "compression/upgrade-doc-bug-fixes"
-status: implementation
+status: integration
 started: 2026-05-02
 completed: null
 invariants-touched: []
