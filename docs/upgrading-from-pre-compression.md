@@ -27,13 +27,13 @@ must be registered in the consumer's `.claude/settings.json`:
   `compression-infrastructure-bootstrap`) silently no-ops in the consumer —
   every role can write everywhere, defeating the substrate program's
   enforceability commitment.
-- `scripts/role-cheatsheet.sh` (or the consumer's equivalent role-context
+- `checks/role-cheatsheet.sh` (or the consumer's equivalent role-context
   banner) as a **SessionStart** hook so each new agent session sees its
   current role's allowed write surfaces upfront.
 
 Both hooks ship in cairn under `checks/` and `scripts/` and are reachable from
 the consumer via `.slice-system/checks/role_guard.py` /
-`.slice-system/scripts/role-cheatsheet.sh`. Use those paths in the
+`.slice-system/checks/role-cheatsheet.sh`. Use those paths in the
 `settings.json` `command:` fields verbatim — the symlink resolves them at
 hook-invocation time.
 
@@ -43,7 +43,7 @@ append the cairn entries; do not replace.
 **Verify:**
 
 ```sh
-jq -e '.hooks.PreToolUse[]?.hooks[]?.command | select(test("role_guard"))' .claude/settings.json
+bash .slice-system/checks/role-cheatsheet.sh </dev/null | head -1
 ```
 
 ---
@@ -61,8 +61,8 @@ cairn-knowledge in v1):
 {
   "mcpServers": {
     "cairn-knowledge": {
-      "command": "python",
-      "args": ["-m", "mcp_servers.cairn_knowledge"]
+      "command": "uv",
+      "args": ["run", "--directory", ".slice-system", "python", "-m", "mcp_servers.cairn_knowledge"]
     }
   }
 }
@@ -83,7 +83,7 @@ on `sys.path`. Two paths:
 **Verify:**
 
 ```sh
-jq -e '.mcpServers["cairn-knowledge"] | .command and (.args | index("mcp_servers.cairn_knowledge"))' .mcp.json
+uv run --directory .slice-system python -c "import mcp_servers.cairn_knowledge"
 ```
 
 ---
