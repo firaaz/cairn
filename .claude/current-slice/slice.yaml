@@ -1,35 +1,5 @@
-id: substrate/start-slice-pythonpath-paper-cut
-name: substrate/start-slice-pythonpath-paper-cut
-status: complete
-current_phase: 4
-brief: "Slice id: substrate/start-slice-pythonpath-paper-cut\n\nThe /start-slice command's\
-  \ documented dispatcher invocation is the bare `python -m slice_orchestrator`, but\
-  \ the orchestrator lives under scripts/slice_orchestrator/ and is not installed\
-  \ into the project venv. Copying the literal line fails with `ModuleNotFoundError:\
-  \ No module named slice_orchestrator`. The canonical working incantation is:\n\n\
-  \    PYTHONPATH=scripts uv run python -m slice_orchestrator\n\nThe bare form must\
-  \ be eliminated from operator-facing prose so a reader who copies a command gets\
-  \ a working command.\n\nFix shape: replace every operator-facing occurrence of the\
-  \ bare form inside the envelope with the canonical PYTHONPATH=scripts uv run prefix.\
-  \ Pure documentation change; no code under scripts/slice_orchestrator/ is modified;\
-  \ the skill-flow's own dispatch path is unaffected because the skill executes a\
-  \ tool call (not the literal prose).\n\nEnvelope:\n  - commands/claude-code/start-slice.md\
-  \            (line 3, primary)\n  - commands/claude-code/start-slice-legacy.md \
-  \    (line 3, prose mirror)\n  - CHANGELOG.md                                  \
-  \ (line 14, CLI ref)\n  - docs/features/compression.md                   (line 57,\
-  \ CLI ref)\n  - tests/unit/test_start_slice_dispatcher_doc.py  (new RED test)\n\n\
-  Phase 2 RED test (tests/unit/test_start_slice_dispatcher_doc.py): for each envelope\
-  \ doc, assert that any line containing `python -m slice_orchestrator` also begins\
-  \ (after leading prose markers like backticks) with `PYTHONPATH=scripts uv run `.\
-  \ Equivalent: assert zero matches for the bare form `(?<!uv run )python -m slice_orchestrator`\
-  \ in the four files.\n\nOut of scope:\n  - docs/lessons.md (historical narrative\
-  \ quoting past dispatches; not a current instruction)\n  - docs/plans/** (point-in-time\
-  \ design docs)\n  - docs/adr/** (append-only; reversibility-guard would block)\n\
-  \  - docs/operational-reference.md (env-var tables only; no CLI line to fix)\n \
-  \ - .claude/sweep-results/**, .claude/completed-slices/** (immutable)\n  - any change\
-  \ to scripts/slice_orchestrator/ behavior or CLI surface\n  - making slice_orchestrator\
-  \ pip-installable (separate, larger slice)\n\nInvariants touched: none. ADRs referenced:\
-  \ none required (empty adrs-referenced passes the D3 gate trivially per phase-lock-and-role-declaration\
-  \ D3).\n\nAdjacent context: handoff a1735eb \"Next\"; .claude/sweep-results/2026-05-02-sweep-3.md\
-  \ row \"python -m slice_orchestrator requires PYTHONPATH=scripts | live\"; project\
-  \ memory upgrade_doc_path_typo.md (prior sibling of this paper-cut class)."
+id: v1-defense-d3/bypass-log-test-resilience
+name: v1-defense-d3/bypass-log-test-resilience
+status: in-progress
+current_phase: 1
+brief: v1-defense-d3/bypass-log-test-resilience
