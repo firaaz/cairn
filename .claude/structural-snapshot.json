@@ -496,8 +496,8 @@
     "size": 1499
   },
   "scripts/slice_orchestrator/lifecycle.py": {
-    "hash": "cff46649ad8fec3670465d38bada5de01efa3fa5965eab07a86c2598d2f779c8",
-    "size": 21424
+    "hash": "03f8953eeaada7b24f786fd9402936c8df6fc169460ce123e2bf4e325325454d",
+    "size": 21592
   },
   "scripts/slice_orchestrator/resume.py": {
     "hash": "0aaa322a44854b61d6b025bcba664ab771d74775cbc0722d8c7d7d893d664418",
@@ -800,8 +800,8 @@
     "size": 5284
   },
   "tests/unit/test_phase_2_handoff_staging_surface.py": {
-    "hash": "487f59b9cb07757f570fcafc5cb5029fef879fb6ec24a04bf282771c9a5c17e2",
-    "size": 12275
+    "hash": "d4a61d3ef74911fdcc3691ddf15e3459f2a2fd64a912485685cc4bd2653ffb52",
+    "size": 18848
   },
   "tests/unit/test_phase_2_skeptic_query_first_prompt.py": {
     "hash": "4b8215ad7ae86d85d6f808d6d99905a23ebc81b2295c1239b4a98c2a6c3c4a56",
