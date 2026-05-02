@@ -1,7 +1,7 @@
 id: substrate/phase-2-staging-untracked-enumeration
 name: substrate/phase-2-staging-untracked-enumeration
-status: in-progress
-current_phase: 1
+status: complete
+current_phase: 4
 brief: "Slice id: substrate/phase-2-staging-untracked-enumeration\n\nIssue #26 follow-up.\
   \ The partial fix at scripts/slice_orchestrator/lifecycle.py:232-243 (commit ae9e6c8)\
   \ discovers phase-2-skeptic test writes via `git diff --name-only <phase-1-sha>\
