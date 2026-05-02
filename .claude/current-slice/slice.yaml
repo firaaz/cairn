@@ -1,24 +1,35 @@
-id: substrate/phase-2-staging-untracked-enumeration
-name: substrate/phase-2-staging-untracked-enumeration
-status: complete
-current_phase: 4
-brief: "Slice id: substrate/phase-2-staging-untracked-enumeration\n\nIssue #26 follow-up.\
-  \ The partial fix at scripts/slice_orchestrator/lifecycle.py:232-243 (commit ae9e6c8)\
-  \ discovers phase-2-skeptic test writes via `git diff --name-only <phase-1-sha>\
-  \ -- tests/unit/`. `git diff` excludes UNTRACKED files, so the first time a skeptic\
-  \ creates a brand-new test file it never gets staged at the phase-2 boundary commit\
-  \ \u2014 recreating the original bug for greenfield test files.\n\nFix shape: extend\
-  \ the phase-2 staging block in lifecycle.py to also enumerate untracked tests via\
-  \ `git ls-files --others --exclude-standard -- tests/unit/`, union with the existing\
-  \ diff-based set, preserve the path.exists() idempotency guard. INV-008 DC-3 (idempotent)\
-  \ and DC-4 (single phase-boundary commit) hold by construction \u2014 additive widening\
-  \ of the same commit, no new commits emitted.\n\nRegression surface already in tree:\
-  \ tests/unit/test_phase_2_handoff_staging_surface.py (R1-R4, commit af0b5e0). The\
-  \ new RED test must cover the gap: an untracked test file present at the phase-1\
-  \ boundary becomes staged in the phase-2 boundary commit. Existing R1-R4 cases must\
-  \ continue passing.\n\nOut of scope: any phase other than 2; test paths outside\
-  \ tests/unit/; modifying the phase-1 boundary SHA discovery; squash-merge handling\
-  \ (L-015 / substrate Slice 4 territory); pre-existing reds.\n\nInvariants touched:\
-  \ INV-008 (preserved). ADRs referenced: none required.\n\nAdjacent context: memory\
-  \ issue_26_untracked_blind_spot.md; .claude/handoff.md \"Next\"; failed predecessor\
-  \ archived at .claude/completed-slices/substrate-phase-2-skeptic-stage-surface-failed-2/."
+id: substrate/start-slice-pythonpath-paper-cut
+name: substrate/start-slice-pythonpath-paper-cut
+status: in-progress
+current_phase: 1
+brief: "Slice id: substrate/start-slice-pythonpath-paper-cut\n\nThe /start-slice command's\
+  \ documented dispatcher invocation is the bare `python -m slice_orchestrator`, but\
+  \ the orchestrator lives under scripts/slice_orchestrator/ and is not installed\
+  \ into the project venv. Copying the literal line fails with `ModuleNotFoundError:\
+  \ No module named slice_orchestrator`. The canonical working incantation is:\n\n\
+  \    PYTHONPATH=scripts uv run python -m slice_orchestrator\n\nThe bare form must\
+  \ be eliminated from operator-facing prose so a reader who copies a command gets\
+  \ a working command.\n\nFix shape: replace every operator-facing occurrence of the\
+  \ bare form inside the envelope with the canonical PYTHONPATH=scripts uv run prefix.\
+  \ Pure documentation change; no code under scripts/slice_orchestrator/ is modified;\
+  \ the skill-flow's own dispatch path is unaffected because the skill executes a\
+  \ tool call (not the literal prose).\n\nEnvelope:\n  - commands/claude-code/start-slice.md\
+  \            (line 3, primary)\n  - commands/claude-code/start-slice-legacy.md \
+  \    (line 3, prose mirror)\n  - CHANGELOG.md                                  \
+  \ (line 14, CLI ref)\n  - docs/features/compression.md                   (line 57,\
+  \ CLI ref)\n  - tests/unit/test_start_slice_dispatcher_doc.py  (new RED test)\n\n\
+  Phase 2 RED test (tests/unit/test_start_slice_dispatcher_doc.py): for each envelope\
+  \ doc, assert that any line containing `python -m slice_orchestrator` also begins\
+  \ (after leading prose markers like backticks) with `PYTHONPATH=scripts uv run `.\
+  \ Equivalent: assert zero matches for the bare form `(?<!uv run )python -m slice_orchestrator`\
+  \ in the four files.\n\nOut of scope:\n  - docs/lessons.md (historical narrative\
+  \ quoting past dispatches; not a current instruction)\n  - docs/plans/** (point-in-time\
+  \ design docs)\n  - docs/adr/** (append-only; reversibility-guard would block)\n\
+  \  - docs/operational-reference.md (env-var tables only; no CLI line to fix)\n \
+  \ - .claude/sweep-results/**, .claude/completed-slices/** (immutable)\n  - any change\
+  \ to scripts/slice_orchestrator/ behavior or CLI surface\n  - making slice_orchestrator\
+  \ pip-installable (separate, larger slice)\n\nInvariants touched: none. ADRs referenced:\
+  \ none required (empty adrs-referenced passes the D3 gate trivially per phase-lock-and-role-declaration\
+  \ D3).\n\nAdjacent context: handoff a1735eb \"Next\"; .claude/sweep-results/2026-05-02-sweep-3.md\
+  \ row \"python -m slice_orchestrator requires PYTHONPATH=scripts | live\"; project\
+  \ memory upgrade_doc_path_typo.md (prior sibling of this paper-cut class)."
