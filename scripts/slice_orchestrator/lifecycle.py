@@ -237,7 +237,10 @@ def commit_phase_handoff(phase, summary, commit_hash):
             diff_out = _git_stdout(
                 _git("diff", "--name-only", phase1_sha, "--", "tests/unit/")
             )
-            for rel in diff_out.splitlines():
+            ls_out = _git_stdout(
+                _git("ls-files", "--others", "--exclude-standard", "--", "tests/unit/")
+            )
+            for rel in set(diff_out.splitlines()) | set(ls_out.splitlines()):
                 rel = rel.strip()
                 if rel and (root / rel).exists():
                     _git("add", rel)
