@@ -46,6 +46,13 @@ ROLE_DENY_READ = {
     "phase-4-integrator": list(_CANONICAL_DENY_PATTERNS),
 }
 
+# Asymmetry — intentional (by design):
+# phase-3-implementer has no static ROLE_POLICIES entry. Its write-path gate is
+# envelope-driven: the orchestrator sets AGENT_ENVELOPE at dispatch time and the
+# main() guard below grants writes matching those patterns. This asymmetry is
+# authorized by compression-infrastructure-bootstrap and reflected in INV-003's
+# phase-topology binding (validate_phase_topology in scripts/validate_architecture.py).
+# The role IS present in ROLE_DENY_READ above (read lockdown applies symmetrically).
 ROLE_POLICIES = {
     "phase-1-writer": [
         r"^\.claude/current-slice/intent\.md$",

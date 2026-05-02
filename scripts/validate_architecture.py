@@ -234,6 +234,226 @@ def _run_test_ref_assertion(
     return None
 
 
+_ROLE_SHORTHAND_TO_SLUG: dict[str, str] = {
+    "reader": "phase-1-writer",
+    "skeptic": "phase-2-skeptic",
+    "builder": "phase-3-implementer",
+    "auditor": "phase-4-integrator",
+}
+
+
+def _extract_role_for_phase(core_text: str) -> set[tuple[int, str]] | None:
+    """Parse ROLE_FOR_PHASE dict from core.py text."""
+    in_dict = False
+    result: set[tuple[int, str]] = set()
+    for line in core_text.splitlines():
+        stripped = line.strip()
+        if re.match(r"ROLE_FOR_PHASE\s*=\s*\{", stripped):
+            in_dict = True
+            continue
+        if in_dict:
+            if stripped.startswith("}"):
+                break
+            m = re.match(r"(\d+)\s*:\s*\"(phase-\d+-[a-z][a-z-]*)\"", stripped)
+            if m:
+                result.add((int(m.group(1)), m.group(2)))
+    return result if result else None
+
+
+def _extract_skill_guide_topology(
+    opref_text: str,
+) -> tuple[set[tuple[int, str]], list[str]]:
+    """Extract (phase, role_slug) pairs from the Phase Skill Guide tables.
+
+    Uses shorthand-to-slug mapping for the two tables and additionally
+    verifies each derived slug appears somewhere in the full document
+    (catches slug renaming outside the Skill Guide section itself).
+    """
+    failures: list[str] = []
+    result: set[tuple[int, str]] = set()
+
+    section_m = re.search(
+        r"## Phase Skill Guide\b(.*?)(?=\n## |\Z)", opref_text, re.DOTALL
+    )
+    if not section_m:
+        failures.append(
+            "INV-003: Cannot find '## Phase Skill Guide' section in "
+            "docs/operational-reference.md"
+        )
+        return result, failures
+
+    section_text = section_m.group(1)
+    row_pat = re.compile(
+        r"^\|\s*(\d+)\.\s+[^|]+\|\s+\*{0,2}(\w+)\*{0,2}\s*\|", re.MULTILINE
+    )
+    for m in row_pat.finditer(section_text):
+        phase_num = int(m.group(1))
+        shorthand = m.group(2).lower()
+        slug = _ROLE_SHORTHAND_TO_SLUG.get(shorthand)
+        if slug:
+            result.add((phase_num, slug))
+
+    # Verify each derived slug appears in the full document.
+    to_remove: set[tuple[int, str]] = set()
+    for pair in result:
+        _, slug = pair
+        if slug not in opref_text:
+            failures.append(
+                f"INV-003: role slug '{slug}' not found anywhere in "
+                f"docs/operational-reference.md (Phase Skill Guide)"
+            )
+            to_remove.add(pair)
+    result -= to_remove
+
+    return result, failures
+
+
+def _extract_agent_file_topology(
+    project_root: Path,
+) -> tuple[set[tuple[int, str]], list[str]]:
+    """Parse (phase, role_slug) pairs from .claude/agents/phase-N-*.md filenames."""
+    failures: list[str] = []
+    result: set[tuple[int, str]] = set()
+
+    agents_dir = project_root / ".claude" / "agents"
+    if not agents_dir.exists():
+        failures.append("INV-003: .claude/agents/ directory not found")
+        return result, failures
+
+    for f in sorted(agents_dir.glob("phase-*.md")):
+        m = re.match(r"phase-(\d+)-(.+)\.md$", f.name)
+        if m:
+            phase_num = int(m.group(1))
+            slug = f"phase-{m.group(1)}-{m.group(2)}"
+            result.add((phase_num, slug))
+
+    return result, failures
+
+
+def _extract_role_guard_topology(
+    guard_text: str,
+) -> tuple[set[tuple[int, str]], list[str]]:
+    """Extract (phase, role_slug) topology from ROLE_DENY_READ in role_guard.py.
+
+    Uses ROLE_DENY_READ as the binding source (all four roles must appear there).
+    This tolerates the option-(b) asymmetry: phase-3-implementer has no static
+    ROLE_POLICIES entry but IS present in ROLE_DENY_READ.
+    """
+    failures: list[str] = []
+    result: set[tuple[int, str]] = set()
+
+    in_deny_read = False
+    for line in guard_text.splitlines():
+        stripped = line.strip()
+        if re.match(r"ROLE_DENY_READ\s*=\s*\{", stripped):
+            in_deny_read = True
+            continue
+        if in_deny_read:
+            if stripped == "}":
+                break
+            m = re.search(r'"(phase-(\d+)-[a-z][a-z-]*)"', stripped)
+            if m:
+                slug = m.group(1)
+                phase_num = int(m.group(2))
+                result.add((phase_num, slug))
+
+    if not result:
+        failures.append(
+            "INV-003: Cannot parse ROLE_DENY_READ from checks/role_guard.py"
+        )
+
+    return result, failures
+
+
+def validate_phase_topology(project_root: Path) -> list[str]:
+    """Four-way cross-reference: (phase_ordinal, role_slug) topology must agree.
+
+    Canonical sources:
+      1. scripts/slice_orchestrator/core.py — ROLE_FOR_PHASE (authoritative).
+      2. docs/operational-reference.md — Phase Skill Guide tables.
+      3. .claude/agents/phase-N-*.md — agent prompt filenames.
+      4. checks/role_guard.py — ROLE_DENY_READ keys.
+
+    Option-(b) asymmetry: phase-3-implementer has no static ROLE_POLICIES entry;
+    write-path gate is AGENT_ENVELOPE-driven per compression-infrastructure-bootstrap.
+    The binding tolerates this because phase-3-implementer IS in ROLE_DENY_READ.
+
+    Returns list of failure messages; empty on full agreement.
+    """
+    failures: list[str] = []
+
+    core_path = project_root / "scripts" / "slice_orchestrator" / "core.py"
+    if not core_path.exists():
+        return [f"INV-003: {core_path} not found"]
+    authoritative = _extract_role_for_phase(core_path.read_text())
+    if authoritative is None:
+        return [
+            "INV-003: Cannot parse ROLE_FOR_PHASE from "
+            "scripts/slice_orchestrator/core.py"
+        ]
+
+    opref_path = project_root / "docs" / "operational-reference.md"
+    if not opref_path.exists():
+        failures.append(f"INV-003: {opref_path} not found")
+        skill_guide_topology: set[tuple[int, str]] = set()
+    else:
+        skill_guide_topology, src2_failures = _extract_skill_guide_topology(
+            opref_path.read_text()
+        )
+        failures.extend(src2_failures)
+
+    agent_topology, src3_failures = _extract_agent_file_topology(project_root)
+    failures.extend(src3_failures)
+
+    guard_path = project_root / "checks" / "role_guard.py"
+    if not guard_path.exists():
+        failures.append(f"INV-003: {guard_path} not found")
+        guard_topology: set[tuple[int, str]] = set()
+    else:
+        guard_topology, src4_failures = _extract_role_guard_topology(
+            guard_path.read_text()
+        )
+        failures.extend(src4_failures)
+
+    if failures:
+        return failures
+
+    sources = [
+        ("operational-reference.md (Phase Skill Guide)", skill_guide_topology),
+        (".claude/agents/ filenames", agent_topology),
+        ("checks/role_guard.py ROLE_DENY_READ", guard_topology),
+    ]
+    for source_name, topology in sources:
+        for pair in authoritative:
+            if pair not in topology:
+                phase, role = pair
+                failures.append(
+                    f"INV-003: {source_name} is missing ({phase}, '{role}') "
+                    f"— phase-topology drift vs ROLE_FOR_PHASE"
+                )
+        for pair in topology:
+            if pair not in authoritative:
+                phase, role = pair
+                failures.append(
+                    f"INV-003: {source_name} has extra ({phase}, '{role}') "
+                    f"— phase-topology drift vs ROLE_FOR_PHASE"
+                )
+
+    return failures
+
+
+def _run_phase_topology_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a phase-topology assertion. Returns failure message or None on pass."""
+    topo_failures = validate_phase_topology(project_root)
+    if topo_failures:
+        return f"Check D: {inv_id} FAIL — phase-topology drift:\n  " + "\n  ".join(
+            topo_failures
+        )
+    return None
+
+
 def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | None:
     """Dispatch assertion execution by type. Returns failure message or None."""
     atype = assertion.get("type", "")
@@ -243,6 +463,8 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
         return _run_file_exists_assertion(project_root, inv_id, assertion)
     if atype == "test-ref":
         return _run_test_ref_assertion(project_root, inv_id, assertion)
+    if atype == "phase-topology":
+        return _run_phase_topology_assertion(project_root, inv_id, assertion)
     return None
 
 
