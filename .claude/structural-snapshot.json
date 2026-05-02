@@ -1,7 +1,15 @@
 {
   "checks/role_guard.py": {
-    "hash": "589df02c4593d4801c972ed05aac0a1507387536df2333c7be7f2a7058059896",
-    "size": 2998
+    "hash": "b3bc548d5af4b23ee9a5836dad61e281255385eae9a95d358d2b5e8a75791689",
+    "size": 7840
+  },
+  "commands/claude-code/.local/README.md": {
+    "hash": "5b341b1a6d17afb18954b61769ab03979a4c2857db4d882c4fbb91286c2a8442",
+    "size": 8419
+  },
+  "commands/claude-code/.local/dev-mode.md": {
+    "hash": "6bd110c2ef70d40c94e3aa56d356043a7298491cad8f641e5f42f9ea5b9f846c",
+    "size": 6598
   },
   "commands/claude-code/catchup.full.md": {
     "hash": "f3fadb3e43f6e5ecf2ddfc34dff5fb447dcd69948acfa4d624a2fac147ea000b",
@@ -52,32 +60,40 @@
     "size": 1308
   },
   "commands/claude-code/start-slice-legacy.md": {
-    "hash": "7d077390ef818184796b7794b202899391c17d9aefbcf10d793bd61024a19e1e",
-    "size": 796
+    "hash": "575743c3f8f2ea3acafc69a0bdedb36c6b16305b22bbb1540931f73b6e86e5e0",
+    "size": 845
   },
   "commands/claude-code/start-slice.full.md": {
-    "hash": "09c142a76ac6717fc7bad30dee68b4a6ed6e95817fa946803000db8fa8d99cac",
-    "size": 20443
+    "hash": "a1ccf59df544272826f3998570bb5e00f68a597e57cec052c24bb3338a01a24a",
+    "size": 20747
   },
   "commands/claude-code/start-slice.md": {
-    "hash": "7ab28a8dd767efd4c63762b6578a812fe218894a9791ee53a8604dae9b70659e",
-    "size": 1649
+    "hash": "c7d06bb69cc2ef87de40a897a37f083abbd1549b3004ebb8cfbaed149117d083",
+    "size": 1691
   },
   "commands/claude-code/status.full.md": {
-    "hash": "3e7ed7c5f843b358357447b293e317e8f47db6278941bbe495a22a8b3acaf69d",
-    "size": 2278
+    "hash": "358d274d0d436e9ca0d58a8856e03c7dc27b8337a72c391f2c43a38d6752a65e",
+    "size": 2723
   },
   "commands/claude-code/status.md": {
-    "hash": "7dc0462095f56c4baf0fa2eee22db9134419f31e405268c712986ef87880f883",
-    "size": 1339
+    "hash": "35896c20f61b052f512573ffb121f9ec369a63a19e5b99c2b50394ff40448a23",
+    "size": 1719
   },
   "docs/ARCHITECTURE.md": {
-    "hash": "bc2f7ab5fb62bd8e62f97b8086add5cb6c36fa2704d8b7f7e9fb6d206ef0b8d6",
-    "size": 23821
+    "hash": "fe9e97e6a6cc6ccc51ea437a2aa0264dd61701493d93e8b94bae545107e0b30d",
+    "size": 29338
+  },
+  "docs/adr/board-as-roadmap-substrate.md": {
+    "hash": "7d0feb15c1a914c607585fab95342685fa6b9008038b4ad82692fb14b54077a5",
+    "size": 32105
   },
   "docs/adr/bootstrap-exception.md": {
     "hash": "ccd89c8325965a214c7c5c8b625db3700f887c61f39f276196779d44d8ad0f58",
     "size": 4843
+  },
+  "docs/adr/cairn-substrate-and-fastmcp.md": {
+    "hash": "d047becdb9dcfd774acf399bd45aa7072c60acf400eae70fe3ce83b3a0db6467",
+    "size": 38712
   },
   "docs/adr/cliff-failure-mode-and-v1-defenses.md": {
     "hash": "749b0a252b696eaf6db948cb07431618ab5cf198a0b8242d670fccf1a546a165",
@@ -95,6 +111,10 @@
     "hash": "51525533fc3e6fbfea83c86bd4a116a6f9ea8c5192b1e8878185a8b321911aa1",
     "size": 6437
   },
+  "docs/adr/cost-per-slice-budget.md": {
+    "hash": "bcaadadf83267220f0d38cfff17f44f9353471cbbdb633025acf90faf7e68e75",
+    "size": 22645
+  },
   "docs/adr/d3-bypass-classification.md": {
     "hash": "8f537442317ddf08a0f695293110dfdbb0bbbbe40ea14a907c7baba4d580b29d",
     "size": 10641
@@ -108,8 +128,8 @@
     "size": 16093
   },
   "docs/adr/index.md": {
-    "hash": "133f0e8a7ab752fec6dad6d376d38590f0ad30c3ef2b7adb5158a7d6cb29dfee",
-    "size": 1903
+    "hash": "3d257e14e87c510575cbae30efd4526dbc6898c0e9aea56aacb98d9e68230ba3",
+    "size": 2370
   },
   "docs/adr/orchestrator-observability.md": {
     "hash": "ef1a4cc025459d7705ce8cad54e9b8e216874c41d8ef61747c937534af2ed923",
@@ -131,25 +151,37 @@
     "hash": "480dff8cf37db816409c48abafe7b3c8aedadf7b36017641888f787f949a34aa",
     "size": 5551
   },
+  "docs/adr/slice-artifact-preservation.md": {
+    "hash": "0c9ebc543caf54c941629c0f46ed4c3c070385b71e17aafc7c61ccd612e4bd39",
+    "size": 25090
+  },
   "docs/adr/slice-close-contract.md": {
     "hash": "dc1617a02c243e2cbac7551fc4fe837ffbf0cb4f919a9b9062d87397919be5a7",
     "size": 29448
   },
+  "docs/cairn-audit-2026-04-29.md": {
+    "hash": "4f553d012992e557c5b0fafbc6105c408c2c7748cbf96143ca00e3f35f995922",
+    "size": 50059
+  },
   "docs/dogfood-log.md": {
     "hash": "c79a5883d8047de98943d7cdf9e979f514782bacec5333e206d7cc0aba9d963b",
     "size": 319
+  },
+  "docs/features/compression.md": {
+    "hash": "1f44c0656b4623e0f747f7e90db1db6a6b9035ace313c12745b4d1efe511d449",
+    "size": 8469
   },
   "docs/features/identifier-scheme.md": {
     "hash": "390de86f6771dc3e8cde6325efccfcbde5e3a3e75be5b34ad3d83258a0c2bad7",
     "size": 3516
   },
   "docs/lessons.md": {
-    "hash": "d07d65eb82f3da7afa5bc9c70b62f19e90f4c403c9c58d3e02e49465698c382f",
-    "size": 27449
+    "hash": "980548ce6f7a9509dc0e7887175792945f023b7fde77627cc47d8492a0232d17",
+    "size": 102978
   },
   "docs/operational-reference.md": {
-    "hash": "dc8915eb5fe37fa812e6624d17de5e6185f355c5bd85d17b883a8ee6b1b342cb",
-    "size": 32309
+    "hash": "eb3a2147accfb532b7e8ae9e44fe5a75578ce0f76269717a8b72b6b393cbf4ea",
+    "size": 40941
   },
   "docs/plans/2026-04-11-adr-003-v1-execution-plan.md": {
     "hash": "d58aa317f14c6b3dff619eca08c8c15d498c71467ee409ce791b7b0884dc08a7",
@@ -256,8 +288,8 @@
     "size": 13505
   },
   "docs/plans/2026-04-18-feature-to-dev-merge-protocol-design.md": {
-    "hash": "e438e557d48aa031f0bbca37eaf1f911727f9629f28a353b9af0f20ca17fc945",
-    "size": 18378
+    "hash": "24edc399646c5153c1ff91c92b4faf4d7ca6020402392da7c4c3cb19c7467f7c",
+    "size": 21456
   },
   "docs/plans/2026-04-18-feature-to-dev-merge-protocol-plan.md": {
     "hash": "c29b281204f70a5df69de4963dd57dffb5b72c3624636a446cef47ff9e0585e2",
@@ -299,41 +331,181 @@
     "hash": "965a51c15f37025d692f98418a0835b407bf5be788d12acaa890c62a604474f2",
     "size": 31417
   },
+  "docs/plans/2026-04-23-cost-discipline-design.md": {
+    "hash": "aa8bb55d075ebf2e86ffa06ae44ab56b38006439c8fe4a23c9ed595e4d9a4d4a",
+    "size": 16907
+  },
+  "docs/plans/2026-04-24-efficiency-program-part-7-candidate-set-discipline.md": {
+    "hash": "c9fe996bbf1335d438ef8822ee85ad0d7f657ab6c866b6f40491cf1564746a2e",
+    "size": 93450
+  },
+  "docs/plans/2026-04-25-efficiency-program-part-8-compression-audit.md": {
+    "hash": "72c65fca9f7e95378f64a1631f8ea2a324cee5a0cf6de161b591eba2fcc6c23b",
+    "size": 33538
+  },
+  "docs/plans/2026-04-25-knowledge-substrate-design.md": {
+    "hash": "f1748802faa4a70e98b40649d08f37dea61fb989da28a7963d5cccd648c26dbe",
+    "size": 46348
+  },
+  "docs/plans/2026-04-25-knowledge-substrate-slice-1-plan.md": {
+    "hash": "20ae631a773bd8049e47caf6ecb34ff54ce5a783a117b804bd954ec6d2a585ed",
+    "size": 76254
+  },
+  "docs/plans/2026-04-26-learnings-capture-plan.md": {
+    "hash": "36e56a0eda0a2ac3bf8907b961b136dadea750ca59acf5a6f5f69145fedc98be",
+    "size": 13973
+  },
+  "docs/plans/2026-04-26-slice-artifact-preservation-plan.md": {
+    "hash": "fb8b3fb3cd0d5c41a729d9199cde1486addc7205d96b118be3b63c04778470a0",
+    "size": 29742
+  },
+  "docs/plans/2026-04-27-board-roadmap-integration.md": {
+    "hash": "b87e619178ce3db8e2397a26bed7bc2d357ddef09de5103bcd05871f4982517f",
+    "size": 14348
+  },
+  "docs/plans/2026-04-27-compression-followup-design.md": {
+    "hash": "c0ad57638f11e2a309eb8c532ec208b7311bba01c48fe54ee495e35b5c7bd152",
+    "size": 14598
+  },
   "docs/reviews/2026-04-11-from-rag-session.md": {
     "hash": "0e17c70a9241ead52080dee351558294f828fec0fe0e23a03a82707bd7d0243a",
     "size": 13864
   },
   "docs/roadmap.md": {
-    "hash": "cd0c65f721abf201acedd46c9c2ad22b722f183a5f53304951b303bfebba116d",
-    "size": 3239
+    "hash": "e19cc31be370fbde87f6a1aa8677cdeec6a779d4f79b612ab58d344b1818966e",
+    "size": 10523
   },
   "docs/spec-v1.md": {
     "hash": "e6faac49c6ccd6dc372e1f18bad3edbd7b3cfa78ee2230d62c7414bac79b7700",
     "size": 49128
   },
+  "docs/upgrading-from-pre-compression.md": {
+    "hash": "d4611b23ba578c4c9218fbd759f2217cd7a6be0a7c09f5f8e57cda90364c34e4",
+    "size": 7514
+  },
   "docs/vision.md": {
     "hash": "7d96b65a52a27271ce8194a8e1e2fd7ea3ae6d683188453f20d8ec6db8af3dff",
     "size": 3959
   },
+  "docs/why-cairn.md": {
+    "hash": "21125925807b3aac629c088e6496355caeea9c43ab99443d3290ccde2d17e4d0",
+    "size": 17059
+  },
+  "scripts/_root.py": {
+    "hash": "900bc8100cfb3c75b4152ed726edcdabed0a15e850b3fcb5325e08e547c8d61a",
+    "size": 3252
+  },
+  "scripts/cairn_query/__init__.py": {
+    "hash": "a104348347a0950834020ed487603e6fffecd25228da9c91236a6df52f253521",
+    "size": 5009
+  },
+  "scripts/cairn_query/__main__.py": {
+    "hash": "85a285de4ef08f3ca5d11e272b23bbf5d3af52bc33fda469ef36e602d5e85caa",
+    "size": 4446
+  },
+  "scripts/cairn_query/extractors/__init__.py": {
+    "hash": "979ae5fa0a55ec11765863a284d3db791ef1c8323649dd578656e31cad7e3280",
+    "size": 123
+  },
+  "scripts/cairn_query/extractors/base.py": {
+    "hash": "296f2c774f7e5f4732973019638b04162541121bc65e7f03c4f36a84cb059266",
+    "size": 934
+  },
+  "scripts/cairn_query/extractors/decision.py": {
+    "hash": "e68e270c4bddbadb267690ff3671191100874ca3a37607cad60e83f1c3cd2e76",
+    "size": 4327
+  },
+  "scripts/cairn_query/extractors/feature.py": {
+    "hash": "884b1d53c4ca24fc96d1736740dcd6f15d53cd6d472198743911339ca8c9936f",
+    "size": 2373
+  },
+  "scripts/cairn_query/extractors/invariant.py": {
+    "hash": "54d077cc9d4624da6964f1b2746e1585893c4da67482944d28a063fcbdef3a73",
+    "size": 3251
+  },
+  "scripts/cairn_query/extractors/lesson.py": {
+    "hash": "cd4b2039bd36925930120d276cab3844f16e8a9a538cec45d378c0abed2c54f3",
+    "size": 4182
+  },
+  "scripts/cairn_query/extractors/op_rule.py": {
+    "hash": "2201dd6732ea310d1e6a713ee6fa482d5f125b98f5e4bed2cb95410eb1faeee2",
+    "size": 2238
+  },
+  "scripts/cairn_query/extractors/slice.py": {
+    "hash": "d9684e17cfb1992cf82d6e7aa4a407835102e419de7c3662a9991750a193b283",
+    "size": 5042
+  },
+  "scripts/cairn_query/extractors/spec_section.py": {
+    "hash": "35761cd49ca14c1dc07e8fc66b2446d863c331812334db6a4e952f75c00c0559",
+    "size": 2037
+  },
+  "scripts/cairn_query/models.py": {
+    "hash": "b0d1fa8d12f0629a54de5f6f051ea319feba08a827ac01878d50157509c913b3",
+    "size": 3167
+  },
+  "scripts/cairn_query/schema.py": {
+    "hash": "6c32db953eceb431af6f7c9b8973008cc7eca33d818ed6fa08a1b521e71e3bf6",
+    "size": 4620
+  },
+  "scripts/cairn_query/storage.py": {
+    "hash": "24fa5d652ae3f07edca64f1a6a85f142be07c2281ebbde3dab51e5ef1e70d3d7",
+    "size": 12328
+  },
+  "scripts/cairn_query/validators.py": {
+    "hash": "e39b157ef7ec9686cdaf5d4a2d2b5298118087e66cec0425466222be9141526b",
+    "size": 5672
+  },
   "scripts/dogfood_evaluate.py": {
-    "hash": "3ce8d72a101a5fd2880db695ee621a2e8faebcec5463b1404b82c6bb29a5ad05",
-    "size": 9248
+    "hash": "d6a68c3170a81a33ce4b85e518a5f3c01ffa13f808e799acba5dcbfbaa91bdf3",
+    "size": 8676
   },
   "scripts/integration_gate.py": {
-    "hash": "1f7c9562cb3cec07632bac7c004cb65c4b0f3366235bb868bb6a0dd732d1c294",
-    "size": 5014
+    "hash": "5c533c27c008088f6240c6757c65897baf6062745abed55e13a4dd055257cec5",
+    "size": 5172
   },
-  "scripts/slice_orchestrator.py": {
-    "hash": "945edddffcc1fcf46ff2291353304b534d497b720268db20fcb9478629ec502e",
-    "size": 60170
+  "scripts/lint_paths.py": {
+    "hash": "09ed370e193e22c15475751846c7764852325246eb078f7b84a1100c6531515c",
+    "size": 7118
+  },
+  "scripts/slice_orchestrator/__init__.py": {
+    "hash": "6c18ea014c715545129d77446c327482ff1ff76200ec08d96af8c589313f702a",
+    "size": 11072
+  },
+  "scripts/slice_orchestrator/__main__.py": {
+    "hash": "891d226230160e5e57d5144172d2d2a968f58b0fe3b071e39d5ca608973bdabd",
+    "size": 2043
+  },
+  "scripts/slice_orchestrator/core.py": {
+    "hash": "55732e39a5c21a385c914b12a29d2479ac527fa6827ac47fe43fa033029be9d4",
+    "size": 21747
+  },
+  "scripts/slice_orchestrator/dispatch.py": {
+    "hash": "0239b1385c98a9831080582699ba872e1718ac633b29089a122a7c344fb8e95a",
+    "size": 17184
+  },
+  "scripts/slice_orchestrator/git.py": {
+    "hash": "2ea48cb223ca0a7d422276bb1dd659ce70704afe1c730af3ef1ca57a1f22a492",
+    "size": 1499
+  },
+  "scripts/slice_orchestrator/lifecycle.py": {
+    "hash": "79a2e57d6c9ae47f2bbc64b4a1633a8528d1565361c3a60852764bba84f4b79e",
+    "size": 20253
+  },
+  "scripts/slice_orchestrator/resume.py": {
+    "hash": "0aaa322a44854b61d6b025bcba664ab771d74775cbc0722d8c7d7d893d664418",
+    "size": 9115
+  },
+  "scripts/slice_orchestrator/telemetry.py": {
+    "hash": "4473a390f93af35352006b86930b4fa661da4786281de041926522ea44f8bfff",
+    "size": 18030
   },
   "scripts/snapshot_diff.py": {
-    "hash": "00b8d431f721dffc66f069376e2d9847722147bdb49c72f894e436c67a00a7fe",
-    "size": 5832
+    "hash": "7036f0600d4a21b3fbfc2471415e9b39664d3babbede393ec4ada9d2d2a71479",
+    "size": 6259
   },
   "scripts/validate_architecture.py": {
-    "hash": "ba0743516eed8453418a088cdb86218875348deaf84e4153ea320fbdc6141e8d",
-    "size": 16162
+    "hash": "48ae4acb0295836235a824c18adb8d922a60cd7ff3589521b90708d49254fc2f",
+    "size": 15159
   },
   "tests/integration/__init__.py": {
     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -391,13 +563,45 @@
     "hash": "2a6d13ad0c0f9f489bcaf606ed0f61bd462b778fe9f06c7b70ab54c36b1a7dfd",
     "size": 3443
   },
+  "tests/unit/test_cairn_query_models.py": {
+    "hash": "9788f237c75af35ed36ef95c89ebec6ee047d1d0049a1f22c33cef21758af57a",
+    "size": 5696
+  },
+  "tests/unit/test_cairn_query_schema.py": {
+    "hash": "cfe80b909ea112933cb0195dbd8a0943538631a7eb756c05e5b58b5ae3f698e6",
+    "size": 1654
+  },
+  "tests/unit/test_cairn_query_storage.py": {
+    "hash": "eaee2e01392d201e75b535cb1c0b0bcee550147d26a7949dea90f9c7487beb06",
+    "size": 3688
+  },
+  "tests/unit/test_cli_query.py": {
+    "hash": "ffc0f856906e672601d9354f675990ea901f8070fadbae762a8761bbb03fc4c8",
+    "size": 1585
+  },
+  "tests/unit/test_close_slice_add_surface.py": {
+    "hash": "68630ed0154650adb641dd0608e96ab843f84213e354f0e58d7487011ded1289",
+    "size": 10950
+  },
   "tests/unit/test_close_slice_hardened.py": {
-    "hash": "53244b6008c7199c9ae63427ced0bb45579ac1e20cab554d3d646b1f92dcbfb8",
-    "size": 11402
+    "hash": "66b163eb52182b33fbb7a33dea8d31fd1b3bec2a3ce561bd180009c965a4c56c",
+    "size": 11871
   },
   "tests/unit/test_close_slice_invocation.py": {
-    "hash": "0a26f514cd3e82fd2f5b92813b360e1e772b76c9c8504250d220540dee67775e",
-    "size": 4317
+    "hash": "82558b8df2250746928a50c2aea9124be6c39e0828d2e7f3c6beed04a86a2e15",
+    "size": 4818
+  },
+  "tests/unit/test_close_slice_sweepnotes_required.py": {
+    "hash": "eaf114fed72bc011ce0b33655b4392ddf63e1b1e4271f991a904d329f9e3bfac",
+    "size": 10004
+  },
+  "tests/unit/test_commit_phase_handoff_stage_surface.py": {
+    "hash": "7dd641349d86b122b4a7aa6803dacba3acacc805153dd873fac9e9a9bbb0ddfb",
+    "size": 9767
+  },
+  "tests/unit/test_consumer_migration_doc.py": {
+    "hash": "a33eb36838cc57eb1354cd25cc26cf68519963dfc43f85265aa45ee117392787",
+    "size": 4982
   },
   "tests/unit/test_context_budget.py": {
     "hash": "d5d31ac13a07dc3f88ac2942b7d1680b957e605f7b6a192ba96c61c011d57492",
@@ -426,6 +630,38 @@
   "tests/unit/test_dogfood_evaluate.py": {
     "hash": "655a927b0dffdd78efeef0e94a5b25f2d68f1e6205766dd1c94c4a67109f48af",
     "size": 27516
+  },
+  "tests/unit/test_extractor_base.py": {
+    "hash": "e96acfc18389ed5eeffaea8497bd82b81f65b98c7d36770bb422792eb50f294a",
+    "size": 1523
+  },
+  "tests/unit/test_extractor_decision.py": {
+    "hash": "15d65fd577031c3a41d163e2c46eb3ec8fed8c5b50cef811900ca2144e07e1c4",
+    "size": 2705
+  },
+  "tests/unit/test_extractor_feature.py": {
+    "hash": "67f96cf0b402c420b54df70640a9c1e18085738bf3a61b0fd309b32a65da7fcd",
+    "size": 1554
+  },
+  "tests/unit/test_extractor_invariant.py": {
+    "hash": "07059363923acfc65a5b55c967d546abb162e025147280f00a34f555c6dc1776",
+    "size": 2065
+  },
+  "tests/unit/test_extractor_lesson.py": {
+    "hash": "4488fa02e4d7f82f489cfebefc4b6f343e06087e5fbce346980b887cf599c731",
+    "size": 1754
+  },
+  "tests/unit/test_extractor_op_rule.py": {
+    "hash": "47188602f59c552db58f0a382c85a004bc3c027f84dac638d741b332650da16d",
+    "size": 1472
+  },
+  "tests/unit/test_extractor_slice.py": {
+    "hash": "397c7ca80d97664303fd82f8fa60639844bdfe5f8b7654783bc476b1bf56e5be",
+    "size": 2799
+  },
+  "tests/unit/test_extractor_spec_section.py": {
+    "hash": "c3cfa567f3b751a5098f4275797135a22f43794f2cf43e34baae86ee57959ce8",
+    "size": 1446
   },
   "tests/unit/test_failed_classification_backoff.py": {
     "hash": "e1ca25a28be9059c6191a49ab29cf2d15c96cbf6c45764d71344405a12c531bb",
@@ -484,12 +720,32 @@
     "size": 6971
   },
   "tests/unit/test_invariant_assertions.py": {
-    "hash": "df10429d72298807cf7d525ea03c9376819023524d73941ecea701c9406618b7",
-    "size": 50872
+    "hash": "32afa489f6997662bba478d80eb9f7e6a5341a80c40d403fa9d843522fd21860",
+    "size": 50873
+  },
+  "tests/unit/test_lessons_cross_slice_contradiction.py": {
+    "hash": "cf689b4081873f05562b4c3fb924180043ce49b5d530102cda34ce2e7b2a2d3a",
+    "size": 4903
+  },
+  "tests/unit/test_lifecycle_artifact_relpaths_paper_cut.py": {
+    "hash": "e8bf543d93e574d943af7839d25883f0a94118f23c53ef38664ae88bade48046",
+    "size": 2606
   },
   "tests/unit/test_malformed_slice_yaml.py": {
     "hash": "0f98ff7e010fbc1d07238e37eb49c3f79f3086c5be7bd7e53d7486e431d6da6c",
     "size": 1799
+  },
+  "tests/unit/test_mcp_cairn_knowledge_jsonrpc.py": {
+    "hash": "3f0e00d3adeca12f064074caa9f89f5e37d6d1be06b46e2683900c08a294ccb5",
+    "size": 20773
+  },
+  "tests/unit/test_mcp_cairn_knowledge_server.py": {
+    "hash": "55381997aa7666e734e6d34223419102514131d261840673f91a63b2e4807ff1",
+    "size": 4913
+  },
+  "tests/unit/test_mcp_cairn_knowledge_tools.py": {
+    "hash": "03071170f8b306f86cbaa2e41164ced3d1131cf4113949d5453091080cf4ebb8",
+    "size": 4699
   },
   "tests/unit/test_multiline_json_tail.py": {
     "hash": "96d4b8ccf6ac10324ffe52d1b5faa1da5c89a61d7ee9ece8b366438d791b6c01",
@@ -500,20 +756,68 @@
     "size": 7604
   },
   "tests/unit/test_orchestrator_bug_fixes.py": {
-    "hash": "a32821756fcd709f2b414be374134bec38a5c025eb90db62fb297c5dabbabe47",
-    "size": 13611
+    "hash": "4cc6a4aa9466c60cfaf0649d8485d0ec559d5524ac610efcb88b0831449f0041",
+    "size": 13885
+  },
+  "tests/unit/test_orchestrator_events_capture.py": {
+    "hash": "7001d4500d2a731f87e2487eb9e276abe7aa28010b5997ca07a004291b7424ad",
+    "size": 19704
   },
   "tests/unit/test_orchestrator_live_stderr.py": {
     "hash": "4c5dcf19953ce772e506c13234ddbbf950576090cf7e13cee9bcdb4206df3ff9",
     "size": 6677
   },
+  "tests/unit/test_orchestrator_paths_migration.py": {
+    "hash": "8c543c271ca29d18b1a88b635c3abd47286dabe49918f5b477b8696005fefcd0",
+    "size": 25823
+  },
+  "tests/unit/test_orchestrator_snapshot_pinning.py": {
+    "hash": "78b0bde8e81122218084f7bd03403fd2a8af42d967dbcc2dc87f665246bc5a02",
+    "size": 7723
+  },
+  "tests/unit/test_path_binding.py": {
+    "hash": "86531d0fa984396a2e15e403f72736983c298b194ba7dc3f2863b292a8e12542",
+    "size": 2316
+  },
+  "tests/unit/test_path_discipline_lint.py": {
+    "hash": "d29b6032abdaac3cefd9b5cc82c77b2123dccdd7bade1e40f804af765ae24670",
+    "size": 11940
+  },
+  "tests/unit/test_phase_1_writer_bash_restored.py": {
+    "hash": "c784dccd2475e938ac7b0a0c1f8c01e3d978b8d4d859cf8592c63412533c9fa4",
+    "size": 3753
+  },
+  "tests/unit/test_phase_1_writer_query_first.py": {
+    "hash": "34a37e0cb4be349266deb22f8ec7b0c616256b2654c560b16fbb00321e35349a",
+    "size": 5284
+  },
+  "tests/unit/test_phase_2_skeptic_query_first_prompt.py": {
+    "hash": "4b8215ad7ae86d85d6f808d6d99905a23ebc81b2295c1239b4a98c2a6c3c4a56",
+    "size": 1942
+  },
   "tests/unit/test_phase_3_empty_cluster_guard.py": {
     "hash": "2fabaed98a325c4eb18f3f7f55970bb62c5893f73462e345d9099307ee0f6170",
     "size": 4489
   },
+  "tests/unit/test_phase_3_implementer_query_first_prompt.py": {
+    "hash": "728c379737f24ce8d7e3bc9a4671efdda55ce29e2fa733c5dfdf43315550314a",
+    "size": 1209
+  },
   "tests/unit/test_phase_3_per_cluster_logs.py": {
     "hash": "f38b7d10602d07c83550e5f04fe82d88d0ed2c46666357b55c57ab54b77d9afb",
     "size": 3372
+  },
+  "tests/unit/test_phase_4_integrator_paper_cuts.py": {
+    "hash": "00ddace3d31850cacf13c359d283121dd95016082f802aaf28e14eab44c2ded0",
+    "size": 4065
+  },
+  "tests/unit/test_phase_4_integrator_prompt.py": {
+    "hash": "6a70274b9cb59aef9370f4bd9afc942a47764c44a61c41751aa7ac75acd176ef",
+    "size": 3957
+  },
+  "tests/unit/test_phase_4_integrator_query_first_prompt.py": {
+    "hash": "7b12bd62509413d5452d5d9199027ca8662819aac71310bb7429bbfb01376baf",
+    "size": 3584
   },
   "tests/unit/test_phase_rethink.py": {
     "hash": "a1daec1cd0d44c0d99f79b63443cf992bbcb4332136363445e5f1e9d3eb5c935",
@@ -540,16 +844,44 @@
     "size": 9983
   },
   "tests/unit/test_role_guard.py": {
-    "hash": "c8f1ec544895eb8ee14148efba955094c3be7a919325bf92ac28986a2c014f3c",
-    "size": 6532
+    "hash": "7c1e58188892c7f0942ba6ccecb865b5e7135a8045e3701222e85ad66a57f67c",
+    "size": 7154
+  },
+  "tests/unit/test_role_guard_envelope_grant.py": {
+    "hash": "a41fa961df35e02d1bbefb7bb4338ea486cf085b30cbdc14b77d032f5e05f7cd",
+    "size": 5267
   },
   "tests/unit/test_role_guard_envelope_json.py": {
     "hash": "7c2cc53bb535133a76f6ee262d63044427daedbf69fc7fb41ef92e066e0f2573",
     "size": 2614
   },
+  "tests/unit/test_role_guard_grep_glob_deny.py": {
+    "hash": "de20bfb09c91937e85e2b4cbbfc139d8b795c94af3b4e30cf6aa5ccbdb49e153",
+    "size": 15898
+  },
+  "tests/unit/test_role_guard_phase_1_lockdown.py": {
+    "hash": "ab845344b1e4ba7632aed6b53a3ef5148bdb1e8c0de82ea62d00bb6cbc995f70",
+    "size": 4609
+  },
+  "tests/unit/test_role_guard_phases_234_deny.py": {
+    "hash": "c1ae90a555afb0b2c9e2b16cda4d5d153fe072ac23aa5ccd994b46200e3c6db1",
+    "size": 12263
+  },
   "tests/unit/test_role_guard_wired.py": {
     "hash": "7820093d9fa9cfddfd5a29391263fb052a012a725b11bd5b88fe6e053053850e",
     "size": 3818
+  },
+  "tests/unit/test_root.py": {
+    "hash": "1e7ff5ba200fbacf54e6d303b956df632ce87c61aae18697c3b539feeafff850",
+    "size": 10361
+  },
+  "tests/unit/test_root_resolver_migration.py": {
+    "hash": "4c6efd25e627a52e9d28692bf5b3784ff6a6cfe85b2e07c1f823ab817e00e880",
+    "size": 19863
+  },
+  "tests/unit/test_round_trip_validator.py": {
+    "hash": "889d977bcfd27310a49707a14af9ce0b4dd36cb8df6cba297747e35c677a1f9b",
+    "size": 3376
   },
   "tests/unit/test_signal_handler.py": {
     "hash": "673e634ea5a4c57bd55c7aa5fe66578be9184130223b1a1258c2df007f0bdd98",
@@ -567,9 +899,29 @@
     "hash": "6e32b9f118ab0c3f9a0fbc270de4e2cfb6e39ef5a3c6ffbc2ae4e886ae4fe344",
     "size": 1546
   },
+  "tests/unit/test_slice_orchestrator_artifact_preservation.py": {
+    "hash": "4dd25e363c767a9e51b9c0bf9a98ec37d5c0b97c568c796a1a52c33668cd0860",
+    "size": 9245
+  },
+  "tests/unit/test_slice_orchestrator_cost.py": {
+    "hash": "96c6e8012f3fcc3a1f8d4c5bb968827fa46da63352a912f661906bd97be3451a",
+    "size": 25266
+  },
+  "tests/unit/test_slice_orchestrator_model_config.py": {
+    "hash": "4031eda048f94f53e00654b260f3e0db5d24cfa9d52bc435918fe82b24a02d18",
+    "size": 37139
+  },
+  "tests/unit/test_slice_orchestrator_package_split.py": {
+    "hash": "97e272fc3713acbda51730e70edf701033f160f025921993286d7606082c47ef",
+    "size": 19065
+  },
   "tests/unit/test_snapshot_diff.py": {
     "hash": "5611085fe028791b5a537e7c2d19615c1d584c6d141dbffc6a88af358250c7f6",
     "size": 20429
+  },
+  "tests/unit/test_snapshot_lru.py": {
+    "hash": "32303c09b7836080f864b0b0bbd9aedf14961adb6e13feaa86fc9737c5dc1f85",
+    "size": 1860
   },
   "tests/unit/test_state_schema.py": {
     "hash": "f7a9788a999435676e8d26aeff37b4469dc888c2e5f61bf8f63c3287657bc87a",
@@ -582,6 +934,10 @@
   "tests/unit/test_triager_superseded_heuristic.py": {
     "hash": "b4a87ec934207f20ffc6761450a83037ea1e23492d5f8d9dd9e70e71a5cd4467",
     "size": 14405
+  },
+  "tests/unit/test_upgrade_doc_consumer_setup.py": {
+    "hash": "950b61a58f09144b8ea2d5ba0b73b7a12de767a172f51014d4e0ed056c17c0ad",
+    "size": 12204
   },
   "tests/unit/test_validate_architecture.py": {
     "hash": "63b918c4a3eb3bbf5db4668bf9b4972b9e9956f66ac1613039e3c075e980642a",
