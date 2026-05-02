@@ -234,6 +234,134 @@ def _run_test_ref_assertion(
     return None
 
 
+def _load_substrate_registry(project_root: Path) -> dict[str, dict]:
+    """Load .claude/pipeline-substrate-registry.yaml as {prefix: entry}.
+
+    Schema-checks: each entry has prefix, tool, owner-adr, since.
+    Returns {} if file missing (caller decides hard-fail policy).
+    """
+    import yaml
+
+    path = project_root / ".claude" / "pipeline-substrate-registry.yaml"
+    if not path.exists():
+        return {}
+    raw = yaml.safe_load(path.read_text()) or {}
+    entries = raw.get("entries", [])
+    out: dict[str, dict] = {}
+    for entry in entries:
+        prefix = entry.get("prefix", "")
+        if not prefix:
+            continue
+        for required in ("prefix", "tool", "owner-adr", "since"):
+            if required not in entry:
+                raise ValueError(
+                    f"INV-001 registry entry {prefix!r} missing {required}"
+                )
+        out[prefix] = entry
+    return out
+
+
+def _verify_pass_through(sha: str, files: list[str], parents: list[str]) -> str | None:
+    return None
+
+
+def _verify_sweep_commit(sha: str, files: list[str], parents: list[str]) -> str | None:
+    has_results = any(f.startswith(".claude/sweep-results/") for f in files)
+    has_yaml = ".claude/sweep.yaml" in files
+    if not (has_results and has_yaml):
+        missing = []
+        if not has_results:
+            missing.append(".claude/sweep-results/")
+        if not has_yaml:
+            missing.append(".claude/sweep.yaml")
+        return f"sweep verifier: missing {' AND '.join(missing)} touch"
+    return None
+
+
+def _verify_fix_commit(sha: str, files: list[str], parents: list[str]) -> str | None:
+    ok = all(f.startswith(".claude/sweep-results/") for f in files)
+    if not ok:
+        offenders = [f for f in files if not f.startswith(".claude/sweep-results/")]
+        return f"fix verifier: files outside sweep scope: {offenders[:3]}"
+    return None
+
+
+_SUBSTRATE_VERIFIERS: dict[str, object] = {
+    "slice:": _verify_pass_through,
+    "handoff:": _verify_pass_through,
+    "sweep:": _verify_sweep_commit,
+    "bootstrap:": _verify_pass_through,
+    "feat:": _verify_pass_through,
+    "docs:": _verify_pass_through,
+    "fix:": _verify_fix_commit,
+    "chore:": _verify_pass_through,
+    "test:": _verify_pass_through,
+}
+
+_PLACEHOLDER_SHA = "<pending-slice-close-sha>"
+
+
+def _git_subjects_in_range(
+    repo: Path, base_sha: str
+) -> list[tuple[str, str, list[str]]]:
+    """Return list of (sha, subject, files_changed) for base_sha..HEAD --no-merges."""
+    import subprocess
+
+    range_arg = f"{base_sha}..HEAD"
+    out = subprocess.check_output(
+        ["git", "log", range_arg, "--no-merges", "--format=%H%x09%s", "--name-only"],
+        cwd=str(repo),
+        text=True,
+    )
+    commits: list[tuple[str, str, list[str]]] = []
+    current: tuple[str, str, list[str]] | None = None
+    for line in out.split("\n"):
+        if "\t" in line and len(line.split("\t", 1)[0]) == 40:
+            if current:
+                commits.append(current)
+            sha, subject = line.split("\t", 1)
+            current = (sha, subject, [])
+        elif line and current is not None:
+            current[2].append(line)
+    if current:
+        commits.append(current)
+    return commits
+
+
+def _run_git_log_walk_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Walk git log range, classify each commit, run per-prefix verifier."""
+    effective_from = assertion.get("binding-effective-from", "")
+    if effective_from == _PLACEHOLDER_SHA or not effective_from:
+        print(f"{inv_id}: binding pending effective-from set (placeholder present)")
+        return None
+
+    registry = _load_substrate_registry(project_root)
+    if not registry:
+        return f"Check D: {inv_id} FAIL — registry not found or empty"
+
+    failures: list[str] = []
+    for sha, subject, files in _git_subjects_in_range(project_root, effective_from):
+        matched_prefix = next((p for p in registry if subject.startswith(p)), None)
+        if matched_prefix is None:
+            failures.append(f"  {sha[:8]} {subject!r} — prefix not in registry")
+            continue
+        verifier = _SUBSTRATE_VERIFIERS.get(matched_prefix)
+        if verifier is None:
+            failures.append(
+                f"  {sha[:8]} {subject!r} — prefix {matched_prefix!r} has no verifier"
+            )
+            continue
+        err = verifier(sha, files, [])
+        if err:
+            failures.append(f"  {sha[:8]} {subject!r} — {err}")
+
+    if failures:
+        return f"Check D: {inv_id} FAIL — INV-001 violations:\n" + "\n".join(failures)
+    return None
+
+
 _ROLE_SHORTHAND_TO_SLUG: dict[str, str] = {
     "reader": "phase-1-writer",
     "skeptic": "phase-2-skeptic",
@@ -465,6 +593,8 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
         return _run_test_ref_assertion(project_root, inv_id, assertion)
     if atype == "phase-topology":
         return _run_phase_topology_assertion(project_root, inv_id, assertion)
+    if atype == "git-log-walk":
+        return _run_git_log_walk_assertion(project_root, inv_id, assertion)
     return None
 
 
