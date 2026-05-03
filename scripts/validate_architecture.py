@@ -226,11 +226,452 @@ def _run_file_exists_assertion(
 def _run_test_ref_assertion(
     project_root: Path, inv_id: str, assertion: dict
 ) -> str | None:
-    """Run a test-ref assertion. Returns failure message or None on pass."""
+    """Run a test-ref assertion. Returns failure message or None on pass.
+
+    Per ambiguity resolution A2: validates file existence only; function
+    qualifiers after ``::`` are stripped before the path check.
+    """
     test_path = assertion.get("pattern", "")
-    full_path = project_root / test_path
+    # Strip ::function_name qualifier — file-existence check only (A2).
+    file_path = test_path.split("::")[0]
+    full_path = project_root / file_path
     if not full_path.exists():
         return f"Check D: {inv_id} FAIL — test file not found: {test_path}"
+    return None
+
+
+def _load_substrate_registry(project_root: Path) -> dict[str, dict]:
+    """Load .claude/pipeline-substrate-registry.yaml as {prefix: entry}.
+
+    Schema-checks: each entry has prefix, tool, owner-adr, since.
+    Returns {} if file missing (caller decides hard-fail policy).
+    """
+    import yaml
+
+    path = project_root / ".claude" / "pipeline-substrate-registry.yaml"
+    if not path.exists():
+        return {}
+    raw = yaml.safe_load(path.read_text()) or {}
+    entries = raw.get("entries", [])
+    out: dict[str, dict] = {}
+    for entry in entries:
+        prefix = entry.get("prefix", "")
+        if not prefix:
+            continue
+        for required in ("prefix", "tool", "owner-adr", "since"):
+            if required not in entry:
+                raise ValueError(
+                    f"INV-001 registry entry {prefix!r} missing {required}"
+                )
+        out[prefix] = entry
+    return out
+
+
+def _verify_pass_through(sha: str, files: list[str], parents: list[str]) -> str | None:
+    return None
+
+
+def _verify_sweep_commit(sha: str, files: list[str], parents: list[str]) -> str | None:
+    has_results = any(f.startswith(".claude/sweep-results/") for f in files)
+    has_yaml = ".claude/sweep.yaml" in files
+    if not (has_results and has_yaml):
+        missing = []
+        if not has_results:
+            missing.append(".claude/sweep-results/")
+        if not has_yaml:
+            missing.append(".claude/sweep.yaml")
+        return f"sweep verifier: missing {' AND '.join(missing)} touch"
+    return None
+
+
+def _verify_fix_commit(sha: str, files: list[str], parents: list[str]) -> str | None:
+    ok = all(f.startswith(".claude/sweep-results/") for f in files)
+    if not ok:
+        offenders = [f for f in files if not f.startswith(".claude/sweep-results/")]
+        return f"fix verifier: files outside sweep scope: {offenders[:3]}"
+    return None
+
+
+_SUBSTRATE_VERIFIERS: dict[str, object] = {
+    "slice:": _verify_pass_through,
+    "handoff:": _verify_pass_through,
+    "sweep:": _verify_sweep_commit,
+    "bootstrap:": _verify_pass_through,
+    "feat:": _verify_pass_through,
+    "docs:": _verify_pass_through,
+    "fix:": _verify_fix_commit,
+    "chore:": _verify_pass_through,
+    "test:": _verify_pass_through,
+}
+
+_PLACEHOLDER_SHA = "<pending-slice-close-sha>"
+
+
+def _git_subjects_in_range(
+    repo: Path, base_sha: str
+) -> list[tuple[str, str, list[str]]]:
+    """Return list of (sha, subject, files_changed) for base_sha..HEAD --no-merges."""
+    import subprocess
+
+    range_arg = f"{base_sha}..HEAD"
+    out = subprocess.check_output(
+        ["git", "log", range_arg, "--no-merges", "--format=%H%x09%s", "--name-only"],
+        cwd=str(repo),
+        text=True,
+    )
+    commits: list[tuple[str, str, list[str]]] = []
+    current: tuple[str, str, list[str]] | None = None
+    for line in out.split("\n"):
+        if "\t" in line and len(line.split("\t", 1)[0]) == 40:
+            if current:
+                commits.append(current)
+            sha, subject = line.split("\t", 1)
+            current = (sha, subject, [])
+        elif line and current is not None:
+            current[2].append(line)
+    if current:
+        commits.append(current)
+    return commits
+
+
+def _run_git_log_walk_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Walk git log range, classify each commit, run per-prefix verifier."""
+    effective_from = assertion.get("binding-effective-from", "")
+    if effective_from == _PLACEHOLDER_SHA or not effective_from:
+        print(f"{inv_id}: binding pending effective-from set (placeholder present)")
+        return None
+
+    registry = _load_substrate_registry(project_root)
+    if not registry:
+        return f"Check D: {inv_id} FAIL — registry not found or empty"
+
+    failures: list[str] = []
+    for sha, subject, files in _git_subjects_in_range(project_root, effective_from):
+        matched_prefix = next((p for p in registry if subject.startswith(p)), None)
+        if matched_prefix is None:
+            failures.append(f"  {sha[:8]} {subject!r} — prefix not in registry")
+            continue
+        verifier = _SUBSTRATE_VERIFIERS.get(matched_prefix)
+        if verifier is None:
+            failures.append(
+                f"  {sha[:8]} {subject!r} — prefix {matched_prefix!r} has no verifier"
+            )
+            continue
+        err = verifier(sha, files, [])
+        if err:
+            failures.append(f"  {sha[:8]} {subject!r} — {err}")
+
+    if failures:
+        return f"Check D: {inv_id} FAIL — INV-001 violations:\n" + "\n".join(failures)
+    return None
+
+
+_ROLE_SHORTHAND_TO_SLUG: dict[str, str] = {
+    "reader": "phase-1-writer",
+    "skeptic": "phase-2-skeptic",
+    "builder": "phase-3-implementer",
+    "auditor": "phase-4-integrator",
+}
+
+
+def _extract_role_for_phase(core_text: str) -> set[tuple[int, str]] | None:
+    """Parse ROLE_FOR_PHASE dict from core.py text."""
+    in_dict = False
+    result: set[tuple[int, str]] = set()
+    for line in core_text.splitlines():
+        stripped = line.strip()
+        if re.match(r"ROLE_FOR_PHASE\s*=\s*\{", stripped):
+            in_dict = True
+            continue
+        if in_dict:
+            if stripped.startswith("}"):
+                break
+            m = re.match(r"(\d+)\s*:\s*\"(phase-\d+-[a-z][a-z-]*)\"", stripped)
+            if m:
+                result.add((int(m.group(1)), m.group(2)))
+    return result if result else None
+
+
+def _extract_skill_guide_topology(
+    opref_text: str,
+) -> tuple[set[tuple[int, str]], list[str]]:
+    """Extract (phase, role_slug) pairs from the Phase Skill Guide tables.
+
+    Uses shorthand-to-slug mapping for the two tables and additionally
+    verifies each derived slug appears somewhere in the full document
+    (catches slug renaming outside the Skill Guide section itself).
+    """
+    failures: list[str] = []
+    result: set[tuple[int, str]] = set()
+
+    section_m = re.search(
+        r"## Phase Skill Guide\b(.*?)(?=\n## |\Z)", opref_text, re.DOTALL
+    )
+    if not section_m:
+        failures.append(
+            "INV-003: Cannot find '## Phase Skill Guide' section in "
+            "docs/operational-reference.md"
+        )
+        return result, failures
+
+    section_text = section_m.group(1)
+    row_pat = re.compile(
+        r"^\|\s*(\d+)\.\s+[^|]+\|\s+\*{0,2}(\w+)\*{0,2}\s*\|", re.MULTILINE
+    )
+    for m in row_pat.finditer(section_text):
+        phase_num = int(m.group(1))
+        shorthand = m.group(2).lower()
+        slug = _ROLE_SHORTHAND_TO_SLUG.get(shorthand)
+        if slug:
+            result.add((phase_num, slug))
+
+    # Verify each derived slug appears in the full document.
+    to_remove: set[tuple[int, str]] = set()
+    for pair in result:
+        _, slug = pair
+        if slug not in opref_text:
+            failures.append(
+                f"INV-003: role slug '{slug}' not found anywhere in "
+                f"docs/operational-reference.md (Phase Skill Guide)"
+            )
+            to_remove.add(pair)
+    result -= to_remove
+
+    return result, failures
+
+
+def _extract_agent_file_topology(
+    project_root: Path,
+) -> tuple[set[tuple[int, str]], list[str]]:
+    """Parse (phase, role_slug) pairs from .claude/agents/phase-N-*.md filenames."""
+    failures: list[str] = []
+    result: set[tuple[int, str]] = set()
+
+    agents_dir = project_root / ".claude" / "agents"
+    if not agents_dir.exists():
+        failures.append("INV-003: .claude/agents/ directory not found")
+        return result, failures
+
+    for f in sorted(agents_dir.glob("phase-*.md")):
+        m = re.match(r"phase-(\d+)-(.+)\.md$", f.name)
+        if m:
+            phase_num = int(m.group(1))
+            slug = f"phase-{m.group(1)}-{m.group(2)}"
+            result.add((phase_num, slug))
+
+    return result, failures
+
+
+def _extract_role_guard_topology(
+    guard_text: str,
+) -> tuple[set[tuple[int, str]], list[str]]:
+    """Extract (phase, role_slug) topology from ROLE_DENY_READ in role_guard.py.
+
+    Uses ROLE_DENY_READ as the binding source (all four roles must appear there).
+    This tolerates the option-(b) asymmetry: phase-3-implementer has no static
+    ROLE_POLICIES entry but IS present in ROLE_DENY_READ.
+    """
+    failures: list[str] = []
+    result: set[tuple[int, str]] = set()
+
+    in_deny_read = False
+    for line in guard_text.splitlines():
+        stripped = line.strip()
+        if re.match(r"ROLE_DENY_READ\s*=\s*\{", stripped):
+            in_deny_read = True
+            continue
+        if in_deny_read:
+            if stripped == "}":
+                break
+            m = re.search(r'"(phase-(\d+)-[a-z][a-z-]*)"', stripped)
+            if m:
+                slug = m.group(1)
+                phase_num = int(m.group(2))
+                result.add((phase_num, slug))
+
+    if not result:
+        failures.append(
+            "INV-003: Cannot parse ROLE_DENY_READ from checks/role_guard.py"
+        )
+
+    return result, failures
+
+
+def validate_phase_topology(project_root: Path) -> list[str]:
+    """Four-way cross-reference: (phase_ordinal, role_slug) topology must agree.
+
+    Canonical sources:
+      1. scripts/slice_orchestrator/core.py — ROLE_FOR_PHASE (authoritative).
+      2. docs/operational-reference.md — Phase Skill Guide tables.
+      3. .claude/agents/phase-N-*.md — agent prompt filenames.
+      4. checks/role_guard.py — ROLE_DENY_READ keys.
+
+    Option-(b) asymmetry: phase-3-implementer has no static ROLE_POLICIES entry;
+    write-path gate is AGENT_ENVELOPE-driven per compression-infrastructure-bootstrap.
+    The binding tolerates this because phase-3-implementer IS in ROLE_DENY_READ.
+
+    Returns list of failure messages; empty on full agreement.
+    """
+    failures: list[str] = []
+
+    core_path = project_root / "scripts" / "slice_orchestrator" / "core.py"
+    if not core_path.exists():
+        return [f"INV-003: {core_path} not found"]
+    authoritative = _extract_role_for_phase(core_path.read_text())
+    if authoritative is None:
+        return [
+            "INV-003: Cannot parse ROLE_FOR_PHASE from "
+            "scripts/slice_orchestrator/core.py"
+        ]
+
+    opref_path = project_root / "docs" / "operational-reference.md"
+    if not opref_path.exists():
+        failures.append(f"INV-003: {opref_path} not found")
+        skill_guide_topology: set[tuple[int, str]] = set()
+    else:
+        skill_guide_topology, src2_failures = _extract_skill_guide_topology(
+            opref_path.read_text()
+        )
+        failures.extend(src2_failures)
+
+    agent_topology, src3_failures = _extract_agent_file_topology(project_root)
+    failures.extend(src3_failures)
+
+    guard_path = project_root / "checks" / "role_guard.py"
+    if not guard_path.exists():
+        failures.append(f"INV-003: {guard_path} not found")
+        guard_topology: set[tuple[int, str]] = set()
+    else:
+        guard_topology, src4_failures = _extract_role_guard_topology(
+            guard_path.read_text()
+        )
+        failures.extend(src4_failures)
+
+    if failures:
+        return failures
+
+    sources = [
+        ("operational-reference.md (Phase Skill Guide)", skill_guide_topology),
+        (".claude/agents/ filenames", agent_topology),
+        ("checks/role_guard.py ROLE_DENY_READ", guard_topology),
+    ]
+    for source_name, topology in sources:
+        for pair in authoritative:
+            if pair not in topology:
+                phase, role = pair
+                failures.append(
+                    f"INV-003: {source_name} is missing ({phase}, '{role}') "
+                    f"— phase-topology drift vs ROLE_FOR_PHASE"
+                )
+        for pair in topology:
+            if pair not in authoritative:
+                phase, role = pair
+                failures.append(
+                    f"INV-003: {source_name} has extra ({phase}, '{role}') "
+                    f"— phase-topology drift vs ROLE_FOR_PHASE"
+                )
+
+    return failures
+
+
+def _run_phase_topology_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a phase-topology assertion. Returns failure message or None on pass."""
+    topo_failures = validate_phase_topology(project_root)
+    if topo_failures:
+        return f"Check D: {inv_id} FAIL — phase-topology drift:\n  " + "\n  ".join(
+            topo_failures
+        )
+    return None
+
+
+def _run_structural_parser_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a structural-parser assertion against a markdown file.
+
+    Per ADR invariant-binding-strategy D4:
+    - Placeholder binding-effective-from → no-op with notice.
+    - Required sections missing → fail.
+    - Forbidden literal/regex section headings → fail.
+    - Forbidden content regex matches → fail.
+    - Token budget: ceil(len(bytes)/4) vs warn-at/fail-at.
+    """
+    import math
+
+    effective_from = assertion.get("binding-effective-from", "")
+    if effective_from == "<pending-slice-close-sha>":
+        print(
+            f"[structural-parser] {inv_id}: binding pending — "
+            "binding-effective-from is placeholder, skipping enforcement.",
+            file=__import__("sys").stderr,
+        )
+        return None
+
+    target = assertion.get("target", "")
+    target_path = project_root / target
+    if not target_path.exists():
+        return f"Check D: {inv_id} FAIL — structural-parser target not found: {target}"
+
+    raw = target_path.read_bytes()
+    text = raw.decode("utf-8", errors="replace")
+
+    headings = re.findall(r"^##\s+(.+)$", text, re.MULTILINE)
+
+    required = assertion.get("required-sections", [])
+    for section in required:
+        if section not in headings:
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"required section '{section}' missing from {target}"
+            )
+
+    forbidden_cfg = assertion.get("forbidden-sections", {})
+    for literal in forbidden_cfg.get("literal", []):
+        if literal in headings:
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"forbidden section '{literal}' present in {target}"
+            )
+    for pattern in forbidden_cfg.get("regex", []):
+        for heading in headings:
+            heading_line = f"## {heading}"
+            if re.search(pattern, heading_line):
+                return (
+                    f"Check D: {inv_id} FAIL — structural-parser: "
+                    f"forbidden section heading '{heading}' matches regex "
+                    f"'{pattern}' in {target}"
+                )
+
+    content_cfg = assertion.get("forbidden-content", {})
+    for pattern in content_cfg.get("regex", []):
+        if re.search(pattern, text):
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"forbidden content pattern '{pattern}' found in {target}"
+            )
+
+    budget_cfg = assertion.get("token-budget", {})
+    if budget_cfg:
+        token_count = math.ceil(len(raw) / 4)
+        fail_at = budget_cfg.get("fail-at", None)
+        warn_at = budget_cfg.get("warn-at", None)
+        if fail_at is not None and token_count > fail_at:
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"token budget exceeded: {token_count} tokens "
+                f"(fail-at {fail_at}) in {target}"
+            )
+        if warn_at is not None and token_count > warn_at:
+            print(
+                f"[structural-parser] {inv_id}: token budget warning: "
+                f"{token_count} tokens (warn-at {warn_at}) in {target}",
+                file=__import__("sys").stderr,
+            )
+
     return None
 
 
@@ -243,6 +684,12 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
         return _run_file_exists_assertion(project_root, inv_id, assertion)
     if atype == "test-ref":
         return _run_test_ref_assertion(project_root, inv_id, assertion)
+    if atype == "phase-topology":
+        return _run_phase_topology_assertion(project_root, inv_id, assertion)
+    if atype == "git-log-walk":
+        return _run_git_log_walk_assertion(project_root, inv_id, assertion)
+    if atype == "structural-parser":
+        return _run_structural_parser_assertion(project_root, inv_id, assertion)
     return None
 
 

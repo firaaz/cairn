@@ -19,3 +19,5 @@
 | slice-artifact-preservation | Slice artifact preservation — pre-wipe snapshots of phase ephemerals | accepted | firm | process | 2026-04-26 |
 | cairn-substrate-and-fastmcp | Cairn substrate — v1 dep set, FastMCP adapter, agent-context structural lockdown | accepted | firm | architecture | 2026-04-26 |
 | board-as-roadmap-substrate | Board as roadmap substrate — four-layer model + declarative reconciliation | accepted | provisional | process | 2026-04-28 |
+| pipeline-substrate-naming | Pipeline-substrate commit class — definition and registry | accepted | firm | process | 2026-05-02 |
+| invariant-binding-strategy | Bind INV-001 and INV-002 to true machine-checkable assertions | accepted | firm | process | 2026-05-02 |

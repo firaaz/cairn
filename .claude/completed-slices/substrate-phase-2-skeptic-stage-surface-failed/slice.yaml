@@ -1,0 +1,20 @@
+id: substrate/phase-2-skeptic-stage-surface
+name: substrate/phase-2-skeptic-stage-surface
+status: failed
+current_phase: 4
+failure-reason: "Phase 4: bisect-anchor unsatisfiable due to chicken-and-egg self-application gap. Fix in ae9e6c8 functionally correct (4/4 R1-R4 PASS, INV-008 PASS, 1177 tests pass) but the slice's own Phase-2 boundary commit cannot contain the test file because the bug being fixed was active during this slice's Phase 2. Triager (2026-05-02) routed RE_DISPATCH to Phase 1 from current HEAD."
+brief: "substrate/phase-2-skeptic-stage-surface \u2014 issue #26 fix. The orchestrator's\
+  \ commit_phase_handoff (scripts/slice_orchestrator/lifecycle.py) does not include\
+  \ phase-2-skeptic's RED test writes when current_phase==2, so Phase 2's tests under\
+  \ tests/unit/ leak uncommitted into Phase 3. Fix: extend commit_phase_handoff to\
+  \ diff tests/unit/ against the Phase-1 boundary commit and stage every changed/added\
+  \ path (using path.exists() guard). Discovery is diff-based, not slug-glob \u2014\
+  \ robust to naming convention drift. Test surface: tests/unit/test_phase_2_handoff_staging_surface.py\
+  \ with four cases (R1 single test file staged, R2 three mixed-naming files all staged,\
+  \ R3 zero test files preserves shape, R4 test file plus handoff-phase-2.md modification\
+  \ both staged). INV-008 DC-3 idempotency and DC-4 phase-boundary-commit shape preserved\
+  \ (additive stage-list, no extra commits). Out of scope: Phase-3 staging (handles\
+  \ its own writes), Phase-4 staging (already fixed by a8d8f23). Severity: S1. Issue:\
+  \ 26. Design plan at docs/plans/2026-05-02-substrate-papercut-bundle-design.md and\
+  \ implementation plan at docs/plans/2026-05-02-substrate-papercut-bundle-plan.md\
+  \ (Slice 2 section)."

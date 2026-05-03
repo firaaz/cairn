@@ -1,6 +1,6 @@
 # /start-slice
 
-Thin dispatcher → `python -m slice_orchestrator` (package at `scripts/slice_orchestrator/`). Drives a slice through Intent → Validation → Implementation → Integration via per-phase `claude -p --agent <role>` agents.
+Thin dispatcher → `PYTHONPATH=scripts uv run python -m slice_orchestrator` (package at `scripts/slice_orchestrator/`). Drives a slice through Intent → Validation → Implementation → Integration via per-phase `claude -p --agent <role>` agents.
 
 Usage: `/start-slice <brief>` (new), `/start-slice --resume` (continue current), `/start-slice --legacy` (prose fallback).
 

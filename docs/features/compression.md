@@ -54,7 +54,7 @@ Listed by close date. `compression/*` and `cost-discipline/*` slices were the pr
 Mirrors the `CHANGELOG.md` `[Unreleased]` block. Highlights:
 
 - **Knowledge substrate v1.** `cairn-knowledge` MCP server (stdio); `scripts/cairn_query/` package; kuzu graph store; four query tools (`lookup`, `search`, `path_bindings`, `cypher`). Read-only.
-- **Slice-pipeline orchestrator.** `scripts/slice_orchestrator/` four-phase loop (Intent → Validation → Implementation → Integration); per-phase agents at `.claude/agents/phase-{1-writer,2-skeptic,3-implementer,4-integrator}.md`; CLI at `python -m slice_orchestrator --brief|--resume|--legacy`; sweep-results artifact preservation; resume reconciliation matrix.
+- **Slice-pipeline orchestrator.** `scripts/slice_orchestrator/` four-phase loop (Intent → Validation → Implementation → Integration); per-phase agents at `.claude/agents/phase-{1-writer,2-skeptic,3-implementer,4-integrator}.md`; CLI at `PYTHONPATH=scripts uv run python -m slice_orchestrator --brief|--resume|--legacy`; sweep-results artifact preservation; resume reconciliation matrix.
 - **Role-keyed enforcement.** `checks/role_guard.py` canonical-knowledge read-class lockdown across all four phase roles; envelope-bound write enforcement for `phase-3-implementer`. Bash-token extraction (`_bash_path_tokens`) covers `cat` / `head` / `grep` paths.
 - **Cost discipline.** Per-phase model config with extended-thinking budgets; Track-0 telemetry; lever-1 retune complete (~$18.71 baseline).
 - **Lessons L-001 through L-015.** Latest: L-015 (squash-merge / extractor coupling, this commit).

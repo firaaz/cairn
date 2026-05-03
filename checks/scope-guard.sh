@@ -58,6 +58,7 @@ REL_FILE="${FILE#$PROJECT_ROOT/}"
 # separately by reversibility-guard.sh.
 case "$REL_FILE" in
   .claude/current-slice/*|.claude/handoff.md|.claude/sweep.yaml|.claude/features/*) exit 0 ;;
+  .claude/d1-bypasses.log|.claude/d3-bypasses.log) exit 0 ;;
   docs/adr/*|docs/ARCHITECTURE.md|docs/lessons.md) exit 0 ;;
   CLAUDE.md|.gitignore) exit 0 ;;
 esac

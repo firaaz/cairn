@@ -158,3 +158,58 @@ def test_classified_line_regex_schema(line: str, expected_match: bool):
     assert bool(match) == expected_match, (
         f"regex match={bool(match)} for line {line!r}, expected {expected_match}"
     )
+
+
+SUBSTRATE_ORCHESTRATOR_PATHS_LINE_18 = (
+    "substrate/orchestrator-paths 2026-04-30 pre-existing: "
+    "integration_gate fails on 4 pre-existing kuzu MCP tests "
+    "(issue #25 scope); invariant+ruff PASS"
+)
+
+SUBSTRATE_ORCHESTRATOR_PATHS_LINE_19 = (
+    "substrate/orchestrator-paths 2026-04-30 pre-existing: "
+    "snapshot baseline 2026-04-30T00:37 is many slices stale; "
+    "reported new files are pre-existing housekeeping outside slice envelope"
+)
+
+
+def test_line_18_substrate_orchestrator_paths_pre_existing_pin():
+    """Intent S1: line 18 backfilled with `pre-existing:` token, reason text byte-identical."""
+    lines = _lines()
+    assert len(lines) >= 18, f"expected >=18 lines, got {len(lines)}"
+    assert lines[17] == SUBSTRATE_ORCHESTRATOR_PATHS_LINE_18, (
+        f"line 18 mismatch:\n  expected: {SUBSTRATE_ORCHESTRATOR_PATHS_LINE_18!r}\n"
+        f"  actual:   {lines[17]!r}"
+    )
+
+
+def test_line_19_substrate_orchestrator_paths_pre_existing_pin():
+    """Intent S2: line 19 backfilled with `pre-existing:` token, reason text byte-identical."""
+    lines = _lines()
+    assert len(lines) >= 19, f"expected >=19 lines, got {len(lines)}"
+    assert lines[18] == SUBSTRATE_ORCHESTRATOR_PATHS_LINE_19, (
+        f"line 19 mismatch:\n  expected: {SUBSTRATE_ORCHESTRATOR_PATHS_LINE_19!r}\n"
+        f"  actual:   {lines[18]!r}"
+    )
+
+
+def test_lines_18_and_19_classified_pre_existing_via_regex():
+    """Intent S5: post-backfill, lines 18 and 19 carry the `pre-existing` class token explicitly.
+
+    Parallel to test_first_four_lines_classified_pre_existing (migration-anchor pin)
+    so silent reclassification of the substrate/orchestrator-paths entries
+    (e.g. to `slice-caused` or `false-positive`) is caught by name, not just
+    by the schema regex.
+    """
+    lines = _lines()
+    assert len(lines) >= 19, f"expected >=19 lines, got {len(lines)}"
+    for idx in (17, 18):
+        line = lines[idx]
+        m = CLASSIFIED_LINE_RE.match(line)
+        assert m, f"line {idx + 1} does not match regex: {line!r}"
+        assert line.startswith("substrate/orchestrator-paths 2026-04-30 "), (
+            f"line {idx + 1} id/date prefix changed: {line!r}"
+        )
+        assert m.group(1) == "pre-existing", (
+            f"line {idx + 1} class is {m.group(1)!r}, expected 'pre-existing'"
+        )

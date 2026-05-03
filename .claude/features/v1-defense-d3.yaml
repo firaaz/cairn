@@ -12,4 +12,5 @@ slices:
     note: "ruff-cleanup — clears 3 D3-bypassed lint errors from v1-defense-d3/automated-backstop (logged in .claude/d3-bypasses.log)"
   - id: v1-defense-d3/bypass-log-test-resilience
     added: 2026-04-17
-    intent: "Remove hardcoded 4-line count and widen CLASSIFIED_LINE_RE to accept optional (letter) class-qualifier in tests/unit/test_d3_bypass_log_format.py. Fix for Finding #1 carried since sweep #14."
+    opened: 2026-05-02
+    intent: "Backfill .claude/d3-bypasses.log lines 18-19 (substrate/orchestrator-paths entries written 2026-04-30 without class token) with `pre-existing:` classification per ADR d3-bypass-classification D1 migration pattern. Eliminates recurring integration_gate halt at test_d3_bypass_log_format.py::test_every_line_matches_classified_regex (carried as pre-existing across sweeps from 2026-04-18 through 2026-05-02 sweep #4). No regex widening, no schema relaxation — substrate becomes well-formed; test stays strict."

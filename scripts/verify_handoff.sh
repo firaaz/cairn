@@ -31,6 +31,7 @@ fi
 #   handoff: ...
 #   phase-<N>: ...
 #   slice: ... — complete   (em-dash separator)
+#   sweep: ...
 subject_ok=0
 if printf '%s' "$subject" | grep -Eq '^handoff:'; then
   subject_ok=1
@@ -38,11 +39,13 @@ elif printf '%s' "$subject" | grep -Eq '^phase-[0-9]+:'; then
   subject_ok=1
 elif printf '%s' "$subject" | grep -Eq '^slice: .* — complete$'; then
   subject_ok=1
+elif printf '%s' "$subject" | grep -Eq '^sweep:'; then
+  subject_ok=1
 fi
 
 if [ "$subject_ok" -eq 0 ]; then
   err "verify_handoff: check (c) FAILED — commit subject does not match"
-  err "  expected one of: 'handoff: ...', 'phase-<N>: ...', 'slice: ... — complete'"
+  err "  expected one of: 'handoff: ...', 'phase-<N>: ...', 'slice: ... — complete', 'sweep: ...'"
   err "  got: '$subject'"
   err "  remediation: amend the commit subject (git commit --amend) to match one of the accepted forms"
   exit 1
