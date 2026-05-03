@@ -33,7 +33,7 @@ The present assertion (`type: file-exists`, target `commands/claude-code/start-s
 
 ## Boundary
 
-**In envelope:** `scripts/validate_architecture.py` (additions only); `.claude/pipeline-substrate-registry.yaml` (new, 9 D3 entries verbatim); `docs/ARCHITECTURE.md` INV-001 assertion block only (lines ~15–19, prose at ~13 unchanged); `docs/lessons.md` L-001:17 single-line closure; `tests/unit/test_inv_001_git_log_walk.py` (new RED, Phase 2 owns).
+**In envelope:** `scripts/validate_architecture.py` (additions only); `.claude/pipeline-substrate-registry.yaml` (new, 9 D3 entries verbatim); `docs/ARCHITECTURE.md` INV-001 assertion block only (lines ~15–19, prose at ~13 unchanged); `docs/lessons.md` L-001:17 single-line closure; `tests/unit/test_inv_001_git_log_walk.py` (new RED, Phase 2 owns); `tests/unit/test_invariant_assertions.py:1116` (one-line allowlist expansion — add `"git-log-walk"` to `V1_ASSERTION_TYPES`; envelope amendment 2026-05-03 per Phase-4 raise-issue).
 
 **Out of envelope:** INV-002 / INV-008 assertion blocks; `templates/handoff.md`; `commands/claude-code/handoff.full.md`; the `structural-parser` validator type; `scripts/slice_orchestrator/`. D3 grandfathering uses a literal `<pending-slice-close-sha>` placeholder treated as no-op-with-notice; substitution happens via a single post-close `docs:` commit (operator step or `/refresh-architecture`) — `close_slice` is **not** modified, resolving F5 self-application by design.
 
