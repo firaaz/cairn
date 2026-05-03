@@ -10,11 +10,11 @@ This document is a **derived view** synthesized from the ADR corpus in `docs/adr
 
 ## Invariants
 
-**INV-001** All cairn development after the bootstrap commit flows through `/decision` or `/start-slice`. Direct commits to this repo are not permitted except as recorded in a superseding ADR. Pipeline-substrate commits emitted by registered substrate tools are a third legitimate class per `pipeline-substrate-naming` (registry at `.claude/pipeline-substrate-registry.yaml`). True machine-checkable binding via `git-log-walk` assertion type defined by `invariant-binding-strategy` (D1–D3); the assertion block below remains a deletion-detection proxy until the implementing slice lands. (bootstrap-exception; pipeline-substrate-naming; invariant-binding-strategy)
+**INV-001** All cairn development after the bootstrap commit flows through `/decision` or `/start-slice`. Direct commits to this repo are not permitted except as recorded in a superseding ADR. Pipeline-substrate commits emitted by registered substrate tools are a third legitimate class per `pipeline-substrate-naming` (registry at `.claude/pipeline-substrate-registry.yaml`). True machine-checkable binding via `git-log-walk` assertion type per `invariant-binding-strategy` (D1–D3), landed in slice `v1-defense-d2/inv-001-binding-implementation` at `2fb83f6` with `binding-effective-from: 2fb83f6` and the registry at `.claude/pipeline-substrate-registry.yaml`. (bootstrap-exception; pipeline-substrate-naming; invariant-binding-strategy)
 
 ```invariant-check INV-001
 type: git-log-walk
-binding-effective-from: <pending-slice-close-sha>
+binding-effective-from: 2fb83f6faec4d95c53211e2cef8d0bc6dbf061ba
 registry: ".claude/pipeline-substrate-registry.yaml"
 description: "True INV-001 binding via authorization-by-name walk over commits since binding-effective-from. Replaces prior file-exists proxy. Placeholder is substituted with the slice-close SHA by a single follow-up `docs:` commit (manual or via /refresh-architecture)."
 ```
