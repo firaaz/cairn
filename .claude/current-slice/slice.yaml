@@ -1,7 +1,7 @@
 id: v1-defense-d2/inv-001-binding-implementation
 name: v1-defense-d2/inv-001-binding-implementation
-status: raise-issue
-current_phase: 3
+status: complete
+current_phase: 4
 brief: "slice-id: v1-defense-d2/inv-001-binding-implementation\n\nGoal: Bind INV-001\
   \ to a true machine-checkable assertion via a new git-log-walk validator type, replacing\
   \ the current file-exists deletion-detection proxy. Co-creates .claude/pipeline-substrate-registry.yaml.\
