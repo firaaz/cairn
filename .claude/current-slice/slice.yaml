@@ -1,7 +1,7 @@
 id: v1-defense-d2/inv-002-binding-implementation
 name: v1-defense-d2/inv-002-binding-implementation
-status: in-progress
-current_phase: 2
+status: complete
+current_phase: 4
 brief: "Bind INV-002 (all three sub-clauses a/b/c) and INV-008 to true machine-checkable\
   \ assertions per docs/adr/invariant-binding-strategy.md D4-D7. Closes v1-defense-D2\
   \ at 3/3. Slice id: v1-defense-d2/inv-002-binding-implementation.\n\nScope (from\
