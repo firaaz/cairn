@@ -1113,7 +1113,13 @@ class TestCairnSelfDogfood:
 
 
 EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 11)}
-V1_ASSERTION_TYPES = {"grep", "file-exists", "test-ref", "git-log-walk"}
+V1_ASSERTION_TYPES = {
+    "grep",
+    "file-exists",
+    "test-ref",
+    "git-log-walk",
+    "structural-parser",
+}
 
 
 def _read_cairn_architecture() -> str:

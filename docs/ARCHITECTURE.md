@@ -22,11 +22,21 @@ description: "True INV-001 binding via authorization-by-name walk over commits s
 **INV-002** Session-to-session context transfer obeys a three-layer context discipline protocol: (a) `.claude/handoff.md` is a pointer artifact bounded at 150–400 tokens with fixed section structure and a forbidden-sections list, (b) `/catchup` reads only a fixed five-item list into main context and gates further reads behind explicit Tier 2 admission criteria dispatched via subagent, and (c) `/start-slice` wipes `.claude/current-slice/` on transition to `status: complete` so each slice inherits no residue from its predecessor. True machine-checkable binding via `structural-parser` assertion type for sub-clause (a) and `test-ref` delegation for sub-clauses (b)/(c) defined by `invariant-binding-strategy` (D1, D4–D6); the assertion block below remains a deletion-detection proxy until the implementing slice lands. (context-discipline-protocol; invariant-binding-strategy)
 
 ```invariant-check INV-002
-type: grep
-pattern: "Token budget: 150 to 400 tokens"
-target: "docs/operational-reference.md"
-expect: match
-description: "Verifies handoff token budget constraint is documented in operational reference"
+type: structural-parser
+target: ".claude/handoff.md"
+required-sections: ["State", "Next", "Blocked / Pending", "Pointers"]
+optional-sections: ["Features"]
+forbidden-sections:
+  literal: ["What This Session Was About", "What Was Accomplished", "Surprises or Discoveries", "Self-Check"]
+  regex: ['^##\s+(Lessons|Reflection|Notes)\b']
+forbidden-content:
+  regex: ['I (was|am|will|just) ', '\d+\s*/\s*\d+\s+(passed|failed|tests)']
+token-budget:
+  approximation: bytes-per-token-4
+  warn-at: 360
+  fail-at: 440
+binding-effective-from: "<pending-slice-close-sha>"
+description: "INV-002(a) handoff structural binding per ADR invariant-binding-strategy D4"
 ```
 
 **INV-003** Every slice runs through exactly four phases in order — Intent (Reader), Validation (Skeptic), Implementation (Builder), Integration (Auditor). Each phase's role and anti-behaviors are surfaced at phase entry by `/catchup` and `/start-slice` via `docs/operational-reference.md § Phase Skill Guide`. Phase count, names, and role assignments are locked; changes require a superseding ADR. Roles are instructed in protocol text and not hook-enforced, with one narrow named exception: role-keyed write-path enforcement via `checks/role_guard.py` is authorized for the compression feature's orchestrator dispatch per compression-infrastructure-bootstrap (provisional, expected superseded by the compression feature's Slice B Part 0 ADR). Commitment #6 mechanization is otherwise time-boxed to v2+ per cliff-failure-mode-and-v1-defenses D4. (phase-lock-and-role-declaration; phase-pipeline-evaluation; compression-infrastructure-bootstrap)
@@ -75,11 +85,11 @@ description: "Verifies the handoff command references feature files for context 
 **INV-008** The orchestrator's slice-close lifecycle satisfies four properties that are separately testable: (a) `close_slice` is idempotent — safe to invoke any number of times, with early-return on a four-signal precondition (slice.yaml `status: complete`, `.claude/handoff.md` non-empty, `.claude/current-slice/` contains only `slice.yaml`, and `git log -1 --format=%s` equals `slice: complete`); (b) the orchestrator's `run_phase_loop` does not emit a Phase-4 boundary commit, making `close_slice` the sole producer of the `slice: complete` commit, with the Phase-4 integrator agent producing artifacts in the working tree that `close_slice` bundles into `.claude/handoff.md` before wipe; (c) cross-slice artifacts in `.claude/orchestrator-debug/` are isolated by slice-id-slug filenames, with a collision tripwire that refuses loudly when two distinct slice-ids flatten to the same slug. Resume reconciliation via `--resume` is read-first / act-second across a 13-row matrix with default-refuse on unrecognized state-triples and a heartbeat advisory for the multi-instance bridge; (d) before the DC-5 wipe, `close_slice` copies phase ephemerals (`intent.md`, `validation/approach.md`, `implementation/notes.md`, `integration/sweep-notes.md`, `handoff-phase-{1..4}.md`, `envelope-expansions.log`, and the pre-close `slice.yaml`) to `.claude/sweep-results/<slug>/artifacts/` — missing source files skip silently (F5-tolerance mirrors `_wipe_current_slice`), while operational errors (disk-full, permission-denied, target-dir creation failure) raise and abort the close rather than silently dropping data. (slice-close-contract; orchestrator-observability; slice-artifact-preservation)
 
 ```invariant-check INV-008
-type: grep
-pattern: "def close_slice"
+type: test-ref
 target: "scripts/slice_orchestrator/lifecycle.py"
-expect: match
-description: "Proxy check: verifies the close_slice function exists in the orchestrator package (the function whose lifecycle is contracted by INV-008). Migrates to test-ref on tests/unit/test_close_slice_hardened.py::test_close_slice_twice_is_noop when the implementing slice lands the test file."
+pattern: "tests/unit/test_close_slice_hardened.py::test_close_slice_twice_is_noop"
+binding-effective-from: "<pending-slice-close-sha>"
+description: "INV-008 + INV-002(c) D6 piggyback: test_close_slice_twice_is_noop verifies idempotent close_slice lifecycle contract"
 ```
 
 **INV-009** Per-slice total token consumption (`tokens_total`) and total dollar cost (`cost_total_usd`), as recorded at close in `.claude/orchestrator-debug/<slug>-result.json`, do not exceed thresholds `Y` and `$X` respectively. Thresholds are set from measured baseline via `ceil(p75 × 1.25)` over three slices of cost data (or forward-only next-three per rebaseline procedure). Provisional firmness, advisory-only at introduction — while `INV_009_COST_THRESHOLD_USD` and `INV_009_TOKEN_THRESHOLD` module constants remain `None`, the machine check emits `UserWarning` rather than raising; once a `housekeeping/inv009-rebaseline-<reason>` slice substitutes numeric values, the same check body raises on breach. Promotes to firm after (a) one rebaseline cycle demonstrates discipline, or (b) a consumer project other than portfolio adopts the invariant. AST/grep anchoring migrates under cliff-failure-mode-and-v1-defenses D2 when that slice runs. (cost-per-slice-budget)

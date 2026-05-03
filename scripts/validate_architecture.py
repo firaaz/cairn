@@ -226,9 +226,15 @@ def _run_file_exists_assertion(
 def _run_test_ref_assertion(
     project_root: Path, inv_id: str, assertion: dict
 ) -> str | None:
-    """Run a test-ref assertion. Returns failure message or None on pass."""
+    """Run a test-ref assertion. Returns failure message or None on pass.
+
+    Per ambiguity resolution A2: validates file existence only; function
+    qualifiers after ``::`` are stripped before the path check.
+    """
     test_path = assertion.get("pattern", "")
-    full_path = project_root / test_path
+    # Strip ::function_name qualifier — file-existence check only (A2).
+    file_path = test_path.split("::")[0]
+    full_path = project_root / file_path
     if not full_path.exists():
         return f"Check D: {inv_id} FAIL — test file not found: {test_path}"
     return None
@@ -582,6 +588,93 @@ def _run_phase_topology_assertion(
     return None
 
 
+def _run_structural_parser_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a structural-parser assertion against a markdown file.
+
+    Per ADR invariant-binding-strategy D4:
+    - Placeholder binding-effective-from → no-op with notice.
+    - Required sections missing → fail.
+    - Forbidden literal/regex section headings → fail.
+    - Forbidden content regex matches → fail.
+    - Token budget: ceil(len(bytes)/4) vs warn-at/fail-at.
+    """
+    import math
+
+    effective_from = assertion.get("binding-effective-from", "")
+    if effective_from == "<pending-slice-close-sha>":
+        print(
+            f"[structural-parser] {inv_id}: binding pending — "
+            "binding-effective-from is placeholder, skipping enforcement.",
+            file=__import__("sys").stderr,
+        )
+        return None
+
+    target = assertion.get("target", "")
+    target_path = project_root / target
+    if not target_path.exists():
+        return f"Check D: {inv_id} FAIL — structural-parser target not found: {target}"
+
+    raw = target_path.read_bytes()
+    text = raw.decode("utf-8", errors="replace")
+
+    headings = re.findall(r"^##\s+(.+)$", text, re.MULTILINE)
+
+    required = assertion.get("required-sections", [])
+    for section in required:
+        if section not in headings:
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"required section '{section}' missing from {target}"
+            )
+
+    forbidden_cfg = assertion.get("forbidden-sections", {})
+    for literal in forbidden_cfg.get("literal", []):
+        if literal in headings:
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"forbidden section '{literal}' present in {target}"
+            )
+    for pattern in forbidden_cfg.get("regex", []):
+        for heading in headings:
+            heading_line = f"## {heading}"
+            if re.search(pattern, heading_line):
+                return (
+                    f"Check D: {inv_id} FAIL — structural-parser: "
+                    f"forbidden section heading '{heading}' matches regex "
+                    f"'{pattern}' in {target}"
+                )
+
+    content_cfg = assertion.get("forbidden-content", {})
+    for pattern in content_cfg.get("regex", []):
+        if re.search(pattern, text):
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"forbidden content pattern '{pattern}' found in {target}"
+            )
+
+    budget_cfg = assertion.get("token-budget", {})
+    if budget_cfg:
+        token_count = math.ceil(len(raw) / 4)
+        fail_at = budget_cfg.get("fail-at", None)
+        warn_at = budget_cfg.get("warn-at", None)
+        if fail_at is not None and token_count > fail_at:
+            return (
+                f"Check D: {inv_id} FAIL — structural-parser: "
+                f"token budget exceeded: {token_count} tokens "
+                f"(fail-at {fail_at}) in {target}"
+            )
+        if warn_at is not None and token_count > warn_at:
+            print(
+                f"[structural-parser] {inv_id}: token budget warning: "
+                f"{token_count} tokens (warn-at {warn_at}) in {target}",
+                file=__import__("sys").stderr,
+            )
+
+    return None
+
+
 def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | None:
     """Dispatch assertion execution by type. Returns failure message or None."""
     atype = assertion.get("type", "")
@@ -595,6 +688,8 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
         return _run_phase_topology_assertion(project_root, inv_id, assertion)
     if atype == "git-log-walk":
         return _run_git_log_walk_assertion(project_root, inv_id, assertion)
+    if atype == "structural-parser":
+        return _run_structural_parser_assertion(project_root, inv_id, assertion)
     return None
 
 
