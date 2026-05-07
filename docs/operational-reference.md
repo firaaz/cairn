@@ -1,57 +1,92 @@
 # Development System
 
-> **Post-shrink banner (cairn-shrink merged 2026-05-07, `42ae8d9`).** Cairn retired the slice-orchestrator pipeline. The body of this file still references retired surfaces (`/start-slice`, `/refresh-architecture`, `/integration-sweep`, `/handoff`, `/status`, `.claude/current-slice/`, `scope-guard.sh`, `ADR_D{1,3}_BYPASS`). Do not act on those literally. The post-shrink sources of truth are:
->
-> - **`CLAUDE.md`** (always loaded) — current safety rules and standing dep set.
-> - **`.claude/handoff.md`** — current state and next steps.
-> - **`.claude/skills/cairn-tdd-feature/SKILL.md`** — the dispatch skill that replaces the slice pipeline (Phase 1 → 2 → 3 → 4 via fresh subagents).
-> - **`commands/claude-code/`** — the actual surviving slash commands (`catchup`, `decision`, `new-adr`).
-> - **`scripts/smoketest_hooks.sh`** — bare-python3 hook smoketest.
->
-> The retained sections below remain binding for INV-003 (the Phase Skill Guide section + Phase-to-skill mapping table), INV-002 (the Context Discipline Protocol section + Session Handoff Protocol section), and the identifier-scheme tests (per-entity id-shape table). A doc-reconciliation pass is queued in handoff to rewrite the body; until then, treat the banner above as authoritative for what's alive vs retired.
-
-Operational quick reference for cairn's development pipeline. **For the full theory, failure modes, empirical support, and adversarial review framing, see `docs/spec-v1.md`** — that document is the canonical spec.
+Operational reference for cairn's post-shrink development pipeline. Cairn is a methodology repo: protocols, hooks, slash commands, a Python validator, and a TDD-by-construction dispatch skill. It is consumed by other projects via a `.slice-system → .` symlink. **For the canonical spec (theory, failure modes, empirical support), load `docs/spec-v1.md` on demand** — that document is the canonical spec.
 
 A feature in cairn is a vertical change that goes through four phases: Intent → Validation → Implementation → Integration. Each phase runs in a fresh subagent dispatched by the `cairn-tdd-feature` skill, takes a declared input artifact, and commits a declared output artifact. Phase transitions are enforced by git commits, not by session state.
 
-## Starting work
+## Bootstrap
 
 After cloning or pulling cairn on any machine:
 
 ```bash
-uv sync                                          # recreates .venv
+uv sync                                          # recreates .venv and uv.lock
 uv run pytest -q                                 # baseline (expect 360/0/2)
 uv run python scripts/validate_architecture.py   # expect ALL CHECKS PASSED
 bash scripts/smoketest_hooks.sh                  # expect PASS role_guard.py
 cat .claude/handoff.md                           # orient
 ```
 
-Then route:
+## Routing: ad-hoc vs decision vs cairn-tdd-feature dispatch
 
-- **Ad-hoc edit** (one-line fix, doc tweak): just edit. The operator envelope at `.claude/active-envelope.yaml` gates writes. Set `mode: off` for cross-cutting work; `mode: operator` + a `paths:` regex list for focused work. Commit with a Conventional Commits prefix from the validator's registry (`feat:`/`fix:`/`chore:`/`docs:`/`test:`/`slice:`/`handoff:`/`sweep:`/`bootstrap:`/`design:`/`plan:`; scoped `chore(scope):` accepted).
-- **Feature with TDD discipline** (post-shrink replacement for `/start-slice`): write a per-feature plan at `docs/plans/<date>-<feature-id>.md` with frontmatter `id:` + `envelope:` regex array + What/Why/Boundary/Specification/Verification sections. See `docs/plans/2026-05-08-hook-bare-python3-smoketest.md` for a working example. Then invoke the dispatch skill via the Skill tool: `cairn-tdd-feature` with the plan path as args. The skill autonomously runs all four phases as fresh subagents and produces four commits + workspace artifacts under `.claude/skill-runs/<feature-id>/`.
-- **Architectural decision**: `/decision <question>` (still alive), then `/new-adr` to write the ADR. ADRs are append-only — `reversibility-guard.sh` blocks overwrites; frontmatter-only edits are allowed; supersession via a new ADR with `supersedes: <id>`.
-- **Session orientation**: `/catchup` reads handoff + git log + status + envelope and stops.
+Three paths:
 
-## Routing: Decision vs. Feature
-
-Before starting work, decide:
-
-- **Touches invariants, boundaries, data ownership, or module structure** → run `/decision` first to produce an ADR. The ADR updates `docs/ARCHITECTURE.md`, then a feature implements it.
-- **Implementation within existing boundaries** → use the `cairn-tdd-feature` dispatch skill (or just edit, for ad-hoc work).
+- **Ad-hoc edit** (one-line fix, doc tweak, multi-file refactor with no clear failing-test shape): just edit. The operator envelope at `.claude/active-envelope.yaml` gates writes — set `mode: operator` + a `paths:` regex list for focused work, `mode: off` for ad-hoc / cross-cutting work. Commit with a Conventional Commits prefix from the validator's `_FALLBACK_REGISTRY` (`feat:`/`fix:`/`chore:`/`docs:`/`test:`/`slice:`/`handoff:`/`sweep:`/`bootstrap:`/`design:`/`plan:`; scoped `chore(scope):` accepted).
+- **Architectural decision** (touches invariants, boundaries, data ownership, module structure): `/decision <question>`, then `/new-adr` to write the ADR. ADRs are append-only — `reversibility-guard.sh` blocks overwrites; frontmatter-only `Edit` is allowed; supersession via a new ADR with `supersedes: <id>`. Manual `docs/ARCHITECTURE.md` edits accompany the ADR.
+- **Feature with TDD discipline** (vertical behavior change with a clear failing-test shape): write a per-feature plan at `docs/plans/<date>-<feature-id>.md` with frontmatter `id:` + `envelope:` regex array + What/Why/Boundary/Specification/Verification sections. Then invoke the `cairn-tdd-feature` dispatch skill via the Skill tool with the plan path as args. The skill runs all four phases as fresh subagents and produces four commits + workspace artifacts under `.claude/skill-runs/<feature-id>/`.
 
 Rule of thumb: if the work could change what downstream features can assume, it needs `/decision`. If it only fills in detail within an existing assumption, it needs the dispatch skill (or direct edit).
 
+`/catchup` is the session-orientation slash command — reads `.claude/handoff.md`, `git log`, `git status`, and `.claude/active-envelope.yaml`, then stops. The operator drives next.
+
+## The cairn-tdd-feature dispatch skill
+
+The skill at `.claude/skills/cairn-tdd-feature/SKILL.md` is cairn's protocol-layer dispatch primitive. Each phase runs in a fresh context window via the Agent tool, takes a declared input artifact, and commits a declared output artifact. The four phases and their roles are unchanged from pre-shrink (Intent/Reader, Validation/Skeptic, Implementation/Builder, Integration/Auditor); what changed is the invocation surface (Skill tool, no orchestrator) and the workspace directory (`.claude/skill-runs/<feature-id>/`, replacing the retired `.claude/current-slice/`).
+
+### Per-feature plan-doc shape
+
+Plan docs at `docs/plans/<date>-<feature-id>.md` carry the session-spanning context. Frontmatter:
+
+```yaml
+---
+id: <feature-id>
+envelope:
+  - "^scripts/path/to/.+\\.py$"
+  - "^tests/unit/test_.+\\.py$"
+---
+```
+
+Body sections: **What/Why** (the behavior change), **Boundary** (out-of-scope explicitly), **Specification** (protocol-level commitments — wire formats, return shapes, error codes), **Verification** (concrete checks Phase 4 will run). The `id:` field becomes the feature id used throughout the dispatch run; the `envelope:` array is the source-write regex set Phase 3's `role_guard.py` enforces. See `docs/plans/2026-05-08-hook-bare-python3-smoketest.md` for a working example.
+
+### Phase artifacts
+
+| Phase | Writes | Path |
+|---|---|---|
+| 1. Intent (Reader) | `intent.md` | `.claude/skill-runs/<feature-id>/intent.md` |
+| 2. Validation (Skeptic) | tests + approach summary | `tests/<test files>`, `.claude/skill-runs/<feature-id>/validation/approach.md` |
+| 3. Implementation (Builder) | source under envelope | source paths matching the envelope regex array |
+| 4. Integration (Auditor) | sweep notes + optional handoff append | `.claude/skill-runs/<feature-id>/integration/sweep-notes.md`; optional append to `.claude/handoff.md` |
+
+### Pre-flight conventions
+
+Three preconditions the skill verifies before dispatching Phase 1:
+
+1. **Agent definitions are session-pre-existing.** Claude Code's agent registry loads at session start; agent definitions added mid-session aren't `subagent_type`-discoverable. The five agents the skill dispatches (`phase-1-tdd`, `phase-2-tdd`, `phase-3-tdd`, `phase-4-tdd`, `triager-tdd`) live at `.claude/agents/`. Confirm with `ls .claude/agents/phase-{1..4}-tdd.md .claude/agents/triager-tdd.md` before dispatch. If any are missing or the session predates their commit, abort and start a fresh session.
+
+2. **Project import convention is in every Phase brief.** `pyproject.toml` sets `[tool.pytest.ini_options] pythonpath = ["scripts"]`, so test imports use `from <subpackage>.<module> import ...` where `<subpackage>` is a directory under `scripts/` (e.g., `from lib.invariant_id_extractor import extract_invariant_ids`). The Phase-2 brief MUST include this convention verbatim — see the M2 dogfood incident in `.claude/skill-runs/m2-dogfood-extract-invariant-ids/integration/sweep-notes.md`.
+
+3. **Baseline capture uses the full FAILED list.** Before Phase 1, run `uv run pytest -q --tb=no -rf` and capture the full output to `/tmp/<feature-id>-baseline-failures.txt`. This file is the comparison anchor for Phase 4's regression-attribution check.
+
+### RAISE_ISSUE handling
+
+On any phase RAISE_ISSUE, the skill dispatches `triager-tdd` to adjudicate:
+
+- `ESCALATE_TO_USER`: stop and surface to operator.
+- `RE_DISPATCH`: re-run the named target phase with the amendment included in the brief. Cap one re-dispatch per phase per skill run; second RAISE_ISSUE → ESCALATE_TO_USER.
+- `ABORT`: stop and surface to operator.
+
 ## The Four Phases
+
+Each phase is a fresh session, takes a declared input, commits a declared output. The canonical agent prompts at `.claude/agents/phase-{1..4}-tdd.md` are authoritative for per-phase behavior; this section is the operational summary.
 
 ### Phase 1: Intent
 
-**Input:** Task description + `docs/ARCHITECTURE.md` + relevant ADRs.
-**Output:** `.claude/current-slice/intent.md`.
+**Input:** plan doc + `docs/ARCHITECTURE.md` + targeted ADRs.
+**Output:** `.claude/skill-runs/<feature-id>/intent.md`.
 
 **Rules:**
-- **Greenfield slices** (new modules): Do NOT read source code. Work from architecture docs only.
-- **Modification slices** (changing existing behavior): Read only the public interfaces of files in the envelope (function signatures, class definitions, docstrings). Do NOT read internal implementation logic. *(No hook enforces this — discipline only. See spec-v1 §14 incident #4.)*
+
+- **Greenfield features** (new modules): Do NOT read source code. Work from architecture docs only.
+- **Modification features** (changing existing behavior): Read only the public interfaces of files in the envelope (function signatures, class definitions, docstrings). Do NOT read internal implementation logic. *(Discipline only — no hook enforces this. See spec-v1 §14 incident #4.)*
 - Write `intent.md` with the four zones: YAML envelope, what/why/boundary, specification detail, verification.
 - Declare which invariants and ADRs are touched.
 
@@ -60,11 +95,12 @@ Rule of thumb: if the work could change what downstream features can assume, it 
 ### Phase 2: Validation
 
 **Input:** `intent.md` only (+ `docs/ARCHITECTURE.md` and targeted ADRs if referenced).
-**Output:** Test suite in `tests/` + `.claude/current-slice/validation/approach.md`.
+**Output:** Test suite under `tests/` + `.claude/skill-runs/<feature-id>/validation/approach.md`.
 
 **Rules:**
+
 - The Phase 2 agent has NEVER seen how the implementation will work.
-- Before writing tests, enumerate ambiguities in the intent. Resolve each by reference to `docs/ARCHITECTURE.md`/ADRs, or flag for human resolution.
+- Before writing tests, enumerate ambiguities in the intent. Resolve each by reference to `docs/ARCHITECTURE.md`/ADRs, or escalate before writing any test.
 - Write tests against the stated intent and specification details, NOT against hypothetical implementation.
 - Tests must be runnable: pytest files, not pseudocode.
 
@@ -73,47 +109,49 @@ Rule of thumb: if the work could change what downstream features can assume, it 
 ### Phase 3: Implementation
 
 **Input:** `intent.md` + the validation test files (NOT Phase 2's reasoning or `approach.md`).
-**Output:** Code that passes the validation suite.
+**Output:** Code that passes the validation suite, written within the source-write envelope from the plan doc.
 
 **Rules:**
+
 - The implementing agent has never seen the reasoning behind the validation suite.
 - Fast feedback runs continuously via the reality hook (`ruff format` + `ruff check` on every edit).
 - Full test suite runs at logical-unit boundaries.
-- Record decisions the intent didn't pin down in `.claude/current-slice/implementation/notes.md`.
+- Write paths are gated by `role_guard.py` against the envelope regex array (passed as `AGENT_ENVELOPE`).
 
 **Exit gate:** All validation tests pass. Implementation committed to git.
 
-### Phase 4: Slice Integration
+### Phase 4: Integration
 
 **Input:** Implementation + `intent.md` + `docs/ARCHITECTURE.md` + invariants touched.
-**Output:** Pass/fail on declared invariants, recorded in `.claude/current-slice/integration/sweep-notes.md`.
+**Output:** Pass/fail on declared invariants, recorded in `.claude/skill-runs/<feature-id>/integration/sweep-notes.md`.
 
 **Rules:**
-- Run the full test suite (not just slice tests): `uv run python -m pytest`.
+
+- Run the full test suite (not just feature tests): `uv run pytest`.
 - Run the architecture validator: `uv run python scripts/validate_architecture.py`.
 - Verify each declared invariant with `grep`/file evidence — assertions backed by what you actually found, not from memory.
 - Check for regressions in adjacent code.
 
-**Exit gate:** All tests pass, invariants verified, committed to git.
+**Exit gate:** All tests pass, invariants verified, sweep notes committed.
 
-**Failure handling:** If Phase 4 fails because the implementation is wrong, mark the slice failed (`/start-slice failed`), archive it to `.claude/completed-slices/<ID>-failed/`, and start a new slice with the failure as input context. Do NOT patch the implementation to force Phase 4 to pass — that recreates the correlated-error problem the system is designed to prevent.
+**Failure handling:** If Phase 4 fails because the implementation is wrong, RAISE_ISSUE so the triager can ESCALATE_TO_USER. Do NOT patch the implementation to force Phase 4 to pass — that recreates the correlated-error problem the system is designed to prevent.
 
-**Escape hatch:** If Phase 4 fails because an invariant is outdated (not because the implementation is wrong), write a new ADR superseding the old invariant, run `/refresh-architecture`, then re-run Phase 4.
+**Escape hatch:** If Phase 4 fails because an invariant is outdated (not because the implementation is wrong), RAISE_ISSUE — the triager may direct an ADR-supersession path before re-dispatch.
 
 ## Phase Skill Guide
 
-This section is a **living registry** of the role, anti-behaviors, and recommended skills for each of the four phases. Unlike phase-lock-and-role-declaration (which locks the phase count, the phase names, and the role names), updates to the skill mapping below do not require ADR supersession — they are ordinary documentation edits, analogous to how `docs/ARCHITECTURE.md` is regenerated by `/refresh-architecture`. phase-lock-and-role-declaration (`docs/adr/phase-lock-and-role-declaration.md`) remains authoritative for the phase/role lock; this section is authoritative for the skill mapping and is read by `/catchup` and `/start-slice` at every phase entry.
+This section is a **living registry** of the role, anti-behaviors, and recommended skills for each of the four phases. Unlike phase-lock-and-role-declaration (which locks the phase count, the phase names, and the role names), updates to the skill mapping below do not require ADR supersession — they are ordinary documentation edits. phase-lock-and-role-declaration (`docs/adr/phase-lock-and-role-declaration.md`) remains authoritative for the phase/role lock; this section is authoritative for the skill mapping and is the binding surface INV-003's `validate_phase_topology` regex-extracts from.
 
-The four canonical agent slugs — `phase-1-tdd`, `phase-2-tdd`, `phase-3-tdd`, `phase-4-tdd` — map 1:1 to the four phase rows below and are the authoritative role-slug set declared in `.claude/agents/role-topology.yaml` (consumed by INV-003's `validate_phase_topology`).
+The four canonical agent slugs — `phase-1-tdd`, `phase-2-tdd`, `phase-3-tdd`, `phase-4-tdd` — map 1:1 to the four phase rows below and to the role-slug set declared in `.claude/agents/role-topology.yaml` (the validator's authoritative source).
 
 ### Role and anti-behaviors (from phase-lock-and-role-declaration D2)
 
 | Phase | Role | Primary anti-behavior | Secondary anti-behaviors |
 |---|---|---|---|
-| 1. Intent | **Reader** | Reader does not propose implementation | Does not read source code (greenfield slices) or reads only public interfaces (modification slices); does not write design-flavored content beyond `intent.md` Zone 2 "Specification Detail" |
+| 1. Intent | **Reader** | Reader does not propose implementation | Does not read source code (greenfield features) or reads only public interfaces (modification features); does not write design-flavored content beyond `intent.md` Zone 2 "Specification Detail" |
 | 2. Validation | **Skeptic** | Skeptic does not implement | Does not read Phase 3's implementation; enumerates ambiguities in `intent.md` and resolves them by reference to ARCHITECTURE.md/ADRs or escalates before writing any test |
-| 3. Implementation | **Builder** | Builder does not re-litigate the spec or the tests | Does not expand the envelope beyond `slice.yaml`'s declared files; does not load Phase 2's `approach.md` or reasoning about why tests are shaped as they are |
-| 4. Integration | **Auditor** | Auditor does not rewrite the implementation | Produces pass/fail verdict on declared invariants with `file:line` citation evidence; on implementation failure, fails the slice per `docs/spec-v1.md` §13 item 8 rather than patching |
+| 3. Implementation | **Builder** | Builder does not re-litigate the spec or the tests | Does not expand the envelope beyond the plan doc's declared regex array; does not load Phase 2's `approach.md` or reasoning about why tests are shaped as they are |
+| 4. Integration | **Auditor** | Auditor does not rewrite the implementation | Produces pass/fail verdict on declared invariants with `file:line` citation evidence; on implementation failure, RAISE_ISSUE per `docs/spec-v1.md` §13 item 8 rather than patching |
 
 ### Phase-to-skill mapping
 
@@ -121,80 +159,40 @@ Citations are to Superpowers plugin skill files. The mapping is a first-cut and 
 
 | Phase | Role | Primary skills | Supporting skills | Notes on adaptation |
 |---|---|---|---|---|
-| 1. Intent | Reader | — (no primary fit; `commands/claude-code/start-slice.md` Step 5 is the protocol guide) | — | No Superpowers skill is a primary fit for Phase 1 because `intent.md`'s Zone 1/2/3 schema is cairn-specific. `superpowers:brainstorming` runs *upstream* of Phase 1 per L-002 (framing step), not inline within the Reader session. |
-| 2. Validation | Skeptic | `superpowers:test-driven-development` — the **RED + Verify RED** half of the red-green cycle | `superpowers:brainstorming` for ambiguity enumeration (one-question-at-a-time style aligns with `start-slice.md` Phase 2 protocol) | TDD's red-green cycle is structurally bisected by cairn's session boundary: the Skeptic commits the failing tests (RED + Verify RED) without ever touching production code, and hands off to Phase 3 via commit. Non-obvious adaptation of the skill. |
-| 3. Implementation | Builder | `superpowers:test-driven-development` (GREEN + Verify GREEN + REFACTOR half), `superpowers:verification-before-completion` | `superpowers:subagent-driven-development` when the envelope has multiple independent files; `superpowers:dispatching-parallel-agents` when the envelope has multiple independent files or tasks (within-slice parallel dispatch is v1-legal; cliff-failure-mode-and-v1-defenses D4's v2+ time-box applies to cross-slice parallelism only); `superpowers:receiving-code-review` when review feedback arrives; `superpowers:using-git-worktrees` when subagent-driven tasks require workspace isolation or cross-slice parallel work (parallelism-v1 D3) | Builder completes the TDD cycle that Phase 2 started. `verification-before-completion` is mandatory before ending Phase 3: tests must be run fresh, output cited, no "should pass" claims. |
-| 4. Integration | Auditor | `superpowers:verification-before-completion` (applied to full-suite + validator + invariant checks), `superpowers:requesting-code-review` (mandatory before merge) | `superpowers:systematic-debugging` as escape route if an invariant check fails — its "question architecture after 3+ failed fixes" rule maps directly to `docs/spec-v1.md` §13 item 8's Phase 4 death-spiral discipline and to phase-lock-and-role-declaration D2's "Auditor does not rewrite" anti-behavior | Auditor is the terminal phase — pass/fail judgment with evidence. Code-reviewer subagent dispatched via `requesting-code-review` is the external check for invariant verification. If invariants fail, `systematic-debugging` governs the response path (investigate, do not patch; escalate to fail-and-restart after 3 failed fixes). |
+| 1. Intent | Reader | — (no primary fit; `.claude/skills/cairn-tdd-feature/SKILL.md` Step 4 is the dispatch protocol guide) | — | No Superpowers skill is a primary fit for Phase 1 because `intent.md`'s Zone 1/2/3 schema is cairn-specific. `superpowers:brainstorming` runs *upstream* of Phase 1 per L-002 (framing step), not inline within the Reader session. |
+| 2. Validation | Skeptic | `superpowers:test-driven-development` — the **RED + Verify RED** half of the red-green cycle | `superpowers:brainstorming` for ambiguity enumeration (one-question-at-a-time style aligns with the Skeptic protocol) | TDD's red-green cycle is structurally bisected by cairn's session boundary: the Skeptic commits the failing tests (RED + Verify RED) without ever touching production code, and hands off to Phase 3 via commit. Non-obvious adaptation of the skill. |
+| 3. Implementation | Builder | `superpowers:test-driven-development` (GREEN + Verify GREEN + REFACTOR half), `superpowers:verification-before-completion` | `superpowers:subagent-driven-development` when the envelope has multiple independent files; `superpowers:dispatching-parallel-agents` when the envelope has multiple independent files or tasks (within-feature parallel dispatch is v1-legal; cliff-failure-mode-and-v1-defenses D4's v2+ time-box applies to cross-feature parallelism only); `superpowers:receiving-code-review` when review feedback arrives; `superpowers:using-git-worktrees` when subagent-driven tasks require workspace isolation or cross-feature parallel work (parallelism-v1 D3) | Builder completes the TDD cycle that Phase 2 started. `verification-before-completion` is mandatory before ending Phase 3: tests must be run fresh, output cited, no "should pass" claims. |
+| 4. Integration | Auditor | `superpowers:verification-before-completion` (applied to full-suite + validator + invariant checks), `superpowers:requesting-code-review` (mandatory before merge) | `superpowers:systematic-debugging` as escape route if an invariant check fails — its "question architecture after 3+ failed fixes" rule maps directly to `docs/spec-v1.md` §13 item 8's Phase 4 death-spiral discipline and to phase-lock-and-role-declaration D2's "Auditor does not rewrite" anti-behavior | Auditor is the terminal phase — pass/fail judgment with evidence. Code-reviewer subagent dispatched via `requesting-code-review` is the external check for invariant verification. If invariants fail, `systematic-debugging` governs the response path (investigate, do not patch; RAISE_ISSUE after 3 failed fixes). |
 
 ### Explicit exclusions — skills deliberately NOT mapped
 
 These Superpowers skills are not in the primary mapping above, each for a specific reason:
 
 - `superpowers:executing-plans` — the parallel-session variant of `superpowers:subagent-driven-development`; inside a Phase 3 session, same-session subagent dispatch is the right choice.
-- `superpowers:finishing-a-development-branch` — cairn's slice-close protocol (`/start-slice complete`) supersedes it for slice work; applies to non-slice development only.
-- `superpowers:writing-skills`, `superpowers:writing-plans` — meta-skills that sit outside any slice phase.
+- `superpowers:finishing-a-development-branch` — cairn's per-feature commit discipline (Phase 4 commits sweep notes; merge is operator-driven) supersedes it for feature work; applies to non-feature development only.
+- `superpowers:writing-skills`, `superpowers:writing-plans` — meta-skills that sit outside any phase.
 
 ## Context Isolation Rules
 
 - Each phase starts fresh. No memory of previous phase's reasoning.
 - Only the declared artifacts cross between phases.
-- The intent document must stand alone — a reader with no other context should understand the slice from `intent.md` alone.
+- The intent document must stand alone — a reader with no other context should understand the feature from `intent.md` alone.
 - Phase 1 must NOT read source code (greenfield) or must limit to public interfaces (modification).
 - Phase 2 must NOT write code.
 - Phase 3 must NOT expand scope beyond the envelope.
 
-## Slice Directory Structure
+## Per-feature artifact layout
 
 ```
-.claude/current-slice/
-  slice.yaml              # Metadata
-  intent.md               # Phase 1 output
+.claude/skill-runs/<feature-id>/
+  intent.md                  # Phase 1 output
   validation/
-    approach.md           # Phase 2 approach summary (tests live in tests/)
-  implementation/
-    notes.md              # Phase 3 deviation notes
+    approach.md              # Phase 2 approach summary (tests live in tests/)
   integration/
-    sweep-notes.md        # Phase 4 observations
+    sweep-notes.md           # Phase 4 observations
 ```
 
-### slice.yaml Format
-
-```yaml
-id: <feature-id>/<slice-slug>
-name: "Short human label"
-status: intent | validation | implementation | integration | complete | failed
-started: YYYY-MM-DD
-completed: null
-invariants-touched: []
-adrs-referenced: []
-adrs-created: []
-```
-
-### intent.md Template
-
-```yaml
-slice: <short-name>
-date: <YYYY-MM-DD>
-phase: 1-intent
-invariants-touched: []
-adrs-referenced: []
-envelope:
-  - "src/path/to/*.py"
-  - "tests/unit/path/to/test_*.py"
-out-of-scope:
-  - "description of what this slice does NOT touch"
-```
-
-```markdown
-### What and Why
-<What behavior change does this slice introduce? 2-3 sentences.>
-
-### Specification Detail
-<Protocol-level commitments: wire formats, key patterns, return shapes, error codes.>
-
-### Verification
-<Specific checks. Not "test it" — concrete assertions.>
-```
+The feature id is derived from the plan doc's frontmatter `id:` field, or from the filename stem. Cleanup of `.claude/skill-runs/<feature-id>/` directories is operator-discretion — there is no automatic prune ceremony.
 
 ## Identifier scheme
 
@@ -213,40 +211,101 @@ Every ADR, slice, feature, and decision point carries two fields: `id:` (immutab
 
 **`shaped-from:` is the feature-provenance field** (ADR `identifier-scheme` D5). Each feature file records in `shaped-from:` either a path (e.g., `docs/plans/2026-04-15-fleet-coordinator-design.md`), a URL, or `null` for unshaped features. The field is append-only to the feature file at creation; rewriting it later requires the same discipline as ADR frontmatter edits.
 
-**Legacy transition.** ADR `identifier-scheme` D7 Phase 1 (mixed-window tolerance) and Phase 2 Parts 1-2 (ADR renames; slice/feature renames; `sweep.yaml` `current-slice-number` retirement) are complete. Residual prose references to `SLICE-NNN` and `ADR-NNN` in long-form docs (`docs/spec-v1.md`, `docs/lessons.md`, `CLAUDE.md`, handoff examples, ADR body prose) are the remaining scope for the Part 3 slice `identifier-scheme/doc-sweep`. Hooks and the validator retain mixed-window tolerance indefinitely — Phase 3 of migration (drop legacy-format tolerance) is deferred per ADR `identifier-scheme` D7.
+**Legacy transition.** ADR `identifier-scheme` D7 Phase 1 (mixed-window tolerance) and Phase 2 (ADR renames; slice/feature renames) are complete. Hooks and the validator retain mixed-window tolerance indefinitely — Phase 3 of migration (drop legacy-format tolerance) is deferred per ADR `identifier-scheme` D7.
 
-## Phase Gate Enforcement
+## Phase gate enforcement
 
 Phase transitions are enforced by git, not by session state:
+
 - Phase 2 cannot start until `intent.md` is committed.
 - Phase 3 cannot start until the validation suite is committed.
 - Phase 4 cannot start until the implementation is committed.
 
-The `/start-slice` skill checks for these artifacts in git history before advancing.
+The `cairn-tdd-feature` dispatch skill verifies each prior phase commit (Steps 5/7/9/11 of `.claude/skills/cairn-tdd-feature/SKILL.md`) before advancing; ad-hoc edits sidestep this entirely.
 
-## Session Handoff Protocol
+## Operator envelope (`.claude/active-envelope.yaml`)
 
-Every phase transition — and every session end — involves a handoff:
+The operator-session write gate. Read by `checks/role_guard.py` when `AGENT_ROLE` is unset (i.e., a regular Claude Code session, not a dispatch-skill phase run).
 
-1. **At end of session:** Run `/handoff` (or `/handoff phase` for pipeline work). This commits artifacts, writes a handoff note to `.claude/handoff.md`, and updates slice status if applicable.
-2. **Close the session.** For pipeline phases, this is not optional — the fresh context IS the external check.
-3. **At start of next session:** Run `/catchup`. This reads the handoff note, loads phase-appropriate context, and enforces context isolation for pipeline work.
+Shape:
 
-The handoff note (`.claude/handoff.md`) is overwritten each session. It represents current state, not history. Git provides the historical record.
+```yaml
+mode: operator   # values: "operator" (enforce), "off" (no-op)
+paths:
+  - ^docs/operational-reference\.md$
+  - ^scripts/.*
+  - ^\.claude/active-envelope\.yaml$   # must include itself
+```
 
-The operational detail of handoff shape and catchup tiering is the **[Context Discipline Protocol](#context-discipline-protocol)** below; this section is the one-paragraph cover story, that section is the contract.
+Semantics:
+
+- `mode: operator` + `paths:` enforces — `Write`/`Edit`/`MultiEdit`/`NotebookEdit` against any path not matching one of the regexes is denied with a stderr diagnostic. Read-class tools (`Read`, `Grep`, `Glob`) are unaffected.
+- `mode: off` — hook is a no-op. Use this when returning to ad-hoc / cross-cutting work.
+- File absent — hook is a no-op (default fail-open for un-envelope'd sessions).
+- Malformed YAML, non-mapping root, unrecognised mode, or `mode: operator` without a `paths:` list — fails closed (denies the write) with stderr diagnostic.
+- PyYAML 1.1 quirk: bare `off` parses as `False`, which the hook normalises back to `"off"`.
+
+**Self-pattern requirement.** The file must include a regex matching itself (`^\.claude/active-envelope\.yaml$`) when `mode: operator`, otherwise you cannot edit it while enforcement is active. The shipped envelope includes this self-pattern.
+
+**Worktree-scoped.** Each git worktree has its own copy. Set `mode: operator` when starting focused feature work; clear (`mode: off` or delete the file) when returning to ad-hoc work.
+
+## Hooks
+
+Three hooks wired in `.claude/settings.json`:
+
+- **`reversibility-guard.sh`** (PreToolUse on `Bash|Edit|Write`): blocks destructive ops (`rm -rf`/`-fr`, `git push --force`/`-f`, `git reset --hard`, `git clean -fd`, `DROP TABLE`/`DROP DATABASE`), `.env*` writes, lock-file writes (`uv.lock`/`package-lock.json`/`poetry.lock`); enforces ADR append-only on `docs/adr/*.md` (Write blocks new on existing; Edit allows only frontmatter `status:`/`superseded-by:`/`superseded_by:`/`firmness:` first-line edits + `ADR_EDITORIAL_FIX=1` additive escape, logged to `.claude/adr-editorial-fixes.log`). Allows `git push --force-with-lease`.
+- **`role_guard.py`** (PreToolUse on `Edit|Write|MultiEdit|NotebookEdit`): two paths.
+  - When `AGENT_ROLE` is set (dispatch-skill subagents): per-role static allowlist for `phase-1-tdd` / `phase-2-tdd` / `phase-4-tdd`; `phase-3-tdd` is envelope-driven via `AGENT_ENVELOPE` (no static entry — intentional asymmetry per `compression-infrastructure-bootstrap-superseded`). Wider grants via `AGENT_ENVELOPE` for static-policy roles are logged to `.claude/envelope-grants.log` (D9 envelope-grant escape).
+  - When `AGENT_ROLE` is unset: reads `.claude/active-envelope.yaml` per the Operator envelope section above.
+- **`reality-check.sh`** (PostToolUse on `Edit|Write`): runs `ruff format` and `ruff check --fix` on `*.py` files. No-op for non-Python paths.
+
+**Hook dependencies.** All three hooks expect `jq` (the bash hooks parse stdin JSON). `reality-check.sh` additionally needs `ruff`. Missing deps cause silent no-op with a stderr warning. Install before any work in cairn:
+
+```
+brew install jq && uv tool install ruff
+```
+
+Hooks are friction-plus-walls, not security boundaries. A determined or careless agent can route around the friction layer; the wall layer (the explicit patterns above) holds.
+
+## Environment variables
+
+Knobs the operator (or downstream consumer) may set. Defaults follow the "no hardcoded timeouts/sizes in consumer-facing scripts" rule — every script that reads a knob falls back to a documented default.
+
+| Var | Default | Read by | Purpose |
+|---|---|---|---|
+| `CLAUDE_PROJECT_DIR` | unset (falls back to `git rev-parse`) | `scripts/_root.py`, `scripts/validate_architecture.py`, `checks/reversibility-guard.sh` | Canonical project-root override. Set when running scripts from outside the repo root. |
+| `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → operator-envelope path. |
+| `AGENT_ENVELOPE` | unset | `checks/role_guard.py` | JSON array of regex strings (or `{paths:[...]}` object). For `phase-3-tdd`, the only write-path gate; for static-policy roles, the wider envelope-grant escape (D9). |
+| `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; new content must be additive over old. Logs to `.claude/adr-editorial-fixes.log`. |
+| `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in: rewrite `docs/plans/measurements/2026-04-12-slice-003.txt` with fresh turn-1 reading. Unset by default. |
+
+**Dev-mode local knobs** (read by `commands/claude-code/.local/dev-mode.md`, cairn-internal — not part of the consumer surface): `CAIRN_DEVMODE_PLAN_STALE_DAYS` (default 30), `CAIRN_DEVMODE_MEMORY_STALE_DAYS` (default 60), `CAIRN_DEVMODE_LESSON_STALE_DAYS` (reserved).
+
+## Project-root resolution
+
+`scripts/_root.py:project_root()` is the single source of truth for path construction in `scripts/`. Resolution precedence:
+
+1. `CLAUDE_PROJECT_DIR` env var — if set and non-empty, returns `Path(value).resolve()`.
+2. `git rev-parse --show-toplevel` from `os.getcwd()` — subprocess with `cwd=os.getcwd()`, returns `Path(stdout.strip()).resolve()`.
+3. `RuntimeError` — loud message naming both mechanisms and the originating error.
+
+**Symlink trap (L-017).** Cairn ships a `.slice-system → .` self-symlink (consumed by downstream projects). Any `Path(__file__).parent` chain run from a file reached through that symlink resolves to the consumer-side path, not the cairn root. `project_root()` avoids this by never using `__file__` — it uses only env-var and git.
+
+**Call-site rules.** Replace every `Path(".claude/...")` literal with `project_root() / ".claude" / ...`; replace every `Path.cwd()` with `project_root()`; add `cwd=project_root()` to every `subprocess.run(["git", ...])` call. Files under `tests/` are exempt — they use `tmp_path` and synthetic roots freely.
+
+Set `CLAUDE_PROJECT_DIR` to the absolute repo root when running cairn scripts from a working directory other than the root.
 
 ## Context Discipline Protocol
 
-context-discipline-protocol / INV-002. Three load-bearing layers that together hold post-catchup session context at ~28–30k tokens instead of the ~47k baseline we measured before the protocol landed. None of the three layers is optional — the savings come from all three interacting, not from any one of them in isolation.
+context-discipline-protocol / INV-002. Three load-bearing layers that together hold post-catchup session context bounded. None of the three layers is optional — the savings come from all three interacting, not from any one in isolation.
 
 ### Layer 1 — Handoff is a pointer, not a payload
 
-`/handoff` writes `.claude/handoff.md` against `templates/handoff.md`. The format is fixed: a YAML frontmatter with `slice`, `phase`, `branch`, `as-of`, then four body sections — `## State`, `## Next`, `## Blocked / Pending`, `## Pointers`.
+`.claude/handoff.md` is overwritten each session against `templates/handoff.md`. The format is fixed: a YAML frontmatter with `slice`, `phase`, `branch`, `as-of`, then four body sections — `## State`, `## Next`, `## Blocked / Pending`, `## Pointers`.
 
-**Token budget: 150 to 400 tokens, whole-file.** 150 is a soft lower bound (if you cannot say enough to orient the next session inside that, your next step isn't specific), 400 is a hard upper bound (if you need more than a token budget of 400 to say what state the repo is in, the overflow belongs in commit messages, ADRs, or `docs/lessons.md` — not in the handoff). Measured in bytes, 400 tokens is roughly 2000 characters at the 5-char-per-token approximation the contract test uses.
+**Token budget: 150 to 400 tokens, whole-file.** 150 is a soft lower bound (if you cannot say enough to orient the next session inside that, your next step isn't specific). 400 is a hard upper bound (if you need more than 400 tokens to say what state the repo is in, the overflow belongs in commit messages, ADRs, or `docs/lessons.md` — not in the handoff). Measured in bytes, 400 tokens is roughly 2000 characters at the 5-char-per-token approximation the contract test uses.
 
-**Banned sections** — the handoff skill template MUST NOT instruct the agent to produce, and MUST NOT contain as examples, any of:
+**Banned sections** — the handoff template MUST NOT contain, and the operator MUST NOT produce:
 
 - "What This Session Was About"
 - "What Was Accomplished"
@@ -257,35 +316,32 @@ context-discipline-protocol / INV-002. Three load-bearing layers that together h
 
 These belong in commit messages, ADRs, or `docs/lessons.md`. The handoff carries state plus next step, not reflection. If you feel an urge to explain *why* in the handoff, the urge is a signal the explanation belongs elsewhere.
 
+The handoff is wiped (overwritten) at every end-of-session step; git provides the historical record.
+
 ### Layer 2 — Catchup reads in tiers, dispatches subagents, never eager-loads
 
 `/catchup` runs in three tiers. The tier boundaries are the whole point of the protocol — crossing a tier without satisfying its admission criteria is the failure mode this layer is closing.
 
-**Tier 1 — always runs, strictly bounded.** Reads ONLY these five items:
+**Tier 1 — always runs, strictly bounded.** Reads ONLY these four items:
 
 - `.claude/handoff.md`
-- `.claude/current-slice/slice.yaml`
-- `.claude/sweep.yaml`
-- `git log --oneline -5`
-- `git status --short`
+- `git log --oneline -10`
+- `git status -s`
+- `.claude/active-envelope.yaml` (when present — surfaces the write-gate state)
 
 Produces the orientation summary. STOPS. No `CLAUDE.md` rereads, no `docs/ARCHITECTURE.md`, no source, no ADRs. Any additional main-context file read crosses into Tier 2 — and Tier 2 has admission criteria.
 
-**Tier 2 — dispatched via subagent, under admission criteria.** Tier 2 exists to answer a *specific* question or to load a phase's declared inputs when the user has given explicit direction. It runs in a subagent, never in main context. The full admission block (and its mirror "do not dispatch" block) lives verbatim in `commands/claude-code/catchup.md` — the skill template is the canonical copy; this section is the operational summary and defers to it. The key literal on the positive side is `DISPATCH Tier 2 subagent if and only if:`; the three conditions are (1) specific factual question Tier 1 did not answer, (2) user directed entry into a pipeline phase, (3) about to act on a file named in the handoff pointers. None of those? Do not dispatch.
+**Tier 2 — dispatched via subagent, under admission criteria.** Tier 2 exists to answer a *specific* question or to load a phase's declared inputs when the operator has given explicit direction. It runs in a subagent, never in main context. The full admission block (and its mirror "do not dispatch" block) lives verbatim in `commands/claude-code/catchup.md` — the slash-command file is the canonical copy; this section defers to it. The key literal on the positive side is `DISPATCH Tier 2 subagent if and only if:`; the three conditions are (1) specific factual question Tier 1 did not answer, (2) operator directed entry into a feature phase, (3) about to act on a file named in the handoff pointers. None of those? Do not dispatch.
 
-The subagent contract caps the return at ~200 words regardless of underlying file size. A subagent that dumps everything it read back into main context defeats the ~100× savings Tier 2 is supposed to buy. If a legitimate answer genuinely does not fit in 200 words, split the question into two Tier 2 dispatches rather than raise the cap.
+The subagent contract caps the return at ~200 words regardless of underlying file size. A subagent that dumps everything it read back into main context defeats the savings Tier 2 is supposed to buy. If a legitimate answer genuinely does not fit in 200 words, split the question into two Tier 2 dispatches rather than raise the cap.
 
-**Tier 3 — the absence of catchup.** Once the user gives a direct work imperative, catchup is over and normal file reading resumes under whatever skill governs the work. No bookkeeping — Tier 3 is the boundary past which `/catchup` is simply not running anymore.
+**Tier 3 — the absence of catchup.** Once the operator gives a direct work imperative, catchup is over and normal file reading resumes under whatever skill governs the work. No bookkeeping — Tier 3 is the boundary past which `/catchup` is simply not running anymore.
 
-### Layer 3 — Slice close wipes `.claude/current-slice/`
+### Layer 3 — Dispatch artifacts are ephemeral; handoff is wiped each session
 
-`/start-slice complete` is required to remove every file under `.claude/current-slice/` as part of the completion sequence. Acceptable shape: the completion commit stages the removals alongside the `status: complete` update (one commit), or a separate close commit immediately follows. `slice.yaml` itself is the one exception — the completion commit needs somewhere to live until the next slice overwrites it; every other file under `.claude/current-slice/` must not survive close.
+`.claude/skill-runs/<feature-id>/` accumulates per-feature artifacts during a `cairn-tdd-feature` dispatch run; cleanup is operator-discretion (no automatic wipe ceremony, no archive directory). The post-shrink dispatch skill commits each phase's writes by name through git — git history covers the artifact-preservation case the pre-M4 close ceremony used to handle.
 
-There is **no archive directory** for successful slices. Git history plus `.claude/learning.md` plus ADRs cover the post-mortem case. Failed-slice recovery (`/start-slice failed`) still uses `.claude/completed-slices/<ID>-failed/` — that path preserves debugging context the normal close does not need, and is a separate discipline.
-
-### Layer adjuncts — `.claude/learning.md`
-
-`.claude/learning.md` is the session-end learning staging ground. Append-only, free-form entries; the 3× promotion rule that moves stable patterns from `learning.md` into `CLAUDE.md` is specified in `context-discipline-protocol` but not yet automated. Nothing in cairn writes to `learning.md` automatically — sessions may append by hand, but the skill-driven side of the capture loop does not yet exist.
+`.claude/handoff.md` is wiped (overwritten) each session and represents current state, not history. `.claude/learning.md` is the append-only session-end staging ground for post-feature learnings; the 3× promotion rule that moves stable patterns from `learning.md` into `CLAUDE.md` is specified in `context-discipline-protocol` but not yet automated. Nothing in cairn writes to `learning.md` automatically — sessions may append by hand.
 
 ### Operator mental model
 
@@ -293,222 +349,65 @@ One sentence each:
 
 - Handoff is a **team interface**, not a diary. The next session reads it to *act*, not to relive the last one.
 - Catchup is a **tiered query**, not a flood. Tier 1 orients, Tier 2 answers specific questions via subagents, Tier 3 is the exit.
-- Slice close is a **wipe**, not an archive. The next slice must inherit zero residue from the last.
+- Dispatch artifacts are **ephemeral**, not archived. Git history plus `.claude/learning.md` plus ADRs cover the post-mortem case.
 
-If any of those three drift, reload this section and the canonical skill templates (`handoff.md`, `catchup.md`, `start-slice.md`) before trying to patch the symptom.
+If any of those three drift, reload this section and `commands/claude-code/catchup.md` before trying to patch the symptom.
 
-## Integration Sweep
-
-Runs every N slices (cadence in `.claude/sweep.yaml`). Phase 4 provides per-slice integration; the sweep provides cross-slice integration.
-
-**Sweep process:**
-1. Load invariants from `docs/ARCHITECTURE.md`.
-2. Enumerate possible cross-slice failure modes BEFORE checking.
-3. Check each invariant against the current codebase with file:line evidence.
-4. Run cross-module checks (imports, lint, types).
-5. Produce a pass/fail summary.
-
-If a sweep finds failures, create new slices to fix them through the normal 4-phase pipeline. Do NOT retroactively edit completed slices.
-
-```yaml
-# .claude/sweep.yaml
-last-sweep-at-slice-id: null
-sweep-interval: 3
-```
-
-## ADR Rules During a Slice
+## ADR rules during a feature
 
 If implementation requires violating an invariant:
 
-1. STOP implementation.
-2. Write a new ADR in `docs/adr/` with proper YAML frontmatter (`status: provisional`, `firmness: provisional`).
+1. RAISE_ISSUE from the phase observing the conflict; the triager will likely ESCALATE_TO_USER.
+2. Operator writes a new ADR in `docs/adr/` with proper YAML frontmatter (`status: provisional`, `firmness: provisional`).
 3. Update `docs/adr/index.md`.
-4. Run `/refresh-architecture` to update `docs/ARCHITECTURE.md`.
-5. Get explicit human approval before proceeding.
-6. Record the new ADR in `slice.yaml` under `adrs-created`.
+4. Manually update `docs/ARCHITECTURE.md` to reflect the new invariant or supersede the old one (gated by `reversibility-guard.sh`'s ADR append-only check on the underlying ADR corpus).
+5. Re-dispatch the phase with the amendment.
 
 ADRs are append-only. Never edit an accepted ADR's body. To change a decision, write a new ADR that supersedes it.
 
-## Scenario Verification
-
-Before declaring any system component, skill, or slice complete, trace the primary user journey through it:
-
-1. Write the sequence of concrete actions a user takes.
-2. At every boundary (session, phase, handoff, artifact), verify the mechanism exists.
-3. If the answer to "how does the user do this?" is "they'll figure it out" — that's a gap, not an answer.
-
-Three levels:
-- **Skill level:** Does invoking this skill handle every state it might encounter (no slice active, mid-slice, broken state)?
-- **Slice level:** Can a user complete all 4 phases across separate sessions (entry, work, exit, re-entry)?
-- **System level:** Does the full inventory of skills cover the full lifecycle (decide → create ADR → start slice → 4 phases → sweep → repeat)?
-
-## Session Sizing
-
-A phase fits if:
-- The agent never has to ask itself what it was doing.
-- The deliverable matches the opening statement.
-- A fresh agent reading only the deliverable can understand what was done.
-
-Soft target: under ~30K tokens loaded context, under ~10K tokens output per phase. Adjust based on experience.
-
-## Hooks
-
-Three hooks wired in `.claude/settings.json`:
-
-- **`reversibility-guard.sh`** (PreToolUse on `Bash|Edit|Write`): blocks destructive ops (`rm -rf`, `git push --force`, `git reset --hard`, `git clean -fd`, `DROP TABLE`/`DROP DATABASE`), `.env*` writes, lock file writes; enforces ADR append-only.
-- **`scope-guard.sh`** (PreToolUse on `Edit|Write`): blocks writes outside the current slice's `intent.md` envelope. Goes dormant when slice status is `complete` or `failed`. Override via `EXPAND_ENVELOPE=1` (logged to `.claude/current-slice/envelope-expansions.log`).
-- **`reality-check.sh`** (PostToolUse on `Edit|Write`): runs `ruff format` and `ruff check --fix` on Python files.
-
-Hooks are friction-plus-walls, not security boundaries. A determined or careless agent can route around the friction layer; the wall layer (the explicit patterns above) holds.
-
-## Cost telemetry (Track 0)
-
-Track 0 of the cost-discipline program lands per-phase token-usage and dollar-cost telemetry in the orchestrator's observability artifact. Three operator-facing surfaces:
-
-### PRICING_TABLE_<date> constant convention
-
-`scripts/slice_orchestrator/core.py` carries a dated module-level constant whose name matches the regex `^PRICING_TABLE_\d{4}_\d{2}_\d{2}$` (example: `PRICING_TABLE_2026_04_24`). The dating is **load-bearing**: pricing changes ship as **new** dated constants in visible commits, not silent edits to a single mutable table. `_init_state_dict` deep-copies the current dated table into the per-slice `pricing_snapshot` field so archived slices stay reinterpretable at their cost-at-the-time. When a vendor price changes, a dedicated housekeeping slice lands a new `PRICING_TABLE_<new-date>` constant and retires the old one by reference only — prior slices' `pricing_snapshot` values continue to reflect the pricing in force at the time they ran.
-
-Shape per model entry: `{"input_per_1k": float, "cache_creation_per_1k": float, "cache_read_per_1k": float, "output_per_1k": float}` — all four token classes must be priced for every dispatched model.
-
-### INV-009 — cost-per-slice budget (provisional, advisory-only at introduction)
-
-INV-009 asserts `tokens_total ≤ INV_009_TOKEN_THRESHOLD` AND `cost_total_usd ≤ INV_009_COST_THRESHOLD_USD` against the active slice's `<slug>-result.json`. Both module constants default to `None` at introduction — the check emits a `UserWarning` ("INV-009 advisory: thresholds TBD at introduction") and does not fail. INV-009 is **advisory-only** while thresholds are `None`; once a rebaseline slice substitutes numeric values, the same check body raises on breach.
-
-**Rebaseline procedure** (mirrors INV-004's re-baseline precedent). When either (a) a compounding floor change lands that crosses the then-current threshold, or (b) the first set of numeric thresholds needs choosing, a dedicated `housekeeping/inv009-rebaseline-<reason>` slice:
-
-1. Re-runs telemetry against three recent closed slices (or accepts the forward-only baseline of the next three slices).
-2. Sets thresholds at `ceil(p75 × 1.25)` of those data points.
-3. Records baseline data points in `docs/adr/cost-per-slice-budget.md`.
-4. Flips `INV_009_COST_THRESHOLD_USD` / `INV_009_TOKEN_THRESHOLD` from `None` to the numeric values.
-
-INV-009 promotes from `firmness: provisional` to `firm` after either one rebaseline cycle demonstrates discipline, or a consumer project other than portfolio adopts the invariant (see `docs/adr/cost-per-slice-budget.md`).
-
-### Cost section in `<slug>-result.md` and one-line `/status` surfacing
-
-The `_generate_result_md` projection of the observability state emits a `## Cost` section on terminal transitions (cadence unchanged per `orchestrator-observability` D5). Content:
-
-- One totals line: `Total: <N> tokens, $<X.XX> USD`.
-- One table: `phase | model | tokens | USD` — one row per populated phase in `phases_completed`.
-- One footer: `pricing: PRICING_TABLE_<date>` (constant name, not the full table).
-
-`/status` surfaces one cost line — **per-slice only, not cumulative** (see `docs/adr/cost-per-slice-budget.md` §OQ#2). When a slice is active, it shows that slice's running cost; when none is active, it shows the last-closed slice's total. The expanded `/status full` view adds model attribution from `model_by_phase`. INV-004's token budget on `/status` output is preserved — one line each, bounded.
-
-## Environment variables
-
-Knobs the operator (or downstream consumer) may set. Defaults follow CLAUDE.md "no hardcoded timeouts/sizes in consumer-facing scripts" — every script that reads a knob falls back to a documented default.
-
-| Var | Default | Read by | Purpose |
-|---|---|---|---|
-| `CAIRN_PHASE_1_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Hard ceiling on a `phase-1-writer` dispatch. Returns `FAILED` with a timeout summary on overrun. |
-| `CAIRN_PHASE_2_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for `phase-2-skeptic`. |
-| `CAIRN_PHASE_3_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for each parallel `phase-3-implementer` cluster dispatch. |
-| `CAIRN_PHASE_4_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Same, for `phase-4-integrator`. |
-| `CAIRN_PHASE_DEFAULT_TIMEOUT_HARD` | `1800` (s) | `scripts/slice_orchestrator/` | Fallback for roles outside the four phase agents (e.g. `issue-triager`). |
-| `CAIRN_HEARTBEAT_INTERVAL` | `10.0` (s) | `scripts/slice_orchestrator/` | Cadence (seconds) at which the orchestrator heartbeat daemon touches `.claude/current-slice/.heartbeat` with a UTC ISO timestamp. Lower = finer-grained liveness, more write pressure. Per ADR `orchestrator-observability`. |
-
-#### Triager superseded-test heuristic (advisory)
-
-Before `dispatch_triager` invokes the `issue-triager` agent, the orchestrator reads the RAISE_ISSUE commit body (`git log -1 --format=%B <hash>`) and `.claude/current-slice/intent.md`, then runs `detect_superseded_test_signal` in `scripts/slice_orchestrator/core.py`. On a hit, an advisory `supersession_hint = {"hint": "likely_superseded", "evidence": [...]}` is added to the JSON inputs handed to the triager. The hint fires when the commit body contains any of:
-
-- `\bsuperseded?\b` (root `supersede`/`superseded`; trailing `s` as in `supersedes` deliberately excluded);
-- `\bINV-\d{3}\b` (fires regardless of intent);
-- `\bDC-\d+\b` **and** the same `DC-<n>` token appears in the current slice's `intent.md` (AND-gated so unrelated DC references in quoted ADR prose do not fire).
-
-Matching is case-insensitive. The hint is **advisory**: the orchestrator does not second-guess the triager's final action — it only surfaces the signal so the triager can prefer `ESCALATE_TO_USER` with rationale "test-amendment recommended" over `RE_DISPATCH`-to-Phase-2 when pre-existing tests are named that a firm contract just landed supersedes. Fails open: any git/filesystem error leaves the triager inputs pristine. Pattern traced to memory `triager_misroute_on_superseded_tests.md` (2026-04-20→21).
-
-| `CAIRN_HEARTBEAT_STALE` | `30.0` (s) | `scripts/slice_orchestrator/` | Staleness threshold (seconds) after which a `.heartbeat` timestamp is treated as advisory-stale by slice-close-contract D4 tooling. Should be ≥ 2× `CAIRN_HEARTBEAT_INTERVAL`. |
-| `CAIRN_LEGACY_START_SLICE` | unset | `commands/claude-code/start-slice.md` | When set to any non-empty value, `/start-slice` defers to `start-slice-legacy.md`'s prose protocol instead of invoking the orchestrator. Equivalent to passing `--legacy`. |
-| `AGENT_ROLE` | unset | `checks/role_guard.py` | Identifies the spawned-session role for inner-gate enforcement. Unset → hook is a no-op (non-compressed slices unaffected). |
-| `AGENT_ENVELOPE` | unset | `checks/role_guard.py`, `scripts/slice_orchestrator/dispatch.py` | Two accepted shapes. **JSON array** (phase-3-implementer): list of regex strings controlling allowed write paths; empty/unset denies all writes. **JSON object** (phase-1-writer, set by the orchestrator at dispatch): `{"paths": [...], "cairn_query_snapshot": "<sha>"}` — `paths` grants Read on locked-down canonical-knowledge sources (ADR D9 envelope-grant escape), `cairn_query_snapshot` pins the corpus snapshot for the MCP session. On git failure, `cairn_query_snapshot` is the sentinel `unknown-sha-<ISO8601>` (ADR D12). |
-| `EXPAND_ENVELOPE` | unset | `checks/scope-guard.sh` | Override for the slice envelope; logs to `.claude/current-slice/envelope-expansions.log`. |
-| `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; logs to `.claude/adr-editorial-fixes.log`. |
-| `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in flag. When set (any non-empty value), `test_inv004_turn1_token_budget` rewrites `docs/plans/measurements/2026-04-12-slice-003.txt` with the fresh turn-1 reading. Unset by default so a plain `uv run pytest` leaves the tracked measurement file alone. |
-| `CAIRN_QUERY_DB` | `.claude/cairn_query/index.kz` | `scripts/cairn_query/` | Path to the kuzudb index for `cairn_query`. Override to point at a scratch location during tests or when running multiple corpus variants in parallel. Set via `CAIRN_QUERY_DB=/tmp/my.kz python -m cairn_query rebuild`. |
-
-#### Per-phase model and effort overrides
-
-`CAIRN_MODEL_<ROLE>` and `CAIRN_EFFORT_<ROLE>` let the operator swap the model or thinking-effort level for any agent role without touching `AGENT_MODEL_CONFIG`. Key derivation: `role.upper().replace("-", "_")`. An **empty string does not override** — the dict default is used (same `or`-fallback semantics as all other `CAIRN_*` knobs).
-
-Defaults come from `AGENT_MODEL_CONFIG` in `scripts/slice_orchestrator/core.py`. Unknown roles fall back to `claude-opus-4-7` / `high`.
-
-| Var | Default (from `AGENT_MODEL_CONFIG`) | Read by | Purpose |
-|---|---|---|---|
-| `CAIRN_MODEL_PHASE_1_WRITER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-1-writer`. |
-| `CAIRN_EFFORT_PHASE_1_WRITER` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-1-writer`. |
-| `CAIRN_MODEL_PHASE_2_SKEPTIC` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-2-skeptic`. |
-| `CAIRN_EFFORT_PHASE_2_SKEPTIC` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-2-skeptic`. |
-| `CAIRN_MODEL_PHASE_3_IMPLEMENTER` | `claude-sonnet-4-6` | `scripts/slice_orchestrator/` | Override model for `phase-3-implementer`. Lever 1 cost reduction: Sonnet is ~5× cheaper than Opus for implementation work. |
-| `CAIRN_EFFORT_PHASE_3_IMPLEMENTER` | `high` | `scripts/slice_orchestrator/` | Override effort level for `phase-3-implementer`. (Retuned `medium → high` by `cost-discipline/lever-1-tier-retune` after the prior `compression/learnings-capture` slice's Phase-3 cluster fan-out worker reported OK without RED-test gating; Sonnet retained, effort bumped to restore reasoning depth.) |
-| `CAIRN_MODEL_PHASE_4_INTEGRATOR` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `phase-4-integrator`. (Retuned `claude-sonnet-4-6 → claude-opus-4-7` by `cost-discipline/lever-1-tier-retune`; Phase 4 is the audit boundary, judgment quality rides Opus while `effort=low` keeps the cost delta narrow.) |
-| `CAIRN_EFFORT_PHASE_4_INTEGRATOR` | `low` | `scripts/slice_orchestrator/` | Override effort level for `phase-4-integrator`. |
-| `CAIRN_MODEL_ISSUE_TRIAGER` | `claude-opus-4-7` | `scripts/slice_orchestrator/` | Override model for `issue-triager`. |
-| `CAIRN_EFFORT_ISSUE_TRIAGER` | `medium` | `scripts/slice_orchestrator/` | Override effort level for `issue-triager`. |
-
-The resolved model (after env-var override) is recorded in `model_by_phase[role]` inside the slice state, so cost attribution in `<slug>-result.json` reflects what was actually dispatched (INV-009 honesty). To restore pre-Lever-1 parity (all phases on Opus/high), set:
-
-```
-CAIRN_MODEL_PHASE_3_IMPLEMENTER=claude-opus-4-7
-CAIRN_EFFORT_PHASE_3_IMPLEMENTER=high
-CAIRN_MODEL_PHASE_4_INTEGRATOR=claude-opus-4-7
-CAIRN_EFFORT_PHASE_4_INTEGRATOR=high
-```
-
-## Project-root resolution
-
-`scripts/_root.py:project_root()` is the single source of truth for all path construction in `scripts/` and `mcp_servers/`. Every `Path(".claude/...")` literal and `Path.cwd()` fallback in production code routes through it.
-
-**Resolution precedence:**
-
-1. `CLAUDE_PROJECT_DIR` env var — if set and non-empty, returns `Path(value).resolve()`.
-2. `git rev-parse --show-toplevel` from `os.getcwd()` — subprocess with `cwd=os.getcwd()`, returns `Path(stdout.strip()).resolve()`.
-3. `RuntimeError` — loud message naming both mechanisms and the originating error.
-
-**Symlink trap (L-017).** Cairn ships a `.slice-system → .` self-symlink. Any `Path(__file__).parent` chain run from a file reached through that symlink resolves to the consumer-side path, not the cairn root. `project_root()` avoids this by never using `__file__` — it uses only env-var and git.
-
-**Call-site rules.** Replace every `Path(".claude/...")` literal with `project_root() / ".claude" / ...`; replace every `Path.cwd()` with `project_root()`; add `cwd=project_root()` to every `subprocess.run(["git", ...])` call.
-
-**Test exemption.** Files under `tests/` are exempt — they use `tmp_path` and synthetic roots freely.
-
-**`CLAUDE_PROJECT_DIR`** must be set to the absolute repo root when running cairn scripts from a working directory other than the root. The orchestrator sets it automatically for spawned agent sessions; operators running scripts directly should export it when `cd`-ing away from the root.
-
-## Cairn repo internals (load on demand)
+## Cairn repo internals
 
 This section documents cairn's own repo layout and working practices. It is deliberately not in `CLAUDE.md` — CLAUDE.md is a safety cheat sheet, not a README. Load this section when doing non-trivial work on cairn itself.
 
 ### What this repo is
 
-Cairn is a methodology repository, not a runnable application or library. It contains the protocols, shell-script hooks, slash commands, and documentation that implement a four-phase slice pipeline (Intent → Validation → Implementation → Integration), a decision protocol for architectural work, and a substrate validator. It is consumed by *other* projects, which symlink it as `.slice-system/` and reference its scripts/docs from their own `.claude/` configuration. Cairn also consumes itself the same way — a `.slice-system → .` self-symlink lets the same pipeline run on cairn's own development (see bootstrap-exception for the bootstrap exception that put this in place).
+Cairn is a methodology repository, not a runnable application or library. It contains the protocols, shell-script hooks, slash commands, the `cairn-tdd-feature` dispatch skill, and documentation that implement a four-phase development pipeline (Intent → Validation → Implementation → Integration), a decision protocol for architectural work, and an architecture validator. It is consumed by *other* projects, which symlink it as `.slice-system/` and reference its scripts/docs from their own `.claude/` configuration. Cairn also consumes itself the same way — a `.slice-system → .` self-symlink lets the same pipeline run on cairn's own development.
 
 Status: solo, pre-v1. See `docs/roadmap.md` for the work required to reach v1, and `CHANGELOG.md` for the delta since v0.1.0.
 
 ### Repo layout
 
-- `checks/` — POSIX shell hooks. PreToolUse / PostToolUse handlers that read JSON from stdin. Three hooks: `reversibility-guard.sh` (blocks destructive ops, enforces ADR append-only), `scope-guard.sh` (blocks edits outside the current slice envelope), `reality-check.sh` (runs `ruff format` + `ruff check --fix` on Python edits).
-- `commands/claude-code/` — Markdown slash commands (`/start-slice`, `/decision`, `/catchup`, `/handoff`, `/integration-sweep`, `/new-adr`, `/refresh-architecture`, `/status`). A `commands/windsurf/` mirror is roadmapped but does not exist yet.
-- `docs/` — Three layers: `operational-reference.md` (Layer 1, this file), `spec-v1.md` (Layer 2, canonical spec — deliberately not auto-loaded), `vision.md` + `roadmap.md` (what v1 commits to and the ordered slice sequence to get there).
-- `scripts/validate_architecture.py` — single-file validator checking consistency between `docs/ARCHITECTURE.md` invariants and the `docs/adr/` corpus.
-- `templates/` — currently empty; template extraction is a may-land-before-v1 item.
+- `checks/` — POSIX shell hooks plus one Python hook. Three hooks: `reversibility-guard.sh` (blocks destructive ops, enforces ADR append-only), `role_guard.py` (operator envelope + per-phase write paths), `reality-check.sh` (runs `ruff format` + `ruff check --fix` on Python edits).
+- `commands/claude-code/` — Markdown slash commands: `catchup`, `decision`, `decision.full`, `new-adr`, `new-adr.full`. Plus a `.local/` directory of cairn-internal dev aids (not shipped to consumers).
+- `.claude/skills/cairn-tdd-feature/SKILL.md` — the dispatch skill that sequences the four phases via fresh subagents.
+- `.claude/agents/` — agent definitions (`phase-1-tdd.md`, `phase-2-tdd.md`, `phase-3-tdd.md`, `phase-4-tdd.md`, `triager-tdd.md`) and `role-topology.yaml` (the authoritative phase→role-slug mapping consumed by INV-003's binding).
+- `docs/` — Three layers: `operational-reference.md` (Layer 1, this file), `spec-v1.md` (Layer 2, canonical spec — deliberately not auto-loaded), `vision.md` + `roadmap.md` (what v1 commits to and the ordered slice sequence to get there). ADRs under `docs/adr/`.
+- `scripts/` — `_root.py` (path-resolution primitive), `validate_architecture.py` (single-file architecture validator), `smoketest_hooks.sh` (bare-`python3` hook smoketest), `lib/` (shared utilities — `invariant_id_extractor.py`, `superseded_test_signal.py`).
+- `tests/unit/` — pytest suite. `pyproject.toml` sets `pythonpath = ["scripts"]` so test imports use `from <subpackage>.<module>`.
+- `templates/` — handoff template; expansion roadmapped.
+
+**Vestigial.** `scripts/slice_orchestrator/`, `scripts/cairn_query/`, and `mcp_servers/cairn_knowledge/` are leftover `__pycache__`-only directories from retired surfaces (orchestrator, cairn-knowledge MCP server). Future cleanup may prune them.
+
+**Symlink recursion hazard.** `.slice-system → .` is an infinite-depth loop for any tool that follows symlinks recursively. If you add `find`, `glob("**/*")`, or similar, exclude `.slice-system` explicitly.
 
 ### Working on cairn itself
 
-There is no build, no package manifest, and no test suite in this repo. Common operations:
+Common operations:
 
 - **Lint a hook script:** `shellcheck checks/<name>.sh` (if shellcheck is installed).
-- **Smoke-test a hook locally:** the hooks read JSON from stdin. Example:
-  ```
-  echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}' | bash checks/reversibility-guard.sh
-  ```
-  Exit code 2 + JSON on stdout = blocked. Exit 0 = allowed.
-- **Run the validator:** `python3 scripts/validate_architecture.py` (stdlib only). Fails in this repo until the meta-dogfood `docs/ARCHITECTURE.md` and `docs/adr/` exist — expected, not a bug.
+- **Smoke-test a hook locally:** `echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}' | bash checks/reversibility-guard.sh`. Exit code 1 + stderr diagnostic = blocked. Exit 0 = allowed.
+- **Run the validator:** `uv run python scripts/validate_architecture.py`. Expect `ALL CHECKS PASSED`.
+- **Run the suite:** `uv run pytest -q`. Expect `360/0/2`.
+- **Smoketest hooks:** `bash scripts/smoketest_hooks.sh`. Expect `PASS role_guard.py` and exit 0.
 
-When doing non-trivial work on cairn, the intended flow is meta-dogfood: use cairn's own slice pipeline (via the slash commands) to develop cairn. Per CHANGELOG, this is not yet wired up — the first cairn slice is supposed to set it up.
+When doing non-trivial work on cairn, the intended flow is meta-dogfood: use the `cairn-tdd-feature` dispatch skill on cairn itself when the work has a clear failing-test shape; use the ad-hoc-edit + operator-envelope path otherwise.
 
 ### Editing rules expanded
 
-- **Scope-guard goes dormant when slice status is `complete` or `failed`** and always allows writes under `.claude/current-slice/`, `.claude/handoff.md`, `.claude/sweep.yaml`, `docs/adr/`, `docs/ARCHITECTURE.md`, `docs/lessons.md`. Auto-includes test mirrors of envelope source files. Override: `EXPAND_ENVELOPE=1`, which logs to `.claude/current-slice/envelope-expansions.log`.
-- **Six v1 commitments** (`docs/vision.md`) are the spec for cairn's own development: agent-portable, parallelism-native, soft agent-split, meta-dogfoodable from slice #1, plastic phase shape through v1, explicit cognitive roles per phase. Don't lock in designs that contradict these — especially not a global "one active slice" pointer (parallelism is a v1 commitment, not a future feature).
+- **Edit canonical paths only, never via `.slice-system/`.** Slice-system files are symlinked from consumers; editing through the symlink produces tool-input paths starting with `.slice-system/`. `reversibility-guard.sh` strips that prefix before its allow/deny check, but `role_guard.py` does NOT — the operator-envelope and per-role allowlists are anchored at the canonical repo root, so a `.slice-system/...` path matches no pattern and the edit is denied. Always target `checks/...`, `commands/claude-code/...`, `scripts/...` directly.
+- **Operator envelope is the write gate** when `AGENT_ROLE` is unset. Set `mode: operator` + a `paths:` regex list when starting focused feature work (the file must include a self-pattern); set `mode: off` (or delete) when returning to ad-hoc cross-cutting edits. The file is worktree-scoped.
+- **Six v1 commitments** (`docs/vision.md`) are the spec for cairn's own development: agent-portable, parallelism-native, soft agent-split, meta-dogfoodable from feature #1, plastic phase shape through v1, explicit cognitive roles per phase. Don't lock in designs that contradict these — especially not a global "one active feature" pointer (parallelism is a v1 commitment, not a future feature).
 
 ### Documentation tiers — when to load what
 
-If a question is operational ("what does Phase 2 receive as input?", "what does scope-guard allow?"), this file (`docs/operational-reference.md`) is sufficient. If a question is about the *why* (failure modes, the dual context-engineering / role-reset thesis, empirical support, what the system does and does not claim), read `docs/spec-v1.md`. The spec is long and intentionally kept out of default context — pull it in deliberately when needed.
+If a question is operational ("what does Phase 2 receive as input?", "what does the operator envelope allow?"), this file (`docs/operational-reference.md`) is sufficient. If a question is about the *why* (failure modes, the dual context-engineering / role-reset thesis, empirical support, what the system does and does not claim), read `docs/spec-v1.md`. The spec is long and intentionally kept out of default context — pull it in deliberately when needed. The `cairn-tdd-feature` dispatch protocol lives in `.claude/skills/cairn-tdd-feature/SKILL.md` and is loaded by the skill at dispatch time.
