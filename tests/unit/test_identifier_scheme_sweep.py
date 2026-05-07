@@ -27,7 +27,6 @@ Phase 4 Auditor checklist (NOT asserted here; see validation/approach.md):
 Stdlib + pytest.
 """
 
-import ast
 import re
 from pathlib import Path
 
@@ -38,7 +37,6 @@ IDENTIFIER_PATTERN = re.compile(r"(SLICE-[0-9]+|ADR-[0-9]+)")
 
 def _envelope_paths() -> list[Path]:
     paths = [
-        CAIRN_ROOT / "commands/claude-code/handoff.full.md",
         CAIRN_ROOT / "docs/spec-v1.md",
         CAIRN_ROOT / "docs/lessons.md",
         CAIRN_ROOT / "docs/operational-reference.md",
@@ -90,17 +88,6 @@ def test_envelope_zero_residual_modulo_allowlist() -> None:
             offenders.append(f"{rel}:{lineno}: {line}")
     assert not offenders, (
         "Residual legacy identifiers in envelope after sweep:\n" + "\n".join(offenders)
-    )
-
-
-def test_dogfood_docstring_identifier_migrated() -> None:
-    path = CAIRN_ROOT / "tests/unit/test_dogfood_evaluate.py"
-    tree = ast.parse(path.read_text())
-    docstring = ast.get_docstring(tree) or ""
-    match = IDENTIFIER_PATTERN.search(docstring)
-    assert match is None, (
-        f"test_dogfood_evaluate.py module docstring still contains "
-        f"legacy identifier {match.group(0)!r}"
     )
 
 

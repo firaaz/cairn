@@ -513,27 +513,6 @@ class TestV7Validator:
 # ---------------------------------------------------------------------------
 
 
-class TestV10ToleranceTestsPresent:
-    """Intent §Verification 10 structural check.
-
-    The behavioral `tests pass` verification is a Phase-4 full-suite concern;
-    Phase 3 may restructure fixtures (per approach.md §F2) to preserve
-    dual-format coverage without a live legacy file in docs/adr/.
-    """
-
-    @pytest.mark.parametrize(
-        "relative_path",
-        [
-            "tests/unit/test_hook_tolerance.py",
-            "tests/unit/test_hook_relpath_bypass.py",
-        ],
-    )
-    def test_tolerance_test_file_present(self, relative_path):
-        assert (CAIRN_ROOT / relative_path).is_file(), (
-            f"{relative_path} missing — legacy-format tolerance coverage lost"
-        )
-
-
 # ---------------------------------------------------------------------------
 # Phase 2 skeptic contract (slice: identifier-scheme/rename-sweep-test-robust)
 #

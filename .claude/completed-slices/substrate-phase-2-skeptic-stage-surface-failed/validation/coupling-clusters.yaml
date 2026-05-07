@@ -1,5 +1,0 @@
-clusters:
-  - name: phase-2-handoff-staging
-    files:
-      - '^scripts/slice_orchestrator/lifecycle\.py$'
-      - '^tests/unit/test_phase_2_handoff_staging_surface\.py$'

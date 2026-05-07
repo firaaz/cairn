@@ -1,22 +1,26 @@
 # /catchup
 
-Orient a new session using the tiered context discipline protocol (context-discipline-protocol).
+Orient a fresh session. The bookend to `/handoff` — handoff writes the pointer at session end; catchup reads it at session start.
 
-Usage: `/catchup` (auto-detect) or `/catchup phase 2|3|4` (enter pipeline phase)
+Usage: `/catchup`
 
 ## Rules
 
-1. Tier 1 always runs. Read ONLY: `.claude/handoff.md`, `.claude/current-slice/slice.yaml`, `.claude/sweep.yaml`, `git log --oneline -5`, `git status --short`. Produce orientation summary and STOP.
-2. DISPATCH Tier 2 subagent if and only if: (a) user asked a factual question Tier 1 did not answer, (b) user directed pipeline phase entry with handoff pointers, (c) verifying a file named in handoff pointers before acting. Do NOT dispatch to "be thorough."
-3. Tier 2 subagent contract — CONTEXT: slice/session state. QUESTION: specific question. FILES AVAILABLE: ≤5 files. YOUR BEHAVIOR: read only listed files, no expansion. YOUR RETURN: ≤200 words — direct answer, one file:line citation, unresolved ambiguity. DO NOT return: repo summaries, reflective prose, or next-step advice.
-4. Tier 3 is the absence of catchup — once user gives a direct imperative, normal reading resumes.
-5. Every report states Mode, Loaded, and Excluded.
+1. **Read these four sources in order, then stop.** Don't dispatch subagents, don't invoke skills, don't pre-explore the codebase. The point is a quick read so the user can drive next.
+   - `.claude/handoff.md` — the State / Next / Blocked / Pointers from the prior session.
+   - `git log --oneline -10` — what shipped recently.
+   - `git status -s` — working-tree state (uncommitted changes, untracked files).
+   - `.claude/active-envelope.yaml` if present — surface `mode:` and a one-line summary of `paths:` so the user knows what the write gate looks like this session.
+2. **Synthesise a brief catchup.** Branch + tip SHA, what the prior session left as Next, anything in Blocked / Pending, anything in working tree that needs attention, and (if the envelope file is present and `mode: operator`) what's in scope for writes.
+3. **Stop after the catchup.** No "what would you like to do next?" prompts beyond a single sentence offering to proceed with the handoff's Next item or wait for direction.
 
-## Modes
+## Anti-patterns
 
-Four routing modes, all start at Tier 1: ### Mode A dispatches Tier 2 for pipeline phase entry, surfaces Phase Skill Guide roles/skills; ### Mode B stays Tier 1 for non-slice work; ### Mode C is fresh start; ### Mode D is dirty recovery.
+- Do not read ADRs, plans, or `docs/` files unless the handoff's Pointers explicitly cites them and the user has asked a question that requires them.
+- Do not run the test suite or validator — the catchup is orientation, not verification.
+- Do not propose changes. Catchup ends; the user decides.
 
-## Load full
+## When the handoff is missing or stale
 
-- If `/catchup phase N` is used: read catchup.full.md for Mode A phase-input tables, orientation template, and role/skill surfacing.
-- If handoff missing AND slice active AND uncommitted changes: read catchup.full.md for Mode D dirty-recovery protocol.
+- Missing: say so, fall back to `git log --oneline -20` + `git status -s` + the most recent project memory entries by date.
+- Stale (handoff `as-of` SHA != current branch tip): note the SHA gap and surface commits between the two before drawing conclusions.

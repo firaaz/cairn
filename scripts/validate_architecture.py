@@ -151,9 +151,16 @@ def _extract_refs(text: str) -> list[str]:
 def parse_assertion_blocks(text: str) -> dict[str, dict]:
     """Extract invariant-check fenced blocks from ARCHITECTURE.md.
 
-    Returns dict mapping inv_id (e.g. "INV-001") to assertion dict with
-    keys: type, pattern, target, expect, description.
+    Returns dict mapping inv_id (e.g. "INV-001") to a parsed YAML dict.
+
+    The block body is parsed with PyYAML so nested dicts and lists arrive
+    in their native Python form (lists become lists, nested objects become
+    dicts). Pre-M3 this function did flat key:value parsing and silently
+    dropped nested config — see docs/plans/2026-05-06-cairn-shrink-m3-
+    bathwater-and-binding-fixes.md Task 3.
     """
+    import yaml
+
     blocks: dict[str, dict] = {}
     lines = text.splitlines()
     i = 0
@@ -162,17 +169,28 @@ def parse_assertion_blocks(text: str) -> dict[str, dict]:
         m = re.match(r"^```invariant-check\s+(INV-\d+)", line)
         if m:
             inv_id = m.group(1)
-            assertion: dict[str, str] = {}
+            body_lines: list[str] = []
             i += 1
             while i < len(lines) and not lines[i].startswith("```"):
-                field_line = lines[i].strip()
-                if ":" in field_line:
-                    key, _, value = field_line.partition(":")
-                    key = key.strip()
-                    value = value.strip().strip('"')
-                    assertion[key] = value
+                body_lines.append(lines[i])
                 i += 1
-            blocks[inv_id] = assertion
+            body = "\n".join(body_lines)
+            try:
+                parsed = yaml.safe_load(body) or {}
+            except yaml.YAMLError as exc:
+                print(
+                    f"validate_architecture: {inv_id} block YAML parse error: {exc}",
+                    file=sys.stderr,
+                )
+                parsed = {}
+            if not isinstance(parsed, dict):
+                print(
+                    f"validate_architecture: {inv_id} block did not parse to a dict "
+                    f"(got {type(parsed).__name__}); skipping",
+                    file=sys.stderr,
+                )
+                parsed = {}
+            blocks[inv_id] = parsed
         i += 1
     return blocks
 
@@ -240,17 +258,44 @@ def _run_test_ref_assertion(
     return None
 
 
+# Inline fallback authorised commit-subject prefixes. Used when the
+# external registry file is absent (retired per pipeline-substrate-naming-superseded).
+# Mirrors the prefix set from the last live registry (2026-05-07).
+_FALLBACK_REGISTRY: dict[str, dict] = {
+    k: {
+        "prefix": k,
+        "tool": "inline-fallback",
+        "owner-adr": "pipeline-substrate-naming-superseded",
+        "since": "2026-05-07",
+    }
+    for k in [
+        "slice:",
+        "handoff:",
+        "sweep:",
+        "bootstrap:",
+        "feat:",
+        "docs:",
+        "fix:",
+        "chore:",
+        "test:",
+        "design:",
+        "plan:",
+    ]
+}
+
+
 def _load_substrate_registry(project_root: Path) -> dict[str, dict]:
     """Load .claude/pipeline-substrate-registry.yaml as {prefix: entry}.
 
     Schema-checks: each entry has prefix, tool, owner-adr, since.
-    Returns {} if file missing (caller decides hard-fail policy).
+    Returns the inline fallback when the file is absent (registry retired per
+    pipeline-substrate-naming-superseded; inline list preserves INV-001 mechanics).
     """
     import yaml
 
     path = project_root / ".claude" / "pipeline-substrate-registry.yaml"
     if not path.exists():
-        return {}
+        return dict(_FALLBACK_REGISTRY)
     raw = yaml.safe_load(path.read_text()) or {}
     entries = raw.get("entries", [])
     out: dict[str, dict] = {}
@@ -301,6 +346,8 @@ _SUBSTRATE_VERIFIERS: dict[str, object] = {
     "docs:": _verify_pass_through,
     "fix:": _verify_fix_commit,
     "chore:": _verify_pass_through,
+    "design:": _verify_pass_through,
+    "plan:": _verify_pass_through,
     "test:": _verify_pass_through,
 }
 
@@ -337,7 +384,16 @@ def _git_subjects_in_range(
 def _run_git_log_walk_assertion(
     project_root: Path, inv_id: str, assertion: dict
 ) -> str | None:
-    """Walk git log range, classify each commit, run per-prefix verifier."""
+    """Walk git log range, classify each commit, run per-prefix verifier.
+
+    Conventional Commits routing:
+    - Subject `<type>:` (bare) routes to the registered verifier for `<type>:`.
+    - Subject `<type>(<scope>):` (scoped) routes to a pass-through verifier
+      regardless of the registered tool's verifier — scoped CC is a developer
+      commit (feature/slice level), not pipeline-substrate emission. Bare
+      `fix:` and `sweep:` retain their constrained verifiers.
+    - `<type>` not in the registry is reported as 'prefix not in registry'.
+    """
     effective_from = assertion.get("binding-effective-from", "")
     if effective_from == _PLACEHOLDER_SHA or not effective_from:
         print(f"{inv_id}: binding pending effective-from set (placeholder present)")
@@ -347,18 +403,29 @@ def _run_git_log_walk_assertion(
     if not registry:
         return f"Check D: {inv_id} FAIL — registry not found or empty"
 
+    cc_re = re.compile(r"^([a-z]+)(\([^)]+\))?:")
+
     failures: list[str] = []
     for sha, subject, files in _git_subjects_in_range(project_root, effective_from):
-        matched_prefix = next((p for p in registry if subject.startswith(p)), None)
-        if matched_prefix is None:
+        m = cc_re.match(subject)
+        if m is None:
             failures.append(f"  {sha[:8]} {subject!r} — prefix not in registry")
             continue
-        verifier = _SUBSTRATE_VERIFIERS.get(matched_prefix)
-        if verifier is None:
-            failures.append(
-                f"  {sha[:8]} {subject!r} — prefix {matched_prefix!r} has no verifier"
-            )
+        bare_type = m.group(1)
+        is_scoped = m.group(2) is not None
+        bare_prefix = f"{bare_type}:"
+        if bare_prefix not in registry:
+            failures.append(f"  {sha[:8]} {subject!r} — prefix not in registry")
             continue
+        if is_scoped:
+            verifier = _verify_pass_through
+        else:
+            verifier = _SUBSTRATE_VERIFIERS.get(bare_prefix)
+            if verifier is None:
+                failures.append(
+                    f"  {sha[:8]} {subject!r} — prefix {bare_prefix!r} has no verifier"
+                )
+                continue
         err = verifier(sha, files, [])
         if err:
             failures.append(f"  {sha[:8]} {subject!r} — {err}")
@@ -368,29 +435,41 @@ def _run_git_log_walk_assertion(
     return None
 
 
+ROLE_TOPOLOGY_PATH = (
+    Path(__file__).resolve().parent.parent / ".claude" / "agents" / "role-topology.yaml"
+)
+
 _ROLE_SHORTHAND_TO_SLUG: dict[str, str] = {
-    "reader": "phase-1-writer",
-    "skeptic": "phase-2-skeptic",
-    "builder": "phase-3-implementer",
-    "auditor": "phase-4-integrator",
+    "reader": "phase-1-tdd",
+    "skeptic": "phase-2-tdd",
+    "builder": "phase-3-tdd",
+    "auditor": "phase-4-tdd",
 }
 
 
-def _extract_role_for_phase(core_text: str) -> set[tuple[int, str]] | None:
-    """Parse ROLE_FOR_PHASE dict from core.py text."""
-    in_dict = False
+def _extract_role_for_phase(_unused: str | None = None) -> set[tuple[int, str]] | None:
+    """Read the canonical (phase, role-slug) topology from role-topology.yaml.
+
+    The legacy signature accepted core.py text; M4 retires that source.
+    The argument is preserved for back-compat but ignored.
+    """
+    import yaml
+
+    try:
+        data = yaml.safe_load(ROLE_TOPOLOGY_PATH.read_text())
+    except (FileNotFoundError, yaml.YAMLError):
+        return None
+    phases = data.get("phases") if isinstance(data, dict) else None
+    if not isinstance(phases, dict):
+        return None
     result: set[tuple[int, str]] = set()
-    for line in core_text.splitlines():
-        stripped = line.strip()
-        if re.match(r"ROLE_FOR_PHASE\s*=\s*\{", stripped):
-            in_dict = True
-            continue
-        if in_dict:
-            if stripped.startswith("}"):
-                break
-            m = re.match(r"(\d+)\s*:\s*\"(phase-\d+-[a-z][a-z-]*)\"", stripped)
-            if m:
-                result.add((int(m.group(1)), m.group(2)))
+    for k, v in phases.items():
+        if (
+            isinstance(k, int)
+            and isinstance(v, str)
+            and re.match(r"^phase-\d+-[a-z][a-z-]*$", v)
+        ):
+            result.add((k, v))
     return result if result else None
 
 
@@ -445,7 +524,16 @@ def _extract_skill_guide_topology(
 def _extract_agent_file_topology(
     project_root: Path,
 ) -> tuple[set[tuple[int, str]], list[str]]:
-    """Parse (phase, role_slug) pairs from .claude/agents/phase-N-*.md filenames."""
+    """Parse (phase, role_slug) pairs from .claude/agents/phase-N-*.md filenames.
+
+    Filters to the canonical role-slug set declared by role-topology.yaml. Sibling
+    files matching phase-N-*.md but with non-canonical role slugs are tolerated;
+    they are NOT reported as drift. A phase ordinal not in role-topology.yaml
+    (e.g., phase-5-*.md) IS reported as drift.
+
+    The canonical slug set is read from .claude/agents/role-topology.yaml
+    (the authoritative source). If that file cannot be read, returns an error.
+    """
     failures: list[str] = []
     result: set[tuple[int, str]] = set()
 
@@ -454,77 +542,50 @@ def _extract_agent_file_topology(
         failures.append("INV-003: .claude/agents/ directory not found")
         return result, failures
 
+    topo_path = project_root / ".claude" / "agents" / "role-topology.yaml"
+    if not topo_path.exists():
+        failures.append(f"INV-003: {topo_path} not found (canonical slug source)")
+        return result, failures
+    canonical = _extract_role_for_phase() or set()
+    canonical_slugs = {slug for _, slug in canonical}
+    canonical_phases = {phase for phase, _ in canonical}
+
     for f in sorted(agents_dir.glob("phase-*.md")):
         m = re.match(r"phase-(\d+)-(.+)\.md$", f.name)
-        if m:
-            phase_num = int(m.group(1))
-            slug = f"phase-{m.group(1)}-{m.group(2)}"
+        if not m:
+            continue
+        phase_num = int(m.group(1))
+        slug = f"phase-{m.group(1)}-{m.group(2)}"
+        if slug in canonical_slugs:
+            result.add((phase_num, slug))
+            continue
+        if phase_num not in canonical_phases:
             result.add((phase_num, slug))
 
     return result, failures
 
 
-def _extract_role_guard_topology(
-    guard_text: str,
-) -> tuple[set[tuple[int, str]], list[str]]:
-    """Extract (phase, role_slug) topology from ROLE_DENY_READ in role_guard.py.
-
-    Uses ROLE_DENY_READ as the binding source (all four roles must appear there).
-    This tolerates the option-(b) asymmetry: phase-3-implementer has no static
-    ROLE_POLICIES entry but IS present in ROLE_DENY_READ.
-    """
-    failures: list[str] = []
-    result: set[tuple[int, str]] = set()
-
-    in_deny_read = False
-    for line in guard_text.splitlines():
-        stripped = line.strip()
-        if re.match(r"ROLE_DENY_READ\s*=\s*\{", stripped):
-            in_deny_read = True
-            continue
-        if in_deny_read:
-            if stripped == "}":
-                break
-            m = re.search(r'"(phase-(\d+)-[a-z][a-z-]*)"', stripped)
-            if m:
-                slug = m.group(1)
-                phase_num = int(m.group(2))
-                result.add((phase_num, slug))
-
-    if not result:
-        failures.append(
-            "INV-003: Cannot parse ROLE_DENY_READ from checks/role_guard.py"
-        )
-
-    return result, failures
-
-
 def validate_phase_topology(project_root: Path) -> list[str]:
-    """Four-way cross-reference: (phase_ordinal, role_slug) topology must agree.
+    """Three-way cross-reference: (phase_ordinal, role_slug) topology must agree.
 
     Canonical sources:
-      1. scripts/slice_orchestrator/core.py — ROLE_FOR_PHASE (authoritative).
+      1. .claude/agents/role-topology.yaml — authoritative phase→slug mapping.
       2. docs/operational-reference.md — Phase Skill Guide tables.
       3. .claude/agents/phase-N-*.md — agent prompt filenames.
-      4. checks/role_guard.py — ROLE_DENY_READ keys.
 
-    Option-(b) asymmetry: phase-3-implementer has no static ROLE_POLICIES entry;
-    write-path gate is AGENT_ENVELOPE-driven per compression-infrastructure-bootstrap.
-    The binding tolerates this because phase-3-implementer IS in ROLE_DENY_READ.
+    ROLE_DENY_READ leg dropped (read-class lockdown retired with the substrate;
+    see INV-010 retirement in ARCHITECTURE.md).
 
     Returns list of failure messages; empty on full agreement.
     """
     failures: list[str] = []
 
-    core_path = project_root / "scripts" / "slice_orchestrator" / "core.py"
-    if not core_path.exists():
-        return [f"INV-003: {core_path} not found"]
-    authoritative = _extract_role_for_phase(core_path.read_text())
+    topo_path = project_root / ".claude" / "agents" / "role-topology.yaml"
+    if not topo_path.exists():
+        return [f"INV-003: {topo_path} not found"]
+    authoritative = _extract_role_for_phase()
     if authoritative is None:
-        return [
-            "INV-003: Cannot parse ROLE_FOR_PHASE from "
-            "scripts/slice_orchestrator/core.py"
-        ]
+        return ["INV-003: Cannot parse phases from .claude/agents/role-topology.yaml"]
 
     opref_path = project_root / "docs" / "operational-reference.md"
     if not opref_path.exists():
@@ -539,23 +600,12 @@ def validate_phase_topology(project_root: Path) -> list[str]:
     agent_topology, src3_failures = _extract_agent_file_topology(project_root)
     failures.extend(src3_failures)
 
-    guard_path = project_root / "checks" / "role_guard.py"
-    if not guard_path.exists():
-        failures.append(f"INV-003: {guard_path} not found")
-        guard_topology: set[tuple[int, str]] = set()
-    else:
-        guard_topology, src4_failures = _extract_role_guard_topology(
-            guard_path.read_text()
-        )
-        failures.extend(src4_failures)
-
     if failures:
         return failures
 
     sources = [
         ("operational-reference.md (Phase Skill Guide)", skill_guide_topology),
         (".claude/agents/ filenames", agent_topology),
-        ("checks/role_guard.py ROLE_DENY_READ", guard_topology),
     ]
     for source_name, topology in sources:
         for pair in authoritative:
@@ -563,14 +613,14 @@ def validate_phase_topology(project_root: Path) -> list[str]:
                 phase, role = pair
                 failures.append(
                     f"INV-003: {source_name} is missing ({phase}, '{role}') "
-                    f"— phase-topology drift vs ROLE_FOR_PHASE"
+                    f"— phase-topology drift vs role-topology.yaml"
                 )
         for pair in topology:
             if pair not in authoritative:
                 phase, role = pair
                 failures.append(
                     f"INV-003: {source_name} has extra ({phase}, '{role}') "
-                    f"— phase-topology drift vs ROLE_FOR_PHASE"
+                    f"— phase-topology drift vs role-topology.yaml"
                 )
 
     return failures
@@ -865,6 +915,9 @@ def validate() -> list[str]:
             if result:
                 failures.append(result)
         else:
+            # Retirement markers intentionally carry no binding block.
+            if re.match(r"^Retired\b", inv["statement"]):
+                continue
             # Check E: no assertion block — warning only, not failure
             print(
                 f"Warning: {inv_id} has no machine-checkable assertion (Check E)",

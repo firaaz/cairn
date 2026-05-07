@@ -25,7 +25,6 @@ The plan's snippet form is normalised to that import here.
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -34,7 +33,6 @@ import pytest
 
 CAIRN_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_REL = Path(".claude/pipeline-substrate-registry.yaml")
-REGISTRY_ABS = CAIRN_ROOT / REGISTRY_REL
 
 
 # --- Helpers ---------------------------------------------------------------
@@ -72,41 +70,49 @@ def _commit(repo: Path, subject: str, touch: list[str]) -> str:
 
 
 def _init_repo_with_registry(tmp_path: Path) -> Path:
-    """Init a synthetic git repo with the real cairn substrate registry copied in.
+    """Init a synthetic git repo seeded so the validator has a known prefix set.
 
-    A first commit lands the registry so that subsequent ``base..HEAD`` walks
-    have a non-empty range to operate on. The registry file is required —
-    if it is absent (Phase 2 RED state, before Phase 3 creates it), this
-    helper raises FileNotFoundError, which surfaces as the intended RED.
+    Uses the inline fallback list from _FALLBACK_REGISTRY — the external
+    registry file was retired per pipeline-substrate-naming-superseded (E6).
+    A first commit lands a sentinel file so subsequent ``base..HEAD`` walks
+    have a non-empty range to operate on.
     """
+    from validate_architecture import _FALLBACK_REGISTRY
+
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init", "-q", "-b", "main")
     _git(repo, "config", "user.email", "t@x")
     _git(repo, "config", "user.name", "t")
+    # Write a minimal registry into the fixture repo so _load_substrate_registry
+    # parses it and returns the known prefix set.
+    import yaml
+
     dst = repo / REGISTRY_REL
     dst.parent.mkdir(parents=True, exist_ok=True)
-    if not REGISTRY_ABS.exists():
-        raise FileNotFoundError(
-            f"Phase 2 RED: {REGISTRY_REL} does not exist yet. "
-            "Phase 3 Builder will create it."
+    dst.write_text(
+        yaml.dump(
+            {"entries": list(_FALLBACK_REGISTRY.values())},
+            default_flow_style=False,
         )
-    shutil.copy2(REGISTRY_ABS, dst)
+    )
     _git(repo, "add", str(REGISTRY_REL))
     _git(repo, "commit", "-q", "-m", "bootstrap: seed registry for fixture")
     return repo
 
 
-# === T1 — Registry file present and parses =================================
+# === T1 — Registry loads (file or inline fallback) ==========================
 
 
-def test_registry_yaml_present_and_parseable():
-    """Registry exists at canonical path with valid YAML and required schema."""
-    from validate_architecture import _load_substrate_registry
+def test_registry_loads_with_fallback_when_file_absent(tmp_path):
+    """When registry file is absent, _load_substrate_registry returns non-empty fallback."""
+    from validate_architecture import _FALLBACK_REGISTRY, _load_substrate_registry
 
-    registry = _load_substrate_registry(CAIRN_ROOT)
+    # tmp_path has no .claude/pipeline-substrate-registry.yaml
+    registry = _load_substrate_registry(tmp_path)
     assert isinstance(registry, dict)
-    assert registry, "Registry must contain at least one entry once Phase 3 lands."
+    assert registry, "Fallback must be non-empty."
+    assert registry == _FALLBACK_REGISTRY
     for prefix, entry in registry.items():
         assert prefix.endswith(":"), f"prefix {prefix!r} must end with ':'"
         for required in ("tool", "owner-adr", "since"):

@@ -1,6 +1,6 @@
 ---
 id: pipeline-substrate-naming
-status: accepted
+status: superseded
 firmness: firm
 supersedes: []
 supersedes-sections: []

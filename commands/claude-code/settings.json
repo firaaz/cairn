@@ -12,15 +12,6 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.slice-system/checks/scope-guard.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
           {
@@ -37,16 +28,6 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.slice-system/checks/reality-check.sh"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash $CLAUDE_PROJECT_DIR/.slice-system/checks/role-cheatsheet.sh"
           }
         ]
       }

@@ -88,12 +88,17 @@ def _make_adr(adr_dir: Path, adr_id: str, num: str, inv_ids: list[str]) -> None:
 
 
 def _assertion_block(inv_id: str, assertion: dict) -> str:
-    """Render an invariant-check fenced block for ARCHITECTURE.md."""
+    """Render an invariant-check fenced block for ARCHITECTURE.md.
+
+    Patterns are rendered single-quoted so backslash escapes (e.g. ``\\.claude/``)
+    arrive at the YAML parser verbatim — double-quoted YAML treats ``\\.`` as
+    an unknown escape and errors. See M3 Task 3.
+    """
     lines = [f"```invariant-check {inv_id}"]
     if "type" in assertion:
         lines.append(f"type: {assertion['type']}")
     if "pattern" in assertion:
-        lines.append(f'pattern: "{assertion["pattern"]}"')
+        lines.append(f"pattern: '{assertion['pattern']}'")
     if "target" in assertion:
         lines.append(f'target: "{assertion["target"]}"')
     if "expect" in assertion:
@@ -1110,9 +1115,14 @@ class TestCairnSelfDogfood:
 # a machine-checkable assertion block, completing the D2 defense commitment.
 # Baseline: INV-001 through INV-008 (INV-008 added by compression/slice-3
 # observability-and-close-slice — slice-close-contract).
+#
+# M4 cairn-shrink (2026-05-07): INV-008 retired; its binding block intentionally
+# absent. RETIRED_INVARIANT_IDS exempts it from the assertion-block requirement.
 
 
 EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 11)}
+# Retired invariants: prose marker present in ARCHITECTURE.md but no binding block.
+RETIRED_INVARIANT_IDS = {"INV-008", "INV-009", "INV-010"}
 V1_ASSERTION_TYPES = {
     "grep",
     "file-exists",
@@ -1131,10 +1141,11 @@ class TestSlice011AssertionCoverage:
     """Every firm invariant (INV-001 through INV-008) must have an assertion block."""
 
     def test_all_seven_invariants_have_assertion_blocks(self):
-        """Each of INV-001..INV-008 has a parsed assertion block in ARCHITECTURE.md."""
+        """Each non-retired invariant (INV-001..INV-010 minus RETIRED) has a block."""
         arch_text = _read_cairn_architecture()
         blocks = parse_assertion_blocks(arch_text)
-        missing = EXPECTED_INVARIANT_IDS - set(blocks.keys())
+        required = EXPECTED_INVARIANT_IDS - RETIRED_INVARIANT_IDS
+        missing = required - set(blocks.keys())
         assert not missing, f"Invariants missing assertion blocks: {sorted(missing)}"
 
     def test_no_extra_assertion_blocks(self):

@@ -1,7 +1,7 @@
 ---
 id: d3-bypass-classification
 name: "D3 bypass classification — three-class reason schema + envelope exemptions"
-status: accepted
+status: superseded
 firmness: provisional
 supersedes: []
 supersedes-sections: []

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Cairn is a methodology repo — slice pipeline, hooks, slash commands — consumed by other projects via a `.slice-system → .` symlink. No build step. Tests live under `tests/unit/`; run with `uv run pytest` (always inside the project venv — never `python3 -m pytest`). Bootstrap: `uv sync` creates `.venv` and `uv.lock`. For repo layout, working commands, expanded editing rules, and documentation tier guidance, load `docs/operational-reference.md` on demand. For the canonical spec (theory, failure modes, empirical support), load `docs/spec-v1.md` on demand.
+Cairn is a methodology repo — TDD-by-construction dispatch skill, hooks, slash commands, validator — consumed by other projects via a `.slice-system → .` symlink. No build step. Tests live under `tests/unit/`; run with `uv run pytest` (always inside the project venv — never `python3 -m pytest`). Bootstrap: `uv sync` creates `.venv` and `uv.lock`. For repo layout, working commands, expanded editing rules, and documentation tier guidance, load `docs/operational-reference.md` on demand. For the canonical spec (theory, failure modes, empirical support), load `docs/spec-v1.md` on demand.
 
 ## Identifier scheme
 
@@ -8,7 +8,7 @@ Every ADR, slice, feature, and decision point carries both `id:` (immutable mech
 
 ## Safety-critical rules
 
-**Edit canonical paths only, never via `.slice-system/`.** Slice-system files are symlinked from consumers; editing through the symlink produces tool-input paths starting with `.slice-system/`, which `scope-guard.sh:53` strips as a literal prefix. The resulting relative path matches no allowlist entry and the edit gets denied during an active slice. Always target `checks/...`, `commands/claude-code/...`, `scripts/...` directly.
+**Edit canonical paths only, never via `.slice-system/`.** Slice-system files are symlinked from consumers; editing through the symlink produces tool-input paths starting with `.slice-system/`. `reversibility-guard.sh:48,76` strips that prefix before its allow/deny check, but `role_guard.py` does NOT — the operator-envelope and per-role allowlists are anchored at the canonical repo root, so a `.slice-system/...` path matches no pattern and the edit gets denied. Always target `checks/...`, `commands/claude-code/...`, `scripts/...` directly.
 
 **Hook dependencies.** All three `checks/*.sh` hooks require `jq`; `reality-check.sh` also needs `ruff`. Missing deps cause the hook to no-op with a stderr warning — enforcement silently disabled. Install both before any work in cairn:
 ```
@@ -21,9 +21,11 @@ brew install jq && uv tool install ruff
 
 **Force-push policy.** `git push --force` / `-f` is blocked; `--force-with-lease` is allowed.
 
+**Operator envelope** (`.claude/active-envelope.yaml`). `checks/role_guard.py` enforces write paths against this file when `AGENT_ROLE` is unset — i.e., in a regular Claude Code session, not a dispatch-skill phase run. `mode: operator` + `paths:` (list of regexes) restricts writes to matching paths; `mode: off` disables enforcement. The file is worktree-scoped: each worktree has its own copy. Fail-closed: malformed YAML or an unrecognised mode denies the write. Set `mode: operator` when starting focused feature work; set `mode: off` (or delete the file) when returning to ad-hoc cross-cutting edits. The file must include a pattern matching itself (`.claude/active-envelope.yaml`) or you cannot edit it while enforcement is active.
+
 ## New-code guidance
 
-**New code is Python, function-based, with the v1 standing dep set as the only allowed dependencies** (pydantic, kuzudb, mistune, typer, fastmcp, pyyaml — see ADR `cairn-substrate-and-fastmcp`). Existing bash hooks stay until their own migration slices. No decorators or metaprogramming.
+**New code is Python, function-based, with the post-M4 standing dep set as the only allowed dependencies** (pydantic, typer, pyyaml — see superseding ADR `cairn-substrate-and-fastmcp-superseded`; kuzudb/mistune/fastmcp dropped with the substrate retirement). Surviving bash hooks (`reversibility-guard.sh`, `reality-check.sh`) stay until their own migration slices. No decorators or metaprogramming.
 
 **No hardcoded timeouts/sizes in consumer-facing scripts.** Cairn is consumed downstream (e.g. complex-rag-analysis, ~917s pytest); use env-var override with cairn-friendly default (`int(os.environ.get("CAIRN_<KNOB>", <default>))`) and document the var in `docs/operational-reference.md`.
 

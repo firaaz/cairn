@@ -1,9 +1,0 @@
-clusters:
-  - name: orchestrator-events
-    files:
-      - '^scripts/slice_orchestrator/core\.py$'
-      - '^scripts/slice_orchestrator/lifecycle\.py$'
-      - '^scripts/slice_orchestrator/dispatch\.py$'
-  - name: phase4-prompt-amendment
-    files:
-      - '^\.claude/agents/phase-4-integrator\.md$'

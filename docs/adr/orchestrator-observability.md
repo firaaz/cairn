@@ -1,11 +1,11 @@
 ---
 id: orchestrator-observability
 name: "Orchestrator observability — JSON canonical, MD derived, forward-compat schema, deferred retention"
-status: accepted
+status: superseded
+superseded-by: orchestrator-observability-superseded
 firmness: provisional
 supersedes: []
 supersedes-sections: []
-superseded-by: null
 topic: process
 adrs-referenced: [context-discipline-protocol, identifier-scheme, cliff-failure-mode-and-v1-defenses, parallelism-v1, slice-close-contract]
 invariants-touched: [INV-002]

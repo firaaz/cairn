@@ -14,26 +14,10 @@
       "Bash(uv run pytest *)",
       "Bash(uv run ruff *)",
       "Bash(shellcheck *)",
-      "Bash(jq *)",
-      "Write(.claude/current-slice/validation/**)",
-      "Write(.claude/current-slice/implementation/**)",
-      "Write(.claude/current-slice/integration/**)",
-      "Edit(.claude/current-slice/validation/**)",
-      "Edit(.claude/current-slice/implementation/**)",
-      "Edit(.claude/current-slice/integration/**)"
+      "Bash(jq *)"
     ]
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash $CLAUDE_PROJECT_DIR/.slice-system/checks/role-cheatsheet.sh"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash|Edit|Write",
@@ -41,15 +25,6 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.slice-system/checks/reversibility-guard.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.slice-system/checks/scope-guard.sh"
           }
         ]
       },

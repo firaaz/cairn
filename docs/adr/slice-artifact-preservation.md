@@ -1,7 +1,7 @@
 ---
 id: slice-artifact-preservation
 name: "Slice artifact preservation — pre-wipe snapshots of phase ephemerals"
-status: accepted
+status: superseded
 firmness: firm
 supersedes: []
 supersedes-sections:

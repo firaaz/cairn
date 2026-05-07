@@ -1,0 +1,46 @@
+# Operator envelope for write-path enforcement in this worktree.
+# role_guard.py reads this file when AGENT_ROLE is unset and enforces
+# write paths against `paths`. Set when starting feature work; clear
+# (mode: off) when returning to ad-hoc / cross-cutting work.
+#
+# Note: regex strings are matched against the path AS REPORTED BY THE TOOL.
+# Cairn convention is that paths are repo-root-relative (e.g., "scripts/foo.py",
+# NOT "/Users/.../cairn/scripts/foo.py"). Anchor your regex with ^ accordingly.
+
+mode: operator   # values: "operator" (enforce), "off" (no-op)
+paths:
+  # M4 plan docs and ADRs
+  - ^docs/plans/2026-05-07-cairn-shrink-m4.*
+  - ^docs/adr/.*
+  - ^docs/ARCHITECTURE\.md$
+  - ^docs/operational-reference\.md$
+  - ^docs/upgrading-from-pre-compression\.md$
+  # Scripts
+  - ^scripts/validate_architecture\.py$
+  - ^scripts/lib/.*
+  - ^scripts/smoketest_hooks\.sh$
+  # Plans (stress-test scope)
+  - ^docs/plans/2026-05-08-hook-bare-python3-smoketest\.md$
+  # Hooks
+  - ^checks/.*
+  # Tests
+  - ^tests/.*
+  # .claude internals (must include itself so editing this file isn't denied)
+  - ^\.claude/active-envelope\.yaml$
+  - ^\.claude/agents/.*
+  - ^\.claude/skills/.*
+  - ^\.claude/features/.*
+  - ^\.claude/skill-runs/.*
+  - ^\.claude/handoff\.md$
+  - ^\.claude/settings\.json$
+  - ^\.claude/settings\.local\.json$
+  - ^\.claude/envelope-grants\.log$
+  - ^\.claude/adr-editorial-fixes\.log$
+  - ^\.claude/learning\.md$
+  - ^\.claude/commands/.*
+  # Commands
+  - ^commands/claude-code/.*
+  # Root config files
+  - ^pyproject\.toml$
+  - ^uv\.lock$
+  - ^CLAUDE\.md$

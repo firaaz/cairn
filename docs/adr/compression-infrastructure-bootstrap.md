@@ -1,7 +1,7 @@
 ---
 id: compression-infrastructure-bootstrap
 name: "Compression-infrastructure bootstrap — narrow authorization for role_guard.py hook"
-status: accepted
+status: superseded
 firmness: provisional
 supersedes: []
 supersedes-sections: []

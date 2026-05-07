@@ -49,91 +49,6 @@ def _yaml_blocks(text: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# V1 - slice template (start-slice.full.md slice.yaml block)
-# ---------------------------------------------------------------------------
-
-
-def test_v1a_slice_yaml_template_has_name_field():
-    text = _read(START_SLICE_FULL)
-    slice_yaml_blocks = [
-        b
-        for b in _yaml_blocks(text)
-        if re.search(r"^status:\s*intent\b", b, re.MULTILINE)
-    ]
-    assert slice_yaml_blocks, (
-        "start-slice.full.md missing slice.yaml template block (status: intent)"
-    )
-    for block in slice_yaml_blocks:
-        assert re.search(r"^name:\s*", block, re.MULTILINE), (
-            "slice.yaml template block missing `name:` field "
-            "(intent Specification Detail, Slice template)"
-        )
-
-
-def test_v1b_slice_yaml_template_hierarchical_id_guidance():
-    text = _read(START_SLICE_FULL)
-    assert re.search(r"<feature(?:-id)?>/<slice[-_]slug>", text), (
-        "start-slice.full.md does not document hierarchical "
-        "<feature-id>/<slice-slug> id: form (intent Specification Detail + ADR D2)"
-    )
-
-
-def test_v1c_slice_template_documents_legacy_slice_nnn_accepted():
-    text = _read(START_SLICE_FULL)
-    legacy_context = re.search(r"SLICE-NNN", text)
-    assert legacy_context, (
-        "start-slice.full.md does not mention legacy SLICE-NNN form (intent V1: "
-        '"legacy SLICE-NNN remains accepted by hooks during transition")'
-    )
-    window_start = max(0, legacy_context.start() - 400)
-    window_end = min(len(text), legacy_context.end() + 400)
-    window = text[window_start:window_end]
-    assert re.search(
-        r"accept|legacy|transition|coexist|Phase 1|permitted",
-        window,
-        re.IGNORECASE,
-    ), "SLICE-NNN mention not framed as accepted-during-transition"
-
-
-# ---------------------------------------------------------------------------
-# V2 - feature template (start-slice.full.md Feature file section)
-# ---------------------------------------------------------------------------
-
-
-def _feature_section(text: str) -> str:
-    m = re.search(r"### Feature file.*?(?=\n##\s|\n### |\Z)", text, re.DOTALL)
-    assert m, "start-slice.full.md missing ### Feature file section"
-    return m.group(0)
-
-
-def test_v2a_feature_template_has_name_field():
-    text = _read(START_SLICE_FULL)
-    section = _feature_section(text)
-    assert re.search(r"\bname:\s*", section), (
-        "Feature file section missing `name:` field (intent Specification Detail, "
-        "Feature template + ADR D5)"
-    )
-
-
-def test_v2b_feature_template_has_shaped_from_field():
-    text = _read(START_SLICE_FULL)
-    section = _feature_section(text)
-    assert "shaped-from:" in section, (
-        "Feature file section missing `shaped-from:` field "
-        "(intent Specification Detail, Feature template + ADR D5)"
-    )
-
-
-def test_v2c_feature_slice_list_entry_hierarchical_id():
-    text = _read(START_SLICE_FULL)
-    section = _feature_section(text)
-    assert re.search(r"id:\s*<feature(?:-id)?>/<slice[-_]slug>", section), (
-        "Feature slice-list entry shape does not use hierarchical "
-        "<feature>/<slice-slug> id: form (intent Specification Detail, Feature template)"
-    )
-
-
-# ---------------------------------------------------------------------------
 # V3 - ADR template (new-adr.full.md)
 # ---------------------------------------------------------------------------
 
@@ -183,41 +98,6 @@ def test_v3d_adr_decision_point_hierarchical_cross_ref_guidance():
     assert re.search(r"<adr-id>/<decision[-_]slug>", text), (
         "new-adr.full.md missing hierarchical <adr-id>/<decision-slug> "
         "decision-point cross-reference guidance (intent Specification Detail, ADR template)"
-    )
-
-
-# ---------------------------------------------------------------------------
-# V4 - handoff template (handoff.full.md)
-# ---------------------------------------------------------------------------
-
-
-def test_v4a_handoff_features_section_normative_format():
-    """handoff.full.md must reference ADR identifier-scheme D8 as the normative
-    source for the `## Features` cross-feature index format.
-    """
-    text = _read(HANDOFF_FULL)
-    d8_ref = re.search(
-        r"(?:ADR\s+identifier-scheme|identifier-scheme).{0,80}D8|D8.{0,200}Features",
-        text,
-        re.IGNORECASE | re.DOTALL,
-    )
-    assert d8_ref, (
-        "handoff.full.md missing normative reference to ADR identifier-scheme D8 "
-        "for the `## Features` format (intent V4)"
-    )
-
-
-def test_v4b_handoff_features_has_worked_example():
-    text = _read(HANDOFF_FULL)
-    code_blocks = re.findall(r"```(?:markdown)?\n(.*?)```", text, re.DOTALL)
-    matched = any(
-        re.search(r"^##\s*Features\s*$", block, re.MULTILINE)
-        and re.search(r"^- [a-z][\w-]*:\s", block, re.MULTILINE)
-        for block in code_blocks
-    )
-    assert matched, (
-        "handoff.full.md missing worked-example code block containing `## Features` "
-        "heading with `- <feature-id>: ...` lines (intent V4, ADR D8 normative example)"
     )
 
 
@@ -338,26 +218,3 @@ def test_v7d_ops_ref_documents_shaped_from_provenance():
         "operational-reference.md identity section missing `shaped-from:` "
         "feature-provenance documentation (intent Specification Detail + ADR D5)"
     )
-
-
-# ---------------------------------------------------------------------------
-# V12 - template self-consistency
-# ---------------------------------------------------------------------------
-
-
-def test_v12_slice_template_self_consistent_with_slice_yaml_produced():
-    """Running /start-slice Step 4 should produce a slice.yaml with hierarchical
-    id: + name:, matching this slice's own slice.yaml (which uses name: already).
-    """
-    text = _read(START_SLICE_FULL)
-    step4 = re.search(r"## Step 4.*?(?=\n## |\Z)", text, re.DOTALL)
-    assert step4, "start-slice.full.md missing Step 4 (Initialize New Slice)"
-    step4_text = step4.group(0)
-    step4_yaml_blocks = _yaml_blocks(step4_text)
-    slice_yaml_blocks = [b for b in step4_yaml_blocks if "status: intent" in b]
-    assert slice_yaml_blocks, "Step 4 missing slice.yaml example block"
-    for block in slice_yaml_blocks:
-        assert re.search(r"^name:\s*", block, re.MULTILINE), (
-            "Step 4 slice.yaml example does not include `name:` - template is not "
-            "self-consistent with this slice's own slice.yaml (intent V12)"
-        )

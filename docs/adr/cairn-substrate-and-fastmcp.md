@@ -1,14 +1,15 @@
 ---
 id: cairn-substrate-and-fastmcp
 name: "Cairn substrate — v1 dep set, FastMCP adapter, and agent-context structural lockdown"
-status: accepted
+status: superseded
+superseded-by: cairn-substrate-and-fastmcp-superseded
 firmness: firm
 supersedes:
   - "cliff-failure-mode-and-v1-defenses D4 (partial: commitment #6 mechanization — Read-tool role-keyed enforcement returns to v1 scope for canonical-knowledge lockdown only, where the MCP exposes a query surface for that source. Windsurf portability, spec-v1 §9 three-track routing, retroactive invariant enforcement, slice pause/resume command, and ARCHITECTURE.md chunking remain time-boxed to v2+. Parallels parallelism-v1's partial supersession of D4's commitment #2.)"
 supersedes-sections:
   - "compression-infrastructure-bootstrap §47/§69/§84 mechanism-ceiling — lifts the Read-tool role-keyed prohibition for canonical knowledge sources where the MCP exposes a query surface (D8 below). Bootstrap-ADR §40 mechanism authorization (role_guard.py PreToolUse hook for the compression feature) is preserved verbatim — this ADR extends the policy-table content, not the mechanism class. Other items the bootstrap-ADR did NOT authorize (role-keyed Bash, role-keyed subagent dispatch) remain v2+."
   - "CLAUDE.md:26 prose — replaces 'New code is Python, stdlib-only, function-based' with 'New code is Python, function-based, with the v1 standing dep set as the only allowed dependencies' (D3); retires 'one-for-one Rust-mapping target for end-of-v1' (D4). CLAUDE.md is operational guidance, not an ADR; the amendment is propagation, not formal ADR supersession, but recorded here so the prose change is traceable to this ADR."
-superseded-by: null
+
 topic: architecture
 adrs-referenced: [phase-lock-and-role-declaration, compression-infrastructure-bootstrap, context-discipline-protocol, slice-close-contract, parallelism-v1, identifier-scheme, feature-slice-model, cliff-failure-mode-and-v1-defenses]
 invariants-touched: []

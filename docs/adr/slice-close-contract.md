@@ -1,11 +1,11 @@
 ---
 id: slice-close-contract
 name: "Slice-close contract — idempotent close, sole commit source, cross-slice isolation"
-status: accepted
+status: superseded
+superseded-by: slice-close-contract-superseded
 firmness: firm
 supersedes: []
 supersedes-sections: []
-superseded-by: null
 topic: process
 adrs-referenced: [context-discipline-protocol, phase-lock-and-role-declaration, identifier-scheme, compression-infrastructure-bootstrap, cliff-failure-mode-and-v1-defenses]
 invariants-touched: [INV-002, INV-003, INV-008]
