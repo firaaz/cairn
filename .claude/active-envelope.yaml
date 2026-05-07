@@ -15,6 +15,7 @@ paths:
   - ^docs/ARCHITECTURE\.md$
   - ^docs/operational-reference\.md$
   - ^docs/upgrading-from-pre-compression\.md$
+  - ^docs/why-cairn\.md$
   # Scripts
   - ^scripts/validate_architecture\.py$
   - ^scripts/lib/.*

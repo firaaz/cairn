@@ -44,7 +44,7 @@ Cairn operationalises the bet as a four-phase **slice** pipeline. A slice is a v
 
 Supporting structure:
 
-- **Envelope.** `intent.md` declares which files the slice may touch. `checks/scope-guard.sh` blocks edits outside the envelope at hook time, forcing expansion to be explicit (with an `EXPAND_ENVELOPE=1` escape hatch that logs the expansion).
+- **Envelope.** Each feature's plan doc declares which files the work may touch (a regex array under the plan-doc frontmatter `envelope:` key). The operator envelope at `.claude/active-envelope.yaml` is the operator-session surface — `checks/role_guard.py` reads it when `AGENT_ROLE` is unset and denies writes outside the declared `paths:`; `mode: operator` enforces, `mode: off` disables, malformed YAML or unrecognised mode fails closed. Within a `cairn-tdd-feature` dispatch run, `role_guard.py` instead enforces per-phase write allowlists keyed on `AGENT_ROLE` (Phase 3 specifically takes its envelope from `AGENT_ENVELOPE` at dispatch time). Either way, expansion is explicit — there is no per-edit escape hatch.
 - **Handoffs as pointers, not narratives.** `.claude/handoff.md` is a 150–400 token pointer artifact with forbidden sections (spec §10, [`context-discipline-protocol.md`](adr/context-discipline-protocol.md)), so `/catchup` reloads committed state — `slice.yaml`, `sweep.yaml`, `git log` — rather than a previous session's internal reasoning.
 - **Phase transitions enforced by git commits,** not by session state. Closing one session and opening another is the external interruption the bet depends on.
 
