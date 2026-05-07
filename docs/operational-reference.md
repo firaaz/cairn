@@ -1,17 +1,46 @@
 # Development System
 
-Operational quick reference for the slice-based development pipeline. **For the full theory, failure modes, empirical support, and adversarial review framing, see `docs/spec-v1.md`** — that document is the canonical spec. This file is the operational quick reference and should be loaded at the start of any slice.
+> **Post-shrink banner (cairn-shrink merged 2026-05-07, `42ae8d9`).** Cairn retired the slice-orchestrator pipeline. The body of this file still references retired surfaces (`/start-slice`, `/refresh-architecture`, `/integration-sweep`, `/handoff`, `/status`, `.claude/current-slice/`, `scope-guard.sh`, `ADR_D{1,3}_BYPASS`). Do not act on those literally. The post-shrink sources of truth are:
+>
+> - **`CLAUDE.md`** (always loaded) — current safety rules and standing dep set.
+> - **`.claude/handoff.md`** — current state and next steps.
+> - **`.claude/skills/cairn-tdd-feature/SKILL.md`** — the dispatch skill that replaces the slice pipeline (Phase 1 → 2 → 3 → 4 via fresh subagents).
+> - **`commands/claude-code/`** — the actual surviving slash commands (`catchup`, `decision`, `new-adr`).
+> - **`scripts/smoketest_hooks.sh`** — bare-python3 hook smoketest.
+>
+> The retained sections below remain binding for INV-003 (the Phase Skill Guide section + Phase-to-skill mapping table), INV-002 (the Context Discipline Protocol section + Session Handoff Protocol section), and the identifier-scheme tests (per-entity id-shape table). A doc-reconciliation pass is queued in handoff to rewrite the body; until then, treat the banner above as authoritative for what's alive vs retired.
 
-A slice is a vertical feature cut that goes through four phases: Intent → Validation → Implementation → Integration. Each phase runs in a fresh session, takes a declared input artifact, and commits a declared output artifact. Phase transitions are enforced by git commits, not by session state.
+Operational quick reference for cairn's development pipeline. **For the full theory, failure modes, empirical support, and adversarial review framing, see `docs/spec-v1.md`** — that document is the canonical spec.
 
-## Routing: Decision vs. Slice
+A feature in cairn is a vertical change that goes through four phases: Intent → Validation → Implementation → Integration. Each phase runs in a fresh subagent dispatched by the `cairn-tdd-feature` skill, takes a declared input artifact, and commits a declared output artifact. Phase transitions are enforced by git commits, not by session state.
+
+## Starting work
+
+After cloning or pulling cairn on any machine:
+
+```bash
+uv sync                                          # recreates .venv
+uv run pytest -q                                 # baseline (expect 360/0/2)
+uv run python scripts/validate_architecture.py   # expect ALL CHECKS PASSED
+bash scripts/smoketest_hooks.sh                  # expect PASS role_guard.py
+cat .claude/handoff.md                           # orient
+```
+
+Then route:
+
+- **Ad-hoc edit** (one-line fix, doc tweak): just edit. The operator envelope at `.claude/active-envelope.yaml` gates writes. Set `mode: off` for cross-cutting work; `mode: operator` + a `paths:` regex list for focused work. Commit with a Conventional Commits prefix from the validator's registry (`feat:`/`fix:`/`chore:`/`docs:`/`test:`/`slice:`/`handoff:`/`sweep:`/`bootstrap:`/`design:`/`plan:`; scoped `chore(scope):` accepted).
+- **Feature with TDD discipline** (post-shrink replacement for `/start-slice`): write a per-feature plan at `docs/plans/<date>-<feature-id>.md` with frontmatter `id:` + `envelope:` regex array + What/Why/Boundary/Specification/Verification sections. See `docs/plans/2026-05-08-hook-bare-python3-smoketest.md` for a working example. Then invoke the dispatch skill via the Skill tool: `cairn-tdd-feature` with the plan path as args. The skill autonomously runs all four phases as fresh subagents and produces four commits + workspace artifacts under `.claude/skill-runs/<feature-id>/`.
+- **Architectural decision**: `/decision <question>` (still alive), then `/new-adr` to write the ADR. ADRs are append-only — `reversibility-guard.sh` blocks overwrites; frontmatter-only edits are allowed; supersession via a new ADR with `supersedes: <id>`.
+- **Session orientation**: `/catchup` reads handoff + git log + status + envelope and stops.
+
+## Routing: Decision vs. Feature
 
 Before starting work, decide:
 
-- **Touches invariants, boundaries, data ownership, or module structure** → run `/decision` first to produce an ADR. The ADR updates `docs/ARCHITECTURE.md`, then a slice implements it.
-- **Implementation within existing boundaries** → go straight to `/start-slice`.
+- **Touches invariants, boundaries, data ownership, or module structure** → run `/decision` first to produce an ADR. The ADR updates `docs/ARCHITECTURE.md`, then a feature implements it.
+- **Implementation within existing boundaries** → use the `cairn-tdd-feature` dispatch skill (or just edit, for ad-hoc work).
 
-Rule of thumb: if the work could change what downstream slices can assume, it needs `/decision`. If it only fills in detail within an existing assumption, it needs `/start-slice`.
+Rule of thumb: if the work could change what downstream features can assume, it needs `/decision`. If it only fills in detail within an existing assumption, it needs the dispatch skill (or direct edit).
 
 ## The Four Phases
 
