@@ -2,7 +2,7 @@
 slice: post-cairn-shrink
 phase: shrink-merged
 branch: dev
-as-of: 2026-05-07 42ae8d9
+as-of: 2026-05-07 37de7a2
 ---
 
 ## State
