@@ -88,6 +88,14 @@ description: "Verifies the dispatch skill references feature files for context i
 
 **INV-010** Retired by ADR `cairn-substrate-and-fastmcp-superseded` (M4 cairn-shrink, 2026-05-07). The cairn-knowledge MCP server, scripts/cairn_query/, and the canonical-knowledge read-class lockdown table retire with the substrate. Phase agents read canonical sources directly within their per-role write-path allowlists; the dispatch skill quotes relevant ADR/invariant snippets in spawn prompts to recover the substrate's targeted-context value. (cairn-substrate-and-fastmcp-superseded; compression-infrastructure-bootstrap-superseded)
 
+**INV-011** Cairn-the-repo retains a local self-consumption mechanism so maintainers can iterate on hook scripts (`checks/*`), the dispatch skill (`.claude/skills/cairn-tdd-feature/`), and phase agents (`.claude/agents/phase-{1..4}-tdd*.md`) without going through plugin republish-reinstall-restart cycles. Currently implemented as the `.slice-system → .` self-symlink at the repo root; alternatives (e.g., direct path resolution, plugin-installs-itself) are permitted only via superseding ADR. This is the bootstrap-circularity defense named by Pre-mortem Scenario 3 of `m5-plugin-distribution-and-symlink-retire`: maintainers editing cairn's own hooks while cairn's hooks gate the edits cannot work if the running hook is the plugin-cached copy. Plugin consumers are unaffected — they install via `/plugin install cairn@cairn-marketplace` per `m5-plugin-distribution-and-symlink-retire` D1. (m5-plugin-distribution-and-symlink-retire; bootstrap-exception)
+
+```invariant-check INV-011
+type: file-exists
+target: ".slice-system"
+description: "Verifies the .slice-system self-consumption mechanism exists at the cairn-the-repo root, enabling cairn maintainers to iterate on hooks/skills/agents without plugin republish-reinstall cycles."
+```
+
 ## Boundaries
 
 The slice pipeline has four phase boundaries, each implemented as a fresh session separated by a committed artifact (phase-lock-and-role-declaration D1):

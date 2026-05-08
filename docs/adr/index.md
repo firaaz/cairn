@@ -21,3 +21,4 @@
 | board-as-roadmap-substrate | Board as roadmap substrate — four-layer model + declarative reconciliation | accepted | provisional | process | 2026-04-28 |
 | pipeline-substrate-naming | Pipeline-substrate commit class — definition and registry | accepted | firm | process | 2026-05-02 |
 | invariant-binding-strategy | Bind INV-001 and INV-002 to true machine-checkable assertions | accepted | firm | process | 2026-05-02 |
+| m5-plugin-distribution-and-symlink-retire | M5 Plugin Distribution and Symlink Retire | accepted | firm | architecture | 2026-05-08 |
