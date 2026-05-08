@@ -25,3 +25,4 @@ M5 plugin distribution + symlink retire ADR landed via `/decision` (Phases 0/0.5
 - `docs/plans/2026-05-08-cairn-m{5,6}-f{1,2,3}-*.md` (the trio)
 - `.claude/skill-runs/m5-plugin-decision/` + `m5-feature-plans/brief.md`
 - `.claude/active-envelope.yaml` (operator mode; widen per-feature as you dispatch)
+- `.claude/skill-runs/cairn-m5-f1-packaging/` (F1 audit closed — sweep-notes.md OK)

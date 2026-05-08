@@ -25,7 +25,7 @@ from pathlib import Path
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 READ_CLASS_TOOLS = {"Read", "Grep", "Glob"}  # preserved per M3 §5; future-proof
 
-CAIRN_ROOT = Path(__file__).resolve().parent.parent
+CAIRN_ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
 OPERATOR_ENVELOPE_PATH = CAIRN_ROOT / ".claude" / "active-envelope.yaml"
 
 ROLE_POLICIES = {

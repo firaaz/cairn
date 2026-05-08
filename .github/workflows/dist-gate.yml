@@ -1,0 +1,32 @@
+name: dist-gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  dist-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync project venv
+        run: uv sync
+
+      - name: Build dist payload
+        run: uv run python scripts/build_dist.py --repo-root . --dist-root /tmp/dist-ci
+
+      - name: Run allow-list assertions
+        run: uv run pytest tests/unit/test_build_dist.py -q
+
+      - name: Run post-install validator self-test
+        env:
+          CLAUDE_PLUGIN_ROOT: /tmp/dist-ci
+        run: uv run python scripts/postinstall_validate.py

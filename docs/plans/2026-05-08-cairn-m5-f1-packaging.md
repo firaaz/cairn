@@ -4,6 +4,8 @@ envelope:
   paths:
     - ^docs/plans/2026-05-08-cairn-m5-f1-packaging\.md$
     - ^\.claude-plugin/marketplace\.json$
+    - ^\.claude-plugin/plugin-template\.json$
+    - ^\.claude-plugin/hooks-template\.json$
     - ^dist/\.claude-plugin/plugin\.json$
     - ^dist/hooks/hooks\.json$
     - ^scripts/build_dist\.py$
