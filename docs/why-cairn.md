@@ -45,7 +45,7 @@ Cairn operationalises the bet as a four-phase **slice** pipeline. A slice is a v
 Supporting structure:
 
 - **Envelope.** Each feature's plan doc declares which files the work may touch (a regex array under the plan-doc frontmatter `envelope:` key). The operator envelope at `.claude/active-envelope.yaml` is the operator-session surface — `checks/role_guard.py` reads it when `AGENT_ROLE` is unset and denies writes outside the declared `paths:`; `mode: operator` enforces, `mode: off` disables, malformed YAML or unrecognised mode fails closed. Within a `cairn-tdd-feature` dispatch run, `role_guard.py` instead enforces per-phase write allowlists keyed on `AGENT_ROLE` (Phase 3 specifically takes its envelope from `AGENT_ENVELOPE` at dispatch time). Either way, expansion is explicit — there is no per-edit escape hatch.
-- **Handoffs as pointers, not narratives.** `.claude/handoff.md` is a 150–400 token pointer artifact with forbidden sections (spec §10, [`context-discipline-protocol.md`](adr/context-discipline-protocol.md)), so `/catchup` reloads committed state — `slice.yaml`, `sweep.yaml`, `git log` — rather than a previous session's internal reasoning.
+- **Handoffs as pointers, not narratives.** `.claude/handoff.md` is a 150–400 token pointer artifact with forbidden sections (spec §10, [`context-discipline-protocol.md`](adr/context-discipline-protocol.md)), so `/catchup` reloads committed state — `.claude/handoff.md`, `git log`, `git status`, and `.claude/active-envelope.yaml` — rather than a previous session's internal reasoning.
 - **Phase transitions enforced by git commits,** not by session state. Closing one session and opening another is the external interruption the bet depends on.
 
 This is the *short-term* discipline: one slice stays coherent with itself.
@@ -65,7 +65,7 @@ The same bet applies one level up: architectural decisions are where correlated 
 5. **Adversarial Stress Test** — disconfirming search, steel-manned opposition, assumption audit.
 6. **Decision Record** — draft ADR, defaulting to `firmness: provisional`.
 7. **Independent Verification (Phase 5)** — fresh same-family session re-runs Phases 1–3 blind; conclusions are compared. Firm-only; provisional ADRs skip it.
-8. **Propagation** — `/refresh-architecture`, check in-progress slice intents, update superseded ADRs, record patterns.
+8. **Propagation** — manual `docs/ARCHITECTURE.md` update synchronised with the new ADR (gated by `reversibility-guard.sh`'s ADR append-only enforcement on the underlying corpus), check in-progress feature plan docs, update superseded ADRs, record patterns.
 
 The `/decision` protocol exists specifically because a single session proposing a decision is indistinguishable from a single session defending one. Forced enumeration and adversarial stress testing before the decision record, plus a fresh-session verification after, are the `/decision` equivalents of a slice's phase boundaries.
 
@@ -73,9 +73,9 @@ The `/decision` protocol exists specifically because a single session proposing 
 
 Every architectural decision becomes an immutable record in `docs/adr/`. Decisions are never rewritten; they are **superseded**. `checks/reversibility-guard.sh` enforces this at the hook layer: `Write` on an existing ADR is blocked; `Edit` is allowed only for frontmatter fields (`status:`, `superseded-by:`, `firmness:`). Full rewrites require a new ADR that cites the one it replaces. The substrate therefore carries not just the current position but the trajectory — the record of why the current shape is current.
 
-**3. `ARCHITECTURE.md` as a derived view, not a source of truth** ([`spec-v1.md` §10](spec-v1.md), [`commands/claude-code/refresh-architecture.md`](../commands/claude-code/refresh-architecture.md)).
+**3. `ARCHITECTURE.md` as a derived view, not a source of truth** ([`spec-v1.md` §10](spec-v1.md)).
 
-`docs/ARCHITECTURE.md` is never hand-maintained. `/refresh-architecture` reads every active (non-superseded) ADR, extracts the `## Decision` section from each, and **regenerates** the architecture document. The refresh is auto-invoked at slice close; manual runs are also supported. Trust flows from ADR → ARCHITECTURE.md, never the other way. There is no scenario in which ARCHITECTURE.md leads and the ADRs follow.
+`docs/ARCHITECTURE.md` is a derived view of the active (non-superseded) ADR corpus. Updates land as part of the same commit as the ADR that justifies them, gated by `reversibility-guard.sh`'s ADR append-only enforcement on the underlying ADR. Pre-shrink, an automated `/refresh-architecture` mechanism regenerated the document at slice close; post-M4 cairn-shrink (2026-05-07) the refresh is manual and operator-driven. Trust flows from ADR → ARCHITECTURE.md, never the other way. There is no scenario in which ARCHITECTURE.md leads and the ADRs follow.
 
 **4. Invariants as the coupling layer.**
 
@@ -90,15 +90,15 @@ The claims in this document are themselves backed by a 661-test passing suite (`
 
 **5. The stone-accumulation mechanism.**
 
-Slice N reads `ARCHITECTURE.md`, which carries invariants distilled from every prior firm ADR. Slice N produces its own ADR (if it touches the decision layer) or lands within existing constraints. At close, `/refresh-architecture` runs, and `ARCHITECTURE.md` is rewritten — now carrying slice N's new invariant. Slice N+1 reads that new version. Constraints compound. The validator ensures the compounding stays coherent.
+Slice N reads `ARCHITECTURE.md`, which carries invariants distilled from every prior firm ADR. Slice N produces its own ADR (if it touches the decision layer) or lands within existing constraints. When the new ADR lands, `ARCHITECTURE.md` is hand-updated in the same commit — now carrying slice N's new invariant. Slice N+1 reads that new version. Constraints compound. The validator ensures the compounding stays coherent.
 
 This is the answer to "medium-large codebases": the substrate is the thing that scales, not any individual slice. A project that has run 40 slices does not have 40 session traces swimming in context; it has an ADR corpus, a derived architecture document, and an invariant set. Newcomers — human or AI — load the latter, not the former.
 
-**6. Integration sweeps as the horizontal check** ([`spec-v1.md` §12](spec-v1.md), [`commands/claude-code/integration-sweep.md`](../commands/claude-code/integration-sweep.md)).
+**6. Per-feature integration as the horizontal check** ([`spec-v1.md` §12](spec-v1.md)).
 
-Every N slices (configurable in `.claude/sweep.yaml`), a sweep runs: load invariants, **enumerate cross-slice failure modes before checking them** (enumeration-before-verification is a cairn pattern), verify each invariant with `file:line` evidence, run cross-module checks (imports, lint, types), and produce a pass/fail verdict. Failures never retroactively edit completed slices — they produce new slices that fix the cross-cutting problem through the same four-phase pipeline.
+The `cairn-tdd-feature` dispatch skill's Phase 4 (Auditor) runs the per-feature integration check: load invariants the feature touches, **enumerate failure modes before checking them** (enumeration-before-verification is a cairn pattern), verify each invariant with `file:line` evidence, run the full test suite + validator + smoketest, and produce a pass/fail verdict. Failures never retroactively edit completed features — they produce new features that fix the problem through the same four-phase pipeline.
 
-Slices are vertically isolated. Sweeps are the horizontal check that keeps the vertical isolation from fragmenting the whole.
+Pre-shrink, a separate `/integration-sweep` command ran cross-feature checks every N slices via `.claude/sweep.yaml` cadence; that command and its substrate retired in M4 cairn-shrink (2026-05-07). The cross-feature / structural-snapshot-diff backstop returns to v2+ scope (cliff-failure-mode-and-v1-defenses D3, retired and amendment queued).
 
 ## The mechanism being built
 
@@ -106,12 +106,12 @@ The bet is larger than what currently ships. [`roadmap.md`](roadmap.md) and [`sp
 
 - **Agent-portable substrate.** Protocols live as plain markdown; checks are shell scripts. Claude Code and Windsurf will each run the full pipeline independently, validated by one slice end-to-end on each and one slice handed off mid-flight between them ([`vision.md`](vision.md) commitments 1, 3; roadmap items 7, 8).
 - **Parallelism-native.** Slice state is branch-local, never global. N concurrent slices on separate worktrees run without interference. Two-concurrent-slice validation is a v1 gate ([`vision.md`](vision.md) commitment 2; roadmap items 5, 6, 9; [`parallelism-v1.md`](adr/parallelism-v1.md)).
-- **Explicit cognitive roles, mechanically declared.** The phase-rethink decision locks phase count, boundaries, names, and role per phase, with named anti-behaviours ("the architect does not write code, the skeptic does not propose fixes"). A narrow `scripts/role_guard.py` already enforces role-scoped file access for four experimental roles (`phase-1-writer`, `phase-2-skeptic`, `phase-3-implementer`, `phase-4-integrator`) via hook-layer allow-lists; mechanical role-gating across all phases is a v2+ target ([`vision.md`](vision.md) commitment 6; [`phase-lock-and-role-declaration.md`](adr/phase-lock-and-role-declaration.md)).
+- **Explicit cognitive roles, mechanically declared.** The phase-rethink decision locks phase count, boundaries, names, and role per phase, with named anti-behaviours ("the architect does not write code, the skeptic does not propose fixes"). `checks/role_guard.py` enforces role-scoped file access for the four canonical TDD roles (`phase-1-tdd`, `phase-2-tdd`, `phase-3-tdd`, `phase-4-tdd`) via hook-layer allow-lists, plus an operator-envelope path read from `.claude/active-envelope.yaml` for non-dispatch sessions. Mechanical role-gating across every cognitive boundary remains a v2+ target ([`vision.md`](vision.md) commitment 6; [`phase-lock-and-role-declaration.md`](adr/phase-lock-and-role-declaration.md)).
 - **Retroactive Phase 5 audit of initial-commit firm ADRs.** The firm ADRs committed in cairn's initial commit (`e68840e`) have no Phase 5 evidence. A substrate audit is scheduled to walk each one through Phase 5 retroactively or demote it to provisional with recorded rationale ([`spec-v1.md` §14](spec-v1.md) incident 1).
 - **Property-based testing at the Phase 1 → Phase 2 boundary** ([`spec-v1.md` §15](spec-v1.md)). Human-authored properties — idempotence, round-trip consistency, authorization invariants — cross the phase boundary alongside the intent. Phase 2 translates them into Hypothesis/proptest tests whose cases are framework-generated, not AI-generated. This closes the correlated-blind-spot gap between AI-written tests and AI-written implementations.
 - **Cross-family adversarial verification** ([`spec-v1.md` §8](spec-v1.md)). Today's Phase 5 uses a fresh *same-family* session, which shares ~60% of structural errors with the original (Kim et al.). Cross-family verification — raw inputs preserved verbatim, independent analysis produced before any view of the original — is designed but not built.
 - **Semantic ADR drift detection** ([`spec-v1.md` §16](spec-v1.md)). The current validator catches reference drift; semantic contradiction between ADRs that are technically consistent but mean different things is not mechanically detectable yet. Candidate directions: treat ADRs as a dependency graph so contradictions become a mechanical query; differential invariants that become jointly unsatisfiable on drift; periodic semantic re-review by a separate agent.
-- **Validator auto-enforcement on ADR writes** ([`spec-v1.md` §14](spec-v1.md) incident 2). The validator today runs only on `/refresh-architecture` or manual invocation. A pre-commit hook on ADR file changes is scheduled.
+- **Validator auto-enforcement on ADR writes** ([`spec-v1.md` §14](spec-v1.md) incident 2). The validator today runs on manual invocation (`uv run python scripts/validate_architecture.py`). A pre-commit hook on ADR file changes is roadmapped.
 
 These are direction, not decoration. Cairn's v1 is the smallest system that puts every one of them on a credible path.
 
@@ -131,7 +131,7 @@ Known unenforced disciplines, disclosed rather than hidden ([`spec-v1.md` §14](
 
 - **Phase 5 independent verification is not hook-gated.** The firm ADRs in cairn's initial commit have no Phase 5 evidence; a retroactive substrate audit is scheduled.
 - **Modification-slice "read public interfaces only" has no enforcing hook.** The defence is discipline-only.
-- **Full role enforcement is instructed, not locked.** `role_guard.py` covers four experimental roles; system-wide mechanical role-gating is a v2+ target.
+- **Full role enforcement is instructed, not locked.** `role_guard.py` covers the four canonical TDD roles plus an operator-envelope path; system-wide mechanical role-gating across every cognitive boundary is a v2+ target.
 - **Semantic ADR drift is not caught by the validator.** Mechanical reference-graph coherence does not imply semantic coherence.
 
 ## When cairn is worth the overhead

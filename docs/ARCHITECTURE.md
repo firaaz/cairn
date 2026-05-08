@@ -56,7 +56,7 @@ pattern: "tests/unit/test_context_budget.py"
 description: "Points to the test suite that machine-checks the 40k token budget"
 ```
 
-**INV-005** All cross-referenceable entities (ADRs, slices, features, decision points) carry a two-field identity model: an immutable `id:` (mechanical — used by hooks, filenames, cross-reference fields) and a mutable `name:` (human/LLM-facing prose label). ADR and feature `id:` shapes are flat semantic slugs; slice and decision-point `id:` shapes are hierarchical (`<feature>/<slice>`, `<adr-id>/<decision-slug>`). Hooks (`reversibility-guard.sh`, `scope-guard.sh`) and tooling tolerate both legacy `NNN-slug` filenames and flat-slug filenames during the migration window. Governing ADR: `identifier-scheme` (firm/accepted; supersedes the prior single-field naming ADR). Validator-anchored via the operationally dependent feature-slice model. (identifier-scheme)
+**INV-005** All cross-referenceable entities (ADRs, slices, features, decision points) carry a two-field identity model: an immutable `id:` (mechanical — used by hooks, filenames, cross-reference fields) and a mutable `name:` (human/LLM-facing prose label). ADR and feature `id:` shapes are flat semantic slugs; slice and decision-point `id:` shapes are hierarchical (`<feature>/<slice>`, `<adr-id>/<decision-slug>`). Hooks (`reversibility-guard.sh`, `reality-check.sh`, `role_guard.py`) and the validator tolerate both legacy `NNN-slug` filenames and flat-slug filenames during the migration window. Governing ADR: `identifier-scheme` (firm/accepted; supersedes the prior single-field naming ADR). Validator-anchored via the operationally dependent feature-slice model. (identifier-scheme)
 
 ```invariant-check INV-005
 type: file-exists
