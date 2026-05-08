@@ -1,27 +1,26 @@
 ---
 slice: post-cairn-shrink
-phase: shrink-merged
+phase: doc-reconciliation-landed
 branch: dev
-as-of: 2026-05-07 37de7a2
+as-of: 2026-05-08 f089c27
 ---
 
 ## State
-cairn-shrink merged to dev as single squash `42ae8d9` (~29k LOC net removal; 76 commits collapsed). cairn-tdd-feature dispatch + F3 operator envelope are live; smoketest catches M4-class regressions. Suite 360/0/2; validator green.
+Doc-reconciliation landed on dev (5 commits ahead of `9711616`): op-ref full rewrite + ARCH.md surgical (incl. L59 INV-005 audit-followup) + why-cairn.md (L47 envelope + 8 stale-claim fixes). Retired surfaces (`/start-slice`, `scope-guard.sh`, `.claude/current-slice/`, orchestrator-debug, retired CAIRN_* env vars) cleared from the three docs. Suite 359/1/2 — the one fail is the pre-existing INV-004 turn-1 budget regression under CC 2.1.132 system-prompt overhead. Validator + smoketest green.
 
 ## Next
-1. Doc-reconciliation: op-ref + ARCHITECTURE.md still cite retired `current-slice/`, `/start-slice`, `scope-guard`, `ADR_D{1,3}_BYPASS`.
-2. Memory prune of 7 post-M4-stale entries (`m4_stale_memories_to_prune.md`).
-3. M5 plugin packaging.
-4. Cleanup: delete branches `design/cairn-shrink` + `worktree-stress-test+m4-shrink-dogfood`; `git worktree remove` the stress-test worktree.
-5. Push `dev` → `origin/dev` (awaiting user go-ahead).
+1. Memory prune of 7 post-M4-stale entries (`m4_stale_memories_to_prune.md`).
+2. M5 plugin packaging.
+3. Branch/worktree cleanup: delete `design/cairn-shrink` + `worktree-stress-test+m4-shrink-dogfood`; `git worktree remove` stress-test worktree.
+4. Push `dev` → `origin/dev` (awaiting go-ahead; 8 commits ahead).
 
 ## Blocked / Pending
 - 6 amendment ADRs (cost-per-slice-budget, parallelism-v1, phase-pipeline-evaluation, feature-slice-model, context-tiers-integration, identifier-scheme).
 - M6 consumer migration (`.slice-system → .` retire).
-- Optional 2nd stress test for envelope-grant escapes.
+- INV-004 re-baseline once CC system-prompt overhead stabilises.
 
 ## Pointers
-- docs/plans/2026-05-08-hook-bare-python3-smoketest.md
+- docs/operational-reference.md (post-shrink rewrite; bindings preserved)
 - .claude/skills/cairn-tdd-feature/SKILL.md
-- commands/claude-code/catchup.md
-- .claude/active-envelope.yaml (mode: operator with M4 paths; set mode: off for ad-hoc work)
+- .claude/active-envelope.yaml (mode: operator; set mode: off for ad-hoc)
+- /Users/firaazfarook/.claude/plans/concurrent-chasing-river.md
