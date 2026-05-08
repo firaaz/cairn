@@ -1,26 +1,27 @@
 ---
-slice: post-cairn-shrink
-phase: doc-reconciliation-landed
+slice: m5-plugin-distribution
+phase: adr-and-plans-landed
 branch: dev
-as-of: 2026-05-08 f089c27
+as-of: 2026-05-08 1f2d88e
 ---
 
 ## State
-Doc-reconciliation landed on dev (5 commits ahead of `9711616`): op-ref full rewrite + ARCH.md surgical (incl. L59 INV-005 audit-followup) + why-cairn.md (L47 envelope + 8 stale-claim fixes). Retired surfaces (`/start-slice`, `scope-guard.sh`, `.claude/current-slice/`, orchestrator-debug, retired CAIRN_* env vars) cleared from the three docs. Suite 359/1/2 — the one fail is the pre-existing INV-004 turn-1 budget regression under CC 2.1.132 system-prompt overhead. Validator + smoketest green.
+M5 plugin distribution + symlink retire ADR landed via `/decision` (Phases 0/0.5/1/2/3/5; firm; INV-011 added). Per-feature plan trio committed (F1 packaging, F2 consumer-doc, F3 migration) via parallel async subagents under `TeamCreate` scaffolding. dev is 12 commits ahead of `origin/dev`. Validator + suite green.
 
 ## Next
-1. Memory prune of 7 post-M4-stale entries (`m4_stale_memories_to_prune.md`).
-2. M5 plugin packaging.
-3. Branch/worktree cleanup: delete `design/cairn-shrink` + `worktree-stress-test+m4-shrink-dogfood`; `git worktree remove` stress-test worktree.
-4. Push `dev` → `origin/dev` (awaiting go-ahead; 8 commits ahead).
+1. Dispatch F1 (`cairn-m5-f1-packaging`) via `cairn-tdd-feature` — unblocker. F2 + F3 carry F1-followup placeholders.
+2. F2, then F3 once F1 deliverables (manifests + `role_guard.py:28,121` fix + validator) land on disk.
+3. Push `dev` → `origin/dev` (12 commits ahead).
 
 ## Blocked / Pending
+- F1-blocked: F2 marketplace-URL + validator-output placeholders; F3 manifest preflight.
+- F2-blocked: F3 runbook home (CONSUMER.md vs new `docs/upgrading-from-symlink.md`).
 - 6 amendment ADRs (cost-per-slice-budget, parallelism-v1, phase-pipeline-evaluation, feature-slice-model, context-tiers-integration, identifier-scheme).
-- M6 consumer migration (`.slice-system → .` retire).
+- M5.1: slash-command shipping, multi-consumer rollout, doc-link validator.
 - INV-004 re-baseline once CC system-prompt overhead stabilises.
 
 ## Pointers
-- docs/operational-reference.md (post-shrink rewrite; bindings preserved)
-- .claude/skills/cairn-tdd-feature/SKILL.md
-- .claude/active-envelope.yaml (mode: operator; set mode: off for ad-hoc)
-- /Users/firaazfarook/.claude/plans/concurrent-chasing-river.md
+- `docs/adr/m5-plugin-distribution-and-symlink-retire.md` (9 D-commitments + INV-011)
+- `docs/plans/2026-05-08-cairn-m{5,6}-f{1,2,3}-*.md` (the trio)
+- `.claude/skill-runs/m5-plugin-decision/` + `m5-feature-plans/brief.md`
+- `.claude/active-envelope.yaml` (operator mode; widen per-feature as you dispatch)
