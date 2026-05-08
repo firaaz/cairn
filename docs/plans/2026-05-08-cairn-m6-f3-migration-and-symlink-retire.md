@@ -23,6 +23,7 @@ envelope:
   - '^README\.md$'
   - '^scripts/migrate_from_symlink\.sh$'
   - '^tests/unit/test_migrate_from_symlink\.py$'
+  - '^docs/roadmap\.md$'
 ---
 
 # Cairn M6 F3 — Migration + Symlink Retire
@@ -278,6 +279,15 @@ F1 shipped CONSUMER.md with two unresolved F1-followup comments at lines 11–22
 
 If Phase 1 picks the **delete branch** in R.2 (CONSUMER.md gains the migration subsection), Step 16.5 happens as part of the same CONSUMER.md edit. If Phase 1 picks the **replace branch**, Step 16.5 is a standalone CONSUMER.md edit and the migration runbook still lives in `docs/upgrading-from-symlink.md`.
 
+- [ ] **Step 16.6: Make the surviving validator-stdout F1-followup obviously-intentional.**
+
+The replace-branch decision leaves CONSUMER.md's validator-stdout-literal placeholder at lines 20–22 unresolved by F3 (operator-amendment scope). To prevent a future maintainer from interpreting the surviving comment as "F3 forgot one":
+
+- **In-line comment rewrite.** Replace the current `# F1-followup: validator stdout literal lands in F1's PR.` comment at CONSUMER.md:21 with: `# F1-followup (intentional, separately tracked): validator stdout literal lands in F1.1. See docs/roadmap.md or .claude/skill-runs/cairn-m6-f3-migration-and-symlink-retire/integration/sweep-notes.md.` The comment is adjacent to the placeholder; future readers see it without leaving CONSUMER.md.
+- **Roadmap entry.** Add an entry to `docs/roadmap.md` naming the validator-stdout-literal F1-followup as a tracked-deferred item under an "F1.1 / post-install validator literal" heading (Phase 1 picks the exact section title to fit the roadmap's existing shape). The entry cross-references CONSUMER.md:20–22 + this F3's sweep-notes.
+
+The envelope has been expanded to include `^docs/roadmap\.md$` for this Step 16.6 sub-edit (Phase 3 writes both CONSUMER.md and docs/roadmap.md as part of Step 16).
+
 ### R.3 Sweep stale `.slice-system/` references in cairn docs
 
 - [ ] **Step 17: Grep and review.**
@@ -355,3 +365,16 @@ After the initial Phase 1 (`d640ac6`) shipped its intent.md, the operator's inte
 - **M.0 Step 3 amendment:** the replace/delete decision is freshly contested at Phase 1 — now that CONSUMER.md is touched regardless, the decision tree adds a new variable (does CONSUMER.md gain the migration subsection in addition to the URL fix, or stay install-only?). Phase 1 picks with this expanded scope.
 
 The envelope is unchanged (CONSUMER.md was already permitted; no new paths). The Phase 4 audit checklist gains an implicit eighth check: CONSUMER.md and README.md no longer contain `<marketplace-url>` placeholder strings.
+
+### Plan-doc updates 3 (post-second-Phase-1, operator interview-style review of `33291ca`)
+
+After the RE_DISPATCHed Phase 1 (`33291ca`) shipped its updated intent.md, the operator ran an interview-style review across six load-bearing claims and surfaced six amendments. Five are intent-shape changes (Phase 1 captures them in the next intent commit); one (#6) requires a plan-doc envelope expansion + body addition (this section's sibling §R.4 Step 16.6) and was applied to the plan-doc directly:
+
+1. **P.1 denial → RAISE_ISSUE.** If `reversibility-guard.sh` denies the ARCHITECTURE.md INV-011 prose append, Phase 3 RAISE_ISSUE rather than continue + document. P.1 becomes load-bearing; Phase 4 audit check 4 enforces. Operator manually authors the append using their own write privileges, then dispatch resumes (or completes manually with documented gap).
+2. **Settings.json filter grounding.** Phase 2 reads cairn's own `.claude/settings.json` as the reference shape for the `jq` filter and test fixtures (complex-rag-analysis is not locally available on this dev machine). Risk Surface item 2 acknowledges complex-rag-analysis-shape-drift as the residual risk caught by the post-cutover smoke test only.
+3. **Phase 4 audit check 9 — manual end-to-end real `/plugin install`.** Operator runs `/plugin marketplace add https://github.com/firaaz/cairn` + `/plugin install cairn@cairn-marketplace` against this F3 branch's GitHub state in a throwaway fixture project, confirms hooks fire and post-install validator returns clean exit. F3 branch must be pushed to origin first. Phase 4 closes the dispatch with sweep-notes carrying a "pending manual verification" item; operator amends or follow-up-commits the result.
+4. **FLI-5 verification — shellcheck + dash.** Phase 2 adds two automated checks: (a) shellcheck POSIX-strict (`-s sh` or bash-3.2-directive) zero-warnings pass, (b) dash runtime pass (run script under dash, verify all behavioural cases still work). Both gracefully xfail-skip if the binary isn't on PATH. The manual end-to-end check (audit check 9) backstops missing tooling.
+5. **Force-mode asymmetry change — exit 3 gains a dedicated override env var.** `CAIRN_MIGRATE_FORCE=1` still does NOT bypass exit 3. A separate env var (e.g., `CAIRN_MIGRATE_BREAK_INV011=1`; Phase 1 picks exact name) allows explicit operator consent to bypass exit 3 with a multi-line stderr block citing INV-011, D8, and `docs/ARCHITECTURE.md:91`. FLI-1 wording shifts from "non-overridable" to "structural-default with explicit-override-only escape" (matches `ADR_EDITORIAL_FIX=1` pattern). Phase 2 test surface grows from 4 cases to 5+ (adds: `cairn-self + CAIRN_MIGRATE_FORCE=1` still exits 3; `cairn-self + BREAK_INV011=1` exits 0 with stderr block).
+6. **Risk Surface item 7 mitigation — in-line CONSUMER.md comment rewrite + docs/roadmap.md entry.** F3's R.4 Step 16.6 (added to this plan-doc above) covers both halves. Envelope expanded to include `^docs/roadmap\.md$`.
+
+Phase 4 audit checklist now has 9 explicit items (the intent's check 9 added by amendment 3). The next intent.md will reflect amendments 1–6.
