@@ -16,7 +16,11 @@ It is **not** for simple software. See `docs/spec-v1.md` §1 for scope.
 
 ## How to consume cairn from another project
 
-During solo dev, consumption is via symlink:
+The canonical install path is via the M5 plugin payload — see `CONSUMER.md` for the install flow, the post-install validator step, and a 10-minute first-dispatch walkthrough.
+
+<!-- F1-followup: marketplace git URL + post-install validator stdout literal land in F1. -->
+
+Symlink-based consumption is kept as a fallback while the plugin marketplace stabilises:
 
 ```bash
 cd /path/to/your/project
@@ -26,15 +30,20 @@ echo ".slice-system" >> .gitignore
 
 Your project's hook configuration (e.g., `.claude/settings.json` for Claude Code) references scripts via `.slice-system/checks/<name>.sh`. Your project's slash commands live in `.claude/commands/` but reference cairn documentation and scripts via `.slice-system/docs/` and `.slice-system/scripts/`.
 
-Post-v1, the symlink converts to a git submodule pinned at a tagged version.
+<!-- F3-followup: remove the symlink instruction once the `complex-rag-analysis` migration lands and the D8 self-symlink-only stance is publicly stable. -->
 
-## Documentation
+## Reading order
 
-- `docs/why-cairn.md` — the problem, the bet, the mechanism (start here)
-- `docs/vision.md` — the six commitments for v1 and success criteria
-- `docs/roadmap.md` — ordered slice sequence toward v1
-- `docs/spec-v1.md` — canonical spec (Layer 2, not auto-loaded)
-- `docs/operational-reference.md` — quick operational reference (Layer 1)
+1. README.md (you are here) — what cairn is, at a glance
+2. CONSUMER.md — install, dispatch, troubleshooting (start here if consuming cairn)
+3. docs/operational-reference.md — how cairn works (Layer 1)
+4. docs/spec-v1.md — why cairn is shaped this way (Layer 2; pull in deliberately)
+
+## Other docs
+
+- `docs/why-cairn.md`, `docs/vision.md`, `docs/roadmap.md`
+- `docs/adoptable-disciplines.md` — partial adoption menu
+- `docs/phase-skill-mapping.md` — phase → Superpowers skill map
 
 ## Cairn-internal dev aids
 
