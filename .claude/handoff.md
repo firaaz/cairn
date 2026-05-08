@@ -1,36 +1,37 @@
 ---
-slice: intent-system-schema
-phase: schema-landed-uncommitted
+slice: cairn-m5-f2-consumer-doc-surface
+phase: complete
 branch: dev
-as-of: 2026-05-08 c469722
+as-of: 2026-05-08 8ca229f
 ---
 
 ## State
-Intent-system schema landed in working tree (uncommitted). `intent.md` gains three required sections: Risk Surface (≤80w), Feature-Local Invariants (≥1), Explicit Scope-Out (≥1). Phase 1 derives from plan-doc + cited ADRs + ARCHITECTURE.md only; RAISE_ISSUE on under-derivable, no fabrication. Phase 2 translates Risk Surface to ≥1 concrete failing test in `approach.md`. No same-session restate gate (theatre).
 
-Files: `.claude/agents/phase-{1,2}-tdd.md`, `.claude/skills/cairn-tdd-feature/SKILL.md`, `docs/operational-reference.md`. Origin: critical attack on spec-v2 + external intent brief; surviving claims kept.
-
-Prior: M5 F1 shipped squashed (`6e25777`); `dev` 5 ahead of `origin/dev`.
+F2 closed in 5 commits (P1 `4e3cb0b` → P2 `2518dd1` → P3 `2583bbe` → fixup `e3d088d` → P4 `8ca229f`). Intent-system schema (Risk Surface + Feature-Local Invariants + Explicit Scope-Out, committed at `39f5e9f` after a plan-doc alignment at `b4eb5b7`) shipped and was dogfooded by F2 itself: Risk Surface predicted the INV-003 validator-binding break exactly, Phase 3 honored Scope-Out and RAISE_ISSUE'd, triager classified ESCALATE_TO_USER, operator approved fixup-on-this-dispatch — first dogfood signal **positive (n=1)**. INV-003 reanchored to `docs/phase-skill-mapping.md`. Suite 414 passed / 2 failed (pre-existing) / 2 xfailed; validator `ALL CHECKS PASSED`. `dev` is 5 ahead of `origin/dev`.
 
 ## Next
-1. Review intent-system diff; commit.
-2. Push `dev` → `origin/dev`.
-3. Dispatch F2 then F3.
 
-## Coordination
-- F2/F3 templates: M5 D7 `templates/intent.md` ships the 8-section shape, not 5.
-- Pre-§9 audit: 5 recent intent.mds × "cited ADR shaped impl?"; <50% yes ⇒ substrate redesign justified.
-- spec-v2 correction (deferred): drop authoring-shift framing; narrow to recognition+invocation; mark dogfood as n=1.
+Push `dev` → `origin/dev`, then dispatch F3 against `docs/plans/2026-05-08-cairn-m6-f3-migration-and-symlink-retire.md` (now unblocked — F1+F2 preflight green). F3 dispatch briefs MUST explicitly remind each phase agent to invoke its canonical Superpower per `docs/phase-skill-mapping.md` (P2: `test-driven-development` RED-half; P3: `test-driven-development` GREEN-half + `verification-before-completion`; P4: `verification-before-completion` + `requesting-code-review`). Main-session work invokes `superpowers:verification-before-completion` before claiming complete.
 
 ## Blocked / Pending
-- **/handoff skill (new)**: companion to /catchup. Skillify the manual gesture.
-- F2: runbook home; auto-postinstall hook decision.
-- F1 cleanup: `dist/` to `.gitignore`; `.claude/envelope-grants.log` likely too.
-- 6 amendment ADRs.
-- INV-004 re-baseline; INV-002 budget on this file.
+
+- `/handoff` skill — companion to `/catchup`; this refresh was manual
+- `.gitignore` cleanup — `dist/` and untracked `.claude/envelope-grants.log`
+- 2 baseline failures: `TestSlice011AssertionCoverage::{test_no_extra_assertion_blocks, test_invariant_count_unchanged}` → INV-002 re-baseline on `docs/handoff.md`
+- 6 amendment ADRs (governance follow-up)
+- spec-v2 correction → `~/.claude/plans/look-at-docs-spec-v2-md-and-rippling-wadler.md` (drop authoring-shift framing; narrow to recognition+invocation; F2 dogfood is the n=1 positive signal that informs this)
+- Pre-§9 audit: 5 recent intent.mds × "cited ADR shaped impl?"; <50% yes ⇒ substrate redesign justified
+
+## Features
+
+- `cairn-m5-f1-packaging`: shipped (`6e25777`, squashed)
+- `cairn-m5-f2-consumer-doc-surface`: closed (`8ca229f`, 5-commit slice with operator-approved fixup)
+- `cairn-m6-f3-migration-and-symlink-retire`: ready to dispatch (second schema dogfood)
 
 ## Pointers
-- `docs/adr/m5-plugin-distribution-and-symlink-retire.md`
-- `docs/plans/2026-05-08-cairn-m{5,6}-f{1,2,3}-*.md`
-- `~/.claude/plans/look-at-docs-spec-v2-md-and-rippling-wadler.md`
-- `.claude/skill-runs/cairn-m5-f2-consumer-doc-surface/integration/sweep-notes.md` — F2 closed (4 commits incl. fixup `e3d088d`); intent-system schema's first dogfood signal **positive** (Risk Surface predicted INV-003 break exactly).
+
+- `docs/adr/m5-plugin-distribution-and-symlink-retire.md` — governing ADR for the F1/F2/F3 program
+- `docs/plans/2026-05-08-cairn-m6-f3-migration-and-symlink-retire.md` — F3 plan; M.0 preflight checks F1+F2 shipped
+- `.claude/skill-runs/cairn-m5-f2-consumer-doc-surface/integration/sweep-notes.md` — F2 audit; schema dogfood evidence
+- `.claude/agents/phase-1-tdd.md` — authoritative for the 8-section intent.md schema
+- `templates/intent.md`, `templates/handoff.md`, `templates/feature-plan.md`, `templates/sweep-notes.md`, `templates/adr-frontmatter.yaml`, `templates/active-envelope.yaml` — F2-shipped phase-boundary contract templates
