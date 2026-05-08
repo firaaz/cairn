@@ -87,7 +87,7 @@ Each phase is a fresh session, takes a declared input, commits a declared output
 
 - **Greenfield features** (new modules): Do NOT read source code. Work from architecture docs only.
 - **Modification features** (changing existing behavior): Read only the public interfaces of files in the envelope (function signatures, class definitions, docstrings). Do NOT read internal implementation logic. *(Discipline only — no hook enforces this. See spec-v1 §14 incident #4.)*
-- Write `intent.md` with the four zones: YAML envelope, what/why/boundary, specification detail, verification.
+- Write `intent.md` with YAML frontmatter (`id`, `name`, `snapshot-sha`, `invariants-touched`) followed by sections, in order: What, Why, Boundary, Specification, Verification, **Risk Surface**, **Feature-Local Invariants**, **Explicit Scope-Out**. The trailing three are required and elicited from the plan-doc + cited ADRs + ARCHITECTURE.md only. Phase 1 RAISE_ISSUEs rather than fabricating them when the inputs don't support derivation — that signals an under-specified plan-doc, not a Phase 1 failure. `phase-1-tdd.md` is authoritative for the elicitation contract.
 - Declare which invariants and ADRs are touched.
 
 **Exit gate:** `intent.md` committed to git.

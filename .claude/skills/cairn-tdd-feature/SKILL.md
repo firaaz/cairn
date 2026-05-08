@@ -45,6 +45,10 @@ Phase 3 and Phase 4 briefs MUST contain the following exact language about regre
 
 The feature id is derived from the plan doc's frontmatter `id:` field, or from the filename stem (`2026-05-06-some-feature` → `m2-dogfood-extract-invariant-ids` style).
 
+### intent.md required shape
+
+`phase-1-tdd.md` is authoritative; this is the operational summary. Phase 1 commits an `intent.md` containing YAML frontmatter (`id`, `name`, `snapshot-sha`, `invariants-touched`) followed by sections, in order: What, Why, Boundary, Specification, Verification, **Risk Surface**, **Feature-Local Invariants**, **Explicit Scope-Out**. The three trailing sections are required and must be derived from the plan-doc + cited ADRs + ARCHITECTURE.md — Phase 1 RAISE_ISSUEs rather than fabricating any of them when the inputs don't support derivation. Phase 2 reads Risk Surface and renders it as a named test category in `approach.md`; that traceability is part of the Phase 2 contract.
+
 ## Steps
 
 1. **Read the plan doc.** `Read` the path passed as the argument. Extract: feature id, source-write envelope (a list of regex strings under an `envelope:` key in the plan's frontmatter), and the touched invariant ids.
