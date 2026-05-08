@@ -11,14 +11,14 @@ The cairn plugin installs the four-phase TDD dispatch skill (`cairn-tdd-feature`
 Two-line install via the marketplace:
 
 ```bash
-# F1-followup: marketplace git URL literal lands in F1's PR.
-claude plugin install <marketplace-url>/cairn
+/plugin marketplace add https://github.com/firaaz/cairn
+/plugin install cairn@cairn-marketplace
 ```
 
 After install, run the post-install validator:
 
 ```bash
-# F1-followup: validator stdout literal lands in F1's PR.
+# F1-followup (intentional, separately tracked): validator stdout literal lands in F1.1. See docs/roadmap.md or .claude/skill-runs/cairn-m6-f3-migration-and-symlink-retire/integration/sweep-notes.md.
 uv run python scripts/validate_plugin_install.py
 ```
 

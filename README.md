@@ -16,21 +16,9 @@ It is **not** for simple software. See `docs/spec-v1.md` §1 for scope.
 
 ## How to consume cairn from another project
 
-The canonical install path is via the M5 plugin payload — see `CONSUMER.md` for the install flow, the post-install validator step, and a 10-minute first-dispatch walkthrough.
-
-<!-- F1-followup: marketplace git URL + post-install validator stdout literal land in F1. -->
-
-Symlink-based consumption is kept as a fallback while the plugin marketplace stabilises:
-
-```bash
-cd /path/to/your/project
-ln -s ~/Developer/lab/cairn .slice-system
-echo ".slice-system" >> .gitignore
-```
-
-Your project's hook configuration (e.g., `.claude/settings.json` for Claude Code) references scripts via `.slice-system/checks/<name>.sh`. Your project's slash commands live in `.claude/commands/` but reference cairn documentation and scripts via `.slice-system/docs/` and `.slice-system/scripts/`.
-
-<!-- F3-followup: remove the symlink instruction once the `complex-rag-analysis` migration lands and the D8 self-symlink-only stance is publicly stable. -->
+- **First-time consumers.** Run `/plugin marketplace add https://github.com/firaaz/cairn` then `/plugin install cairn@cairn-marketplace`. See `CONSUMER.md` for the full quickstart, post-install validator, and a 10-minute first-dispatch walkthrough.
+- **Migrating from a `.slice-system` symlink.** If you currently consume cairn via a `.slice-system → cairn` symlink, see the migration runbook at `docs/upgrading-from-symlink.md`.
+- **Maintainer carve-out.** Cairn-the-repo itself retains a `.slice-system → .` self-symlink for maintainer dogfooding (INV-011, `docs/ARCHITECTURE.md`). This is a one-repo exemption — downstream consumers must NOT recreate it.
 
 ## Reading order
 
