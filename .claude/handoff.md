@@ -35,3 +35,4 @@ Push `dev` → `origin/dev`, then dispatch F3 against `docs/plans/2026-05-08-cai
 - `.claude/skill-runs/cairn-m5-f2-consumer-doc-surface/integration/sweep-notes.md` — F2 audit; schema dogfood evidence
 - `.claude/agents/phase-1-tdd.md` — authoritative for the 8-section intent.md schema
 - `templates/intent.md`, `templates/handoff.md`, `templates/feature-plan.md`, `templates/sweep-notes.md`, `templates/adr-frontmatter.yaml`, `templates/active-envelope.yaml` — F2-shipped phase-boundary contract templates
+- `.claude/skill-runs/cairn-m6-f3-migration-and-symlink-retire/integration/sweep-notes.md` — F3 audit (PASS-with-pending-manual; check 9 deferred until branch pushed to `origin`)
