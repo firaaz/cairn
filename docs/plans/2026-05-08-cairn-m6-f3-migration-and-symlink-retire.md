@@ -18,7 +18,7 @@ envelope:
   - '^docs/plans/2026-05-08-cairn-m6-f3-migration-and-symlink-retire\.md$'
   - '^docs/upgrading-from-symlink\.md$'
   - '^docs/upgrading-from-pre-compression\.md$'
-  - '^docs/CONSUMER\.md$'
+  - '^CONSUMER\.md$'
   - '^docs/ARCHITECTURE\.md$'
   - '^README\.md$'
   - '^scripts/migrate_from_symlink\.sh$'
@@ -31,7 +31,7 @@ envelope:
 
 **Goal:** Land the M6 half of the M5+M6 milestone: ship a runbook + thin migration helper that takes the only existing `.slice-system → cairn` consumer (`complex-rag-analysis`) off the symlink and onto `/plugin install cairn@cairn-marketplace`, and retire the symlink-era upgrade documentation in cairn-the-repo so future downstream consumers reach for plugin install only. INV-011 is preserved verbatim: cairn-the-repo's own `.slice-system → .` self-symlink stays exactly as it is — F3 touches only downstream-consumer documentation and consumer-side migration mechanics.
 
-**Architecture:** Three threads. **Thread M (migration runbook + script)** authors the consumer-side cutover: a documented sequence (quiescence → atomic swap → session restart → smoke test) plus a thin `scripts/migrate_from_symlink.sh` helper that performs the mechanical steps and refuses to run if the consumer's `.claude/skill-runs/` contains a non-quiesced feature dir (Pre-mortem Scenario 6 defense). **Thread R (retire docs)** sweeps cairn-the-repo's symlink-era guidance: replaces `docs/upgrading-from-pre-compression.md` with a thin `docs/upgrading-from-symlink.md` (or deletes and folds into `docs/CONSUMER.md` — Phase 1 picks based on F2's CONSUMER.md final shape), updates `README.md`'s "How to consume cairn" block to point at plugin install for downstream consumers while explicitly preserving the INV-011 self-symlink note for cairn-the-repo maintainers. **Thread P (preservation guard)** is a single targeted edit to `docs/ARCHITECTURE.md`'s INV-011 prose to add F3 as an explicit cite — making the self-symlink-stays commitment grep-discoverable for future migrations.
+**Architecture:** Three threads. **Thread M (migration runbook + script)** authors the consumer-side cutover: a documented sequence (quiescence → atomic swap → session restart → smoke test) plus a thin `scripts/migrate_from_symlink.sh` helper that performs the mechanical steps and refuses to run if the consumer's `.claude/skill-runs/` contains a non-quiesced feature dir (Pre-mortem Scenario 6 defense). **Thread R (retire docs)** sweeps cairn-the-repo's symlink-era guidance: replaces `docs/upgrading-from-pre-compression.md` with a thin `docs/upgrading-from-symlink.md` (or deletes and folds into `CONSUMER.md` at repo root — Phase 1 picks based on F2's CONSUMER.md final shape), updates `README.md`'s "How to consume cairn" block to point at plugin install for downstream consumers while explicitly preserving the INV-011 self-symlink note for cairn-the-repo maintainers. **Thread P (preservation guard)** is a single targeted edit to `docs/ARCHITECTURE.md`'s INV-011 prose to add F3 as an explicit cite — making the self-symlink-stays commitment grep-discoverable for future migrations.
 
 **Tech Stack:** Bash 3.2+ (script must run on macOS default shell — no bash 4 features). Markdown for all documentation surfaces. Python 3.11 + pytest for the test (`tests/unit/test_migrate_from_symlink.py` runs the script in a fixture repo via `subprocess.run`). No new dependencies; the script uses only POSIX utilities (`unlink`, `test`, `cat`, `git`, `printf`) and assumes the consumer already has `claude` CLI on PATH (per F1's plugin install precondition).
 
@@ -54,34 +54,46 @@ Coverage gaps deliberately deferred to **Out-of-scope follow-ups** at the bottom
 
 ## Section M — Consumer migration runbook + helper script
 
-This is the consumer-side cutover sequence. The runbook is canonical (lives in `docs/CONSUMER.md`'s migration section per F2, OR in `docs/upgrading-from-symlink.md` per Section R Phase 2 — Phase 1 of F3 must read F2's landed `CONSUMER.md` and decide the home). The helper script in `scripts/migrate_from_symlink.sh` is a thin wrapper: it does NOT replace operator judgment; it enforces the preflight checks and prints the next manual step, refusing to chain operations that need a fresh Claude Code session (e.g., the agent-registry reload after swap).
+This is the consumer-side cutover sequence. The runbook is canonical (lives in `CONSUMER.md`'s migration section at repo root per F2, OR in `docs/upgrading-from-symlink.md` per Section R Phase 2 — Phase 1 of F3 must read F2's landed `CONSUMER.md` and decide the home). The helper script in `scripts/migrate_from_symlink.sh` is a thin wrapper: it does NOT replace operator judgment; it enforces the preflight checks and prints the next manual step, refusing to chain operations that need a fresh Claude Code session (e.g., the agent-registry reload after swap).
 
 ### M.0 Preflight: F1 + F2 landed?
 
 - [ ] **Step 1: Verify F1 deliverables exist on cairn's `dev` branch.**
 
+F1's actual contract is that cairn ships *templates* and a *build script* — the `dist/` tree is synthesized on demand by `scripts/build_dist.py`, NOT committed (per ADR D3 + `scripts/build_dist.py` ALLOW_LIST). Verify the templates, the build script, the post-install validator, and the CI gate — plus a smoke build to confirm `build_dist.py` can produce a usable plugin payload:
+
 ```bash
 # In cairn-the-repo:
 test -f .claude-plugin/marketplace.json &&
-test -f dist/.claude-plugin/plugin.json &&
-test -f dist/hooks/hooks.json &&
-git log --oneline --grep="role_guard.*CLAUDE_PROJECT_DIR\|F1" -- checks/role_guard.py | head
+test -f .claude-plugin/plugin-template.json &&
+test -f .claude-plugin/hooks-template.json &&
+test -f scripts/build_dist.py &&
+test -f scripts/postinstall_validate.py &&
+test -f .github/workflows/dist-gate.yml &&
+git log --oneline --grep="role_guard.*CLAUDE_PROJECT_DIR\|m5-f1\|F1" -- checks/role_guard.py | head &&
+# Smoke-build dist into a tmp tree and confirm it materialises plugin.json + hooks.json:
+uv run python scripts/build_dist.py --dist-root /tmp/cairn-f3-preflight-dist &&
+test -f /tmp/cairn-f3-preflight-dist/.claude-plugin/plugin.json &&
+test -f /tmp/cairn-f3-preflight-dist/hooks/hooks.json &&
+rm -rf /tmp/cairn-f3-preflight-dist
 ```
 
-Expected: all four present, with at least one commit touching `checks/role_guard.py` to anchor `CAIRN_ROOT` via `CLAUDE_PROJECT_DIR` (D5). If any are missing, **abort this dispatch** and re-queue F3 after F1 lands.
+Expected: all six artefacts present, at least one commit touching `checks/role_guard.py` to anchor `CAIRN_ROOT` via `CLAUDE_PROJECT_DIR` (D5), and the smoke-build produces a valid `dist/` tree. If any check fails, **abort this dispatch** and re-queue F3 after F1 lands or is repaired.
 
 - [ ] **Step 2: Verify F2 deliverables exist on cairn's `dev` branch.**
 
+F2 shipped `CONSUMER.md` at the **repo root** (not `docs/CONSUMER.md`) — verify the actual landed path:
+
 ```bash
-test -f docs/CONSUMER.md &&
-grep -q "Reading order\|reading order" README.md
+test -f CONSUMER.md &&
+grep -q "Reading order\|reading order\|Where to next" README.md
 ```
 
-Expected: `CONSUMER.md` present, README has a reading-order block. If missing, abort and re-queue F3 after F2 lands.
+Expected: `CONSUMER.md` present at root, README has a reading-order block (in F2's shipped form this section is titled "Where to next"). If missing, abort and re-queue F3 after F2 lands.
 
 - [ ] **Step 3: Decide where the migration runbook lives.**
 
-Read F2's landed `docs/CONSUMER.md`. If it includes a "Migrating from `.slice-system` symlink" subsection, F3's runbook content is authored there directly (Section R Phase 2 deletes `upgrading-from-pre-compression.md`). Otherwise, F3 ships `docs/upgrading-from-symlink.md` (Section R Phase 2 replaces). Phase 1 captures the decision in `intent.md`.
+Read F2's landed `CONSUMER.md` (at repo root). If it includes a "Migrating from `.slice-system` symlink" subsection, F3's runbook content is authored there directly (Section R Phase 2 deletes `upgrading-from-pre-compression.md`). Otherwise, F3 ships `docs/upgrading-from-symlink.md` (Section R Phase 2 replaces). Phase 1 captures the decision in `intent.md`. (Preflight evidence at F3 dispatch time: `CONSUMER.md` does NOT have a migration subsection — the **replace** branch is expected.)
 
 ### M.1 Pre-migration quiescence (Pre-mortem Scenario 6)
 
@@ -229,8 +241,8 @@ Bash 3.2-compatible. No bash-isms beyond what macOS default shell supports. Phas
 
 Today the section instructs `ln -s ~/.../cairn .slice-system`. After F3 lands, the canonical path is plugin install. Replace the section with:
 
-1. A first-time-consumer block: "Run `/plugin marketplace add <git-url>` then `/plugin install cairn@cairn-marketplace`. See `docs/CONSUMER.md` for the full quickstart."
-2. A migration block (one paragraph): "If you currently consume cairn via `.slice-system → cairn` symlink, see the migration runbook at <link to wherever Phase 1 picked: `docs/CONSUMER.md#migrating-from-symlink` or `docs/upgrading-from-symlink.md`>."
+1. A first-time-consumer block: "Run `/plugin marketplace add <git-url>` then `/plugin install cairn@cairn-marketplace`. See `CONSUMER.md` for the full quickstart."
+2. A migration block (one paragraph): "If you currently consume cairn via `.slice-system → cairn` symlink, see the migration runbook at <link to wherever Phase 1 picked: `CONSUMER.md#migrating-from-symlink` or `docs/upgrading-from-symlink.md`>."
 3. A maintainer carve-out (verbatim): "Cairn-the-repo itself retains a `.slice-system → .` self-symlink for maintainer dogfooding (INV-011, `docs/ARCHITECTURE.md`). This is a one-repo exemption — downstream consumers must NOT recreate it."
 
 The carve-out preserves D8/INV-011 in plain sight at the README level so future re-readers don't accidentally extend the symlink-retire to cairn-the-repo.
@@ -241,7 +253,7 @@ The carve-out preserves D8/INV-011 in plain sight at the README level so future 
 
 Per Section M.0 Step 3 decision:
 
-- **If F2's CONSUMER.md has a migration subsection:** delete `docs/upgrading-from-pre-compression.md` outright. Add a note in `docs/CONSUMER.md`'s migration section: "This supersedes the pre-compression upgrade doc retired in M6/F3." No further breadcrumb needed; git history preserves the old doc.
+- **If F2's CONSUMER.md has a migration subsection:** delete `docs/upgrading-from-pre-compression.md` outright. Add a note in `CONSUMER.md`'s migration section: "This supersedes the pre-compression upgrade doc retired in M6/F3." No further breadcrumb needed; git history preserves the old doc.
 - **If F2's CONSUMER.md is install-only:** replace `docs/upgrading-from-pre-compression.md` with a thin `docs/upgrading-from-symlink.md` (≤200 words, in the same shape: deltas, Verify snippet per delta). Old file is git-rm'd; new file lives at the new path.
 
 Phase 3 enacts whichever branch Phase 1 picked. Phase 4 audit confirms only one of the two doc-states is on disk post-merge (no lingering dual-doc state).
@@ -300,3 +312,15 @@ These are deliberate exclusions; track them on `docs/roadmap.md` if they become 
 - **CI gate that builds + smoke-tests the plugin install end-to-end.** F1 should ship a unit-level post-install validator; an integration-level "install plugin in fixture repo, dispatch trivial feature, assert clean exit" CI test is follow-up M5.1+ work.
 - **Auto-detection of the cairn git URL.** The runbook's `<git-url>` is operator-supplied. Future ergonomic improvement: `scripts/migrate_from_symlink.sh` reads the symlink target's `git remote get-url origin` and prints the install command pre-filled. Defer; correctness over convenience for a one-time migration.
 - **Cairn-internal `.slice-system → .` retire.** Explicitly NOT in scope per D8/INV-011. Any future retire would require a superseding ADR.
+
+---
+
+## Plan-doc updates (2026-05-08, F3 dispatch preflight)
+
+Operator-approved corrections at F3 dispatch time, before Phase 1 fired. The plan was authored against expected F1/F2 contracts; F1 and F2 landed with adjacent-but-different shapes, and the literal preflight in M.0 would have falsely triggered an abort. Changes:
+
+- **`CONSUMER.md` path:** F2 shipped `CONSUMER.md` at the repo root, not at `docs/CONSUMER.md`. The envelope (`^docs/CONSUMER\.md$` → `^CONSUMER\.md$`), M.0 Step 2 path check, and all body references were corrected.
+- **F1 deliverable shape:** F1 ships `.claude-plugin/{marketplace,plugin-template,hooks-template}.json` + `scripts/build_dist.py` + `scripts/postinstall_validate.py` + `.github/workflows/dist-gate.yml`. The `dist/` tree is *built on demand* by `build_dist.py` (per ADR D3 + the script's ALLOW_LIST), not committed. M.0 Step 1 was rewritten to verify the templates + build script + validator + CI gate, plus a smoke-build into `/tmp/cairn-f3-preflight-dist` that confirms `plugin.json` and `hooks/hooks.json` materialise.
+- **CONSUMER.md migration-subsection state:** F2's landed `CONSUMER.md` does NOT contain a "Migrating from `.slice-system` symlink" subsection at F3 dispatch time, so Section R.2's **replace** branch is expected (ship `docs/upgrading-from-symlink.md`, delete `docs/upgrading-from-pre-compression.md`). Phase 1 confirms.
+
+No changes to threads M/R/P content, deliverable inventory, or invariant scope. The Phase 4 audit checklist is unchanged.
