@@ -95,6 +95,8 @@ Expected: `CONSUMER.md` present at root, README has a reading-order block (in F2
 
 Read F2's landed `CONSUMER.md` (at repo root). If it includes a "Migrating from `.slice-system` symlink" subsection, F3's runbook content is authored there directly (Section R Phase 2 deletes `upgrading-from-pre-compression.md`). Otherwise, F3 ships `docs/upgrading-from-symlink.md` (Section R Phase 2 replaces). Phase 1 captures the decision in `intent.md`. (Preflight evidence at F3 dispatch time: `CONSUMER.md` does NOT have a migration subsection — the **replace** branch is expected.)
 
+**Decision-context amendment (2026-05-08, post-initial-Phase-1):** F3 now ALSO fixes CONSUMER.md's F1-followup placeholder (line 14: `<marketplace-url>` → `https://github.com/firaaz/cairn`) regardless of replace-vs-delete branch — see Section R.4 below. Because CONSUMER.md is mutated either way, the replace/delete decision is freshly contested at Phase 1: now that CONSUMER.md is being touched, does it also gain the migration subsection (delete branch), or does the URL fix stay mechanical-only and the runbook live in `docs/upgrading-from-symlink.md` (replace branch)? Phase 1 picks with this expanded scope in mind.
+
 ### M.1 Pre-migration quiescence (Pre-mortem Scenario 6)
 
 - [ ] **Step 4: Document the quiescence requirement in the runbook.**
@@ -126,7 +128,7 @@ Operator can override with `CAIRN_MIGRATE_FORCE=1` (env-var override discipline 
 The four mechanical steps, in order, with exact commands:
 
 1. **Remove the symlink:** `unlink .slice-system` (NOT `rm -rf .slice-system` — that follows the symlink and would delete cairn).
-2. **Add cairn marketplace:** `/plugin marketplace add <git-url>` (the `<git-url>` comes from cairn's README; F2's CONSUMER.md should already document it).
+2. **Add cairn marketplace:** `/plugin marketplace add https://github.com/firaaz/cairn` (the literal URL from `.claude-plugin/marketplace.json:12`; F1 left the `<marketplace-url>` placeholder unresolved in CONSUMER.md and README.md, and F3's R.1 + R.4 resolve it).
 3. **Install cairn:** `/plugin install cairn@cairn-marketplace`. Per F1/D4, this drops hook registrations into the plugin's internal `hooks/hooks.json`, NOT the consumer's `.claude/settings.json` — but legacy symlink-anchored entries already in `.claude/settings.json` will still fire and 404 silently if not removed (Pre-mortem Scenario 2 collapse).
 4. **Edit `.claude/settings.json` to remove stale symlink-anchored hook entries.** Specifically: any `"command"` field containing `$CLAUDE_PROJECT_DIR/.slice-system/checks/...`. The runbook ships a `jq` snippet that filters these out:
 
@@ -241,9 +243,10 @@ Bash 3.2-compatible. No bash-isms beyond what macOS default shell supports. Phas
 
 Today the section instructs `ln -s ~/.../cairn .slice-system`. After F3 lands, the canonical path is plugin install. Replace the section with:
 
-1. A first-time-consumer block: "Run `/plugin marketplace add <git-url>` then `/plugin install cairn@cairn-marketplace`. See `CONSUMER.md` for the full quickstart."
+1. A first-time-consumer block: "Run `/plugin marketplace add https://github.com/firaaz/cairn` then `/plugin install cairn@cairn-marketplace`. See `CONSUMER.md` for the full quickstart." (Note: literal URL inline — supersedes the F1-followup `<marketplace-url>` placeholder at the current README.md:21.)
 2. A migration block (one paragraph): "If you currently consume cairn via `.slice-system → cairn` symlink, see the migration runbook at <link to wherever Phase 1 picked: `CONSUMER.md#migrating-from-symlink` or `docs/upgrading-from-symlink.md`>."
 3. A maintainer carve-out (verbatim): "Cairn-the-repo itself retains a `.slice-system → .` self-symlink for maintainer dogfooding (INV-011, `docs/ARCHITECTURE.md`). This is a one-repo exemption — downstream consumers must NOT recreate it."
+4. **Drop the "fallback while plugin marketplace stabilises" framing.** The current README.md:23 reads `Symlink-based consumption is kept as a fallback while the plugin marketplace stabilises:` — this prose is the F1-era hedge. Plugin install is now the primary path; the symlink is retired for downstream consumers. The R.1 rewrite removes this line and any prose that follows it framing symlink as a current-default; the maintainer carve-out (item 3 above) is the only surviving symlink mention in the consumption block.
 
 The carve-out preserves D8/INV-011 in plain sight at the README level so future re-readers don't accidentally extend the symlink-retire to cairn-the-repo.
 
@@ -257,6 +260,23 @@ Per Section M.0 Step 3 decision:
 - **If F2's CONSUMER.md is install-only:** replace `docs/upgrading-from-pre-compression.md` with a thin `docs/upgrading-from-symlink.md` (≤200 words, in the same shape: deltas, Verify snippet per delta). Old file is git-rm'd; new file lives at the new path.
 
 Phase 3 enacts whichever branch Phase 1 picked. Phase 4 audit confirms only one of the two doc-states is on disk post-merge (no lingering dual-doc state).
+
+### R.4 Resolve F1-followup placeholders in CONSUMER.md
+
+- [ ] **Step 16.5: Replace the `<marketplace-url>` placeholder in CONSUMER.md.**
+
+F1 shipped CONSUMER.md with two unresolved F1-followup comments at lines 11–22 (the install + post-install validator quickstart blocks). F3 resolves these regardless of the R.2 replace/delete branch decision — both branches mutate CONSUMER.md. The fix:
+
+- Replace the `# F1-followup: marketplace git URL literal lands in F1's PR.` comment + the `claude plugin install <marketplace-url>/cairn` line with the canonical two-step install:
+
+```bash
+/plugin marketplace add https://github.com/firaaz/cairn
+/plugin install cairn@cairn-marketplace
+```
+
+- The post-install validator block (`# F1-followup: validator stdout literal lands in F1's PR.` + `uv run python scripts/validate_plugin_install.py`) is a separate F1-followup tracking a different deliverable (the validator's stdout literal). F3's scope per the operator amendment is the marketplace URL placeholder only — the validator stdout literal stays as a documented F1-followup unless Phase 1 picks the delete-branch in R.2 (in which case the surrounding migration content provides the escape valve to author the literal verification at the same edit). Phase 1 records the decision.
+
+If Phase 1 picks the **delete branch** in R.2 (CONSUMER.md gains the migration subsection), Step 16.5 happens as part of the same CONSUMER.md edit. If Phase 1 picks the **replace branch**, Step 16.5 is a standalone CONSUMER.md edit and the migration runbook still lives in `docs/upgrading-from-symlink.md`.
 
 ### R.3 Sweep stale `.slice-system/` references in cairn docs
 
@@ -324,3 +344,14 @@ Operator-approved corrections at F3 dispatch time, before Phase 1 fired. The pla
 - **CONSUMER.md migration-subsection state:** F2's landed `CONSUMER.md` does NOT contain a "Migrating from `.slice-system` symlink" subsection at F3 dispatch time, so Section R.2's **replace** branch is expected (ship `docs/upgrading-from-symlink.md`, delete `docs/upgrading-from-pre-compression.md`). Phase 1 confirms.
 
 No changes to threads M/R/P content, deliverable inventory, or invariant scope. The Phase 4 audit checklist is unchanged.
+
+### Plan-doc updates 2 (post-initial-Phase-1, F1-followup placeholder absorption)
+
+After the initial Phase 1 (`d640ac6`) shipped its intent.md, the operator's interview-style review flagged that F1 left literal `<marketplace-url>` placeholders unresolved in CONSUMER.md (line 14) and README.md (line 21), plus a "fallback while plugin marketplace stabilises" framing at README.md:23 that contradicts F3's primary-path repositioning. The intent did not acknowledge these. F3 absorbs the fixes (operator decision: amend intent + RE_DISPATCH Phase 1):
+
+- **M.2 Step 6 (atomic swap):** literal `https://github.com/firaaz/cairn` URL inline; F1-followup placeholder reference added; cite to `.claude-plugin/marketplace.json:12` as source of truth.
+- **R.1 Step 15 (README rewrite):** literal URL in the first-time-consumer block; new bullet 4 explicitly drops the "fallback while plugin marketplace stabilises" framing so plugin install is the primary path post-F3.
+- **New R.4 Step 16.5 (CONSUMER.md placeholder fix):** F3 resolves CONSUMER.md's `<marketplace-url>` placeholder regardless of the R.2 replace/delete branch decision, since both branches mutate CONSUMER.md. The validator-stdout-literal placeholder stays as a separate F1-followup unless the delete branch is picked.
+- **M.0 Step 3 amendment:** the replace/delete decision is freshly contested at Phase 1 — now that CONSUMER.md is touched regardless, the decision tree adds a new variable (does CONSUMER.md gain the migration subsection in addition to the URL fix, or stay install-only?). Phase 1 picks with this expanded scope.
+
+The envelope is unchanged (CONSUMER.md was already permitted; no new paths). The Phase 4 audit checklist gains an implicit eighth check: CONSUMER.md and README.md no longer contain `<marketplace-url>` placeholder strings.
