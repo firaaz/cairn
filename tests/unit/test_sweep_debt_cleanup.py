@@ -16,7 +16,7 @@ import subprocess
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-OPREF = REPO / "docs" / "operational-reference.md"
+PHASE_SKILL_MAPPING = REPO / "docs" / "phase-skill-mapping.md"
 
 
 def _read(p: Path) -> str:
@@ -51,10 +51,10 @@ def test_v1_worktrees_in_phase3_supporting() -> None:
     Intent verification #2. parallelism-v1 D3 returns using-git-worktrees as a
     conditional Phase 3 supporting skill.
     """
-    text = _read(OPREF)
-    mapping_section = _extract_section(text, "### Phase-to-skill mapping")
+    text = _read(PHASE_SKILL_MAPPING)
+    mapping_section = _extract_section(text, "## Phase-to-skill mapping")
     assert mapping_section is not None, (
-        "operational-reference.md missing '### Phase-to-skill mapping' section. (V1)"
+        "phase-skill-mapping.md missing '## Phase-to-skill mapping' section. (V1)"
     )
 
     # Find the Phase 3 row: contains "Implementation" and "Builder"
@@ -94,12 +94,12 @@ def test_v2_worktrees_not_in_exclusions() -> None:
     Intent verification #3. After removal, only executing-plans,
     finishing-a-development-branch, writing-skills, and writing-plans remain.
     """
-    text = _read(OPREF)
+    text = _read(PHASE_SKILL_MAPPING)
     exclusions = _extract_section(
-        text, "### Explicit exclusions — skills deliberately NOT mapped"
+        text, "## Explicit exclusions — skills deliberately NOT mapped"
     )
     assert exclusions is not None, (
-        "operational-reference.md missing '### Explicit exclusions' section. (V2)"
+        "phase-skill-mapping.md missing '## Explicit exclusions' section. (V2)"
     )
 
     assert "using-git-worktrees" not in exclusions, (
@@ -129,7 +129,6 @@ def test_v3_measurement_artifact_exists() -> None:
         cwd=REPO,
     )
     assert result.stdout.strip(), f"{target} exists but is not git-tracked. (V3)"
-
 
 
 # ---------------------------------------------------------------------------

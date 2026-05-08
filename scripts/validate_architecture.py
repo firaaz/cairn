@@ -474,32 +474,32 @@ def _extract_role_for_phase(_unused: str | None = None) -> set[tuple[int, str]] 
 
 
 def _extract_skill_guide_topology(
-    opref_text: str,
+    phase_skill_mapping_text: str,
 ) -> tuple[set[tuple[int, str]], list[str]]:
     """Extract (phase, role_slug) pairs from the Phase Skill Guide tables.
 
-    Uses shorthand-to-slug mapping for the two tables and additionally
-    verifies each derived slug appears somewhere in the full document
-    (catches slug renaming outside the Skill Guide section itself).
+    Uses shorthand-to-slug mapping for the role-and-anti-behaviors and
+    phase-to-skill-mapping tables; additionally verifies each derived
+    slug appears somewhere in the full document (catches slug renaming
+    outside those tables).
     """
     failures: list[str] = []
     result: set[tuple[int, str]] = set()
 
-    section_m = re.search(
-        r"## Phase Skill Guide\b(.*?)(?=\n## |\Z)", opref_text, re.DOTALL
+    title_m = re.search(
+        r"^# Phase Skill Guide\b", phase_skill_mapping_text, re.MULTILINE
     )
-    if not section_m:
+    if not title_m:
         failures.append(
-            "INV-003: Cannot find '## Phase Skill Guide' section in "
-            "docs/operational-reference.md"
+            "INV-003: Cannot find '# Phase Skill Guide' title in "
+            "docs/phase-skill-mapping.md"
         )
         return result, failures
 
-    section_text = section_m.group(1)
     row_pat = re.compile(
         r"^\|\s*(\d+)\.\s+[^|]+\|\s+\*{0,2}(\w+)\*{0,2}\s*\|", re.MULTILINE
     )
-    for m in row_pat.finditer(section_text):
+    for m in row_pat.finditer(phase_skill_mapping_text):
         phase_num = int(m.group(1))
         shorthand = m.group(2).lower()
         slug = _ROLE_SHORTHAND_TO_SLUG.get(shorthand)
@@ -510,10 +510,10 @@ def _extract_skill_guide_topology(
     to_remove: set[tuple[int, str]] = set()
     for pair in result:
         _, slug = pair
-        if slug not in opref_text:
+        if slug not in phase_skill_mapping_text:
             failures.append(
                 f"INV-003: role slug '{slug}' not found anywhere in "
-                f"docs/operational-reference.md (Phase Skill Guide)"
+                f"docs/phase-skill-mapping.md"
             )
             to_remove.add(pair)
     result -= to_remove
@@ -570,7 +570,7 @@ def validate_phase_topology(project_root: Path) -> list[str]:
 
     Canonical sources:
       1. .claude/agents/role-topology.yaml — authoritative phase→slug mapping.
-      2. docs/operational-reference.md — Phase Skill Guide tables.
+      2. docs/phase-skill-mapping.md — Phase Skill Guide tables.
       3. .claude/agents/phase-N-*.md — agent prompt filenames.
 
     ROLE_DENY_READ leg dropped (read-class lockdown retired with the substrate;
@@ -587,13 +587,13 @@ def validate_phase_topology(project_root: Path) -> list[str]:
     if authoritative is None:
         return ["INV-003: Cannot parse phases from .claude/agents/role-topology.yaml"]
 
-    opref_path = project_root / "docs" / "operational-reference.md"
-    if not opref_path.exists():
-        failures.append(f"INV-003: {opref_path} not found")
+    phase_skill_mapping_path = project_root / "docs" / "phase-skill-mapping.md"
+    if not phase_skill_mapping_path.exists():
+        failures.append(f"INV-003: {phase_skill_mapping_path} not found")
         skill_guide_topology: set[tuple[int, str]] = set()
     else:
         skill_guide_topology, src2_failures = _extract_skill_guide_topology(
-            opref_path.read_text()
+            phase_skill_mapping_path.read_text()
         )
         failures.extend(src2_failures)
 
@@ -604,7 +604,7 @@ def validate_phase_topology(project_root: Path) -> list[str]:
         return failures
 
     sources = [
-        ("operational-reference.md (Phase Skill Guide)", skill_guide_topology),
+        ("phase-skill-mapping.md", skill_guide_topology),
         (".claude/agents/ filenames", agent_topology),
     ]
     for source_name, topology in sources:

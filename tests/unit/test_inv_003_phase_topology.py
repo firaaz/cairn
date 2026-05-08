@@ -55,7 +55,7 @@ EXPECTED_TOPOLOGY = {
 
 CANONICAL_SOURCES = [
     Path(".claude/agents/role-topology.yaml"),
-    Path("docs/operational-reference.md"),
+    Path("docs/phase-skill-mapping.md"),
     Path("checks/role_guard.py"),
 ]
 
@@ -253,19 +253,19 @@ class TestSkillGuidePerturbations:
         """Renaming a role token in the Skill Guide table fails the binding."""
         fn = _import_binding()
         _seed_topology_root(tmp_path)
-        opref = tmp_path / "docs/operational-reference.md"
-        text = opref.read_text()
+        pskg = tmp_path / "docs/phase-skill-mapping.md"
+        text = pskg.read_text()
         mutated = text.replace("Skeptic", "Validator")
         assert mutated != text, (
-            "Test setup: 'Skeptic' role token not found in operational-reference.md"
+            "Test setup: 'Skeptic' role token not found in phase-skill-mapping.md"
         )
-        opref.write_text(mutated)
+        pskg.write_text(mutated)
 
         failures = fn(tmp_path)
         assert failures, "Renaming Skeptic in the Skill Guide must fail"
         joined = "\n".join(failures).lower()
         assert (
-            "operational-reference" in joined
+            "phase-skill-mapping" in joined
             or "skill guide" in joined
             or "phase-2" in joined
         ), f"Failure should name the Skill Guide source. failures={failures!r}"
@@ -274,8 +274,8 @@ class TestSkillGuidePerturbations:
         """Removing a phase row from the Skill Guide table fails the binding."""
         fn = _import_binding()
         _seed_topology_root(tmp_path)
-        opref = tmp_path / "docs/operational-reference.md"
-        text = opref.read_text()
+        pskg = tmp_path / "docs/phase-skill-mapping.md"
+        text = pskg.read_text()
         # Strip the Phase 3 rows from BOTH Phase Skill Guide tables
         # (Role-and-anti-behaviors and Phase-to-skill-mapping). The row
         # extractor regex matches lines starting with "| 3. ", so removing
@@ -283,7 +283,7 @@ class TestSkillGuidePerturbations:
         mutated_lines = [ln for ln in text.splitlines() if not ln.startswith("| 3. ")]
         mutated = "\n".join(mutated_lines)
         assert mutated != text, "Test setup: no '| 3. ' Skill Guide rows found"
-        opref.write_text(mutated)
+        pskg.write_text(mutated)
 
         failures = fn(tmp_path)
         assert failures, "Dropping phase-3 row from Skill Guide must fail"

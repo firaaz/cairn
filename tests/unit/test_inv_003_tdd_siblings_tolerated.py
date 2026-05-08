@@ -24,7 +24,7 @@ def _seed_canonical_only(tmp_path: Path) -> Path:
     """Copy the four canonical agent files + the three other canonical sources."""
     canonical_sources = [
         Path(".claude/agents/role-topology.yaml"),
-        Path("docs/operational-reference.md"),
+        Path("docs/phase-skill-mapping.md"),
         Path("checks/role_guard.py"),
     ]
     canonical_agents = [
