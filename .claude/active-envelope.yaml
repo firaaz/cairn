@@ -29,6 +29,16 @@ paths:
   - ^docs/plans/2026-05-08-cairn-m6-f3-migration-and-symlink-retire\.md$
   # M7 plugin-deployment-pattern plan (active dispatch surface)
   - ^docs/plans/2026-05-09-cairn-m7-plugin-deployment-pattern\.md$
+  # M7 Phase-3 write surface — schema rewrite + release workflow + opt artefacts
+  # (envelope expansion required because Claude Code does not auto-set
+  # AGENT_ROLE on subagent dispatch; role_guard falls through to the
+  # operator-envelope path when AGENT_ROLE is unset).
+  - ^\.claude-plugin/marketplace\.json$
+  - ^\.github/workflows/release-publish\.yml$
+  - ^\.github/workflows/dist-gate\.yml$
+  - ^\.gitignore$
+  - ^CHANGELOG\.md$
+  - ^docs/roadmap\.md$
   # Lessons file — Phase 6 propagation surface for L-022 capture
   - ^docs/lessons\.md$
   # Hooks
