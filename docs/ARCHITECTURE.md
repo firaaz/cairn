@@ -96,6 +96,8 @@ target: ".slice-system"
 description: "Verifies the .slice-system self-consumption mechanism exists at the cairn-the-repo root, enabling cairn maintainers to iterate on hooks/skills/agents without plugin republish-reinstall cycles."
 ```
 
+**INV-012** Cairn's plugin payload deploys via a long-lived `release` branch, not via the default branch. `.claude-plugin/marketplace.json` carries `source.source: "github"` with explicit `ref: "release"` (not relative-path, not omitted-ref); the `release` branch's working-tree HEAD IS the curated dist-payload (no `dist/` subdirectory; the build output's contents land at branch root). This decouples plugin-source resolution from the marketplace's clone ref, so consumers' `/plugin marketplace add https://github.com/firaaz/cairn` (no `@release` qualifier) works against `dev` while the plugin still resolves from `release` — preserving INV-011's maintainer dogfood loop. Consumer-visible update signal is `dist/.claude-plugin/plugin.json:version` (which silently wins over marketplace entry per `code.claude.com/docs/en/plugin-marketplaces:715-718`); manual semver bumps per `m5-plugin-distribution-and-symlink-retire/D2`. CI release workflow is `workflow_dispatch`-triggered with version cross-check; force-with-lease replaces the `release` tree on each release. (m5-plugin-deployment-pattern; m5-plugin-distribution-and-symlink-retire)
+
 ## Boundaries
 
 The slice pipeline has four phase boundaries, each implemented as a fresh session separated by a committed artifact (phase-lock-and-role-declaration D1):
