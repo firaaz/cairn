@@ -2,7 +2,7 @@
 slice: cairn-m7-plugin-deployment-pattern
 phase: planned (ADR + plan landed; ready for cairn-tdd-feature dispatch)
 branch: dev
-as-of: 2026-05-09 (post-L-022 commit; pre-handoff-refresh sha)
+as-of: 2026-05-09 126ee60
 ---
 
 ## State
