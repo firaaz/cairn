@@ -1,0 +1,9 @@
+# Authoritative phase-ordinal → role-slug mapping for cairn-tdd-feature dispatch.
+# Consumed by scripts/validate_architecture.py:validate_phase_topology (INV-003 binding).
+# Each row's slug must match a file at .claude/agents/<slug>.md.
+
+phases:
+  1: phase-1-tdd
+  2: phase-2-tdd
+  3: phase-3-tdd
+  4: phase-4-tdd
