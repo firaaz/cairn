@@ -37,3 +37,4 @@ Dispatch `cairn-tdd-feature` against `docs/plans/2026-05-09-cairn-m7-plugin-depl
 - `docs/ARCHITECTURE.md:99` — INV-012 prose (machine-check pending M7).
 - `docs/lessons.md` L-022 — manifest-schema validity as load-bearing prerequisite; round-trip the install, don't just build the artifact.
 - `.claude/active-envelope.yaml` — expanded with M7 plan + lessons.md paths.
+- `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/integration/sweep-notes.md` — Phase 4a sweep (checks 1–8 PASS; check 9 PENDING — operator-bound).
