@@ -1,16 +1,14 @@
 {
   "name": "cairn-marketplace",
-  "owner": {
-    "name": "firaaz"
-  },
+  "owner": { "name": "firaaz" },
   "plugins": [
     {
       "name": "cairn",
       "description": "TDD-by-construction dispatch skill, hooks, and protocols for Claude Code.",
       "source": {
-        "type": "git",
-        "url": "https://github.com/firaaz/cairn.git",
-        "path": "dist/"
+        "source": "github",
+        "repo": "firaaz/cairn",
+        "ref": "release"
       }
     }
   ]

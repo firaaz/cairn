@@ -32,3 +32,8 @@ venv/
 # stray kuzu db file written to repo root by some client opening a relative
 # path; not produced by cairn_query CLI or the cairn-knowledge MCP server.
 .cairn-kuzu
+
+# Local dist/ build output — produced by scripts/build_dist.py; on `dev` and
+# feature branches this is a derived artefact (the real payload lives on the
+# `release` branch tree-root per ADR m5-plugin-deployment-pattern D1).
+dist/

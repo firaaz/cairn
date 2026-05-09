@@ -1,0 +1,125 @@
+name: release-publish
+
+# ADR m5-plugin-deployment-pattern D5/D6/D8.
+# Operator-triggered publish: builds dist/ via scripts/build_dist.py, cross-checks
+# the workflow's `version` input against the built plugin.json:version (FLI-2),
+# then force-with-leases the `release` branch tree to match /tmp/dist-out
+# (D6 / FLI-3 — never bare --force). On workflow_dispatch, also creates and
+# pushes the v${VERSION} tag (D8). Only first-party Actions are used (FLI-4).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver version string (must equal /tmp/dist-out/.claude-plugin/plugin.json:version)."
+        required: true
+        type: string
+      source_ref:
+        description: "Git ref (branch/tag/sha) to build from. Default: dev."
+        required: false
+        type: string
+        default: dev
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.source_ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync project venv
+        run: uv sync
+
+      - name: Build dist payload
+        run: uv run python scripts/build_dist.py --repo-root . --dist-root /tmp/dist-out
+
+      - name: Cross-check workflow input vs built plugin.json:version (FLI-2)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+          BUILT_VERSION="$(uv run python -c 'import json,sys; print(json.load(open("/tmp/dist-out/.claude-plugin/plugin.json"))["version"])')"
+          echo "input.version=${INPUT_VERSION}"
+          echo "built.plugin.json.version=${BUILT_VERSION}"
+          if [ "${INPUT_VERSION}" != "${BUILT_VERSION}" ]; then
+            echo "::error::FLI-2 cross-check failed: inputs.version (${INPUT_VERSION}) != plugin.json:version (${BUILT_VERSION}). Refusing to push." >&2
+            exit 1
+          fi
+
+      - name: Configure release-bot git identity
+        run: |
+          git config --global user.name "cairn-release-bot"
+          git config --global user.email "cairn-release-bot@users.noreply.github.com"
+
+      - name: Sync release branch (force-with-lease) — D1/D6/FLI-3/FLI-5
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          # Resolve the version to embed in the commit message: workflow_dispatch
+          # uses the input; tag-push (push: tags: ['v*']) uses plugin.json:version
+          # so the commit prefix stays a literal `chore: release` regardless.
+          VERSION="${INPUT_VERSION:-}"
+          if [ -z "${VERSION}" ]; then
+            VERSION="$(uv run python -c 'import json; print(json.load(open("/tmp/dist-out/.claude-plugin/plugin.json"))["version"])')"
+          fi
+
+          WORKTREE="/tmp/release-worktree"
+          rm -rf "${WORKTREE}"
+
+          # M7.3 first-run defense: if `release` does not yet exist on origin,
+          # create it as an orphan branch in a fresh worktree.
+          if git ls-remote --exit-code --heads origin release >/dev/null 2>&1; then
+            git fetch origin release:refs/remotes/origin/release
+            git worktree add -B release "${WORKTREE}" origin/release
+          else
+            echo "release branch absent on origin; creating orphan worktree (M7.3 fallback)."
+            git worktree add --orphan -b release "${WORKTREE}"
+          fi
+
+          # Wipe the worktree's tree (preserve .git pointer file), then mirror
+          # the dist-output at branch root per ADR D1 shape-(i).
+          find "${WORKTREE}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a /tmp/dist-out/. "${WORKTREE}/"
+
+          git -C "${WORKTREE}" add -A
+
+          # FLI-5: literal `chore: release ` prefix is mandatory (INV-001
+          # _FALLBACK_REGISTRY binding at scripts/validate_architecture.py:279).
+          if git -C "${WORKTREE}" diff --cached --quiet; then
+            echo "release tree already matches dist-output; nothing to commit."
+          else
+            git -C "${WORKTREE}" commit -m "chore: release v${VERSION} from ${SOURCE_SHA:0:7}"
+          fi
+
+          # FLI-3: only --force-with-lease, never bare --force.
+          git -C "${WORKTREE}" push --force-with-lease origin release
+
+      - name: Tag v${VERSION} idempotently (D8)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION="${INPUT_VERSION}"
+          TAG="v${VERSION}"
+          # Idempotent create-or-update: delete local + remote if it exists,
+          # then recreate at the source SHA so re-runs converge.
+          git tag -d "${TAG}" 2>/dev/null || true
+          git push origin ":refs/tags/${TAG}" 2>/dev/null || true
+          git tag -a "${TAG}" -m "cairn release ${TAG}"
+          git push --tags origin "${TAG}"

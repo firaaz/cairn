@@ -4,6 +4,19 @@ All notable changes to cairn. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### M7 — Plugin Deployment Pattern (release branch)
+
+Operationalizes ADR `m5-plugin-deployment-pattern` D1–D9. `.claude-plugin/marketplace.json` now uses the documented `source.source: "github"` + `repo: "firaaz/cairn"` + `ref: "release"` shape — replacing the schema-invalid `"type": "git"` discriminator. Adds `.github/workflows/release-publish.yml` as the operator-triggered publish step (workflow_dispatch with `version` cross-check against built `plugin.json:version`; force-with-leases the `release` branch tree to match `/tmp/dist-out`; conditionally pushes `v${VERSION}` tag).
+
+The `release` branch is **CI-only**:
+
+- It is created and updated exclusively by `release-publish.yml` (via `git push --force-with-lease`).
+- Do **not** push to `release` manually; do not merge into it; do not branch from it.
+- The branch's tree intentionally does NOT match `dev`'s — its root is the dist-output payload (`scripts/build_dist.py`'s allow-listed contents) per ADR D1 shape-(i). Maintainers checking out `release` will see a different file layout from `dev`; this is by design (decoupled per ADR D2 + D4).
+- Default branch remains `dev`; `release` is consumed only by Anthropic's marketplace resolver via `marketplace.json`'s `ref: "release"` pin.
+
+`docs/adr/m5-plugin-deployment-pattern.md` is the canonical character document.
+
 ### Compression program merged to dev (2026-04-27)
 
 Squash-merges `feature/compression` (335 commits across the substrate v1, lever-1 cost discipline, lever-Z substrate-full-pipeline, doc-cleanup-tail, and lever-Z-fixup slices, plus the orchestrator and per-phase agents). **Upgrade guide for downstream consumers: [`docs/upgrading-from-pre-compression.md`](docs/upgrading-from-pre-compression.md)** — one Verify snippet per delta.
