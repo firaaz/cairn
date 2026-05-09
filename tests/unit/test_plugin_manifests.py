@@ -12,6 +12,14 @@ both `plugin-template.json` and `hooks-template.json` are canonical sources.
 The post-build artefact assertions for A2 invoke `scripts/build_dist.py`
 into a tmp output dir.
 
+Note: A1's `source.type == 'git'` + `source.path == 'dist/'` shape (the
+F1-era assertion at A1) is SUPERSEDED by ADR `m5-plugin-deployment-pattern/D2`,
+which mandates `source.source: 'github'` + `repo: 'firaaz/cairn'` +
+`ref: 'release'`. The shape-pinning test was retired as part of feature
+`cairn-m7-plugin-deployment-pattern` (Phase 2 amendment). The remaining A1
+tests (`exists_and_parses`, `has_exactly_one_cairn_plugin_entry`,
+`accepts_optional_ref_or_sha_fields`) remain valid post-supersession.
+
 Tests must FAIL at HEAD because:
 - `.claude-plugin/` does not exist.
 - `scripts/build_dist.py` does not exist.
@@ -56,19 +64,6 @@ def test_a1_marketplace_has_exactly_one_cairn_plugin_entry():
     )
     assert plugins[0].get("name") == "cairn", (
         f"A1: plugin entry name must be 'cairn'; got {plugins[0].get('name')!r}"
-    )
-
-
-def test_a1_marketplace_source_type_is_git_and_path_is_dist():
-    """Entry's `source.type` is `"git"` and `source.path` is `"dist/"`."""
-    data = json.loads(MARKETPLACE_PATH.read_text())
-    src = data["plugins"][0].get("source")
-    assert isinstance(src, dict), "A1: plugin.source must be an object"
-    assert src.get("type") == "git", (
-        f"A1: source.type must be 'git'; got {src.get('type')!r}"
-    )
-    assert src.get("path") == "dist/", (
-        f"A1: source.path must be 'dist/'; got {src.get('path')!r}"
     )
 
 

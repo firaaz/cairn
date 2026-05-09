@@ -41,3 +41,17 @@ Per Phase 2 verification language: any failure beyond baseline cites the baselin
 
 - PyYAML parses bare `on:` as Python `True` (YAML 1.1). Test tolerates either key.
 - FLI-4 not encoded as a unit test — string-grep is brittle; review-time defense.
+
+## Amendment (post Phase-3 RAISE_ISSUE → operator `amend`)
+
+Retired one F1-era test that pinned the SUPERSEDED `source.type=='git'` +
+`source.path=='dist/'` shape: `test_a1_marketplace_source_type_is_git_and_path_is_dist`
+in `tests/unit/test_plugin_manifests.py` (was lines 62-72). Supersession is
+documented in ADR `m5-plugin-deployment-pattern/D2` (firm, accepted) which
+mandates the new `source.source:'github'` + `repo:'firaaz/cairn'` +
+`ref:'release'` shape that Phase 3's `b1439c9` correctly implements. File-level
+docstring updated with a supersession note pointing to the ADR. Surviving A1
+tests (`exists_and_parses`, `has_exactly_one_cairn_plugin_entry`,
+`accepts_optional_ref_or_sha_fields`) remain valid and pass post-amendment.
+M7's 9/9 tests still GREEN; baseline FAILED list (14 entries) preserved with
+no new regressions.
