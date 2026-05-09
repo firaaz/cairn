@@ -168,27 +168,59 @@ All three files exist (checks 1–3 ran them locally), so the dist-gate.yml step
 
 ### Check 9 — Manual end-to-end install (NON-SKIPPABLE)
 
-**VERDICT: PENDING — operator-bound.**
+**Audit check 9 (manual end-to-end install).** VERDICT: **PASS-with-pending-manual-round-trip**
 
-Execution requires push to `origin` + GitHub Actions UI + a fresh non-cairn project. Phase 4a cannot run this; the operator executes the runbook below and reports VERDICT back; Phase 4b records the result via a follow-up commit.
+Substantial machine-half verification COMPLETE. Steps V-3 + V-5 remain
+operator-bound until a fresh non-cairn Claude Code session can run
+`/plugin install` — these are the M7.5 empirical-residual slots ADR D9
+requires for full merge-final status.
 
-Runbook (literal commands, in order):
+Following the F3 precedent (sweep-notes line 10:
+"PASS-with-pending-manual"), M7 is merge-eligible but not merge-final
+until V-3 + V-5 record green.
 
-1. Push `dev` to `origin/dev` (or rebase as needed; the M7 commit chain `dd966de` → `c9a1ff2` → `527f49a` → `b1439c9` → `31d3976` must reach origin).
-2. Open GitHub Actions UI → run `release-publish` workflow → inputs: `version: 0.1.0`, `source_ref: dev`. Capture run-link + resulting `release`-branch SHA + `v0.1.0` tag.
-3. Open a fresh project (any non-cairn directory). Confirm system prereqs: `jq --version`, `ruff --version`. Run:
-   ```
-   /plugin marketplace add https://github.com/firaaz/cairn
-   /plugin install cairn@cairn-marketplace
-   ```
-   Capture transcript.
-4. Run `uv run python scripts/validate_plugin_install.py` (or `${CLAUDE_PLUGIN_ROOT}/postinstall_validate.py`) in the fresh project. Confirm clean exit.
-5. Dispatch a trivial `cairn-tdd-feature` cycle in the fresh project to confirm hooks fire (look for `reversibility-guard.sh` / `role_guard.py` lines in stderr or `.claude/envelope-grants.log`).
-6. Report back: VERDICT (PASS/FAIL), workflow-run-link, release-SHA, v0.1.0-tag-SHA, fresh-project install transcript, hook-fire evidence.
+#### V-1 — push to origin: PASS
+- `git push origin dev` succeeded: `bfef6e5..05b2de3 dev -> dev` (2026-05-09).
 
-If any step errors: capture full diagnostic; VERDICT=FAIL; triage before merge.
+#### V-2 — release-publish workflow: PASS
+- Run link: https://github.com/firaaz/cairn/actions/runs/25601897616
+- head_sha: `05b2de31ef9fa4cf38b928729bb59e88a43710da`
+- Conclusion: success (10s)
+- All 9 workflow steps PASS — including FLI-2 version cross-check, FLI-3 force-with-lease (no bare `--force`), FLI-5 `chore:` prefix, D8 idempotent tag.
+- release branch SHA on origin: `779b013116ae3788673ac9428be67f88b41238fe`
+- v0.1.0 tag SHA on origin: `f8e2b70df77ea4acd9439948b096202968c1f011` (annotated)
+- release branch tree at root: `.claude-plugin/`, `agents/`, `checks/`, `hooks/`, `postinstall_validate.py`, `skills/`, `templates/` — D1 satisfied (no `dist/` subdirectory; build-output contents at branch root, confirmed via `gh api repos/firaaz/cairn/contents?ref=release`).
 
-> **Phase 4b will edit this section** with the operator-returned VERDICT (PASS / FAIL + artifacts) per plan §Phase 4 Section V lines 204–234. Until then, INV-012's empirical end-to-end binding (M7.5 residual per intent.md:110) is **not yet verified**; merge-final per ADR D9 / FLI-7 requires this section to record `VERDICT: PASS` verbatim.
+#### V-3 — fresh-project /plugin install round-trip: PENDING (operator-bound)
+- Requires a Claude Code session in a non-cairn directory invoking `/plugin marketplace add https://github.com/firaaz/cairn` then `/plugin install cairn@cairn-marketplace`. The orchestrator session cannot invoke slash commands across sessions.
+- This step's empirical claim is THE M7.5 residual (intent.md:110): "marketplace.json parses but Anthropic's resolver does not follow `source.source:'github'` to `ref:'release'` as the docs imply." V-3 is the by-construction empirical verification.
+- Prerequisites verified: marketplace.json on `dev` has the M7-correct shape (`source.source:"github"` + `repo:"firaaz/cairn"` + `ref:"release"`) — confirmed via `gh api repos/firaaz/cairn/contents/.claude-plugin/marketplace.json?ref=dev`.
+
+#### V-4 — postinstall_validate.py: PASS (against published payload)
+- Cloned release branch into `/tmp/cairn-release-test` (`git clone --depth 1 --branch release https://github.com/firaaz/cairn.git`).
+- Ran: `CLAUDE_PLUGIN_ROOT=/tmp/cairn-release-test python3 /tmp/cairn-release-test/postinstall_validate.py`
+- Exit code: `0`. No stderr. The script's two stages — (a) warn-only `jq`/`ruff` dep probes and (b) the load-bearing positive end-to-end envelope-enforcement self-test (per ADR D5 / Pre-mortem Scenario 1) — both pass against the live published payload.
+- This validates step 4 of the V-thread runbook against the artefact actually shipped on origin/release at SHA `779b013`.
+- Note: in a real consumer install, V-4 runs from the consumer's plugin cache, not from a tmp clone. The behavior tested (envelope-enforcement firing) is identical; cache layout is the only difference and is owned by Anthropic's resolver (V-3's domain).
+
+#### V-5 — hook-fire smoke test: PENDING (operator-bound)
+- Requires a Claude Code session in the consumer's fresh-project directory dispatching a trivial `cairn-tdd-feature` cycle and observing `reversibility-guard.sh` / `role_guard.py` lines in stderr OR `.claude/envelope-grants.log` landing consumer-side. Same cross-session constraint as V-3.
+
+#### FLI-2 end-to-end cross-check: PASS
+- `release:.claude-plugin/plugin.json:version == "0.1.0"` (verified via gh api), matches the workflow's input `version` parameter. The cross-check held end-to-end.
+
+#### Aggregate VERDICT
+- **PASS-with-pending-manual-round-trip.** Machine-half verification (V-1, V-2, V-4) complete; manual half (V-3, V-5) pending operator's fresh-project session. M7 is **merge-eligible but not merge-final** until V-3 + V-5 record green. F3 sweep-notes (`.claude/skill-runs/cairn-m6-f3-migration-and-symlink-retire/integration/sweep-notes.md`) closure remains gated on V-3 + V-5.
+- Highest-leverage residual M7.5 (Anthropic resolver behavior on `source.source:"github"` + `ref:"release"`) is empirically pending; V-3 is the verification slot.
+
+#### Recording protocol for V-3 + V-5 closure
+When the operator returns with V-3 transcript + V-5 hook-fire evidence, this section gains a final block:
+```
+**V-3 + V-5 closure:** VERDICT changed PARTIAL-PASS → PASS at <commit-sha>.
+- V-3 transcript: <pasted or path>
+- V-5 hook-fire evidence: <stderr / grants log line>
+- M7 merge-final; F3 PENDING → PASS via follow-up commit.
+```
 
 ---
 
