@@ -1,22 +1,22 @@
-"""RED tests for cairn-m7-plugin-deployment-pattern S1/S2 — marketplace.json schema lint.
+"""Schema-shape lint for `.claude-plugin/marketplace.json`.
 
-Pins (per intent.md §S2, ADR `m5-plugin-deployment-pattern` D2/D3/D7):
+Pins (per ADR `marketplace-source-url-amend` D2-revised/D7-revised,
+amending `m5-plugin-deployment-pattern` D2/D7 after V-3 falsification on
+2026-05-10):
 
-1. `plugins[0].source.source == "github"` (ADR D2)         [FLI-1]
-2. `plugins[0].source.repo == "firaaz/cairn"` (ADR D2)
-3. `plugins[0].source.ref == "release"` (ADR D2 + D7)      [defends S7]
+1. `plugins[0].source.source == "url"` (D2-revised)        [FLI-1]
+2. `plugins[0].source.url == "https://github.com/firaaz/cairn.git"` (D2-revised)
+3. `plugins[0].source.ref == "release"` (D2 + D7, unchanged)  [defends S7]
 4. `"version" not in plugins[0]` (ADR D3)                  [FLI-6]
 5. `"type" not in plugins[0].source` (regression)          [defends FLI-1]
 
-These five assertions are the per-PR shape lint that defends ADR D2's
-literal `source.source: "github"` + `repo: "firaaz/cairn"` + `ref: "release"`
-shape. They are the closest CI-time defense for Risk Surface item M7.5
-(Anthropic resolver-follow assumption), which is otherwise empirically
-verifiable only via audit check 9 (manual round-trip install — D9).
-
-Tests MUST FAIL at HEAD because the live `.claude-plugin/marketplace.json`
-carries the schema-invalid `"type": "git"` discriminator (see
-intent.md:21 "consumer-broken").
+These five assertions are the per-PR shape lint defending the amended
+manifest shape (`source: "url"` + explicit HTTPS URL + `ref: "release"`).
+The pivot from `source: "github"` to `source: "url"` was forced by V-3
+empirical evidence: Claude Code's resolver constructs SSH-protocol clones
+for `source: "github"`, breaking HTTPS-default consumers — see
+`docs/adr/marketplace-source-url-amend.md` for the falsification record
+and the rationale for `url` over `git-subdir`.
 """
 
 from __future__ import annotations
@@ -35,21 +35,27 @@ def _load_first_plugin() -> dict:
     return plugins[0]
 
 
-def test_marketplace_source_source_is_github() -> None:
-    """ADR D2 / FLI-1 — source discriminator is the literal 'github'.
+def test_marketplace_source_source_is_url() -> None:
+    """ADR D2-revised / FLI-1 — source discriminator is the literal 'url'.
 
     Risk Surface coverage: this test plus test_marketplace_source_ref_is_release
-    are the CI-time defense closest to M7.5 (intent.md:110). The empirical
-    residual is offloaded to audit check 9 (intent.md:94, NON-SKIPPABLE).
+    are the CI-time defense closest to M7.5. Pre-amendment this asserted
+    'github'; V-3 falsified that choice (SSH-protocol resolver behavior on
+    HTTPS-default consumers — see docs/adr/marketplace-source-url-amend.md).
     """
     plugin = _load_first_plugin()
-    assert plugin["source"]["source"] == "github"
+    assert plugin["source"]["source"] == "url"
 
 
-def test_marketplace_source_repo_is_firaaz_cairn() -> None:
-    """ADR D2 — repo coordinate is `firaaz/cairn`."""
+def test_marketplace_source_url_is_https_cairn_git() -> None:
+    """ADR D2-revised — explicit HTTPS URL forces HTTPS-protocol clone.
+
+    The `url` source-type's `url` field accepts both 'https://' and 'git@'
+    forms; we pin 'https://' to avoid the SSH-default failure mode that
+    falsified the original `source: "github"` choice on 2026-05-10.
+    """
     plugin = _load_first_plugin()
-    assert plugin["source"]["repo"] == "firaaz/cairn"
+    assert plugin["source"]["url"] == "https://github.com/firaaz/cairn.git"
 
 
 def test_marketplace_source_ref_is_release() -> None:

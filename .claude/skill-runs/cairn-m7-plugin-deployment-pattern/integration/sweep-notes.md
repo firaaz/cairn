@@ -222,6 +222,41 @@ When the operator returns with V-3 transcript + V-5 hook-fire evidence, this sec
 - M7 merge-final; F3 PENDING → PASS via follow-up commit.
 ```
 
+#### V-3 attempt 1 falsification (2026-05-10) and manifest amendment
+
+V-3 ran from a fresh non-cairn Claude Code session. Result: install **failed**.
+
+```
+Failed to install: Failed to clone repository: Cloning into
+  '/Users/firaazfarook/.claude/plugins/cache/temp_github_<id>'...
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+```
+
+**Root cause.** Claude Code's plugin resolver, given the M7-shipped manifest shape (`source.source: "github"` + `repo: "firaaz/cairn"` + `ref: "release"`), constructs an SSH-protocol clone URL (`git@github.com:firaaz/cairn`). Operator's machine has no GitHub SSH key registered; HTTPS is the working transport. Manual `git clone --branch release https://github.com/firaaz/cairn` succeeds — confirming the `release` branch payload is intact and reachable; only the resolver's protocol choice is the failure.
+
+**Falsification axis vs. ADR D9 prediction.** The original ADR `m5-plugin-deployment-pattern.md:151` flagged the residual as: "decoupling [of plugin-source clone ref from marketplace's clone] is supported by the docs but never empirically verified against Claude Code's actual resolver." V-3 actually verified the schema parses + the `ref: "release"` is followed correctly. The unanticipated failure is one layer down: transport-protocol selection for `source: "github"`. The ADR predicted falsification at the schema-follow axis; V-3 falsified at the transport-protocol axis. Both are "Anthropic resolver behavior" but at different stages of resolution.
+
+**Corroboration.** Three parallel research threads (2026-05-10) confirmed `source: "github"` forces SSH-clone is a known unfixed Claude Code bug:
+- `anthropics/claude-code#26588` (OPEN) — "Marketplace plugin cloning should default to HTTPS instead of SSH" — feature request, unshipped.
+- `anthropics/claude-code#47088` (CLOSED COMPLETED 2026-04-12) — same failure mode, macOS, identical stderr; closed without code-fix.
+- `anthropics/claude-code#50725` (OPEN) — Windows-specific; reports SSH-clone behavior on `url`-typed sources too. Risk caveat for Windows consumers, not the macOS/Linux common case.
+- Anthropic's own `claude-plugins-official` marketplace uses `git-subdir` and `url` source types — never `github`.
+
+**Amendment.** ADR `marketplace-source-url-amend` (2026-05-10) supersedes `m5-plugin-deployment-pattern/D2` and `m5-plugin-deployment-pattern/D7`. Manifest swap: `source: "url"` + `url: "https://github.com/firaaz/cairn.git"` + `ref: "release"` (unchanged). Schema-lint test updated to assert the new shape; all 5 schema tests GREEN against the amended manifest. INV-012 binding (`tests/unit/test_marketplace_schema.py::test_marketplace_source_ref_is_release`) is unchanged — that test asserts `ref: "release"`, which is preserved. **No `release`-branch / v0.1.0 tag changes** — `release` never carried `marketplace.json`; only `dev`-tip's manifest and the schema-lint test change.
+
+**Status after amendment.** VERDICT remains **PASS-with-pending-manual-round-trip**. V-3 must re-run against the amended manifest (`dev`-tip `marketplace.json` with `source: "url"`) before V-3 records green and the closure block above is filled in. V-5 (hook-fire smoke test) is unblocked once V-3 succeeds.
+
+**Re-run runbook for V-3 attempt 2:**
+1. Commit + push the amendment package (this sweep-notes edit + ADR + manifest + test updates) to `origin/dev`.
+2. Fresh Claude Code session in a non-cairn directory.
+3. Run `/plugin marketplace add https://github.com/firaaz/cairn`. Expect: success (this step never failed).
+4. Run `/plugin install cairn@cairn-marketplace`. **Expect: success**, payload lands under `~/.claude/plugins/cache/`.
+5. If install fails with the same SSH stderr: report — there is a deeper issue beyond the documented `url`-source-type behavior (possibly intersecting `#50725`'s Windows-style failure on macOS, which would be a new finding worth filing).
+6. If install fails with a different error: capture stderr; investigate. The `url` source-type is documented and used by Anthropic's own marketplace, so unexpected failures here are signal.
+7. Run `uv run python ${CLAUDE_PLUGIN_ROOT}/postinstall_validate.py`. Expect: clean exit + envelope-enforcement self-test PASS (already verified end-to-end against published `release` payload in V-4).
+8. Trivial `cairn-tdd-feature` dispatch — V-5. Confirm hook stderr / `.claude/envelope-grants.log` lands consumer-side.
+
 ---
 
 ## Follow-up notes (not blocking merge)

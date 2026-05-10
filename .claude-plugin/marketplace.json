@@ -6,8 +6,8 @@
       "name": "cairn",
       "description": "TDD-by-construction dispatch skill, hooks, and protocols for Claude Code.",
       "source": {
-        "source": "github",
-        "repo": "firaaz/cairn",
+        "source": "url",
+        "url": "https://github.com/firaaz/cairn.git",
         "ref": "release"
       }
     }
