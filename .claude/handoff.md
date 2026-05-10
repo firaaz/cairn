@@ -2,7 +2,7 @@
 slice: cairn-m7-plugin-deployment-pattern
 phase: V-3 attempt 1 falsified + amendment landed; V-3 attempt 2 + V-5 operator-bound
 branch: dev
-as-of: 2026-05-10 08f27bd
+as-of: 2026-05-10 8771c45
 ---
 
 ## State
@@ -15,7 +15,7 @@ Amendment ADR `marketplace-source-url-amend` landed (`85229ca`) supersedes-secti
 
 Field memo `docs/operator-field-notes-2026-05-10.md` committed (`08f27bd`) — five gaps observed in operator-side use; six-item action shortlist. Envelope expanded (`96fed26`) for `^docs/operator-field-notes-.*\.md$` pattern.
 
-Six GitHub issues filed (firaaz/cairn #27–#32): operator surface composable (#27 design-adr), intent template tightening (#28 substrate-slice), `/critique-intent` (#29 design-adr), cairn-on-cairn carve-out (#30 discussion-adr), M7 close (#31 substrate-slice), Node 20 deprecation (#32 substrate-slice). Issues #27 / #29 / #30 are roadmap-shaped — labels encode this (`kind:design-adr`, `kind:discussion-adr`); titles do not. Pending decision on retitling for honest framing.
+Six GitHub issues filed (firaaz/cairn #27–#32): three concrete (#28 intent template tightening; #31 M7 close; #32 Node 20 deprecation) and three roadmap-shaped retitled to match `kind:design-adr` / `kind:discussion-adr` labels — #27 *"ADR: operator surface — does the materialization carve-out earn its keep?"*, #29 *"Design: adversarial review at Phase 1 (mechanism TBD)"*, #30 *"ADR: cairn-on-cairn — maintainer-carve-out boundary"*. Titles now scan as decision-shaped vs work-shaped from the issues list.
 
 Origin/dev pushed `05b2de3..08f27bd`.
 
@@ -41,7 +41,6 @@ If V-3 attempt 2 fails: capture stderr; the `url` source-type is documented and 
 - **V-3 attempt 2 + V-5** — operator-bound; gates merge-final per ADR D9. Tracked in #31.
 - **F3 PENDING → PASS amendment + F1 deployment-gap closure note** — gated on V-3+V-5 green. Tracked in #31.
 - **Operator envelope trim** — post-merge: revisit `.claude/active-envelope.yaml` M7 phase-3 expansion at commit `527f49a`; trim or keep per next session's scope. Tracked in #31.
-- **GitHub issues retitle decision** — retitle #27 / #29 / #30 with "Design: " or "ADR: " prefix to match `kind:design-adr` / `kind:discussion-adr` labels? Operator-bound style call.
 - **Node 20 deprecation** — workflow Action versions need bump before 2026-06-02. Tracked in #32.
 - **Roadmap-shaped issues** awaiting design work — #27 (operator surface), #29 (`/critique-intent`), #30 (cairn-on-cairn carve-out). Each needs `/decision` or design ADR before code.
 - 2 baseline `TestSlice011AssertionCoverage` failures + INV-002 re-baseline (carry-overs, not yet filed as issues).
