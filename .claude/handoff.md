@@ -1,56 +1,67 @@
 ---
 slice: cairn-m7-plugin-deployment-pattern
-phase: P1-P4b complete; V-3 + V-5 (fresh-project install round-trip) operator-bound
+phase: V-3 attempt 1 falsified + amendment landed; V-3 attempt 2 + V-5 operator-bound
 branch: dev
-as-of: 2026-05-10 6cba452
+as-of: 2026-05-10 08f27bd
 ---
 
 ## State
 
-M7 dispatched via `cairn-tdd-feature` end-to-end across the prior session. Commit chain: P1 `dd966de` → P2 `c9a1ff2` → envelope `527f49a` → P3 `b1439c9` → P2 amendment `31d3976` → P4a `26e9cf4` → INV-012 binding `1f4733e` → handoff `05b2de3` → P4b `6cba452` → handoff `e4aa26f`. Operator authorized push + workflow trigger; orchestrator executed V-thread machine-half: pushed `dev` to origin (`bfef6e5..05b2de3`), triggered release-publish workflow (run [25601897616](https://github.com/firaaz/cairn/actions/runs/25601897616) green in 10s), captured `release` SHA `779b013`, `v0.1.0` tag SHA `f8e2b70`, FLI-2 cross-check held end-to-end, ran `postinstall_validate.py` against a clone of the published `release` payload (exit 0). Phase 4b recorded check-9 VERDICT: **PASS-with-pending-manual-round-trip** — F3 verbatim precedent. Suite: 13 failed / 423 passed; INV-012 binding flipped one baseline failure GREEN. All M7 tests GREEN. **No commits since handoff `e4aa26f` — state unchanged from prior session-end.**
+V-3 (M7 audit check 9 attempt 1) ran and **falsified** the M7-shipped manifest shape. From a fresh non-cairn Claude Code session, `/plugin install cairn@cairn-marketplace` failed with `git@github.com: Permission denied (publickey)` — Claude Code's plugin resolver constructs SSH-protocol clones for `source: "github"` regardless of how the marketplace was added (HTTPS). The `release` branch payload is intact and HTTPS-cloneable; only the resolver's protocol choice is broken.
+
+Three parallel research threads (Explore agents) corroborated this is a known unfixed Claude Code bug: anthropics/claude-code #26588 (OPEN), #47088 (CLOSED-without-fix 2026-04-12), #50725 (OPEN, Windows-specific intersection). Anthropic's own `claude-plugins-official` marketplace uses `git-subdir` and `url` source-types — never `github`.
+
+Amendment ADR `marketplace-source-url-amend` landed (`85229ca`) supersedes-sections `m5-plugin-deployment-pattern/D2` + `/D7`. Manifest pivoted to `source: "url"` with explicit `https://github.com/firaaz/cairn.git` URL; `ref: "release"` unchanged. Schema-lint test, INV-012 prose, INV-012 binding description all updated. Pytest 5/5 GREEN. Validator clean (only known INV-002 baseline failure). **No `release`-branch / v0.1.0 tag changes** — `release` never carried `marketplace.json`.
+
+Field memo `docs/operator-field-notes-2026-05-10.md` committed (`08f27bd`) — five gaps observed in operator-side use; six-item action shortlist. Envelope expanded (`96fed26`) for `^docs/operator-field-notes-.*\.md$` pattern.
+
+Six GitHub issues filed (firaaz/cairn #27–#32): operator surface composable (#27 design-adr), intent template tightening (#28 substrate-slice), `/critique-intent` (#29 design-adr), cairn-on-cairn carve-out (#30 discussion-adr), M7 close (#31 substrate-slice), Node 20 deprecation (#32 substrate-slice). Issues #27 / #29 / #30 are roadmap-shaped — labels encode this (`kind:design-adr`, `kind:discussion-adr`); titles do not. Pending decision on retitling for honest framing.
+
+Origin/dev pushed `05b2de3..08f27bd`.
 
 ## Next
 
-**V-thread V-3 + V-5 — operator-bound, requires fresh non-cairn Claude Code session:**
+**V-3 attempt 2 (operator-bound, fresh non-cairn session against amended manifest):**
 
-3. Fresh project (any directory NOT inside cairn's tree). Run literally:
-   ```
+1. Fresh Claude Code session in any directory NOT inside cairn's tree.
+2. ```
    /plugin marketplace add https://github.com/firaaz/cairn
    /plugin install cairn@cairn-marketplace
    ```
-   Capture both transcripts. Confirm install completes; payload lands under consumer plugin cache.
-4. (Already PASS via release-branch clone test — re-run from consumer cache for final verbatim record if desired.) `uv run python ${CLAUDE_PLUGIN_ROOT}/postinstall_validate.py` should report clean exit + envelope-enforcement self-test PASS.
-5. Trivial `cairn-tdd-feature` dispatch in fresh project. Confirm `reversibility-guard.sh` / `role_guard.py` stderr OR `.claude/envelope-grants.log` landing consumer-side.
+3. **Expected: install succeeds via HTTPS clone.** If still SSH'd: significant new finding (intersects #50725's `url`-source SSH behavior on macOS, worth filing upstream).
+4. From consumer cache: `uv run python ${CLAUDE_PLUGIN_ROOT}/postinstall_validate.py` — expect clean exit + envelope-enforcement self-test PASS. (Already verified end-to-end against published `release` payload in V-4 machine-half; this is verbatim record from real cache layout.)
+5. **V-5:** Trivial `cairn-tdd-feature` dispatch in fresh project. Confirm `reversibility-guard.sh` / `role_guard.py` stderr OR `.claude/envelope-grants.log` landing consumer-side.
 
-When V-3 + V-5 return: orchestrator amends sweep-notes (check-9 section gains "V-3 + V-5 closure" block; VERDICT PARTIAL-PASS → PASS), lands F3 PENDING → PASS follow-up commit, F1 deployment-gap closure note, optional envelope trim. Closes M5+M6 structurally.
+When V-3 + V-5 return green: orchestrator amends sweep-notes check-9 closure block (PASS-with-pending → PASS); lands F3 PENDING → PASS follow-up commit; lands F1 dist/ deployment-gap closure note; optional envelope trim of M7 phase-3 expansion. Closes M5+M6 structurally. Issue #31 closes.
+
+If V-3 attempt 2 fails: capture stderr; the `url` source-type is documented and used by Anthropic's own marketplace, so unexpected failures here are signal worth filing upstream.
 
 ## Blocked / Pending
 
-- **V-3 + V-5 (audit check 9 closure)** — operator-bound; gates merge-final per ADR D9. Empirical M7.5 residual (Anthropic resolver behavior) verified by V-3 by construction.
-- **F3 PENDING → PASS amendment** — gated on V-3 + V-5 green; standalone follow-up commit per F3 sweep-notes recording protocol.
-- **F1 dist/ deployment gap closure note** — same gate.
-- **Operator envelope trim** — post-merge: revisit `.claude/active-envelope.yaml` M7 expansion at `527f49a` — keep or trim per next session's scope.
-- **Node 20 deprecation** — workflow annotation: `actions/checkout@v4`, `astral-sh/setup-uv@v3` running on Node 20; default flips to Node 24 on 2026-06-02. Bump action versions before then. Out-of-scope for M7; new lever for the punch list.
-- 2 baseline `TestSlice011AssertionCoverage` failures + INV-002 re-baseline (carry-overs).
-- 6 amendment ADRs + spec-v2 correction + pre-§9 audit (carry-overs from prior handoffs).
-- `/handoff` skill — 7th manual refresh in a row.
+- **V-3 attempt 2 + V-5** — operator-bound; gates merge-final per ADR D9. Tracked in #31.
+- **F3 PENDING → PASS amendment + F1 deployment-gap closure note** — gated on V-3+V-5 green. Tracked in #31.
+- **Operator envelope trim** — post-merge: revisit `.claude/active-envelope.yaml` M7 phase-3 expansion at commit `527f49a`; trim or keep per next session's scope. Tracked in #31.
+- **GitHub issues retitle decision** — retitle #27 / #29 / #30 with "Design: " or "ADR: " prefix to match `kind:design-adr` / `kind:discussion-adr` labels? Operator-bound style call.
+- **Node 20 deprecation** — workflow Action versions need bump before 2026-06-02. Tracked in #32.
+- **Roadmap-shaped issues** awaiting design work — #27 (operator surface), #29 (`/critique-intent`), #30 (cairn-on-cairn carve-out). Each needs `/decision` or design ADR before code.
+- 2 baseline `TestSlice011AssertionCoverage` failures + INV-002 re-baseline (carry-overs, not yet filed as issues).
+- 6 amendment ADRs + spec-v2 correction + pre-§9 audit (carry-overs from prior handoffs, not yet filed).
+- `/handoff` skill — 8th manual refresh in a row; not yet filed as issue.
 
 ## Features
 
 - `cairn-m5-f1-packaging`: shipped + on `origin/dev` — structural gap closure note pending V-3+V-5.
 - `cairn-m5-f2-consumer-doc-surface`: closed.
 - `cairn-m6-f3-migration-and-symlink-retire`: closed + merged + branch deleted; check 9 PENDING → resolves on V-3+V-5.
-- `cairn-m7-plugin-deployment-pattern`: P1-P4b shipped + V-thread machine-half PASS (HEAD `e4aa26f`); merge-eligible, not merge-final until V-3+V-5 close. Marketplace shape on `dev` correct; release branch on origin populated; v0.1.0 tag pushed.
+- `cairn-m7-plugin-deployment-pattern`: P1-P4b shipped; V-3 attempt 1 falsified; amendment landed (`marketplace-source-url-amend`); V-3 attempt 2 + V-5 operator-bound. Merge-eligible, not merge-final until V-3+V-5 close. Marketplace shape on `dev` correct (`source: "url"`); release branch on origin populated; v0.1.0 tag pushed.
 
 ## Pointers
 
-- `docs/adr/m5-plugin-deployment-pattern.md` — governing ADR; D1–D9 testable commitments.
-- `docs/plans/2026-05-09-cairn-m7-plugin-deployment-pattern.md` — M7 dispatch input contract.
-- `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/intent.md` — Phase 1 contract (commit `dd966de`).
-- `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/validation/approach.md` — Phase 2 + amendment notes.
-- `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/integration/sweep-notes.md` — full audit; check-9 VERDICT block at lines 169-223 (machine-half PASS, V-3+V-5 PENDING).
-- `.claude/skill-runs/plugin-deployment-pattern/` — /decision verification trail.
-- `docs/ARCHITECTURE.md:99-105` — INV-012 prose + invariant-check `test-ref` binding.
-- `docs/lessons.md` L-022 — manifest-schema validity as load-bearing prerequisite.
-- `.claude/active-envelope.yaml` — M7 phase-3 expansion at commit `527f49a`; trim post-merge.
-- Release branch on origin: SHA `779b013`; v0.1.0 tag SHA `f8e2b70`; workflow run https://github.com/firaaz/cairn/actions/runs/25601897616.
+- `docs/adr/marketplace-source-url-amend.md` — amendment ADR (V-3 attempt 1 falsification record + rejected alternatives).
+- `docs/adr/m5-plugin-deployment-pattern.md` — original ADR; D2 + D7 partially superseded but text intact (append-only).
+- `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/integration/sweep-notes.md` — full audit; check-9 section now carries V-3 attempt 1 falsification block + V-3 re-run runbook (lines 224–262).
+- `docs/operator-field-notes-2026-05-10.md` — operator memo: five gaps + six-item action shortlist.
+- `docs/ARCHITECTURE.md:99-105` — INV-012 prose + invariant-check description (now reflect amended `source: "url"` shape).
+- GitHub issues: [#27](https://github.com/firaaz/cairn/issues/27), [#28](https://github.com/firaaz/cairn/issues/28), [#29](https://github.com/firaaz/cairn/issues/29), [#30](https://github.com/firaaz/cairn/issues/30), [#31](https://github.com/firaaz/cairn/issues/31), [#32](https://github.com/firaaz/cairn/issues/32).
+- Release branch on origin: SHA `779b013`; v0.1.0 tag SHA `f8e2b70`; M7 release-publish workflow run https://github.com/firaaz/cairn/actions/runs/25601897616.
+- Amendment commit: `85229ca`; envelope expansion: `96fed26`; field memo commit: `08f27bd`.
