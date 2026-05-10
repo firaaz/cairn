@@ -41,6 +41,8 @@ paths:
   - ^docs/roadmap\.md$
   # Lessons file — Phase 6 propagation surface for L-022 capture
   - ^docs/lessons\.md$
+  # Operator field notes (dated memos; append-only by convention)
+  - ^docs/operator-field-notes-.*\.md$
   # Hooks
   - ^checks/.*
   # Tests
