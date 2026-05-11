@@ -23,4 +23,5 @@
 | invariant-binding-strategy | Bind INV-001 and INV-002 to true machine-checkable assertions | accepted | firm | process | 2026-05-02 |
 | m5-plugin-distribution-and-symlink-retire | M5 Plugin Distribution and Symlink Retire | accepted | firm | architecture | 2026-05-08 |
 | m5-plugin-deployment-pattern | M5 Plugin Deployment Pattern (Release Branch + Sync CI) | accepted | firm | architecture | 2026-05-09 |
+| marketplace-source-url-amend | Amendment — pivot marketplace plugin source from `github` to `url` | falsified | firm | architecture | 2026-05-10 |
 | delivery-mechanism-friction | Delivery-mechanism friction — SessionStart pointer + reworked nav agents, deferred diagnostics | accepted | provisional | architecture | 2026-05-11 |

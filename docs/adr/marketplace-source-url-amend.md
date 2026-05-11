@@ -1,6 +1,6 @@
 ---
 id: marketplace-source-url-amend
-status: accepted
+status: falsified
 firmness: firm
 supersedes: []
 supersedes-sections: [m5-plugin-deployment-pattern/D2, m5-plugin-deployment-pattern/D7]

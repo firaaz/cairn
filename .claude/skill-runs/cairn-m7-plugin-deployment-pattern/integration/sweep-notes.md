@@ -257,6 +257,38 @@ fatal: Could not read from remote repository.
 7. Run `uv run python ${CLAUDE_PLUGIN_ROOT}/postinstall_validate.py`. Expect: clean exit + envelope-enforcement self-test PASS (already verified end-to-end against published `release` payload in V-4).
 8. Trivial `cairn-tdd-feature` dispatch — V-5. Confirm hook stderr / `.claude/envelope-grants.log` lands consumer-side.
 
+#### V-3 attempt 2 falsification (2026-05-11) — `source: "url"` does not bypass the SSH-clone path
+
+Operator ran V-3 attempt 2 in a fresh non-cairn Claude Code session after the `marketplace-source-url-amend` ADR + manifest landed on `origin/dev`. Procedure: `/plugin marketplace remove cairn-marketplace`, then `/plugin marketplace add https://github.com/firaaz/cairn`, then `/plugin install cairn@cairn-marketplace`. Result: **install failed with the identical SSH stderr** as attempt 1.
+
+```
+Failed to install: Failed to clone repository: Cloning into
+  '/Users/firaazfarook/.claude/plugins/cache/temp_github_1778513919255_bulpop'...
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+```
+
+**Cache forensics (2026-05-11, in-session by main agent):**
+- `~/.claude/plugins/marketplaces/cairn-marketplace/.claude-plugin/marketplace.json` — present, correct amended shape (`source: "url"` + `url: "https://github.com/firaaz/cairn.git"` + `ref: "release"`). The cached marketplace manifest is the post-amendment shape; this rules out stale-manifest causes.
+- `~/.claude/plugins/marketplaces/cairn-marketplace/` — fully populated via HTTPS clone (full repo tree present, including 14k CHANGELOG.md and 59k uv.lock). **Marketplace-add HTTPS clone works.**
+- `~/.claude/plugins/known_marketplaces.json` — Claude Code normalized our `source: "url"` to `source: "git"` in its internal registration. Cosmetic — the URL field is preserved with HTTPS.
+- `~/.claude/plugins/cache/` — contains only `claude-plugins-official/`; no cairn dir, no leftover `temp_github_*` (cleaned up after failed install).
+
+**What this means.** Failure is at the **plugin-install** layer, not marketplace-add. The cached marketplace.json correctly declares `source: "url"`, but Claude Code's install path still routes through its github-source clone handler (the `temp_github_<id>` cache-dir name is diagnostic of that handler). The `url` source-type, when the URL host is `github.com`, falls through to the github clone code path which prefers SSH.
+
+**Falsifies.** ADR `marketplace-source-url-amend` (load-bearing claim: "swap `source: "github"` → `source: "url"` to bypass the SSH-clone failure"). The pivot does not bypass; the failure mode is one layer below `source` typing, in the resolver's host-based routing. Status flipped `accepted → falsified`.
+
+**What's still valid.**
+- INV-012 binding (`tests/unit/test_marketplace_schema.py::test_marketplace_source_ref_is_release`) — the test asserts schema shape, which is correctly amended; the test is unrelated to the resolver bug.
+- M5 plugin-deployment-pattern's V-1/V-2/V-4 evidence (release-publish workflow, postinstall_validate against the published payload) — unchanged.
+- `release` branch + v0.1.0 tag + release-publish.yml — unchanged; no rollback needed.
+
+**What's blocked.**
+- M7 merge-final. F3 check 9 PENDING → cannot transition to PASS via any URL/github source-type pointing at `github.com` against operators without SSH keys.
+- V-5 hook-fire smoke test — blocked behind V-3.
+
+**Next.** Out-of-band `/decision` on plugin-payload transport (options sketched: GitHub Releases tarball URL, self-hosted artifact, `git-subdir` source-type, document SSH prerequisite + falsify zero-friction premise, file upstream bug + wait). The decision supersedes both `m5-plugin-deployment-pattern/D2` and `marketplace-source-url-amend` and produces the new transport ADR.
+
 ---
 
 ## Follow-up notes (not blocking merge)
