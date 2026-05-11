@@ -4,7 +4,7 @@ status: falsified
 firmness: firm
 supersedes: []
 supersedes-sections: [m5-plugin-deployment-pattern/D2, m5-plugin-deployment-pattern/D7]
-superseded-by: null
+superseded-by: plugin-payload-transport
 topic: architecture
 invariants-touched: [INV-012]
 date: 2026-05-10

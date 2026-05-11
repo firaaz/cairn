@@ -25,3 +25,4 @@
 | m5-plugin-deployment-pattern | M5 Plugin Deployment Pattern (Release Branch + Sync CI) | accepted | firm | architecture | 2026-05-09 |
 | marketplace-source-url-amend | Amendment — pivot marketplace plugin source from `github` to `url` | falsified | firm | architecture | 2026-05-10 |
 | delivery-mechanism-friction | Delivery-mechanism friction — SessionStart pointer + reworked nav agents, deferred diagnostics | accepted | provisional | architecture | 2026-05-11 |
+| plugin-payload-transport | Plugin payload transport — self-marketplace via dev/dist, A7 fallback | accepted | provisional | architecture | 2026-05-11 |
