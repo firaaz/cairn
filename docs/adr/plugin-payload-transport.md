@@ -1,14 +1,14 @@
 ---
 id: plugin-payload-transport
 name: Plugin payload transport — self-marketplace via dev/dist, A7 fallback
-status: accepted
+status: superseded
 firmness: provisional
 date: 2026-05-11
 topic: architecture
 invariants-touched: [INV-012]
 supersedes: []
 supersedes-sections: [m5-plugin-deployment-pattern/D2, m5-plugin-deployment-pattern/D7, marketplace-source-url-amend/D2-revised]
-superseded-by: null
+superseded-by: plugin-payload-transport-a1
 ---
 
 # plugin-payload-transport: Plugin payload transport — self-marketplace via dev/dist, A7 fallback
