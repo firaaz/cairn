@@ -257,6 +257,27 @@ fatal: Could not read from remote repository.
 7. Run `uv run python ${CLAUDE_PLUGIN_ROOT}/postinstall_validate.py`. Expect: clean exit + envelope-enforcement self-test PASS (already verified end-to-end against published `release` payload in V-4).
 8. Trivial `cairn-tdd-feature` dispatch — V-5. Confirm hook stderr / `.claude/envelope-grants.log` lands consumer-side.
 
+#### V-3 attempt 3 + V-5 CLOSURE (2026-05-12) — A1 (`source: "url"` + `sha:`) PASS
+
+**VERDICT changed PARTIAL-PASS → PASS at commit 2a7e145 (marketplace.json sha pin to release HEAD 04994cc).**
+
+V-3 attempt 3 ran A1 (the `url` + `sha` shape) after the operator elected probe-A1-first to avoid paying A3a's commit-`dist/` operational cost. The probe falsified the Phase-3 adversarial prediction (which had ranked A1 as non-causal-pattern dismissal): the 82/82 sha-pinning population pattern in Anthropic's marketplace IS causal — the resolver branches on sha-vs-ref pinning, not just on host detection.
+
+**Sequence:**
+1. Probe commit 9f419aa (2026-05-12) swapped marketplace.json `ref: "release"` → `sha: "779b013…"` (release HEAD).
+2. V-3 attempt 3 install: PASS. No `git@github.com: Permission denied`, no `temp_github_<id>` cache path.
+3. **Latent M5 packaging bug surfaced** at hook-load time: `Hook load failed: [{"expected": "record", "code": "invalid_type", "path": ["hooks"], "message": "Invalid input: expected record, received undefined"}]`. Cairn's `hooks.json` shipped flat (`{PreToolUse: [...], PostToolUse: [...]}`) but Claude Code's plugin schema requires the `{"hooks": {...}}` wrapper. Bug was latent through M5/M6/M7 because every prior install attempt failed at SSH before reaching the hook loader. Fixed at commit a18bca0 (`.claude-plugin/hooks-template.json` rewrapped + `tests/unit/test_hooks_json.py` helpers + `_hook_root` assertion bound to the live "received undefined" stderr).
+4. Release-publish workflow re-ran v0.1.0; new release HEAD `04994cc863a00afd14ac0d67c2a78f25a601a922`.
+5. marketplace.json sha-pin bumped to 04994cc (commit 2a7e145).
+6. Operator: `/plugin marketplace remove cairn-marketplace` + add + install. Install: PASS. Hook-load: PASS (no schema error).
+7. **V-5 hook-fire evidence:** consumer Claude Code session, operator dispatched `Bash(rm -rf /tmp/cairn-test-doesnt-exist)`. Result: blocked by `reversibility-guard.sh` PreToolUse hook with stderr `REVERSIBILITY GUARD: rm -rf: use rm with explicit paths instead`. Hook firing confirmed end-to-end consumer-side. V-5 PASS.
+
+**M7 merge-final.** F3 audit check 9 PENDING → PASS via this commit. The plugin-deployment pattern is empirically validated for fresh consumers without GitHub SSH keys configured.
+
+**Documented update-mechanism fragility (S4 from plugin-payload-transport Phase 1 pre-mortem materialized):** `/plugin update cairn@cairn-marketplace` does NOT refresh consumer's marketplace cache to pick up new sha pins. Workaround: manual `/plugin marketplace remove cairn-marketplace; /plugin marketplace add https://github.com/firaaz/cairn` per release iteration. To be documented in CONSUMER.md as part of the plugin-payload-transport ADR revision.
+
+**ADR-revision pending (separate commit chain):** `plugin-payload-transport` (committed a10342f) elevated A3a as load-bearing on the Phase-3 adversarial premise that A1 was non-causal pattern-dismissal. Empirical reality reranked: A1 works, A3a's commit-`dist/` cost is unnecessary. Revision will supersede plugin-payload-transport with A1-load-bearing shape; INV-012 wording reverts toward sha-pin; test_marketplace_schema.py rewrites for `sha`-shape assertions; lessons.md gains entry on cheap-probe-trumps-strong-adversarial-argument.
+
 #### V-3 attempt 2 falsification (2026-05-11) — `source: "url"` does not bypass the SSH-clone path
 
 Operator ran V-3 attempt 2 in a fresh non-cairn Claude Code session after the `marketplace-source-url-amend` ADR + manifest landed on `origin/dev`. Procedure: `/plugin marketplace remove cairn-marketplace`, then `/plugin marketplace add https://github.com/firaaz/cairn`, then `/plugin install cairn@cairn-marketplace`. Result: **install failed with the identical SSH stderr** as attempt 1.
