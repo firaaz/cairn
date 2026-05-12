@@ -33,19 +33,34 @@ BUILD_SCRIPT = REPO_ROOT / "scripts" / "build_dist.py"
 # ---------------------------------------------------------------------------
 
 
-def _find_entries(data: dict, event_key: str, matcher_substr: str) -> list[dict]:
-    """Return entries under `data[event_key]` whose `matcher` string contains
-    `matcher_substr` as a substring (handles the `Bash|Edit|Write`-style alt).
+def _hook_root(data: dict) -> dict:
+    """Claude Code's plugin schema requires a top-level `hooks` wrapper:
+    `{"hooks": {"PreToolUse": [...], "PostToolUse": [...]}}`. Surface it so
+    helpers operate uniformly on the inner record.
     """
-    entries = data.get(event_key) or []
+    assert "hooks" in data, (
+        "hooks manifest missing top-level 'hooks' wrapper — "
+        "Claude Code's plugin loader rejects flat shapes "
+        "(observed live: 'expected record, received undefined' at path ['hooks'])"
+    )
+    return data["hooks"]
+
+
+def _find_entries(data: dict, event_key: str, matcher_substr: str) -> list[dict]:
+    """Return entries under `data["hooks"][event_key]` whose `matcher` string
+    contains `matcher_substr` as a substring (handles the `Bash|Edit|Write`-style
+    alt).
+    """
+    entries = _hook_root(data).get(event_key) or []
     return [e for e in entries if matcher_substr in (e.get("matcher") or "")]
 
 
 def _all_command_strings(data: dict) -> list[str]:
     """Return every `command` string across PreToolUse + PostToolUse hooks."""
     out: list[str] = []
+    root = _hook_root(data)
     for evt in ("PreToolUse", "PostToolUse"):
-        for entry in data.get(evt) or []:
+        for entry in root.get(evt) or []:
             for hook in entry.get("hooks") or []:
                 cmd = hook.get("command")
                 if isinstance(cmd, str):
@@ -95,7 +110,7 @@ def _assert_hooks_manifest_shape(data: dict, label: str) -> None:
     )
 
     # PostToolUse: Edit|Write -> reality-check.sh
-    real_entries = data.get("PostToolUse") or []
+    real_entries = _hook_root(data).get("PostToolUse") or []
     assert real_entries, f"A6 [{label}]: PostToolUse must declare at least one entry"
     edit_entries = [
         e
