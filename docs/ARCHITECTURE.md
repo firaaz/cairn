@@ -35,8 +35,8 @@ token-budget:
   approximation: bytes-per-token-4
   warn-at: 360
   fail-at: 440
-binding-effective-from: 1c4d2f5a0189999452dfdcc24d1e03bcf50978ed
-description: "INV-002(a) handoff structural binding per ADR invariant-binding-strategy D4"
+binding-effective-from: <pending-slice-close-sha>
+description: "INV-002(a) handoff structural binding paused 2026-05-13 — Trial A (interaction-protocol reframe) replaces the sectioned narrative shape with a frontmatter-contract + pointer-only body; INV-002 re-baseline pending trial outcome. See docs/plans/2026-05-13-cairn-as-interaction-protocol.md and tests/unit/test_handoff_contract.py."
 ```
 
 **INV-003** Every cairn-tdd feature runs through exactly four phases in order — Intent (Reader), Validation (Skeptic), Implementation (Builder), Integration (Auditor). Each phase's role and anti-behaviors are surfaced in the agent prompts at `.claude/agents/phase-{1..4}-tdd.md` and the Phase Skill Guide section of `docs/operational-reference.md`. Phase count, names, and role assignments are locked; changes require a superseding ADR. Role-keyed write-path enforcement via `checks/role_guard.py` is preserved across the M4 shrink (envelope-grant escape and `READ_CLASS_TOOLS` constants intact). (phase-lock-and-role-declaration; phase-pipeline-evaluation; compression-infrastructure-bootstrap-superseded)

@@ -350,6 +350,12 @@ def test_token_budget_warn_at_360_does_not_fail(tmp_path, capsys, monkeypatch):
 # === T11 — Happy path: live cairn .claude/handoff.md passes =================
 
 
+@pytest.mark.skip(
+    reason="INV-002 binding paused 2026-05-13 — Trial A (interaction-protocol "
+    "reframe) replaces sectioned-markdown shape with frontmatter-contract + "
+    "pointer-only body. Re-baseline pending trial outcome; see "
+    "tests/unit/test_handoff_contract.py for new shape's validator."
+)
 def test_live_cairn_handoff_passes_structural_parser(tmp_path, monkeypatch):
     """The committed cairn handoff.md must satisfy the structural-parser schema.
 
