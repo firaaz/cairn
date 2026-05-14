@@ -181,3 +181,43 @@ def test_d5_feature_files_well_formed():
         if "epic" in front:
             bad.append(f"{p.name}: forbidden `epic:` key present")
     assert not bad, "feature file violations:\n  " + "\n  ".join(sorted(bad))
+
+
+def _resolve_adr_id_token(token: str, known: set[str]) -> bool:
+    """Return True if the ADR id portion of a cross-ref token matches a known id.
+
+    Handles two supersedes-sections shapes:
+      - slash-form: 'adr-id/D3' — base before '/' is the id
+      - space-form: 'adr-id D4 (partial: ...)' — first whitespace token is the id
+    Non-ADR file references (e.g. 'CLAUDE.md:26 prose') that contain '.' or ':'
+    before any '/' are treated as intentional non-ADR annotations and skipped.
+    """
+    if not isinstance(token, str):
+        return False
+    head = token.strip().split()[0] if token.strip() else ""
+    if not head:
+        return False
+    base = head.split("/")[0]
+    if "." in base or ":" in base:
+        return True
+    return base in known
+
+
+def test_d9_adr_cross_references_resolve():
+    """D9: adrs-referenced / supersedes / supersedes-sections values resolve to known ADR ids."""
+    known = _adr_ids()
+    bad = []
+    cross_ref_keys = ("adrs-referenced", "supersedes", "supersedes-sections")
+    for p in _adr_files():
+        front = _parse_frontmatter(p)
+        for key in cross_ref_keys:
+            value = front.get(key)
+            if value is None:
+                continue
+            items = value if isinstance(value, list) else [value]
+            for item in items:
+                if not item:
+                    continue
+                if not _resolve_adr_id_token(item, known):
+                    bad.append(f"{p.name} {key}: {item!r} does not resolve")
+    assert not bad, "unresolved cross-references:\n  " + "\n  ".join(sorted(bad))
