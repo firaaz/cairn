@@ -162,3 +162,22 @@ def test_d3_superseded_ids_intact():
     known = set(ids)
     unresolved = [(src, tgt) for src, tgt in superseded_by_pairs if tgt not in known]
     assert not unresolved, f"superseded-by pointing to unknown ADR ids: {unresolved}"
+
+
+def test_d5_feature_files_well_formed():
+    """D5: feature files carry id, name, intent, shaped-from. No epic key.
+
+    D5 reads as default-permit on extras per schema-amendment-threshold/D1 —
+    fields beyond the required four are advisory unless explicitly named-rejected
+    (epic: is the sole current named rejection).
+    """
+    required = {"id", "name", "intent", "shaped-from"}
+    bad = []
+    for p in _feature_files():
+        front = _parse_frontmatter(p)
+        missing = required - front.keys()
+        if missing:
+            bad.append(f"{p.name}: missing keys {sorted(missing)}")
+        if "epic" in front:
+            bad.append(f"{p.name}: forbidden `epic:` key present")
+    assert not bad, "feature file violations:\n  " + "\n  ".join(sorted(bad))
