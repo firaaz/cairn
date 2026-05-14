@@ -141,3 +141,24 @@ def test_d2_slice_id_shape_advisory_baseline():
         f"slice id violations increased above baseline "
         f"({len(bad)} > {LEGACY_SLICE_ID_BASELINE}):\n  " + "\n  ".join(sorted(bad))
     )
+
+
+def test_d3_superseded_ids_intact():
+    """D3: ADR ids are unique; every superseded-by points to an existing ADR id."""
+    ids: list[str] = []
+    superseded_by_pairs: list[tuple[str, str]] = []
+    for p in _adr_files():
+        front = _parse_frontmatter(p)
+        adr_id = front.get("id", "")
+        if adr_id:
+            ids.append(adr_id)
+        target = front.get("superseded-by") or front.get("superseded_by")
+        if isinstance(target, str) and target.strip():
+            superseded_by_pairs.append((p.name, target.strip()))
+
+    duplicates = sorted({i for i in ids if ids.count(i) > 1})
+    assert not duplicates, f"duplicate ADR ids: {duplicates}"
+
+    known = set(ids)
+    unresolved = [(src, tgt) for src, tgt in superseded_by_pairs if tgt not in known]
+    assert not unresolved, f"superseded-by pointing to unknown ADR ids: {unresolved}"
