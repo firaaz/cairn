@@ -63,30 +63,36 @@ def test_d1_entities_have_id():
     assert not missing, f"entities missing id: {missing}"
 
 
-def test_d1_entities_have_human_label():
-    """D1 advisory: count of entities lacking name AND title must be ≤ baseline.
+def test_d1_adrs_have_human_label():
+    """D1 advisory: count of ADRs lacking name AND title must be ≤ baseline.
 
     The identifier-scheme ADR's D7 migration is forward-only; pre-existing ADRs
     were not retrofit. This test enforces no-new-drift via a baseline constant
     rather than failing on legacy state. Lower the baseline as ADRs are normalised.
     """
-    legacy = []
+    unlabelled = []
     for p in _adr_files():
         front = _parse_frontmatter(p)
         has_name = isinstance(front.get("name"), str) and front["name"].strip()
         has_title = isinstance(front.get("title"), str) and front["title"].strip()
         if not (has_name or has_title):
-            legacy.append(p.name)
+            unlabelled.append(p.name)
 
-    assert len(legacy) <= LEGACY_LABEL_BASELINE, (
+    assert len(unlabelled) <= LEGACY_LABEL_BASELINE, (
         f"ADRs without name/title increased above baseline "
-        f"({len(legacy)} > {LEGACY_LABEL_BASELINE}): {sorted(legacy)}"
+        f"({len(unlabelled)} > {LEGACY_LABEL_BASELINE}): {sorted(unlabelled)}"
     )
 
-    # Feature files should ALL have name (no legacy gap there per audit).
-    feat_missing = []
+
+def test_d1_features_have_name():
+    """D1 strict: every feature file carries a non-empty `name:`.
+
+    Features have no legacy gap per the 2026-05-14 audit, so this is strict
+    (no advisory baseline).
+    """
+    missing = []
     for p in _feature_files():
         front = _parse_frontmatter(p)
         if not (isinstance(front.get("name"), str) and front["name"].strip()):
-            feat_missing.append(p.name)
-    assert not feat_missing, f"feature files missing name: {feat_missing}"
+            missing.append(p.name)
+    assert not missing, f"feature files missing name: {missing}"
