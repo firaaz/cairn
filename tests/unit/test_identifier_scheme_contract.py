@@ -139,5 +139,5 @@ def test_d2_slice_id_shape_advisory_baseline():
                 )
     assert len(bad) <= LEGACY_SLICE_ID_BASELINE, (
         f"slice id violations increased above baseline "
-        f"({len(bad)} > {LEGACY_SLICE_ID_BASELINE}):\n  " + "\n  ".join(bad)
+        f"({len(bad)} > {LEGACY_SLICE_ID_BASELINE}):\n  " + "\n  ".join(sorted(bad))
     )
