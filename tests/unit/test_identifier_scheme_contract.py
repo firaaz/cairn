@@ -19,6 +19,7 @@ FEATURE_DIR = CAIRN_ROOT / ".claude" / "features"
 LEGACY_LABEL_BASELINE = (
     10  # ADRs lacking both `name:` and `title:` at audit (2026-05-14)
 )
+LEGACY_SLICE_ID_BASELINE = 6  # slice ids violating D2 shape at audit (2026-05-14)
 
 FLAT_SLUG = re.compile(r"^[a-z][a-z0-9-]*$")
 HIERARCHICAL_SLUG = re.compile(r"^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$")
@@ -96,3 +97,47 @@ def test_d1_features_have_name():
         if not (isinstance(front.get("name"), str) and front["name"].strip()):
             missing.append(p.name)
     assert not missing, f"feature files missing name: {missing}"
+
+
+def test_d2_strict_id_shape_for_adrs_and_features():
+    """D2 strict: ADR and feature ids match the flat semantic slug shape."""
+    bad = []
+    for p in _adr_files():
+        adr_id = _parse_frontmatter(p).get("id", "")
+        if not FLAT_SLUG.match(adr_id):
+            bad.append(f"adr {p.name}: id={adr_id!r}")
+    for p in _feature_files():
+        feat_id = _parse_frontmatter(p).get("id", "")
+        if not FLAT_SLUG.match(feat_id):
+            bad.append(f"feature {p.name}: id={feat_id!r}")
+    assert not bad, "id-shape violations:\n  " + "\n  ".join(bad)
+
+
+def test_d2_slice_id_shape_advisory_baseline():
+    """D2 advisory: slice id violations <= baseline.
+
+    Slice ids predate identifier-scheme's lowercase-kebab-case rule in some
+    cases (semantic uppercase categoricals, version-dotted ids, slice-moved-
+    without-rekey). D1 says ids are immutable — this advisory ceiling permits
+    the legacy state while gating any new violations. Lower the baseline as
+    historical slices are renamed (deferred decision).
+    """
+    bad = []
+    for p in _feature_files():
+        front = _parse_frontmatter(p)
+        feat_id = front.get("id", "")
+        for entry in front.get("slices") or []:
+            slice_id = (entry or {}).get("id", "")
+            if not HIERARCHICAL_SLUG.match(slice_id):
+                bad.append(f"{p.name}: id={slice_id!r}")
+                continue
+            prefix = slice_id.split("/", 1)[0]
+            if prefix != feat_id:
+                bad.append(
+                    f"{p.name}: id={slice_id!r} prefix {prefix!r} "
+                    f"!= feature id {feat_id!r}"
+                )
+    assert len(bad) <= LEGACY_SLICE_ID_BASELINE, (
+        f"slice id violations increased above baseline "
+        f"({len(bad)} > {LEGACY_SLICE_ID_BASELINE}):\n  " + "\n  ".join(bad)
+    )
