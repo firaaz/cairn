@@ -3,6 +3,23 @@ id: identifier-scheme
 name: "Identifier scheme — id + name two-field model"
 status: accepted
 firmness: firm
+contract:
+  must-satisfy:
+    - D1: every entity has id (strict) and a human label (name OR title; advisory baseline)
+    - D2: ADR and feature ids are flat semantic slugs (strict)
+    - D2: slice id-shape violations ≤ baseline (advisory; 6 at 2026-05-14)
+    - D3: superseded ADR ids not reused; superseded-by chain resolves
+    - D5: feature files carry id, name, intent, shaped-from (key present)
+    - D9: ADR cross-reference fields resolve to existing ADR ids
+  must-not-violate:
+    - feature files carry an `epic:` field
+    - new entity type added without amending D1/D2
+  wrong-if:
+    - any test_identifier_scheme_contract clause fails
+    - new entity type appears in the codebase the model doesn't cover
+    - any advisory baseline (legacy-label, slice-id-shape) is exceeded
+  evidence:
+    - tests/unit/test_identifier_scheme_contract.py passes
 supersedes: [semantic-identity]
 supersedes-sections: []
 superseded-by: null
