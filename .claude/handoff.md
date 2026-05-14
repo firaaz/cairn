@@ -11,7 +11,7 @@ contract:
     - tests/unit/test_handoff_contract.py passes
 ---
 - docs/plans/2026-05-13-cairn-as-interaction-protocol.md open Trial-A-in-flight
-- docs/plans/2026-05-14-cairn-adr-contract-trial-b.md blocked D5-schema-reconciliation-decision
+- docs/plans/2026-05-14-cairn-adr-contract-trial-b.md open Trial-B-resumed-post-decision
 - docs/ARCHITECTURE.md open INV-002-re-baseline-pending-Trial-A-outcome
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
