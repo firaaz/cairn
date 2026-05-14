@@ -178,6 +178,16 @@ Per the contract block above. Concretely:
 5. Operator one-line verdict: useful / not-useful / amend-the-shape
 6. Follow-up handoff entry tracks the legacy-label retrofit sweep (the deferred D1 strict enforcement)
 
+## Operator verdict (2026-05-14, post-completion)
+
+**Works, but might be too strict.**
+
+What worked: the contract detected drift it was supposed to detect (D1 retrofit gap, D2 slice-id semantic exceptions, D5 schema reconciliation, D9 slash-form-vs-space-form parsing). Each detection produced either a fix or a structured /decision arc. The protocol's central claim — "contracts surface things prose-against-prose review misses" — held.
+
+What was too strict: the trial's own plan-level contract had a `must-not-violate` clause "no new files outside the ADR + the one test file." That clause fired during the /decision arc (which legitimately needed to land an ADR + lesson + ARCHITECTURE.md edit + skill-run archive). The trial proceeded under the framing that /decision was an enabling sub-process, not a contract violation — but the literal rule said otherwise. The contract caught its own breach; the trial chose to bend rather than stop.
+
+**Implication for the next trial:** plan-level contracts should distinguish (a) artifact-level scope (the artifact-under-test's blast radius) from (b) execution-level scope (what enabling work is permitted during the trial). Trial B conflated these; a /decision arc to resolve a contract-discovered question is enabling work, not scope creep, but the must-not-violate didn't carve that out. Future plan-level contracts should either: enumerate permitted enabling work, or split the must-not-violate into "artifact must-not-violate" + "execution must-not-violate" with different escalation rules.
+
 ---
 
 ## Hand-off into implementation
