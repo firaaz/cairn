@@ -61,3 +61,32 @@ def test_d1_entities_have_id():
         if not isinstance(front.get("id"), str) or not front["id"].strip():
             missing.append(str(p.relative_to(CAIRN_ROOT)))
     assert not missing, f"entities missing id: {missing}"
+
+
+def test_d1_entities_have_human_label():
+    """D1 advisory: count of entities lacking name AND title must be ≤ baseline.
+
+    The identifier-scheme ADR's D7 migration is forward-only; pre-existing ADRs
+    were not retrofit. This test enforces no-new-drift via a baseline constant
+    rather than failing on legacy state. Lower the baseline as ADRs are normalised.
+    """
+    legacy = []
+    for p in _adr_files():
+        front = _parse_frontmatter(p)
+        has_name = isinstance(front.get("name"), str) and front["name"].strip()
+        has_title = isinstance(front.get("title"), str) and front["title"].strip()
+        if not (has_name or has_title):
+            legacy.append(p.name)
+
+    assert len(legacy) <= LEGACY_LABEL_BASELINE, (
+        f"ADRs without name/title increased above baseline "
+        f"({len(legacy)} > {LEGACY_LABEL_BASELINE}): {sorted(legacy)}"
+    )
+
+    # Feature files should ALL have name (no legacy gap there per audit).
+    feat_missing = []
+    for p in _feature_files():
+        front = _parse_frontmatter(p)
+        if not (isinstance(front.get("name"), str) and front["name"].strip()):
+            feat_missing.append(p.name)
+    assert not feat_missing, f"feature files missing name: {feat_missing}"
