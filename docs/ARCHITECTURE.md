@@ -64,7 +64,7 @@ target: "docs/adr/identifier-scheme.md"
 description: "Verifies the two-field identifier scheme governing ADR exists"
 ```
 
-**INV-006** Every piece of work decomposes into a feature (the unit of intent) containing one or more slices (the unit of execution). Each feature has a file at `.claude/features/<id>.yaml` carrying the slice list with `after` dependency fields, feature intent, and creation date. Even single-slice features get a feature file (always-create policy). State lives in exactly one file with no duplication; slice status is derived from observable state (branch existence, merge state, `parked` flag), not stored — except `dropped`, which is the one stored exception. (feature-slice-model)
+**INV-006** Every piece of work decomposes into a feature (the unit of intent) containing one or more slices (the unit of execution). Each feature has a file at `.claude/features/<id>.yaml` carrying the slice list with `after` dependency fields, feature intent, and creation date. Even single-slice features get a feature file (always-create policy). State lives in exactly one file with no duplication; slice status is derived from observable state (branch existence, merge state, `parked` flag), not stored — except `dropped`, which is the one stored exception. The feature-file schema (`identifier-scheme/D5`: `id`, `name`, `intent`, `shaped-from`) is read default-permit per `schema-amendment-threshold/D1` — fields beyond the required set are advisory unless explicitly named-rejected. Schema amendment via WIDEN supersession requires N≥3 independent features needing the same non-schema field per `schema-amendment-threshold/D2`. (feature-slice-model; schema-amendment-threshold)
 
 ```invariant-check INV-006
 type: file-exists
