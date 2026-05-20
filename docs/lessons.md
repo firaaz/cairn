@@ -492,3 +492,29 @@ The N=3 threshold mirrors cairn's recurrence-promotion convention (L-011 uses 3 
 **Anti-pattern signals**: "this field is intuitively useful." "the author added it for good reasons." "most features will eventually need this." "migrating it away loses data." "the schema is too narrow for real operational needs." "WIDEN is just one ADR; it's cheaper than fighting drift." Each signal is locally plausible; none is N=3 evidence. Data preservation is a relocation problem; useful-field-in-one-file is a watching-mark, not a WIDEN trigger.
 
 **Mechanism**: ADR `schema-amendment-threshold/D2` codifies the threshold; this lesson records the pattern and surfaces the watching-mark at L-024. Watching-mark counts are filed inline within the lesson's "Concrete instance" section as features are encountered. Promotion of the threshold check to a hook or test (e.g., `validate_architecture.py` flags any feature file with non-D5 fields and counts them across the corpus) is deferred until N=2 instance confirms the pattern is operationally recurrent. Until then, watching-mark filing is operator-driven, prose-only enforcement.
+
+## L-025: Cairn's governance infrastructure is orthogonal to its four-phase methodology — they are separable layers
+
+**Discovered**: 2026-05-20, during the `identity-and-scope-deferral` `/decision` arc prompted by `docs/plans/2026-05-19-adaptive-reliability-direction.md`. Phase 0.5 user-journey trace surfaced the finding; Phase 3 disconfirming search verified it against the codebase.
+
+**Pattern**: Cairn ships two architecturally separable layers:
+
+1. **Governance infrastructure** — hooks (`checks/reversibility-guard.sh`, `checks/role_guard.py`, `checks/reality-check.sh`), validators (`scripts/validate_architecture.py`), append-only ADR contract (enforced by reversibility-guard), handoff-pointer contract (`tests/unit/test_handoff_contract.py`), identifier scheme (`docs/adr/identifier-scheme.md`), role guards via operator envelope (`.claude/active-envelope.yaml`), plan-doc shape (frontmatter `id:` + `envelope:`).
+
+2. **Four-phase TDD methodology** — `cairn-tdd-feature` dispatch skill (`.claude/skills/cairn-tdd-feature/SKILL.md`), phase agents (`.claude/agents/phase-{1..4}-tdd.md`), per-phase commit gates, `RAISE_ISSUE` flow.
+
+The methodology consumes the infrastructure (role_guard reads `AGENT_ROLE` when dispatch context is set), but the infrastructure does NOT depend on the methodology being invoked. Verified:
+
+- `checks/role_guard.py:43-45,137-167` — when `AGENT_ROLE` is unset, the hook falls through to operator-envelope enforcement. The dispatch path is one mode; the envelope path is the other. Both are first-class.
+- `scripts/validate_architecture.py:443-445` — phase names appear only in role-to-path mapping, not in any required-pipeline state read. No `.claude/skill-runs/` path is required for validation.
+- `tests/unit/test_handoff_contract.py` — handoff contract validates pointer resolution; pointers may target GitHub issues, ADRs, plan docs, or commits, regardless of whether the work flowed through dispatch.
+
+**Implication for identity-level reasoning**: the four-phase methodology is one named consumer of the governance infrastructure; ad-hoc edits under operator envelope and `/decision`-arc work are co-equal consumers. None is "Cairn's identity" in a way that the others are not.
+
+**Implication for proposal scrutiny**: design proposals that frame Cairn's identity at the methodology layer (e.g., "Cairn is the four-phase methodology") are foundational claims, not structural readings — the structure of the repo does not entail them. Proposals that frame Cairn's identity at the infrastructure layer (e.g., "Cairn is governance infrastructure; methodology is a preset") are likewise foundational, not structural. The orthogonality is a structural fact; what to identify Cairn AS is a strategic claim downstream of it. Conflating the two (`I've discovered the structure, so the strategic claim follows`) is the named failure mode.
+
+**Concrete non-application**: this lesson does NOT entail that the four-phase methodology should be deprioritized or that the infrastructure should be promoted to the product's headline identity. ADR `identity-and-scope-deferral` (2026-05-20) explicitly defers that strategic choice on the grounds that external evidence has not accumulated. The lesson is a structural fact; the deferral is the strategic position taken.
+
+**Anti-pattern signals**: "the orthogonality means the methodology is just one preset, so we should reframe Cairn as infrastructure" — structural fact mistaken for strategic conclusion. "The bypass paths are equivalent to the methodology" — structural separability conflated with substitutability; the four-phase path is the highest-evidence path even though all three paths consume the same infrastructure. "Since the infrastructure survives without the methodology, the methodology is vestigial" — separability does not imply atrophy; the methodology is the right tool for the kind of work it was built for (high-consequence multi-phase invariant work). Right-sizing is not rot.
+
+**Mechanism**: this lesson is the canonical record. ADRs proposing identity-level framing changes should engage with the orthogonality as a structural input but not as a sufficient condition. The decision arc artifacts at `.claude/skill-runs/identity-and-scope-2026-05-20/outputs/` contain the full pre-mortem and stress-test evidence. Cross-reference: `[[identity-and-scope-deferral]]`, `[[adr-contract-execution-scope-clause]]`.
