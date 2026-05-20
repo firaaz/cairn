@@ -30,3 +30,4 @@
 | schema-amendment-threshold | Schema amendment threshold — N≥3 trigger; D5 default-permit reading | accepted | firm | process | 2026-05-14 |
 | identity-and-scope-deferral | Cairn identity and scope — defer pivot; preserve option value | accepted | provisional | scope | 2026-05-20 |
 | adr-contract-execution-scope-clause | ADR contract grammar — execution-scope clause separates artifact blast radius from enabling work | accepted | provisional | process | 2026-05-20 |
+| slice-intent-contract | Slice intent contract — TRIAL-C frontmatter shape, operator gate, append-effective-once amendment policy | accepted | provisional | process | 2026-05-20 |
