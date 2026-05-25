@@ -34,6 +34,8 @@ paths:
   # 2026-05-14 Trial B — ADR contract on identifier-scheme (spec + impl plan)
   - ^docs/plans/2026-05-14-cairn-adr-contract-trial-b\.md$
   - ^docs/plans/2026-05-14-cairn-adr-contract-trial-b-impl\.md$
+  # 2026-05-20 thin-substrate direction trials plan (DRAFT companion to cairn-thin-substrate-direction)
+  - ^docs/plans/2026-05-20-cairn-thin-substrate-trials\.md$
   # M7 Phase-3 write surface — schema rewrite + release workflow + opt artefacts
   # (envelope expansion required because Claude Code does not auto-set
   # AGENT_ROLE on subagent dispatch; role_guard falls through to the

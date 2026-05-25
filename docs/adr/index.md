@@ -30,3 +30,4 @@
 | schema-amendment-threshold | Schema amendment threshold — N≥3 trigger; D5 default-permit reading | accepted | firm | process | 2026-05-14 |
 | identity-and-scope-deferral | Cairn identity and scope — defer pivot; preserve option value | accepted | provisional | scope | 2026-05-20 |
 | adr-contract-execution-scope-clause | ADR contract grammar — execution-scope clause separates artifact blast radius from enabling work | accepted | provisional | process | 2026-05-20 |
+| cairn-thin-substrate-direction | Cairn thin substrate — six load-bearing primitives at three time scales (DRAFT, candidate D3.4 input vs identity-and-scope-deferral) | proposed | provisional | architecture | 2026-05-20 |
