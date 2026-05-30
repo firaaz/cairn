@@ -10,8 +10,9 @@ contract:
   evidence:
     - tests/unit/test_handoff_contract.py passes
 ---
-- docs/plans/2026-05-19-adaptive-reliability-direction.md open cairn-identity-brainstorm-pending
-- docs/adr/slice-intent-contract.md open contested-by-cairn-identity-question-2026-05-22
+- docs/plans/2026-05-22-cairn-identity-direction.md open identity-decision-arc-next
+- bf2d05a open charter-cycle-spec+arc-A-landscape-phase0-inputs
+- docs/adr/slice-intent-contract.md open supersede-pending-by-identity-adr
 - docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
@@ -42,5 +43,5 @@ contract:
 - gh:firaaz/cairn#29 open phase-1-adversarial-review
 - gh:firaaz/cairn#30 open cairn-on-cairn-carve-out
 - gh:firaaz/cairn#31 blocked V-3-attempt-2+V-5-operator-bound
-- gh:firaaz/cairn#32 open Node-20-deadline-2026-06-02
+- gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
