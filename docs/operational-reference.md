@@ -221,6 +221,29 @@ This is the FLI-2 contract: **fail-open on absence** (no block → `0`) but **fa
 
 **FLI-1 (shared-matcher invariant).** `premise_guard.py` and `validate_architecture.py`'s `premise-grounding` assertion MUST route quote-vs-source through the same `scripts/lib/premise_match.grounded` — they cannot diverge on tolerance. A premise that passes one passes the other for identical inputs — i.e. the same `quote` against the same resolved source text; the equivalence is matcher-scoped, not whole-pipeline, because the two callers resolve `source` paths against different roots (the guard uses `CLAUDE_PROJECT_DIR`/cwd, the validator its own `project_root`).
 
+## Scope-split (atomicity) gate (`checks/atomicity_guard.py`)
+
+The scope-split (atomicity) gate is a sibling of the premise gate at the same Phase-1→Phase-2 boundary (skill Step 5a). It reads an intent's optional `## Contract` block and runs the atomicity check on its `must-satisfy` clauses, blocking Phase-2 dispatch on a non-atomic untagged clause.
+
+```bash
+uv run python checks/atomicity_guard.py .claude/skill-runs/<feature-id>/intent.md
+```
+
+**Atomicity (ADR D3).** A clause is atomic iff verifiable by a single tool call or single file check. Clauses without a tag must pass atomicity. A non-atomic clause must be split into atomic clauses OR carry one of four named exception tags — tagging is the cheap one-line escape:
+
+- `universal-set` — quantifies over a set; declaration enumerates the set.
+- `regression-meta` — `unchanged`/`no regression` meta-clause; declaration names the baseline.
+- `operator-bound` — needs human action/judgement; declaration names the operator step.
+- `trivial-existence` — a file/output simply exists; NO declaration required.
+
+The first three tags require a non-empty declaration after the colon; an unknown tag always fails. Mapping form: `{clause: "<EARS>", except: "<tag>: <declaration>"}`.
+
+**Exit codes.** `0` = all clauses atomic-or-validly-tagged, or no `## Contract` block (fail-open with a visible stderr notice unless `CAIRN_CONTRACT_REQUIRED=1`). `1` = ≥1 offence (non-atomic untagged clause, unknown tag, or required tag with an empty declaration), or an absent block under `CAIRN_CONTRACT_REQUIRED=1`. `2` = intent unreadable, malformed YAML, or a `## Contract` heading present but no parseable fenced block (fail-closed backstop).
+
+**Override.** `CAIRN_ATOMICITY_FIX=1` bypasses the check (exit `0` with a stderr notice).
+
+**FLI-1 (shared-lib invariant).** `atomicity_guard.py` and `validate_architecture.py`'s `scope-split` assertion (`type: scope-split`) MUST route through the same `scripts/lib/atomicity.check_clauses` (and its `EXCEPTION_TAGS`) — they cannot diverge on the tag set or pass/fail logic.
+
 ## Operator envelope (`.claude/active-envelope.yaml`)
 
 The operator-session write gate. Read by `checks/role_guard.py` when `AGENT_ROLE` is unset (i.e., a regular Claude Code session, not a dispatch-skill phase run).
@@ -277,6 +300,8 @@ Knobs the operator (or downstream consumer) may set. Defaults follow the "no har
 | `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; new content must be additive over old. Logs to `.claude/adr-editorial-fixes.log`. |
 | `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in: rewrite `docs/plans/measurements/2026-04-12-slice-003.txt` with fresh turn-1 reading. Unset by default. |
 | `CAIRN_PREMISE_FIX` | unset | `checks/premise_guard.py` | `=1` bypasses the premise-grounding check (exit 0 with stderr notice) for a known, operator-accepted divergence. See "Premise-grounding gate". |
+| `CAIRN_ATOMICITY_FIX` | unset | `checks/atomicity_guard.py` | `=1` bypasses the scope-split (atomicity) check (exit 0 with stderr notice) for a known, operator-accepted divergence. See "Scope-split (atomicity) gate". |
+| `CAIRN_CONTRACT_REQUIRED` | unset | `checks/atomicity_guard.py` | `=1` makes an intent with no `## Contract` block exit `1` (block) instead of fail-open. See "Scope-split (atomicity) gate". |
 
 **Dev-mode local knobs** (read by `commands/claude-code/.local/dev-mode.md`, cairn-internal — not part of the consumer surface): `CAIRN_DEVMODE_PLAN_STALE_DAYS` (default 30), `CAIRN_DEVMODE_MEMORY_STALE_DAYS` (default 60), `CAIRN_DEVMODE_LESSON_STALE_DAYS` (reserved).
 
