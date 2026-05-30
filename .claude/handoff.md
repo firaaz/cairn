@@ -11,7 +11,7 @@ contract:
     - tests/unit/test_handoff_contract.py passes
 ---
 - docs/adr/cairn-thin-substrate-direction.md open identity-landed+premise-guard-hook-shipped+reactivity-N3-trigger
-- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialC-shipped-06a8391+TrialE-gated-on-TrialD
+- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialC+TrialD-mechanism-shipped-25a734e+TrialE-gated-on-TrialD-measurement
 - docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
