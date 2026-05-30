@@ -85,3 +85,43 @@ Phase 4 runs and records as evidence (CI `dist-gate.yml` runs NONE of these — 
 - `bash scripts/smoketest_hooks.sh` — `PASS atomicity_guard.py` (clean import under bare `python3`).
 - Drift audit: the tag set documented in `templates/intent.md` equals `scripts/lib/atomicity.EXCEPTION_TAGS`.
 - Wiring check: grep confirms the atomicity gate step is present in `.claude/skills/cairn-tdd-feature/SKILL.md` and its `dist/` mirror; `docs/operational-reference.md` env-var table lists `CAIRN_ATOMICITY_FIX` and `CAIRN_CONTRACT_REQUIRED`.
+
+## Status (as of 2026-05-30, HEAD 496e1e7)
+
+Mechanism **SHIPPED** through cairn-tdd-feature phases 1-4 (`233096e` intent · `8dec48e` RED · `c1ae50c`+`644f3db` GREEN+wiring · `25a734e` close · `61a3ad8`+`496e1e7` handoff-contract fix). 58 new tests green; validator + smoketest pass; 8 pre-existing baseline failures, zero new. Adversarial verification (26 gate-bypass inputs): no real defects; escape-hatch design holds.
+
+Trial D's **pass criteria are NOT yet met** — only the prerequisite (the four exception classes accepted by a scope-split check) is built. The three pass numbers from §2 Trial 2 of the trials plan are unmeasured. This section is the next-session brief.
+
+## Next session — fix F1, then the 3-intent measurement
+
+### Step 1 — fix F1 (`\bno\s` over-block) FIRST, via cairn-tdd-feature or a focused TDD pass
+
+The adversarial probe ran the **frozen** `is_atomic` over real corpus clauses and measured **~22% false-positive rate, every miss from the `\bno\s` alternative** in `_UNIVERSAL` (`scripts/lib/atomicity.py:19-22`). Confirmed FP clauses: m2 b2 "…returns no INV-NNN patterns", m2 b8 "…carries no word boundaries", m5-f1 A4 "no path under…", m5-f1 A6 "No hook command contains…", m7 FLI-4 "No third-party Actions…", m7 FLI-7 "No merge to dev…". All are genuinely atomic single checks. `\bno\s` carries no multiplicity semantics — it fires on any "no <noun>". This makes the supposedly *shy/biased-to-pass* heuristic non-shy; measuring #3 against it just re-derives "22%, fix `\bno\s`".
+
+- **Verified-stable signals — DO NOT touch:** `each`/`every` (m5-f1 A3 = true positive), the verb-conjunction path (m5-f1 A1 = true positive), `_REGRESSION` (fired on nothing — zero false positives). `do NOT`/`does NOT` correctly pass (`NOT` ≠ `no\s`).
+- **OPEN DESIGN QUESTION (settle before editing):** should `is_atomic` flag universal-NEGATION at all, or drop `\bno\s` entirely and leave negation to the `universal-set` tag — so the bare heuristic only catches `each`/`every`/`exactly the following` + verb-conjunctions + regression phrases? Leaning: drop `\bno\s` (the tag is the escape; a shy heuristic should under-fire). A narrower middle option: only fire on "no <plural-noun>" / "none of", not "no <singular>".
+- **TDD shape:** add the 6 confirmed FP clauses as a RED regression test in `tests/unit/test_atomicity.py` (assert `is_atomic` True), plus keep a true-positive guard (A1/A3 still flag), then narrow the regex GREEN. Re-pin the synthetic test rows to these VERBATIM corpus strings while here (the Phase-2 synthetic-corpus gap, F2).
+
+### Step 2 — the 3-intent measurement (operator-author / assistant-instrument)
+
+**This cannot be run headless.** #1 and #2 below measure the OPERATOR's authoring experience; if the assistant authors the Contract blocks the numbers are void. Protocol: the operator authors each intent's `## Contract` block in EARS shape with tags available, gate running at the Phase-1→2 boundary; the assistant instruments.
+
+Candidate intents (span the size range): LIGHT `.claude/skill-runs/m2-dogfood-extract-invariant-ids/intent.md` (8 behaviors, the false-positive denominator — should be ~all atomic); MEDIUM `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/intent.md` (FLI-1..7); HEAVY `.claude/skill-runs/cairn-m5-f1-packaging/intent.md` (A1..A12).
+
+| # | Metric | Target (§2 Trial 2) | How |
+|---|--------|--------------------|-----|
+| 1 | Authoring-time delta | ≤30% | operator stopwatches EARS+tag authoring vs felt prose baseline; small-N self-report (no recorded baseline exists — same shape as Probe A's +25-33%) |
+| 2 | Rubber-stamp reduction | ≥2 of 3 intents | binary per intent: did the gate surface a split/tag decision the operator would otherwise have waved through? |
+| 3 | Atomicity false-positive rate | <10% | of clauses the gate flags, the fraction the operator judges genuinely atomic; assistant runs the gate + proposes labels, operator adjudicates; denominator anchored on m2's 8 atomic behaviors |
+
+**Pass → Trial E unblocks.** Fail (#3 still >10% after the fix, or #1 breaches 30% on the HEAVY intent) is itself a real Trial-D finding — the surcharge/precision is too high — not a bug to paper over; record it and decide whether to narrow further or accept the heuristic as advisory-only.
+
+### Carried findings (from `integration/sweep-notes.md`)
+
+- **F3 foot-guns** (low severity, defer): `_extract_contract_block` first-yaml-fence-wins (a 2nd `## Contract` block is unchecked); near-miss heading `##  Contract` (wrong spacing/casing) fails-open. Candidates for a hardening slice only if the gate becomes a hard enforcement wall rather than an advisory shy check.
+- **F4 residual semantic hole** (by design): a non-atomic clause mis-tagged `trivial-existence`, or a junk declaration on a required tag, passes — operator-review-bound, the same honest limit as premise-grounding. A judge-agent is the post-Trial-E closer.
+- **Close-sequence bug → file on `gh#4` (close-sequence-hardening):** Phase 4 runs its audit BEFORE it appends the handoff pointer, so a handoff line that violates `test_handoff_contract` (>120 chars, or a non-`docs/`/`gh:`/`sha` pointer) ships green-on-phase-4 and only fails the next full suite. The fix: the handoff-append step must run `test_handoff_contract` after writing, or construct the pointer line through the contract's shape.
+
+### Envelope note
+
+`.claude/active-envelope.yaml` is `mode: operator` and already grants every path the next session needs (`scripts/lib/.*`, `tests/.*`, `.claude/skill-runs/.*`, this plan doc, `templates/intent.md`). It is left modified-uncommitted (worktree-scoped, operator-owned).

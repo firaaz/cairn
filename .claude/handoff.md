@@ -44,4 +44,4 @@ contract:
 - gh:firaaz/cairn#31 blocked V-3-attempt-2+V-5-operator-bound
 - gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
-- docs/plans/2026-05-30-cairn-trial-d-scope-split.md deferred measurement+F1-no-overblock-calibration
+- docs/plans/2026-05-30-cairn-trial-d-scope-split.md open next-session-brief-fix-no-overblock-then-3-intent-measurement
