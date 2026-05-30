@@ -43,6 +43,18 @@ def test_stale_premise_fails(tmp_path):
     assert "src.py" in result
 
 
+def test_tolerant_match_grounds(tmp_path):
+    # Indentation reflow + a trailing comment the quote omits still grounds via
+    # the shared whitespace-normalize + comment-strip matcher.
+    (tmp_path / "src.py").write_text("    def f():  # impl\n        return 1\n")
+    result = _run_assertion(
+        tmp_path,
+        "INV-TEST",
+        _assertion([{"source": "src.py", "quote": "def f():"}]),
+    )
+    assert result is None
+
+
 def test_missing_source_fails(tmp_path):
     result = _run_assertion(
         tmp_path,

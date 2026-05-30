@@ -193,6 +193,34 @@ Phase transitions are enforced by git, not by session state:
 
 The `cairn-tdd-feature` dispatch skill verifies each prior phase commit (Steps 5/7/9/11 of `.claude/skills/cairn-tdd-feature/SKILL.md`) before advancing; ad-hoc edits sidestep this entirely.
 
+## Premise-grounding gate (`checks/premise_guard.py`)
+
+A Phase-1→Phase-2 approval gate that blocks dispatch when an intent's claims about existing source have gone stale or fabricated. It reads the intent's optional `## Premise Grounding` block and diffs each verbatim `quote:` against live source, so the dispatch skill never proceeds on a premise the current tree no longer supports.
+
+**Invocation:**
+
+```bash
+uv run python checks/premise_guard.py .claude/skill-runs/<feature-id>/intent.md
+```
+
+Run by the dispatch skill at Step 5a (between the Phase-1 commit verify and the Phase-2 dispatch). `source:` paths resolve relative to `CLAUDE_PROJECT_DIR` (the consumer cwd); the shared matcher loads from cairn's own root, so the two diverge cleanly when cairn is consumed downstream.
+
+**Exit codes** (mirror `role_guard.py`):
+
+- `0` — all premises grounded, OR no `## Premise Grounding` section, OR a `premises:` value of YAML null (`~`/absent value) or an empty list. Proceed to Phase 2.
+- `1` — one or more premises not grounded: the quoted span is absent (stale or fabricated), or the cited source is missing/unreadable. The stderr names each failing premise; **block dispatch** until corrected.
+- `2` — malformed input: intent file missing/unreadable, unparseable YAML block, a `premises` value that is not a list, a premise that is not a mapping or whose `source`/`quote` is not a string (e.g. an int or list value), or bad args. Treat as a malformed-intent `RAISE_ISSUE`.
+
+This is the FLI-2 contract: **fail-open on absence** (no block → `0`) but **fail-closed on malformation** (present-but-broken block → `2`). A present-but-broken premise block never silently passes.
+
+**The `## Premise Grounding` intent section.** Optional and **operator-authored at the Phase-1→Phase-2 gate**, not by `phase-1-tdd` — the Reader contract forbids reading implementation source, so Phase 1 cannot verify a verbatim span. Omit the section when the intent makes no source-behaviour claims. When present, it carries one fenced ```yaml block with a `premises:` list; each entry pins a repo-root-relative `source:`, a verbatim `quote:` (block scalar), and a one-line `label:` stating the current-behaviour claim the intent depends on. Template shape: `templates/intent.md`.
+
+**Override.** `CAIRN_PREMISE_FIX=1` bypasses the grounding check (exit `0` with a stderr notice) — for a known, operator-accepted divergence where the quote intentionally no longer matches.
+
+**Tolerance semantics.** Quote-vs-source matching is whitespace- and comment-tolerant via `scripts/lib/premise_match.grounded`: both sides are whitespace-normalized (all runs collapse to single spaces), and comments are stripped before the compare — line comments (`#`) for `.py`/`.sh`/`.yaml`/`.yml`, HTML comments (`<!-- -->`) for `.md`. So a re-indented or line-wrapped span still grounds, and a comment edit inside the cited span still grounds; a token or value change does not. An empty or comment-only quote never grounds. The comment-strip is naive: a `#` (or `<!--`) inside a string literal in the cited source is treated as a comment-start, so a change confined to text after a string-internal `#` may not be caught — this is an accepted bound of the mechanical verbatim-quote diff, which does not parse source semantics (premise_guard is not a source-comprehension layer).
+
+**FLI-1 (shared-matcher invariant).** `premise_guard.py` and `validate_architecture.py`'s `premise-grounding` assertion MUST route quote-vs-source through the same `scripts/lib/premise_match.grounded` — they cannot diverge on tolerance. A premise that passes one passes the other for identical inputs — i.e. the same `quote` against the same resolved source text; the equivalence is matcher-scoped, not whole-pipeline, because the two callers resolve `source` paths against different roots (the guard uses `CLAUDE_PROJECT_DIR`/cwd, the validator its own `project_root`).
+
 ## Operator envelope (`.claude/active-envelope.yaml`)
 
 The operator-session write gate. Read by `checks/role_guard.py` when `AGENT_ROLE` is unset (i.e., a regular Claude Code session, not a dispatch-skill phase run).
@@ -248,6 +276,7 @@ Knobs the operator (or downstream consumer) may set. Defaults follow the "no har
 | `AGENT_ENVELOPE` | unset | `checks/role_guard.py` | JSON array of regex strings (or `{paths:[...]}` object). For `phase-3-tdd`, the only write-path gate; for static-policy roles, the wider envelope-grant escape (D9). |
 | `ADR_EDITORIAL_FIX` | unset | `checks/reversibility-guard.sh` | Typo-fix escape hatch for ADR body edits; new content must be additive over old. Logs to `.claude/adr-editorial-fixes.log`. |
 | `CAIRN_RECORD_MEASUREMENTS` | unset | `tests/unit/test_context_budget.py` | Opt-in: rewrite `docs/plans/measurements/2026-04-12-slice-003.txt` with fresh turn-1 reading. Unset by default. |
+| `CAIRN_PREMISE_FIX` | unset | `checks/premise_guard.py` | `=1` bypasses the premise-grounding check (exit 0 with stderr notice) for a known, operator-accepted divergence. See "Premise-grounding gate". |
 
 **Dev-mode local knobs** (read by `commands/claude-code/.local/dev-mode.md`, cairn-internal — not part of the consumer surface): `CAIRN_DEVMODE_PLAN_STALE_DAYS` (default 30), `CAIRN_DEVMODE_MEMORY_STALE_DAYS` (default 60), `CAIRN_DEVMODE_LESSON_STALE_DAYS` (reserved).
 

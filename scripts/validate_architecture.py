@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 
 from _root import project_root
+from lib.premise_match import grounded
 
 
 def _resolve_project_root() -> Path:
@@ -745,7 +746,7 @@ def _run_premise_grounding_assertion(
                 f"Check D: {inv_id} FAIL — premise-grounding: "
                 f"cited source unreadable: {source}"
             )
-        if quote not in text:
+        if not grounded(text, quote, Path(source).suffix):
             return (
                 f"Check D: {inv_id} FAIL — premise-grounding: premise no longer "
                 f"grounded in {source} (quoted text absent — stale or fabricated): {quote!r}"

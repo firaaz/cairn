@@ -63,6 +63,8 @@ The feature id is derived from the plan doc's frontmatter `id:` field, or from t
 
 5. **Verify Phase 1 commit.** Parse the JSON tail line for `status` and `commit_hash`. If `status != "OK"`, dispatch `triager-tdd`; act on its decision (escalate, re-dispatch, or abort). Verify the commit exists with `git show <commit_hash> --stat`.
 
+5a. **Premise-grounding approval gate.** Surface the committed `intent.md` to the operator for confirmation. If the intent makes claims about existing source behaviour, the operator adds a `## Premise Grounding` block (see `templates/intent.md` for shape — operator-authored at this gate, not by `phase-1-tdd`). Run `uv run python checks/premise_guard.py .claude/skill-runs/<feature-id>/intent.md`. On exit `0`, proceed to Phase 2. On exit `1`, surface the stderr diff and **block dispatch** until the operator corrects the premise (or sets `CAIRN_PREMISE_FIX=1` for a known divergence). On exit `2`, treat as a malformed-intent RAISE_ISSUE and dispatch `triager-tdd`.
+
 6. **Dispatch Phase 2.** Agent tool with `subagent_type: phase-2-tdd`, prompt including: feature id, intent.md path, plan doc path, workspace path, `SNAPSHOT_SHA`, and the touched invariant ids.
 
 7. **Verify Phase 2 commit and that tests are RED at HEAD~0.** Parse the JSON. Then run `uv run pytest <new-test-files> -v` directly (skill code, not subagent) and confirm tests fail. If green, the intent was already satisfied — escalate.

@@ -52,3 +52,21 @@ RAISE_ISSUE. -->
 <!-- ≥1 entry. Required. What this slice deliberately does NOT do. Derive
 from the plan-doc's Boundary plus the cited ADRs' explicit deferrals. If you
 cannot name something out-of-scope, RAISE_ISSUE. -->
+
+## Premise Grounding
+<!-- OPTIONAL. NOT authored by phase-1-tdd — its Reader contract forbids
+reading implementation source, so it cannot verify a verbatim span. The
+operator adds this block at the Phase-1→Phase-2 approval gate (skill Step 5a),
+where premise_guard.py diffs each quote against live source. Omit the section
+entirely if the intent makes no claims about existing source behaviour. When
+present, each premise pins a verbatim `quote:` from a repo-root-relative
+`source:` and a one-line `label:` stating the current-behaviour claim the
+intent depends on. -->
+
+```yaml
+premises:
+  - source: scripts/_root.py            # repo-root-relative path
+    quote: |                            # verbatim span; block scalar
+      def project_root() -> Path:
+    label: "one-line current-behaviour claim the intent depends on"
+```
