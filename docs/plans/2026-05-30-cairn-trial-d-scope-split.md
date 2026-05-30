@@ -110,6 +110,8 @@ The adversarial probe ran the **frozen** `is_atomic` over real corpus clauses an
 
 Candidate intents (span the size range): LIGHT `.claude/skill-runs/m2-dogfood-extract-invariant-ids/intent.md` (8 behaviors, the false-positive denominator — should be ~all atomic); MEDIUM `.claude/skill-runs/cairn-m7-plugin-deployment-pattern/intent.md` (FLI-1..7); HEAVY `.claude/skill-runs/cairn-m5-f1-packaging/intent.md` (A1..A12).
 
+**Next-session setup (recommended, not yet run).** The three intents are completed-run records — do NOT mutate them. Scaffold three scratch files, each with the intent prose copied for derivation + an empty `## Contract` skeleton (that scaffolding is assistant instrumentation, NOT authoring the measured `must-satisfy`). The operator authors `must-satisfy` in EARS + makes the tag/split calls, stopwatching #1 and flagging #2; the assistant runs `uv run python checks/atomicity_guard.py <scratch>` and proposes FP labels for #3 adjudication. Do LIGHT (m2) end-to-end first, then MEDIUM/HEAVY. Post-F1 sanity: m2 b2/b8 ("…no INV-NNN patterns", "…no word boundaries") must now pass **bare** — they were the `\bno\s` FP signal.
+
 | # | Metric | Target (§2 Trial 2) | How |
 |---|--------|--------------------|-----|
 | 1 | Authoring-time delta | ≤30% | operator stopwatches EARS+tag authoring vs felt prose baseline; small-N self-report (no recorded baseline exists — same shape as Probe A's +25-33%) |
