@@ -13,11 +13,12 @@ collection) and the ``scope-split`` assertion type is unregistered (so the
 discriminating ``*_offends`` assertion case fails — an unknown type falls
 through to ``return None`` and a non-atomic clause silently passes).
 
-NOTE on corpus grounding: the env's stdout/read channel could not surface the
-verbatim prose of the m2/m5/m7 corpus intents at authoring time, so the LIGHT
-denominator and HEAVY/MEDIUM rows below use clauses that exercise the SAME
-documented signals (intent.md lines 32 / 55). approach.md flags re-pinning
-these to verbatim corpus strings as a human follow-up.
+NOTE on corpus grounding: the ``NO_NEGATION_ATOMIC_CLAUSES`` regression rows are
+verbatim, source-cited clauses from the m2/m5/m7 corpus intents (the Trial-D F1
+false-positive set the frozen ``\\bno\\s`` over-blocked). The synthetic
+LIGHT/UNIVERSAL/REGRESSION rows below still exercise the SAME documented signals
+(intent.md lines 32 / 55); full re-pinning of those to verbatim corpus strings is
+optional polish, not load-bearing for the <10% false-positive bound.
 """
 
 from __future__ import annotations
@@ -82,6 +83,28 @@ def test_adjectival_and_stays_atomic_no_over_split() -> None:
     # heuristic must NOT split it (intent.md line 32).
     assert is_atomic("the config file exists and parses as valid yaml") is True
     assert is_atomic("the output is present and well-formed") is True
+
+
+# Verbatim atomic clauses the frozen `\bno\s` alternative over-blocked (Trial-D F1:
+# ~22% false-positive rate, every miss from `\bno\s` firing on any "no <noun>").
+# Source-cited corpus strings, so the FP denominator is grounded, not synthetic.
+# `\bno\s` carried no multiplicity; genuine multi-domain negation still trips on
+# `any`/`none of` + the `universal-set` tag escape, so dropping it under-fires (shy).
+NO_NEGATION_ATOMIC_CLAUSES = [
+    "text with no INV-NNN patterns returns an empty list",  # m2 behavior 2
+    "the regex carries no word boundaries",  # m2 behavior 8
+    "no path outside the allow-list is present in the built tree",  # m5-f1 A4 (allow-list inverse)
+    "no hook command contains the legacy slice-system literal",  # m5-f1 A6
+    "no third-party Actions may appear in uses directives",  # m7 FLI-4
+    "no merge to dev without a verbatim VERDICT PASS recorded",  # m7 FLI-7
+]
+
+
+@pytest.mark.parametrize("clause", NO_NEGATION_ATOMIC_CLAUSES)
+def test_no_negation_clauses_stay_atomic(clause: str) -> None:
+    assert is_atomic(clause) is True, (
+        f"false positive on atomic negation clause: {clause!r}"
+    )
 
 
 # ───── is_atomic: HEAVY/MEDIUM non-atomic clauses (must flag when bare) ─────

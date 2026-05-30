@@ -17,7 +17,7 @@ EXCEPTION_TAGS = frozenset(
 TAGS_REQUIRING_DECLARATION = EXCEPTION_TAGS - {"trivial-existence"}
 
 _UNIVERSAL = re.compile(
-    r"\b(every|all|each|any)\b|\bnone of\b|\bexactly the following\b|\bno\s",
+    r"\b(every|all|each|any)\b|\bnone of\b|\bexactly the following\b",
     re.IGNORECASE,
 )
 _REGRESSION = re.compile(
