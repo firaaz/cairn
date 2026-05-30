@@ -44,3 +44,4 @@ contract:
 - gh:firaaz/cairn#31 blocked V-3-attempt-2+V-5-operator-bound
 - gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
+- .claude/skill-runs/cairn-trial-d-scope-split/integration/sweep-notes.md open TrialD-phase4-sweep-green+dist-mirror-clean+F1-F4-to-deferred-3-intent-measurement
