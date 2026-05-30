@@ -131,6 +131,81 @@ def test_intent_template_shape_and_eight_headings() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Sub-test 2b: templates/intent.md ## Contract block (cairn-trial-d-scope-split)
+# ---------------------------------------------------------------------------
+
+
+def test_intent_template_has_contract_block_with_parseable_yaml() -> None:
+    """``templates/intent.md`` carries a ``## Contract`` heading whose fenced
+    YAML block parses (``yaml.safe_load`` succeeds) and exposes a
+    ``must-satisfy`` key (cairn-trial-d-scope-split intent.md lines 36-40).
+
+    ADD-not-REPLACE: this is additive — the eight-heading-in-order assertion in
+    ``test_intent_template_shape_and_eight_headings`` must stay green (FLI-5).
+
+    RED at HEAD: the ``## Contract`` block does not exist in the template yet.
+    """
+    text = _read(INTENT)
+    _front, body = _split_frontmatter(text)
+    body_lines = body.splitlines()
+
+    contract_idx = next(
+        (i for i, ln in enumerate(body_lines) if ln.strip() == "## Contract"),
+        None,
+    )
+    assert contract_idx is not None, (
+        "templates/intent.md must contain a '## Contract' heading "
+        "(cairn-trial-d-scope-split intent.md line 36)."
+    )
+
+    # Find the fenced yaml block that follows the heading (before the next '## ').
+    fence_open = None
+    fence_close = None
+    for i in range(contract_idx + 1, len(body_lines)):
+        ln = body_lines[i]
+        if ln.strip().startswith("## "):
+            break
+        if fence_open is None and ln.strip().startswith("```"):
+            fence_open = i
+            continue
+        if fence_open is not None and ln.strip() == "```":
+            fence_close = i
+            break
+    assert fence_open is not None and fence_close is not None, (
+        "templates/intent.md '## Contract' section must contain a fenced YAML block."
+    )
+
+    block = "\n".join(body_lines[fence_open + 1 : fence_close])
+    parsed = yaml.safe_load(block)
+    assert isinstance(parsed, dict), (
+        "The '## Contract' fenced block must parse as a YAML mapping; "
+        f"got {type(parsed).__name__}"
+    )
+    assert "must-satisfy" in parsed, (
+        "The '## Contract' YAML must expose a 'must-satisfy' key "
+        "(cairn-trial-d-scope-split intent.md line 37)."
+    )
+
+
+def test_intent_template_contract_tags_match_exception_tags() -> None:
+    """FLI-6 template↔code tag parity: the four exception tags documented in
+    ``templates/intent.md`` equal ``scripts/lib/atomicity.EXCEPTION_TAGS``
+    exactly (cairn-trial-d-scope-split FLI-6 / Verification drift audit).
+
+    RED at HEAD: ``scripts/lib/atomicity`` does not exist and the template has
+    no tag documentation yet.
+    """
+    from lib.atomicity import EXCEPTION_TAGS  # RED: module absent at HEAD
+
+    text = _read(INTENT)
+    for tag in EXCEPTION_TAGS:
+        assert tag in text, (
+            f"templates/intent.md must document the exception tag {tag!r} "
+            f"(FLI-6 tag parity with scripts/lib/atomicity.EXCEPTION_TAGS)."
+        )
+
+
+# ---------------------------------------------------------------------------
 # Sub-test 3: templates/sweep-notes.md
 # ---------------------------------------------------------------------------
 
