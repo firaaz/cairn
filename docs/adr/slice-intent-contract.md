@@ -1,7 +1,7 @@
 ---
 id: slice-intent-contract
 name: "Slice intent contract — TRIAL-C frontmatter shape, operator gate, append-effective-once amendment policy"
-status: accepted
+status: superseded
 firmness: provisional
 contract:
   must-satisfy:
@@ -34,7 +34,7 @@ contract:
     - .claude/handoff.md (TRIAL-C in-flight thread; FREEZE+DISTRIBUTE deferred thread)
 supersedes: null
 supersedes-sections: []
-superseded-by: null
+superseded-by: cairn-thin-substrate-direction
 topic: process
 invariants-touched: []
 date: 2026-05-20

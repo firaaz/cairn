@@ -725,6 +725,34 @@ def _run_structural_parser_assertion(
     return None
 
 
+def _run_premise_grounding_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a premise-grounding assertion: each cited premise must quote its source verbatim. Returns failure message or None."""
+    for premise in assertion.get("premises", []):
+        source = premise.get("source", "")
+        quote = premise.get("quote", "")
+        source_path = project_root / source
+        if not source_path.exists():
+            return (
+                f"Check D: {inv_id} FAIL — premise-grounding: "
+                f"cited source not found: {source}"
+            )
+        try:
+            text = source_path.read_text()
+        except (OSError, UnicodeDecodeError):
+            return (
+                f"Check D: {inv_id} FAIL — premise-grounding: "
+                f"cited source unreadable: {source}"
+            )
+        if quote not in text:
+            return (
+                f"Check D: {inv_id} FAIL — premise-grounding: premise no longer "
+                f"grounded in {source} (quoted text absent — stale or fabricated): {quote!r}"
+            )
+    return None
+
+
 def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | None:
     """Dispatch assertion execution by type. Returns failure message or None."""
     atype = assertion.get("type", "")
@@ -740,6 +768,8 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
         return _run_git_log_walk_assertion(project_root, inv_id, assertion)
     if atype == "structural-parser":
         return _run_structural_parser_assertion(project_root, inv_id, assertion)
+    if atype == "premise-grounding":
+        return _run_premise_grounding_assertion(project_root, inv_id, assertion)
     return None
 
 

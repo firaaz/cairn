@@ -1,11 +1,11 @@
 ---
 id: identity-and-scope-deferral
 name: "Cairn identity and scope — defer pivot; preserve option value"
-status: accepted
+status: superseded
 firmness: provisional
 supersedes: null
 supersedes-sections: []
-superseded-by: null
+superseded-by: cairn-thin-substrate-direction
 topic: scope
 invariants-touched: []
 date: 2026-05-20
