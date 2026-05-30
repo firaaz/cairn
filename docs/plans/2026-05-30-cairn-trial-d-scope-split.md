@@ -86,15 +86,17 @@ Phase 4 runs and records as evidence (CI `dist-gate.yml` runs NONE of these — 
 - Drift audit: the tag set documented in `templates/intent.md` equals `scripts/lib/atomicity.EXCEPTION_TAGS`.
 - Wiring check: grep confirms the atomicity gate step is present in `.claude/skills/cairn-tdd-feature/SKILL.md` and its `dist/` mirror; `docs/operational-reference.md` env-var table lists `CAIRN_ATOMICITY_FIX` and `CAIRN_CONTRACT_REQUIRED`.
 
-## Status (as of 2026-05-30, HEAD 496e1e7)
+## Status (as of 2026-05-30, HEAD 43850f7)
 
 Mechanism **SHIPPED** through cairn-tdd-feature phases 1-4 (`233096e` intent · `8dec48e` RED · `c1ae50c`+`644f3db` GREEN+wiring · `25a734e` close · `61a3ad8`+`496e1e7` handoff-contract fix). 58 new tests green; validator + smoketest pass; 8 pre-existing baseline failures, zero new. Adversarial verification (26 gate-bypass inputs): no real defects; escape-hatch design holds.
 
 Trial D's **pass criteria are NOT yet met** — only the prerequisite (the four exception classes accepted by a scope-split check) is built. The three pass numbers from §2 Trial 2 of the trials plan are unmeasured. This section is the next-session brief.
 
-## Next session — fix F1, then the 3-intent measurement
+**Step 1 / F1 — DONE 2026-05-30 (`43850f7`), focused TDD pass.** `|\bno\s` dropped from `_UNIVERSAL`; six verbatim corpus regression rows added (closes F2 for the FP set). **Correction to the brief below:** A4's verbatim form carries `any of`, which independently trips the *verified-stable* `any` signal — so it is **not** a clean `\bno\s`-only FP. It was pinned as its allow-list-inverse atomic form ("no path outside the allow-list is present") instead; the true `\bno\s`-only FP count is **5, not 6**. Evidence: `test_atomicity.py` 39 green, the three flag-when-bare guards unchanged, full suite 0 new failures (8 pre-existing baseline), validator + smoketest pass. **Remaining: Step 2 — the 3-intent measurement** (operator-authored, non-headless).
 
-### Step 1 — fix F1 (`\bno\s` over-block) FIRST, via cairn-tdd-feature or a focused TDD pass
+## Next session — the 3-intent measurement (Step 1 / F1 done — see Status)
+
+### Step 1 — fix F1 (`\bno\s` over-block) — DONE (`43850f7`); brief retained as record
 
 The adversarial probe ran the **frozen** `is_atomic` over real corpus clauses and measured **~22% false-positive rate, every miss from the `\bno\s` alternative** in `_UNIVERSAL` (`scripts/lib/atomicity.py:19-22`). Confirmed FP clauses: m2 b2 "…returns no INV-NNN patterns", m2 b8 "…carries no word boundaries", m5-f1 A4 "no path under…", m5-f1 A6 "No hook command contains…", m7 FLI-4 "No third-party Actions…", m7 FLI-7 "No merge to dev…". All are genuinely atomic single checks. `\bno\s` carries no multiplicity semantics — it fires on any "no <noun>". This makes the supposedly *shy/biased-to-pass* heuristic non-shy; measuring #3 against it just re-derives "22%, fix `\bno\s`".
 
