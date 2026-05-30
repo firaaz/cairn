@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 
 from _root import project_root
+from lib.atomicity import check_clauses
 from lib.premise_match import grounded
 
 
@@ -754,6 +755,19 @@ def _run_premise_grounding_assertion(
     return None
 
 
+def _run_scope_split_assertion(
+    project_root: Path, inv_id: str, assertion: dict
+) -> str | None:
+    """Run a scope-split (atomicity) assertion. Returns a failure message or None."""
+    must_satisfy = assertion.get("must-satisfy", [])
+    if not isinstance(must_satisfy, list):
+        return f"Check D: {inv_id} FAIL — scope-split: 'must-satisfy' is not a list"
+    offences = check_clauses(must_satisfy)
+    if offences:
+        return f"Check D: {inv_id} FAIL — scope-split: " + "; ".join(offences)
+    return None
+
+
 def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | None:
     """Dispatch assertion execution by type. Returns failure message or None."""
     atype = assertion.get("type", "")
@@ -771,6 +785,8 @@ def _run_assertion(project_root: Path, inv_id: str, assertion: dict) -> str | No
         return _run_structural_parser_assertion(project_root, inv_id, assertion)
     if atype == "premise-grounding":
         return _run_premise_grounding_assertion(project_root, inv_id, assertion)
+    if atype == "scope-split":
+        return _run_scope_split_assertion(project_root, inv_id, assertion)
     return None
 
 

@@ -70,3 +70,58 @@ premises:
       def project_root() -> Path:
     label: "one-line current-behaviour claim the intent depends on"
 ```
+
+## Contract
+
+<!-- OPTIONAL. The scope-split (atomicity) machine-readable contract.
+atomicity_guard.py runs the atomicity check on `must-satisfy` at the
+Phase-1→Phase-2 boundary; the `scope-split` validator assertion runs the same
+check. Absent block = fail-open with a visible stderr notice, unless
+CAIRN_CONTRACT_REQUIRED=1.
+
+Six clause-lists:
+  must-satisfy      — atomicity-checked behavioural clauses (the gate's input)
+  must-not-violate  — invariants this feature must preserve
+  wrong-if          — observations that mean the implementation is wrong
+  escalate-when     — conditions that require operator escalation
+  evidence          — what proves each clause holds
+  execution-scope   — files/dirs the work may touch
+
+Write each `must-satisfy` item as a single EARS clause. The five EARS shapes:
+  Ubiquitous : "the <system> shall <response>"
+  Event      : "when <trigger>, the <system> shall <response>"
+  State      : "while <state>, the <system> shall <response>"
+  Option     : "where <feature>, the <system> shall <response>"
+  Unwanted   : "if <condition>, then the <system> shall <response>"
+
+Atomicity (ADR D3): a clause is atomic iff verifiable by a single tool call or
+single file check. Clauses without a tag must pass atomicity. A non-atomic
+clause must be split into atomic clauses OR carry one of the four named
+exception tags — tagging is the cheap one-line escape from a flagged clause:
+
+  universal-set      — quantifies over a set; declaration enumerates the set
+  regression-meta    — "unchanged"/"no regression" meta-clause; declaration names the baseline
+  operator-bound     — needs human action/judgement; declaration names the operator step
+  trivial-existence  — a file/output simply exists; NO declaration required
+
+The first three tags require a non-empty declaration after the colon; an unknown
+tag always fails. Mapping form: {clause: "<EARS>", except: "<tag>: <declaration>"}.
+
+Worked example (one bare atomic clause + one tagged universal-set clause): -->
+
+```yaml
+must-satisfy:
+  - the validator reports the offending line number on a malformed id
+  - clause: every consumer repository receives the regenerated dist mirror
+    except: "universal-set: the consumer set is the 3 repos listed in roadmap.md"
+must-not-violate:
+  - <invariant this feature must preserve>
+wrong-if:
+  - <observation that means the implementation is wrong>
+escalate-when:
+  - <condition that requires operator escalation>
+evidence:
+  - <what proves a clause holds>
+execution-scope:
+  - <file or directory the work may touch>
+```
