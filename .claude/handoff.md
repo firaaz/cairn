@@ -45,3 +45,4 @@ contract:
 - gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open F1-fixed-43850f7-next-3-intent-measurement-operator-authored
+- docs/adr/intent-management-loop.md open ADR-7d2c134-coexist-and-gate-next-TrialE-build-cairn-intent-loop
