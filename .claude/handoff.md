@@ -46,4 +46,4 @@ contract:
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
 - docs/adr/intent-management-loop.md open front-challenge-unbuilt+enforcement-folded-into-cost-model-D3-deferred-TrialE
-- docs/adr/intent-contract-cost-model.md open D2-lightdrop+agent-drafts-buildable-next+D3-enforcement-deferred-TrialE
+- docs/adr/intent-contract-cost-model.md open D2-built-b3936ef-agent-judges-band+operator-vetoes-5a+D3-enforcement-deferred-TrialE
