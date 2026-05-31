@@ -33,3 +33,4 @@
 | cairn-thin-substrate-direction | Cairn thin substrate — six load-bearing primitives at three time scales | accepted | provisional | architecture | 2026-05-20 |
 | slice-intent-contract | Slice intent contract — TRIAL-C frontmatter shape, operator gate, append-effective-once amendment policy | superseded (by cairn-thin-substrate-direction) | provisional | process | 2026-05-20 |
 | intent-management-loop | Intent-management loop — coexisting thin-cairn path, retirement gated on Trial E | accepted | provisional | architecture | 2026-05-31 |
+| intent-contract-cost-model | Intent-contract cost model — user approves the promise, agent owns the proof | accepted | provisional | architecture | 2026-05-31 |
