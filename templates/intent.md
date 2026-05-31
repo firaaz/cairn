@@ -79,6 +79,10 @@ Phase-1→Phase-2 boundary; the `scope-split` validator assertion runs the same
 check. Absent block = fail-open with a visible stderr notice, unless
 CAIRN_CONTRACT_REQUIRED=1.
 
+Omit this entire block for light/trivial work (the cost-model m2 fix); for heavy
+work Phase 1 drafts the clauses from the operator-approved promise — see
+`.claude/agents/phase-1-tdd.md` "Contract band".
+
 Six clause-lists:
   must-satisfy      — atomicity-checked behavioural clauses (the gate's input)
   must-not-violate  — invariants this feature must preserve
