@@ -325,12 +325,17 @@ context-discipline-protocol / INV-002. Three load-bearing layers that together h
 
 ### Layer 1 — Handoff is a pointer, not a payload
 
-`.claude/handoff.md` is overwritten each session against `templates/handoff.md`. The format is fixed: a YAML frontmatter with `slice`, `phase`, `branch`, `as-of`, then four body sections — `## State`, `## Next`, `## Blocked / Pending`, `## Pointers`.
+`.claude/handoff.md` is overwritten each session against `templates/handoff.md`. The current format is fixed:
 
-**Token budget: 150 to 400 tokens, whole-file.** 150 is a soft lower bound (if you cannot say enough to orient the next session inside that, your next step isn't specific). 400 is a hard upper bound (if you need more than 400 tokens to say what state the repo is in, the overflow belongs in commit messages, ADRs, or `docs/lessons.md` — not in the handoff). Measured in bytes, 400 tokens is roughly 2000 characters at the 5-char-per-token approximation the contract test uses.
+- YAML frontmatter contains a `contract:` block with `must-satisfy`, `must-not-violate`, `wrong-if`, and `evidence`.
+- The body is a pointer-only bullet list. Each nonblank body line has the shape `- <pointer> <state> [<short context>]`, where `state` is one of `open`, `blocked`, or `deferred`.
+- Pointers must resolve on read: GitHub issue/PR refs (`gh:<org>/<repo>#<num>`), repo docs such as `docs/adr/<slug>.md` or `docs/plans/<filename>.md`, or reachable commit SHAs.
 
-**Banned sections** — the handoff template MUST NOT contain, and the operator MUST NOT produce:
+**Token budget: 150 to 400 tokens, whole-file.** 150 is a soft lower bound (if you cannot say enough to orient the next session inside that, your next step isn't specific). 400 is a hard upper bound (if you need more than 400 tokens to say what state the repo is in, the overflow belongs in commit messages, ADRs, plan docs, or `docs/lessons.md` — not in the handoff). Measured in bytes, 400 tokens is roughly 2000 characters at the 5-char-per-token approximation the contract test uses.
 
+**Banned payload shapes** — the handoff template MUST NOT contain, and the operator MUST NOT produce:
+
+- Retired markdown sections such as `## State`, `## Next`, `## Blocked / Pending`, `## Pointers`, or `## Features`
 - "What This Session Was About"
 - "What Was Accomplished"
 - "Surprises or Discoveries"
@@ -338,7 +343,7 @@ context-discipline-protocol / INV-002. Three load-bearing layers that together h
 - Narrative paragraphs of reasoning
 - Pass/fail test tallies or test output
 
-These belong in commit messages, ADRs, or `docs/lessons.md`. The handoff carries state plus next step, not reflection. If you feel an urge to explain *why* in the handoff, the urge is a signal the explanation belongs elsewhere.
+These belong in commit messages, ADRs, plan docs, or `docs/lessons.md`. The handoff carries resolvable pointers plus state, not reflection. If you feel an urge to explain *why* in the handoff, the urge is a signal the explanation belongs elsewhere.
 
 The handoff is wiped (overwritten) at every end-of-session step; git provides the historical record.
 
