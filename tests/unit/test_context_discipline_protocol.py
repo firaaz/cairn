@@ -168,8 +168,8 @@ def rglob_missing(
 
 
 def test_v1_handoff_template_exists_and_is_tight():
-    """V1 — templates/handoff.md exists, body ≤2000 chars, frontmatter carries
-    the four required keys, body has the four required section headers."""
+    """V1 — templates/handoff.md exists, is tight, and documents the
+    frontmatter-contract + pointer-only body shape."""
     path = CAIRN_ROOT / "templates/handoff.md"
     assert path.is_file(), f"{path} does not exist"
 
@@ -180,14 +180,32 @@ def test_v1_handoff_template_exists_and_is_tight():
 
     fm = slice_frontmatter(text)
     assert fm is not None, "templates/handoff.md has no `---` frontmatter block"
-    missing_keys = contains_all(fm, ["slice:", "phase:", "branch:", "as-of:"])
+    missing_keys = contains_all(
+        fm,
+        ["contract:", "must-satisfy:", "must-not-violate:", "wrong-if:", "evidence:"],
+    )
     assert not missing_keys, f"frontmatter missing keys: {missing_keys}"
 
-    missing_headers = contains_all(
+    body = text.split("\n---\n", 1)[1]
+    body_lines = [line.strip() for line in body.splitlines() if line.strip()]
+    assert body_lines, "templates/handoff.md body has no pointer examples"
+    assert all(line.startswith("- ") for line in body_lines), (
+        f"handoff body must be a pointer-only bullet list, got: {body_lines}"
+    )
+
+    missing_body_guidance = contains_all(
+        body,
+        ["<pointer> <state>", " open ", " blocked ", " deferred "],
+    )
+    assert not missing_body_guidance, (
+        f"body missing pointer/state guidance: {missing_body_guidance}"
+    )
+
+    stale_headers = contains_none(
         text,
         ["## State", "## Next", "## Blocked / Pending", "## Pointers"],
     )
-    assert not missing_headers, f"body missing section headers: {missing_headers}"
+    assert not stale_headers, f"body still has retired section headers: {stale_headers}"
 
 
 # --- V5: Learning staging ground exists and is minimal -------------------

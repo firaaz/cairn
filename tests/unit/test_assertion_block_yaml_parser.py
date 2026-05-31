@@ -121,18 +121,13 @@ def test_flat_keys_still_parse_for_legacy_blocks():
     assert inv["expect"] == "match"
 
 
-def test_real_architecture_md_parses_inv_002_correctly():
-    """Integration: parsing the real ARCHITECTURE.md yields nested dicts for INV-002."""
+def test_real_architecture_md_parses_inv_002_contract_ref_correctly():
+    """Integration: real ARCHITECTURE.md pins INV-002 to the handoff contract tests."""
     from pathlib import Path
 
     cairn_root = Path(__file__).resolve().parents[2]
     arch = (cairn_root / "docs/ARCHITECTURE.md").read_text()
     blocks = parse_assertion_blocks(arch)
     inv = blocks["INV-002"]
-    assert isinstance(inv.get("forbidden-sections"), dict)
-    assert isinstance(inv.get("forbidden-content"), dict)
-    assert isinstance(inv.get("token-budget"), dict)
-    assert "literal" in inv["forbidden-sections"]
-    assert "regex" in inv["forbidden-sections"]
-    assert "warn-at" in inv["token-budget"]
-    assert "fail-at" in inv["token-budget"]
+    assert inv["type"] == "test-ref"
+    assert inv["pattern"] == "tests/unit/test_handoff_contract.py"

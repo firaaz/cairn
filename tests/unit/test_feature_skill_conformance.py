@@ -58,32 +58,32 @@ def contains_any(
     return False
 
 
-# --- V4: handoff references cross-feature index ------------------------------
+# --- V4: handoff references feature context through pointer entries -----------
 
 
-class TestHandoffCrossFeatureIndex:
-    def test_handoff_template_has_features_section(self):
-        """templates/handoff.md must contain a ## Features section
-        (context-tiers-integration D0 — handoff.md gains a cross-feature index)."""
+class TestHandoffPointerCompatibleFeatureGuidance:
+    def test_handoff_template_has_contract_frontmatter(self):
+        """templates/handoff.md carries the Trial-A frontmatter contract."""
         path = CAIRN_ROOT / "templates" / "handoff.md"
         assert path.is_file(), f"{path} does not exist"
         text = path.read_text()
-        assert "## Features" in text, (
-            "templates/handoff.md does not contain ## Features section"
+        assert text.startswith("---\n"), "templates/handoff.md lacks frontmatter"
+        frontmatter = text.split("\n---\n", 1)[0]
+        assert "contract:" in frontmatter, (
+            "templates/handoff.md frontmatter does not contain `contract:`"
         )
 
-    def test_handoff_features_section_describes_per_feature_line(self):
-        """The ## Features section in the handoff template must describe
-        the one-line-per-active-feature format (context-tiers-integration D0)."""
+    def test_handoff_template_guides_feature_context_as_pointer_entry(self):
+        """Feature/session context is represented as pointer-compatible entries."""
         path = CAIRN_ROOT / "templates" / "handoff.md"
         text = path.read_text()
-        features_section = slice_section(text, "## Features")
-        assert features_section is not None, (
-            "templates/handoff.md has no ## Features section to inspect"
+        body = text.split("\n---\n", 1)[1]
+        assert "## Features" not in text, (
+            "templates/handoff.md should not require the retired ## Features section"
         )
-        # Section should reference the per-feature line format
-        assert contains_any(
-            features_section,
-            ["feature", "active", "line"],
-            case_insensitive=True,
-        ), "## Features section does not describe the per-feature line format"
+        assert "<pointer> <state>" in body, (
+            "templates/handoff.md body does not show the pointer/state entry shape"
+        )
+        assert "docs/plans/<filename>.md deferred <trigger-condition>" in body, (
+            "templates/handoff.md does not show plan-doc context as a pointer entry"
+        )

@@ -1113,14 +1113,14 @@ class TestCairnSelfDogfood:
 #
 # These tests verify that every invariant in cairn's own ARCHITECTURE.md carries
 # a machine-checkable assertion block, completing the D2 defense commitment.
-# Baseline: INV-001 through INV-008 (INV-008 added by compression/slice-3
-# observability-and-close-slice — slice-close-contract).
+# Baseline: INV-001 through INV-012.
 #
-# M4 cairn-shrink (2026-05-07): INV-008 retired; its binding block intentionally
-# absent. RETIRED_INVARIANT_IDS exempts it from the assertion-block requirement.
+# M4 cairn-shrink (2026-05-07): INV-008 through INV-010 retired; their binding
+# blocks are intentionally absent. RETIRED_INVARIANT_IDS exempts them from the
+# assertion-block requirement.
 
 
-EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 11)}
+EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 13)}
 # Retired invariants: prose marker present in ARCHITECTURE.md but no binding block.
 RETIRED_INVARIANT_IDS = {"INV-008", "INV-009", "INV-010"}
 V1_ASSERTION_TYPES = {
@@ -1138,10 +1138,10 @@ def _read_cairn_architecture() -> str:
 
 
 class TestSlice011AssertionCoverage:
-    """Every firm invariant (INV-001 through INV-008) must have an assertion block."""
+    """Every non-retired firm invariant must have an assertion block."""
 
-    def test_all_seven_invariants_have_assertion_blocks(self):
-        """Each non-retired invariant (INV-001..INV-010 minus RETIRED) has a block."""
+    def test_all_non_retired_invariants_have_assertion_blocks(self):
+        """Each non-retired invariant (INV-001..INV-012 minus RETIRED) has a block."""
         arch_text = _read_cairn_architecture()
         blocks = parse_assertion_blocks(arch_text)
         required = EXPECTED_INVARIANT_IDS - RETIRED_INVARIANT_IDS
@@ -1200,7 +1200,7 @@ class TestSlice011AssertionCoverage:
                 assert "pattern" in assertion, f"{inv_id} test-ref missing 'pattern'"
 
     def test_invariant_count_unchanged(self):
-        """ARCHITECTURE.md has exactly the firm-invariant set (INV-001..INV-008)."""
+        """ARCHITECTURE.md has exactly the current firm-invariant id set."""
         arch_text = _read_cairn_architecture()
         invariants = parse_invariants(arch_text)
         inv_ids = {f"INV-{inv['inv_num']:03d}" for inv in invariants}
@@ -1265,10 +1265,12 @@ class TestSlice011Falsification:
         return parse_assertion_blocks(arch_text)
 
     def test_assertions_exist_to_falsify(self):
-        """Guard: at least 7 assertion blocks must exist for falsification to be meaningful."""
+        """Guard: all non-retired assertion blocks exist for falsification."""
         blocks = self._get_assertions()
-        assert len(blocks) >= 7, (
-            f"Only {len(blocks)} assertion blocks found; need 7 for full falsification coverage"
+        expected_count = len(EXPECTED_INVARIANT_IDS - RETIRED_INVARIANT_IDS)
+        assert len(blocks) >= expected_count, (
+            f"Only {len(blocks)} assertion blocks found; need {expected_count} "
+            "for full falsification coverage"
         )
 
     def test_falsify_grep_match_by_removing_pattern(self, tmp_path):

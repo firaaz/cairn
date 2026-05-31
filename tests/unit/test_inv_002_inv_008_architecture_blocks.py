@@ -1,13 +1,13 @@
-"""Phase 2 RED tests pinning the ARCHITECTURE.md INV-002 block flips.
+"""Regression tests pinning the current ARCHITECTURE.md INV-002 binding.
 
-Slice v1-defense-d2/inv-002-binding-implementation per ADR
-``invariant-binding-strategy`` D4–D6:
+Trial A (interaction-protocol reframe, 2026-05-13) replaced the old
+sectioned-narrative handoff with a frontmatter ``contract:`` block and
+pointer-only body. INV-002 now delegates to the handoff contract test suite:
 
-  - INV-002 assertion block becomes ``type: structural-parser`` targeting
-    ``.claude/handoff.md`` with ``binding-effective-from`` set to the
-    placeholder pre-close (substituted post-close).
-  - Legacy grep proxy is GONE from ARCHITECTURE.md
-    (``Token budget: 150 to 400 tokens``).
+  - ``type: test-ref``
+  - ``pattern: tests/unit/test_handoff_contract.py``
+
+Legacy structural-parser and grep-proxy expectations are stale.
 
 INV-008 was retired in M4 cairn-shrink (2026-05-07) by ADR
 ``slice-close-contract-superseded``; its test-ref binding block no longer
@@ -29,7 +29,7 @@ import pytest
 
 CAIRN_ROOT = Path(__file__).resolve().parents[2]
 ARCHITECTURE = CAIRN_ROOT / "docs" / "ARCHITECTURE.md"
-HANDOFF_TARGET = ".claude/handoff.md"
+HANDOFF_CONTRACT_TEST = "tests/unit/test_handoff_contract.py"
 
 
 @pytest.fixture(autouse=True)
@@ -50,35 +50,37 @@ def _block_for(inv_id: str) -> str:
     return m.group(1)
 
 
-# === T1 — INV-002 block uses structural-parser ==============================
+# === T1 — INV-002 delegates to the handoff contract test suite ===============
 
 
-def test_inv_002_block_type_is_structural_parser():
-    """INV-002's ``type:`` is ``structural-parser`` post-flip."""
+def test_inv_002_block_type_is_test_ref():
+    """INV-002's ``type:`` is ``test-ref`` after Trial A."""
     body = _block_for("INV-002")
-    assert re.search(r"^\s*type:\s*structural-parser\b", body, re.MULTILINE), (
-        "INV-002 assertion block must declare type: structural-parser. "
-        "Brief: 'Flip INV-002 assertion block in docs/ARCHITECTURE.md to "
-        "type: structural-parser'. Got block body:\n" + body
+    assert re.search(r"^\s*type:\s*test-ref\b", body, re.MULTILINE), (
+        "INV-002 assertion block must declare type: test-ref. Got block body:\n"
+        + body
     )
 
 
-def test_inv_002_block_targets_handoff_md():
-    """INV-002's structural-parser targets ``.claude/handoff.md``."""
+def test_inv_002_block_points_to_handoff_contract_test():
+    """INV-002's ``test-ref`` points at tests/unit/test_handoff_contract.py."""
     body = _block_for("INV-002")
-    assert HANDOFF_TARGET in body, (
-        f"INV-002 block must target {HANDOFF_TARGET!r}. Got: {body!r}"
+    assert re.search(
+        rf"^\s*pattern:\s*[\"']?{re.escape(HANDOFF_CONTRACT_TEST)}[\"']?\s*$",
+        body,
+        re.MULTILINE,
+    ), (
+        f"INV-002 block must reference {HANDOFF_CONTRACT_TEST!r}. "
+        f"Got: {body!r}"
     )
 
 
-def test_inv_002_block_carries_binding_effective_from():
-    """INV-002 carries ``binding-effective-from`` (placeholder pre-close)."""
+def test_inv_002_block_does_not_reintroduce_structural_parser_fields():
+    """Trial A retired the structural-parser-shaped INV-002 block."""
     body = _block_for("INV-002")
-    assert re.search(r"binding-effective-from\s*:", body), (
-        "INV-002 block must declare binding-effective-from "
-        "(placeholder pre-close, substituted post-close per ADR D3 / "
-        "INV-001 precedent fd1823e). Got body:\n" + body
-    )
+    stale_fields = ["target:", "required-sections:", "binding-effective-from:"]
+    found = [field for field in stale_fields if field in body]
+    assert not found, f"INV-002 block still has structural-parser fields: {found}"
 
 
 def test_inv_002_legacy_grep_proxy_string_is_gone():
