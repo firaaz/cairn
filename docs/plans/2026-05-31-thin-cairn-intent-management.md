@@ -149,6 +149,23 @@ phase-1 derivation; intent.md + premise-grounding + envelope replaces it, operat
 semantic-grounding failure leaked." A Trial-E failure is a real finding (retain the pipeline /
 escalate the front-challenge), not a bug to paper over.
 
+## Next-session sequencing (the build is NOT a single session)
+
+Two open threads exist; order matters:
+
+1. **Trial-D 3-intent measurement FIRST** (`docs/plans/2026-05-30-cairn-trial-d-scope-split.md`
+   §Next-session). It is cheap, operator-authored (non-headless), *gates* Trial E per the trials
+   plan, AND validates `atomicity_guard` — a component this loop's contract gate reuses. If its
+   false-positive rate is still >10%, the graduated-contract gate (D3) needs work *before* the
+   build relies on it.
+2. **THEN the Trial-E build.** First action is `writing-plans` to decompose the 4 components
+   (skill + `intent-challenge` + `intent-review` + carrier) into TDD slices — this is multiple
+   sessions, not one. Build the **`intent-challenge` subagent first**: it is the load-bearing
+   decorrelation piece and carries the slice-#25 counterfactual acceptance gate (ADR D7/D9).
+   Bootstrap: build it via the existing 4-phase / a focused TDD pass, since the new loop does
+   not exist yet. Re-scope `.claude/active-envelope.yaml` to the build paths at session start;
+   single-operator-per-branch (ADR D8).
+
 ## References
 
 - `docs/adr/cairn-thin-substrate-direction.md` — D1–D8 (accepted direction)
