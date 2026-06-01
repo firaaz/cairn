@@ -24,9 +24,13 @@ Rename CLAUDE.md conventions to AGENTS.md. Consumer projects migrate their CLAUD
 
 Refactor `.claude/current-slice/` so it exists only on slice branches, absent on `dev`. Enables slice exit via branch switching.
 
+> **Re-anchored by `git-workflow-v1` (2026-05-31).** The slice unit and `.claude/current-slice/` retired at M4; the feature is the unit and work lives on a `feat/<feature-id>` branch. The "branch-local state" goal is met by branch-per-feature (D1). Largely addressed.
+
 ### 6. Parallelism support
 
 Ensure multiple concurrent slices in separate worktrees don't interfere. Hooks read slice metadata from the current working tree. No global "active slice" pointer. Depends on (5).
+
+> **Re-anchored by `git-workflow-v1` (2026-05-31).** "Slices" → features. The concurrent-feature lifecycle (worktree create/cleanup, per-worktree envelope copy, out-of-order merge ordering, handoff-append collision) is recorded as `git-workflow-v1` D4/D5, gated on the first real concurrent feature.
 
 ### 7. Windsurf command/workflow port
 
@@ -39,6 +43,8 @@ One slice where Phase 1-2 runs on Claude Code and Phase 3+ runs on Windsurf, wit
 ### 9. Two-concurrent-slice validation
 
 Two slices run in parallel on separate worktrees, both complete cleanly, no scope-guard interference. Depends on (5), (6).
+
+> **Re-anchored by `git-workflow-v1` (2026-05-31).** Now "two concurrent **features** merge `--no-ff` into `dev` cleanly." This is the validation event that fires `git-workflow-v1` D4/D5; the single-feature `--no-ff` dogfood (D2) is the prerequisite first step.
 
 ### 10. Dogfood log infrastructure
 

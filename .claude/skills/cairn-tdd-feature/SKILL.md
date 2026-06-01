@@ -90,6 +90,6 @@ On any phase RAISE_ISSUE, dispatch `triager-tdd` with: issue commit hash, curren
 
 On success, print a four-line summary listing each phase's commit hash and a one-sentence status. The git log is the durable record; no slice.yaml.
 
-## Coexistence with the orchestrator
+## Branch lifecycle (git-workflow-v1)
 
-This skill creates files only under `.claude/skill-runs/`, `tests/`, and the source paths in the envelope — never under `.claude/current-slice/` or `.claude/features/`. Slice machinery is unaffected; running this skill while a slice is open is a smell but not blocked.
+This skill is branch-agnostic: it commits the four phase commits to whatever branch HEAD is on. Per ADR `git-workflow-v1` (D1/D2/D6), branch lifecycle is **operator-owned**: before dispatch, cut `feat/<feature-id>` from `dev`; after Phase 4 passes, integrate with `git merge --no-ff feat/<feature-id>` — never `-ff` or `--squash`, which destroy the phase-commit audit trail the snapshot-SHA chain depends on. The skill creates files only under `.claude/skill-runs/`, `tests/`, and the source paths in the envelope — never under `.claude/features/` (feature-file planning state is operator-owned, separate from the dispatch run).

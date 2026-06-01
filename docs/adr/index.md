@@ -34,3 +34,4 @@
 | slice-intent-contract | Slice intent contract — TRIAL-C frontmatter shape, operator gate, append-effective-once amendment policy | superseded (by cairn-thin-substrate-direction) | provisional | process | 2026-05-20 |
 | intent-management-loop | Intent-management loop — coexisting thin-cairn path, retirement gated on Trial E | accepted | provisional | architecture | 2026-05-31 |
 | intent-contract-cost-model | Intent-contract cost model — user approves the promise, agent owns the proof | accepted | provisional | architecture | 2026-05-31 |
+| git-workflow-v1 | Git workflow v1 — branch-per-feature, --no-ff integration, feature-level naming | accepted | firm | process | 2026-05-31 |
