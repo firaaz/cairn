@@ -47,3 +47,5 @@ contract:
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
 - docs/adr/intent-management-loop.md open front-challenge-unbuilt+enforcement-folded-into-cost-model-D3-deferred-TrialE
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
+- docs/adr/git-workflow-v1.md deferred shipped-firm+dogfood-tripwire-next-feature+D4/D5/D6+F5-merge-guard
+- docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-provisional-contingent-TrialE
