@@ -45,9 +45,10 @@ contract:
 - gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
-- docs/adr/intent-management-loop.md open substrate+front-challenge-merged-f8d7f4e+intent-review-next+TrialE
+- docs/adr/intent-management-loop.md open loop-built-feat/cairn-intent-loop-build+TrialE-felt-cost-next
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
+- docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-provisional-contingent-TrialE
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/plans/2026-05-31-thin-cairn-intent-management.md open intent-review+reconcile-plugin-skills+carrier+TrialE
+- docs/plans/2026-05-31-thin-cairn-intent-management.md open built-1-3+carrierADR+next-CLAUDEmd-activation-plan

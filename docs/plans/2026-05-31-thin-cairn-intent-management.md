@@ -151,6 +151,28 @@ escalate the front-challenge), not a bug to paper over.
 
 ## Next-session sequencing (the build is NOT a single session)
 
+**Updated 2026-06-01 (carrier-build session — supersedes the increment list below).**
+Increments #1–#3 and the carrier-contract `/decision` are **built and verified** on branch
+`feat/cairn-intent-loop-build` (off `dev`, **unmerged**; worktree `.claude/worktrees/cairn-intent-loop-build`):
+
+- **#1 intent-review** close-review subagent — `bf40d8a` (RED→GREEN; mirrors intent-challenge, pinned to the close-review node; honest-minimal).
+- **#3 graduated-contract + completeness-floor** rules in `templates/intent.md` — `52ef6ae`. "Mandatory contract" wording **scoped to the cairn-intent loop only**; `cairn-tdd-feature` keeps "omittable for light work"; the mechanical gate stays fail-open.
+- **carrier contract** — `/decision` arc → ADR `docs/adr/using-cairn-carrier-contract.md` (Approach D, provisional), `3550078`. All three briefed approaches were adversarially refuted; **D** = dynamic, neutral SessionStart command-emitter; byte-clamp budget (env-overridable); unconditional load-or-form fallback; **cairn-internal** via local `.claude/settings.json` (NOT shipped — consumer distribution deferred to D7).
+- **#2 cairn-intent skill + using-cairn carrier** — `76ff1ab` (15 RED→19 GREEN; full suite 638). Built and closed **through the loop itself** (front-challenge + a fresh close-review gated it).
+
+Verified live: carrier neutral/state-aware/never-gates; `premise_guard` exits 0 on the slice-#25 wrong-model premise while `intent-challenge` **blocks** it — the D9 decorrelation acceptance gate (mechanical half) passes.
+
+**Next session — PLAN before building:**
+
+1. **Activation model — the CLAUDE.md lever.** Finding: the loop is *enter-on-invocation*, not self-activating. Ambient (no skill) = the carrier (state pointer) + `role_guard`/`reversibility`/`reality-check` hooks. **Not** ambient = `premise_guard`/`atomicity_guard` + `intent-challenge`/`close-review` (all skill-orchestrated). There is **no behavioral bootstrap** (the `using-superpowers` analog). Operator's chosen direction to plan: a thin **CLAUDE.md orientation section** ("for repo-writing work operate via the cairn-intent loop; the carrier line names the active intent; read-only/Q&A exempt") as the lightweight always-on lever — CLAUDE.md is auto-loaded every session, needs no new hook/skill, is L-012-safe (no stale state claim), and is cairn-internal in scope (consumers carry their own CLAUDE.md). Weigh against: (a) ride-on-superpowers (register cairn-intent + let `using-superpowers` route to it — testable in a fresh session here); (b) a `using-cairn` SessionStart behavioral bootstrap (the unbuilt half of `delivery-mechanism-friction` D1, for downstream-without-superpowers). Note: D1 intended `using-cairn` to *be* the SessionStart orientation; Approach D demoted it to documentation — that under-build is the gap.
+2. **Then Trial E** — the felt-cost-vs-four-phase judgment (operator-owned; the mechanical slice-#25 re-run already passes). The #1–#3 build already partially dogfooded the loop.
+3. **Then merge** `feat/cairn-intent-loop-build` → `dev` (`--no-ff`, `git-workflow-v1`) after checking for concurrent writers; update `dev`'s handoff + `docs/dogfood-log.md` as the close.
+4. **D7 retirement ADR** on a Trial-E pass.
+
+**Pending (small):** ADR `using-cairn-carrier-contract` D5 editorial fix — the fresh close-review found it overstates read-only "bare marker (unit-tested)"; the build achieves *neutrality* instead. Apply via `ADR_EDITORIAL_FIX=1`; decision unchanged.
+
+---
+
 **Updated 2026-06-01** (supersedes the original Trial-D-first ordering below: the operator
 started the Trial-E build now, folding Trial-D's hand-authoring measurement into the Trial-E
 dogfood since `intent-contract-cost-model` D2 removed operator hand-authoring).
