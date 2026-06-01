@@ -46,10 +46,10 @@ contract:
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
 - docs/adr/intent-management-loop.md open activated-default-26d00c1+TrialE-datapoint1-felt-lighter+slice25-pending
-- docs/operator-field-notes-2026-06-01.md open intent-review-write-not-persisted+trialE-sink-mismatch
+- docs/operator-field-notes-2026-06-01.md open subagent-write-escaped-to-main-worktree+trialE-sink-mismatch
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
 - docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-provisional-contingent-TrialE
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/plans/2026-05-31-thin-cairn-intent-management.md open activation+dry-run-done-46e2fa4+next-more-trialE-or-D7
+- docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+next-more-trialE-or-D7
