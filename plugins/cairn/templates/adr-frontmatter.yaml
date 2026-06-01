@@ -1,0 +1,21 @@
+# ADR frontmatter template. Mirrors the live shape of accepted ADRs under
+# `docs/adr/`. Drop the document open with `---\n<this block>\n---\n` and
+# author the body sections (Status, Context, Decision, Consequences, ...).
+#
+# Allowed values:
+#   status: provisional | accepted | superseded
+#   firmness: provisional | firm
+#   topic: architecture | process | governance | tooling
+#   invariants-touched: list of INV-XXX ids (may be empty)
+#   supersedes: <adr-id> or null
+#   superseded-by: <adr-id> or null
+
+id: <adr-id-slug>
+name: <human-facing label, mutable>
+status: provisional
+firmness: provisional
+date: <YYYY-MM-DD>
+topic: architecture
+invariants-touched: []
+supersedes: null
+superseded-by: null

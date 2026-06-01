@@ -1,0 +1,34 @@
+{
+  "name": "cairn",
+  "version": "0.1.0",
+  "description": "Cairn protocols, skills, guard references, and workflow references for Codex.",
+  "author": {
+    "name": "Firaaz Farook",
+    "url": "https://github.com/firaaz/cairn"
+  },
+  "homepage": "https://github.com/firaaz/cairn",
+  "repository": "https://github.com/firaaz/cairn",
+  "license": "MIT",
+  "keywords": [
+    "cairn",
+    "tdd",
+    "adr",
+    "handoff",
+    "codex",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Cairn",
+    "shortDescription": "Run Cairn's AI-assisted engineering protocols in Codex.",
+    "longDescription": "Cairn provides Codex skills for catchup, handoff, ADR decisions, TDD feature dispatch, and intent workflow operation, plus bundled guard command references.",
+    "developerName": "Firaaz Farook",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Workflow"
+    ],
+    "defaultPrompt": "Use Cairn to orient this repository and pick the right workflow."
+  }
+}

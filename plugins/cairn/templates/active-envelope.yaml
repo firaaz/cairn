@@ -1,0 +1,24 @@
+# Operator envelope template. Cross-reference: `docs/operational-reference.md`
+# "Operator envelope (`.claude/active-envelope.yaml`)".
+#
+# Read by `checks/role_guard.py` when `AGENT_ROLE` is unset (regular Claude
+# Code session, not a dispatch-skill phase run).
+#
+# Default below is `mode: off` — the hook is a no-op for ad-hoc / cross-
+# cutting work. Switch to `mode: operator` and uncomment the `paths:` block
+# below when starting focused feature work.
+#
+# Self-pattern requirement: when `mode: operator`, the `paths:` list MUST
+# include a regex matching this file itself, otherwise you cannot edit it
+# while enforcement is active.
+
+mode: off
+
+# Example `mode: operator` block — copy, uncomment, and adjust the regexes
+# to your feature's source-write envelope. Remember to keep the self-pattern.
+#
+# mode: operator
+# paths:
+#   - ^docs/operational-reference\.md$
+#   - ^scripts/.*
+#   - ^\.claude/active-envelope\.yaml$

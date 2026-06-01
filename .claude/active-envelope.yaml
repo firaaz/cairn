@@ -61,6 +61,8 @@ paths:
   - ^checks/.*
   # Tests
   - ^tests/.*
+  # Cairn workflow registry (intent-management operating modes)
+  - ^workflows/.*
   # .claude internals (must include itself so editing this file isn't denied)
   - ^\.claude/active-envelope\.yaml$
   - ^\.claude/agents/.*

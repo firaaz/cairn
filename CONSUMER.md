@@ -15,6 +15,17 @@ Two-line install via the marketplace:
 /plugin install cairn@cairn-marketplace
 ```
 
+## Codex local install
+
+From a checkout of this repo:
+
+```bash
+codex plugin marketplace add /Users/firaazfarook/Developer/github.com/firaaz/cairn
+codex plugin add cairn@cairn-local
+```
+
+Then start a new Codex thread before testing skills. Codex gets Cairn skills and explicit guard commands; it does not get automatic Claude hook enforcement.
+
 After install, run the post-install validator:
 
 ```bash
