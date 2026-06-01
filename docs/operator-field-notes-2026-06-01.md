@@ -61,11 +61,13 @@ writing it. Recorded here per the approved plan instead. The canonical felt-cost
 sink for Trial E is an open question worth a one-line skill fix.
 
 ### Loop reliability observations
-- The dispatched `intent-review` (close-review) agent reported writing its report
-  to `.claude/skill-runs/intent-template-operator-prompt/close-review.md` but the
-  write did not persist; the `intent-challenge` agent's write to the same
-  workspace did. Caught at staging; the verdict was transcribed from the agent's
-  return with provenance. Silent loss of a close-review report is a close-sequence
-  robustness gap — the loop's workspace-commit story is not yet deterministic
-  (same pattern as the prior build, which committed some workspace artifacts but
-  not all). Related: gh#4 (close-sequence-hardening). Worth its own gh issue.
+- The dispatched `intent-review` (close-review) agent's report did not appear in
+  this feature worktree — it was written to the **main worktree**
+  (`/.../cairn/.claude/skill-runs/.../close-review.md`) instead. Subagents
+  dispatched from a feature worktree resolved the write against the primary
+  worktree (a cwd / CLAUDE_PROJECT_DIR misdirection), so the artifact silently
+  landed in the wrong tree. Discovered when the merge into `dev` flagged the file
+  as a colliding untracked path; the agent's real report was then promoted into
+  the committed artifact. A genuine cairn-on-cairn worktree hazard — subagent
+  writes can escape the feature worktree (related: gh#30 cairn-on-cairn-carve-out,
+  gh#4 close-sequence-hardening). Worth its own gh issue.

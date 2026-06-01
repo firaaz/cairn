@@ -1,36 +1,65 @@
 # Close-review — intent-template-operator-prompt
 
-> Verdict returned by the fresh-context `intent-review` agent (agentId
-> a7a483c6f6800aa87). Transcribed at close because the agent's in-run Write to
-> this path did not persist; content is its returned report verbatim.
+Back-loaded reviewer, fresh context. Verdict from live diff + live re-run, not
+the construction conversation.
 
-**Status: close-review-pass.** All three checks pass against the live diff and
-re-run evidence.
+## contract-clause-check
 
-## Findings
-- **All clauses hold.** MS-1/MS-2/MS-3 satisfied; MN-1 (INV-003 + the eight's
-  derive-don't-fabricate) untouched — the `wrong-if` leak the intent named does
-  not occur. The carve-out is scoped to one named section in all three sites, and
-  `phase-1-tdd.md` affirmatively re-binds: *"Derive-don't-fabricate binds only the
-  eight schema sections that follow."*
-- **The flagged residual is now mechanically guarded.**
-  `test_operator_prompt_reconciled_in_authoritative_shape_source` asserts both
-  "operator prompt" and "exempt" appear in `phase-1-tdd.md` — the two-places-in-sync
-  risk is a test, not prose-only.
-- **Evidence live-confirmed.** 640 passed / 2 skipped / 2 xfailed; focused suite
-  14 passed (new assertions + eight-heading-in-order regression both green);
-  `validate_architecture.py` ALL CHECKS PASSED.
-- **Scope clean.** Diff touches exactly the three execution-scope files;
-  scope-statement matches diff size.
+**MS-1 — `## Operator Prompt` precedes `## What`.** PASS.
+`templates/intent.md:24` adds `## Operator Prompt`; `## What` is at line 33.
+Regression test cursor-walk (`test_template_extraction.py:110-130`) skips the
+new heading and still asserts the eight in order.
 
-## Clause results
-- MS-1 (Operator Prompt before What): PASS — `templates/intent.md`, regression cursor-walk skips it.
-- MS-2 (verbatim + derive-exempt guidance): PASS — `templates/intent.md`.
-- MS-3 (eight headings present + in order, regression-meta): PASS — `test_intent_template_shape_and_eight_headings` GREEN.
-- MN-1 (INV-003 four-phase + eight's derive-don't-fabricate untouched): PASS — single-line `phase-1-tdd` diff, no phase/role lines touched, carve-out single-section in all 3 sites, validator ALL CHECKS PASSED; `wrong-if` leak absent.
+**MS-2 — guidance states verbatim-pinned + derive-exempt.** PASS.
+`templates/intent.md:25` `<!-- VERBATIM, derive-exempt.` and `:28-29` "the one
+exception to the derive-don't-fabricate contract above: pinned input, NOT
+Phase-1 derivation."
 
-## Residual risk (documented, not a block)
-The in-sync guard checks presence + an "exempt" substring anywhere in
-`phase-1-tdd.md`, not the positive "binds only the eight" sentence — a future
-reword could keep the test green while weakening the bind. The prose currently
-reads correctly.
+**MS-3 (regression-meta) — eight headings present + in order.** PASS.
+`test_template_extraction.py::test_intent_template_shape_and_eight_headings`
+GREEN; baseline named in the clause holds.
+
+**MN-1 — INV-003 four-phase contract + the eight's derive-don't-fabricate
+untouched.** PASS. `git diff` of `phase-1-tdd.md` is a single line (the Intent
+shape paragraph); grep for phase-count/role/INV-003 lines = none touched.
+`validate_architecture.py` → ALL CHECKS PASSED, 12 invariants. The carve-out is
+scoped to one named section in all three sites: template comment
+(`:19` "the section that precedes the eight is the one exception"), section
+comment (`:28` "the one exception"), and shape source (`phase-1-tdd.md:13`
+affirmatively re-binds: "Derive-don't-fabricate binds only the eight schema
+sections that follow"). The `wrong-if` leak (carve-out readable as applying to
+any of the eight) does NOT occur — wording is single-section everywhere.
+
+## evidence-adequacy-check
+
+Adequate for the contract depth (one additive section + one shape-source
+reconciliation). Live re-run confirms all reported evidence: focused suite 14
+passed; `uv run pytest -q` → 640 passed, 2 skipped, 2 xfailed;
+`validate_architecture.py` ALL CHECKS PASSED.
+
+The flagged residual (carve-out now in TWO places — template + shape source —
+must stay in sync) IS now mechanically guarded, not prose-only:
+`test_operator_prompt_reconciled_in_authoritative_shape_source` asserts both
+"operator prompt" and "exempt" appear in `phase-1-tdd.md`. Narrow gap: it
+checks presence + exempt-marking, not the positive "binds only the eight"
+sentence, and matches case-insensitive substrings anywhere in the file — a
+future reword could pass the test while weakening the bind. Residual risk, not
+a block: the prose currently reads correctly and the leak the intent names is
+absent.
+
+## scope-check
+
+Changed files ⊆ `execution-scope`. Diff touches exactly the three listed:
+`templates/intent.md`, `.claude/agents/phase-1-tdd.md`,
+`tests/unit/test_intent_template_graduated_contract.py`. No out-of-scope file.
+
+Scope-statement honesty: "pin the operator's verbatim framing at the top …"
+matches a +13/-0 template change + 1-line shape-source reconciliation + 64 test
+lines. No under- or over-claim; contract depth fits diff size (additive, two
+must-satisfy + one regression-meta clause for a small additive diff).
+
+## verdict
+
+close-review-pass. Every clause holds against the live diff, evidence is
+adequate and re-confirmed, diff stays in scope. One documented residual: the
+in-sync guard is presence-based, not bind-wording-based.
