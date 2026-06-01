@@ -11,7 +11,7 @@ contract:
     - tests/unit/test_handoff_contract.py passes
 ---
 - docs/adr/cairn-thin-substrate-direction.md open identity-landed+premise-guard-hook-shipped+reactivity-N3-trigger
-- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+cost-model-ADR+TrialE-measures-agent-proof
+- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+TrialE-datapoint1-logged-notes-2026-06-01
 - docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
@@ -38,16 +38,18 @@ contract:
 - gh:firaaz/cairn#23 open test-coverage-targets
 - gh:firaaz/cairn#26 open close_slice-staging-surface
 - gh:firaaz/cairn#27 open operator-surface-ADR
-- gh:firaaz/cairn#28 open intent-template-tightening
+- gh:firaaz/cairn#28 open mitigation2-operator-prompt-pinned+caps3-routed-to-decision+1and4-remain
 - gh:firaaz/cairn#29 open phase-1-adversarial-review
 - gh:firaaz/cairn#30 open cairn-on-cairn-carve-out
 - gh:firaaz/cairn#31 blocked V-3-attempt-2+V-5-operator-bound
 - gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
-- docs/adr/intent-management-loop.md open substrate+front-challenge-merged-f8d7f4e+intent-review-next+TrialE
+- docs/adr/intent-management-loop.md open activated-default-26d00c1+TrialE-datapoint1-felt-lighter+slice25-pending
+- docs/operator-field-notes-2026-06-01.md open intent-review-write-not-persisted+trialE-sink-mismatch
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
+- docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-provisional-contingent-TrialE
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/plans/2026-05-31-thin-cairn-intent-management.md open intent-review+reconcile-plugin-skills+carrier+TrialE
+- docs/plans/2026-05-31-thin-cairn-intent-management.md open activation+dry-run-done-46e2fa4+next-more-trialE-or-D7

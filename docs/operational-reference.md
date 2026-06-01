@@ -16,15 +16,16 @@ bash scripts/smoketest_hooks.sh                  # expect PASS role_guard.py
 cat .claude/handoff.md                           # orient
 ```
 
-## Routing: ad-hoc vs decision vs cairn-tdd-feature dispatch
+## Routing: ad-hoc vs decision vs cairn-intent loop vs cairn-tdd-feature dispatch
 
-Three paths:
+Four paths:
 
 - **Ad-hoc edit** (one-line fix, doc tweak, multi-file refactor with no clear failing-test shape): just edit. The operator envelope at `.claude/active-envelope.yaml` gates writes — set `mode: operator` + a `paths:` regex list for focused work, `mode: off` for ad-hoc / cross-cutting work. Commit with a Conventional Commits prefix from the validator's `_FALLBACK_REGISTRY` (`feat:`/`fix:`/`chore:`/`docs:`/`test:`/`slice:`/`handoff:`/`sweep:`/`bootstrap:`/`design:`/`plan:`; scoped `chore(scope):` accepted).
 - **Architectural decision** (touches invariants, boundaries, data ownership, module structure): `/decision <question>`, then `/new-adr` to write the ADR. ADRs are append-only — `reversibility-guard.sh` blocks overwrites; frontmatter-only `Edit` is allowed; supersession via a new ADR with `supersedes: <id>`. Manual `docs/ARCHITECTURE.md` edits accompany the ADR.
+- **Intent-managed loop** (default for repo-writing work — a durable intent contract anchoring fluid, test-first construction in the current session): invoke the `cairn-intent` skill. It forms the contract from `templates/intent.md`, runs a fresh-context `intent-challenge` before construction and a fresh-context `close-review` before close, and stays in one conversation rather than dispatching per-phase subagents. cairn-internal only; the `using-cairn` SessionStart carrier names the active intent.
 - **Feature with TDD discipline** (vertical behavior change with a clear failing-test shape): write a per-feature plan at `docs/plans/<date>-<feature-id>.md` with frontmatter `id:` + `envelope:` regex array + What/Why/Boundary/Specification/Verification sections. Then invoke the `cairn-tdd-feature` dispatch skill via the Skill tool with the plan path as args. The skill runs all four phases as fresh subagents and produces four commits + workspace artifacts under `.claude/skill-runs/<feature-id>/`.
 
-Rule of thumb: if the work could change what downstream features can assume, it needs `/decision`. If it only fills in detail within an existing assumption, it needs the dispatch skill (or direct edit).
+Rule of thumb: if the work could change what downstream features can assume, it needs `/decision`. If it only fills in detail within an existing assumption, operate via the cairn-intent loop (or the `cairn-tdd-feature` dispatch skill for strict per-phase isolation; direct edit for ad-hoc work).
 
 `/catchup` is the session-orientation slash command — reads `.claude/handoff.md`, `git log`, `git status`, and `.claude/active-envelope.yaml`, then stops. The operator drives next.
 

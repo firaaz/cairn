@@ -36,3 +36,4 @@
 | intent-contract-cost-model | Intent-contract cost model — user approves the promise, agent owns the proof | accepted | provisional | architecture | 2026-05-31 |
 | git-workflow-v1 | Git workflow v1 — branch-per-feature, --no-ff integration, feature-level naming | accepted | firm | process | 2026-05-31 |
 | cairn-intent-git-lifecycle | Cairn-intent git lifecycle — uniform branch-per-unit + --no-ff across both dispatch paths | accepted | provisional | process | 2026-06-01 |
+| using-cairn-carrier-contract | using-cairn carrier contract — dynamic SessionStart command-emitter, cairn-internal-first | accepted | provisional | architecture | 2026-06-01 |
