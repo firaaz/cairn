@@ -151,6 +151,41 @@ escalate the front-challenge), not a bug to paper over.
 
 ## Next-session sequencing (the build is NOT a single session)
 
+**Updated 2026-06-01** (supersedes the original Trial-D-first ordering below: the operator
+started the Trial-E build now, folding Trial-D's hand-authoring measurement into the Trial-E
+dogfood since `intent-contract-cost-model` D2 removed operator hand-authoring).
+
+Shipped + merged to `dev` (`f8d7f4e`): the workflow substrate (`workflows/cairn-intent.yaml`,
+`scripts/lib/workflow_registry.py`, `scripts/lib/{claude,codex}_workflow_executor.py`) and the
+**`intent-challenge`** subagent (`.claude/agents/intent-challenge.md`). Built honest-minimal — no
+Python verdict module (the agent emits JSON as prose; the executors render verdict shapes from the
+YAML, so a builder would have no caller) and no mechanical slice-#25 detector (none is honest, §1.3;
+the counterfactual test characterizes `premise_guard`'s blind spot, and the block verdict is the
+Trial-E integration gate per ADR D9).
+
+A concurrent Codex session landed `plugins/cairn/` (`61afec4`) with **plugin-packaged `cairn-intent`
+and `using-cairn` SKILL.md** — Codex-oriented, driving the YAML via the Codex executor. Reconcile
+against these before building the canonical Claude-side skill/carrier; do not duplicate.
+
+Remaining increments toward Trial E:
+
+1. **`intent-review` subagent** (`.claude/agents/intent-review.md`) — close-review checkpoint (D2).
+   Mirror `intent-challenge.md`; pin structure to the `close-review` node in `workflows/cairn-intent.yaml`;
+   honest-minimal (no Python module unless a real caller emerges).
+2. **Canonical `cairn-intent` skill + `using-cairn` carrier** for Claude Code (D1/D5) — reconciled
+   with the Codex plugin SKILLs; the carrier needs a testable "fired" definition + fallback.
+3. **Graduated-contract + completeness-floor rules** (D3) in `templates/intent.md` + unit tests.
+4. **Run Trial E** — dogfood the loop on a real cairn increment; re-run the slice-#25 counterfactual
+   through the front-challenge (D9 acceptance gate).
+5. **D7 retirement ADR** on a Trial-E pass — finalizes `intent-management-loop`,
+   `intent-contract-cost-model` D3, `cairn-intent-git-lifecycle`, and `cairn-thin-substrate-direction` D6/D8.
+
+Bootstrap note: build each via the existing 4-phase `cairn-tdd-feature` / a focused TDD pass (the loop
+isn't fully built yet). Branch `feat/intent-management-loop` is merged into `dev` and removable; its
+worktree `.claude/worktrees/intent-management-loop` is intact and reusable (or branch fresh from `dev`).
+
+**Superseded original ordering (pre-2026-06-01):**
+
 Two open threads exist; order matters:
 
 1. **Trial-D 3-intent measurement FIRST** (`docs/plans/2026-05-30-cairn-trial-d-scope-split.md`
