@@ -1,0 +1,323 @@
+schema_version: 1
+id: cairn-intent
+name: Cairn Intent
+status: provisional
+description: >
+  Intent-management operating mode. The intent is the durable anchor; the
+  construction conversation stays fluid; fresh-context challenge and close-review
+  stages provide the decorrelation checkpoints.
+guards:
+  - role_guard
+  - premise_guard
+  - atomicity_guard
+  - reversibility-guard
+
+nodes:
+  - id: load-or-form-intent
+    role:
+      name: intent-manager
+      charter: >
+        Load the active intent when one exists, or form the thinnest sufficient
+        intent contract for the requested repo-writing work.
+    prompt: |
+      Locate the active Cairn intent from handoff pointers or the current
+      conversation. If none exists, create a thin contract with at least a
+      one-line must-satisfy clause, execution scope, evidence expectation, and
+      write envelope. Mark whether this is a new intent, a material change, or a
+      plain resume.
+    allowed_inputs:
+      - current user request
+      - .claude/handoff.md
+      - .claude/skill-runs/<feature>/intent.md
+      - templates/intent.md
+      - docs/adr/intent-management-loop.md
+    write_envelope:
+      mode: operator
+      paths:
+        - ^\.claude/skill-runs/[^/]+/intent\.md$
+        - ^\.claude/handoff\.md$
+    evidence:
+      - id: intent-pointer
+        description: Active intent path or explicit no-intent signal.
+        required: true
+      - id: material-delta-classification
+        description: New, material-change, or resume classification.
+        required: true
+      - id: contract-floor
+        description: One-line scope statement plus must-satisfy floor.
+        required: true
+    pass_output:
+      status: ready-for-challenge
+      fields:
+        - intent_path
+        - delta_kind
+        - contract_summary
+        - material_change
+    fail_output:
+      status: needs-operator-intent
+      fields:
+        - question
+        - missing_inputs
+    execution:
+      executor: conversation
+      context: current
+      human_signoff_after: false
+      same_context_fallback: false
+
+  - id: intent-challenge
+    role:
+      name: intent-challenger
+      charter: >
+        Attack the intent's premises against live source before construction
+        starts, with fresh context and no same-context fallback.
+    prompt: |
+      Given the intent contract and cited source files, challenge each premise
+      semantically and mechanically. Verify that cited quotes are live, then
+      ask whether the source actually supports the intent's claims. Block if a
+      slice-#25-style counterfactual could pass verbatim grounding while
+      contradicting the live source behavior.
+    allowed_inputs:
+      - .claude/skill-runs/<feature>/intent.md
+      - cited source files from Premise Grounding
+      - docs/adr/intent-management-loop.md
+      - checks/premise_guard.py
+    write_envelope:
+      mode: report-only
+      paths:
+        - ^\.claude/skill-runs/[^/]+/intent-challenge\.md$
+    evidence:
+      - id: premise-source-checks
+        description: Per-premise source citation checks with file paths.
+        required: true
+      - id: semantic-counterfactual-search
+        description: Attempted stale-docstring or wrong-model counterfactual.
+        required: true
+      - id: verdict
+        description: Pass or blocked verdict with challenged premise ids.
+        required: true
+    pass_output:
+      status: challenge-pass
+      fields:
+        - verdict
+        - challenged_premises
+        - cited_evidence
+        - blocked_counterfactuals
+    fail_output:
+      status: challenge-blocked
+      fields:
+        - verdict
+        - challenged_premises
+        - blocking_evidence
+        - required_intent_revision
+    execution:
+      executor: fresh_agent
+      context: fresh
+      human_signoff_after: true
+      same_context_fallback: false
+
+  - id: construct
+    role:
+      name: constructor
+      charter: >
+        Build continuously in the main conversation under the approved intent,
+        with tests written test-first.
+    prompt: |
+      Implement the approved intent in the current conversation. Use test-first
+      discipline for feature and bugfix behavior. Keep the intent live as
+      constraints surface, and re-run intent-challenge before continuing if a
+      premise or must-satisfy clause changes materially.
+    allowed_inputs:
+      - approved intent contract
+      - intent-challenge pass output
+      - current conversation
+      - repository files within the intent write envelope
+    write_envelope:
+      mode: from-intent
+      paths:
+        - <intent.contract.write_envelope.paths>
+    evidence:
+      - id: red-test-output
+        description: Failing test output observed before implementation.
+        required: true
+      - id: green-test-output
+        description: Passing focused test output after implementation.
+        required: true
+      - id: changed-files
+        description: Diff summary constrained by the approved write envelope.
+        required: true
+    pass_output:
+      status: ready-for-close-review
+      fields:
+        - intent_path
+        - diff_summary
+        - test_output
+        - evidence_paths
+    fail_output:
+      status: construction-blocked
+      fields:
+        - blocker
+        - evidence
+        - escalation
+    execution:
+      executor: conversation
+      context: current
+      human_signoff_after: false
+      same_context_fallback: false
+
+  - id: close-review
+    role:
+      name: close-reviewer
+      charter: >
+        Verify the completed diff against the intent contract and evidence from
+        a fresh context before close.
+    prompt: |
+      Given the intent contract, implementation diff, and full verification
+      output, determine whether the work satisfies every must-satisfy clause,
+      avoids every must-not-violate clause, respects execution scope, and has
+      evidence adequate for the contract depth. Do not accept same-context
+      self-review as a fallback.
+    allowed_inputs:
+      - .claude/skill-runs/<feature>/intent.md
+      - git diff for the construction work
+      - full focused test output
+      - architecture validation output when relevant
+      - close evidence produced by construct
+    write_envelope:
+      mode: report-only
+      paths:
+        - ^\.claude/skill-runs/[^/]+/close-review\.md$
+    evidence:
+      - id: contract-clause-check
+        description: Per-clause pass/fail assessment against the diff.
+        required: true
+      - id: evidence-adequacy-check
+        description: Review of whether tests and outputs meet the contract depth.
+        required: true
+      - id: scope-check
+        description: Confirmation that changed files match execution scope.
+        required: true
+    pass_output:
+      status: close-review-pass
+      fields:
+        - verdict
+        - clause_results
+        - evidence_summary
+        - residual_risk
+    fail_output:
+      status: close-review-blocked
+      fields:
+        - verdict
+        - findings
+        - missing_evidence
+        - required_rework
+    execution:
+      executor: fresh_agent
+      context: fresh
+      human_signoff_after: true
+      same_context_fallback: false
+
+  - id: close
+    role:
+      name: closer
+      charter: >
+        Close the intent after fresh review passes by recording durable handoff
+        and verification evidence.
+    prompt: |
+      Close only after close-review passes or the operator explicitly accepts a
+      documented residual risk. Record the intent pointer, final verification,
+      and next-step state in handoff. Keep cairn-tdd-feature as the fallback
+      until a future firm retirement ADR supersedes it.
+    allowed_inputs:
+      - close-review pass output
+      - final verification output
+      - git status and diff summary
+      - .claude/handoff.md
+    write_envelope:
+      mode: operator
+      paths:
+        - ^\.claude/handoff\.md$
+        - ^\.claude/skill-runs/[^/]+/close\.md$
+        - ^docs/dogfood-log\.md$
+    evidence:
+      - id: close-review-pass
+        description: Fresh close-review pass output or operator risk acceptance.
+        required: true
+      - id: final-verification
+        description: Fresh verification command output for the closed work.
+        required: true
+      - id: handoff-pointer
+        description: Durable pointer to the closed intent and next state.
+        required: true
+    pass_output:
+      status: closed
+      fields:
+        - intent_path
+        - verification
+        - handoff_entry
+        - trial_e_observation
+    fail_output:
+      status: close-blocked
+      fields:
+        - blocker
+        - missing_evidence
+        - next_action
+    execution:
+      executor: conversation
+      context: current
+      human_signoff_after: false
+      same_context_fallback: false
+
+executors:
+  claude_dynamic_workflows:
+    split_reason: >
+      Claude dynamic workflows cannot take mid-run user input, so Cairn
+      approval boundaries are separate workflow runs rather than one monolithic
+      workflow.
+    save_policy: >
+      Generate reviewable prompts or script drafts first. Save reusable scripts
+      under .claude/workflows/ only after a generated script has been reviewed
+      and dogfooded.
+    runs:
+      - id: cairn-intent-challenge
+        nodes:
+          - intent-challenge
+        before: New or materially changed intent exists and needs challenge.
+        after: Operator reviews challenge output before construction starts.
+        human_signoff_after: true
+      - id: cairn-intent-close-review
+        nodes:
+          - close-review
+        before: Construction has produced diff, tests, and evidence.
+        after: Operator reviews close-review output before close.
+        human_signoff_after: true
+  codex_agents:
+    split_reason: >
+      Codex fresh-agent dispatch uses explicit worker runs at Cairn approval
+      boundaries. Each run is a separate spawn_agent call with no inherited
+      context fork.
+    hook_parity: >
+      Current local Codex plugin manifests document skills and interface fields
+      only; hook registration is not available in plugin.json for this slice.
+      Render explicit guard commands until Codex plugin hooks are supported.
+    dispatch_policy:
+      tool: spawn_agent
+      agent_type: worker
+      fork_context: false
+    runs:
+      - id: cairn-intent-challenge
+        nodes:
+          - intent-challenge
+        before: New or materially changed intent exists and needs challenge.
+        after: Operator reviews challenge output before construction starts.
+        human_signoff_after: true
+      - id: cairn-intent-close-review
+        nodes:
+          - close-review
+        before: Construction has produced diff, tests, and evidence.
+        after: Operator reviews close-review output before close.
+        human_signoff_after: true
+  conversation:
+    nodes:
+      - load-or-form-intent
+      - construct
+      - close
