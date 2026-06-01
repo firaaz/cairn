@@ -77,16 +77,52 @@ def test_codex_pretool_denies_destructive_shell_commands(
     assert reason
 
 
-def test_codex_pretool_allows_force_with_lease(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "command",
+    [
+        "git push --force-with-lease origin dev",
+        "git push --force-with-lease=refs/heads/dev origin dev",
+    ],
+)
+def test_codex_pretool_allows_force_with_lease(tmp_path: Path, command: str) -> None:
     proc = _pretool(
         {
             "tool_name": "exec_command",
-            "tool_input": {"cmd": "git push --force-with-lease origin dev"},
+            "tool_input": {"cmd": command},
         },
         tmp_path,
     )
 
     assert proc.returncode == 0, proc.stderr
+
+
+@pytest.mark.parametrize(
+    ("command", "needle"),
+    [
+        (
+            "git push --force-with-lease origin dev; git reset --hard HEAD",
+            "git reset --hard",
+        ),
+        (
+            "git push --force-with-lease origin dev; git push --force origin dev",
+            "git push --force",
+        ),
+        (
+            "git push --force-with-lease origin dev && git push -f origin dev",
+            "git push -f",
+        ),
+    ],
+)
+def test_codex_pretool_denies_chained_force_with_lease_bypasses(
+    tmp_path: Path, command: str, needle: str
+) -> None:
+    proc = _pretool(
+        {"tool_name": "exec_command", "tool_input": {"cmd": command}},
+        tmp_path,
+    )
+
+    assert proc.returncode != 0
+    assert needle in proc.stderr
 
 
 def test_codex_pretool_denies_apply_patch_env_file(tmp_path: Path) -> None:

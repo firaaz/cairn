@@ -62,6 +62,23 @@ def test_codex_dispatch_brief_names_spawn_agent_worker_without_context_fork():
     assert "close-review-blocked" in brief
 
 
+def test_codex_dispatch_brief_names_automatic_hooks_and_guard_evidence():
+    workflow = load_workflow(CAIRN_ROOT / "workflows" / "cairn-intent.yaml")
+
+    brief = render_codex_dispatch_brief(workflow, "cairn-intent-challenge")
+
+    assert "Guard evidence and fallback commands:" in brief
+    assert (
+        "Codex plugin hooks run automatically when the plugin is loaded and trusted"
+        in brief
+    )
+    assert "no plugin.json hooks registration field" not in brief
+    assert "instead of claiming hook parity" not in brief
+    assert "checks/premise_guard.py" in brief
+    assert "checks/atomicity_guard.py" in brief
+    assert "checks/reversibility-guard.sh" in brief
+
+
 def test_codex_guard_fallback_commands_include_challenge_stage_gates():
     workflow = load_workflow(CAIRN_ROOT / "workflows" / "cairn-intent.yaml")
 

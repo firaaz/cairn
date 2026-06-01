@@ -13,9 +13,9 @@ from lib.workflow_registry import (
 )
 
 _HOOK_FALLBACK_NOTE = (
-    "Local Codex plugin manifests expose skills and interface metadata, but no "
-    "plugin.json hooks registration field. Use explicit guard commands for this "
-    "slice instead of claiming hook parity."
+    "Codex plugin hooks run automatically when the plugin is loaded and trusted. "
+    "Keep explicit guard commands as fallback/manual evidence, and run them for "
+    "non-hooked premise and atomicity gates."
 )
 
 
@@ -79,7 +79,7 @@ def render_codex_dispatch_brief(workflow: dict, run_id: str) -> str:
             "Call `spawn_agent` with this packet:",
             json.dumps(packet, indent=2, sort_keys=True),
             "",
-            "Guard-command fallback:",
+            "Guard evidence and fallback commands:",
             _HOOK_FALLBACK_NOTE,
             *[f"- {command}" for command in commands],
             "",
@@ -90,7 +90,7 @@ def render_codex_dispatch_brief(workflow: dict, run_id: str) -> str:
 
 
 def render_codex_guard_commands(workflow: dict, run_id: str) -> list[str]:
-    """Return explicit guard commands for a Codex run when hooks are unavailable."""
+    """Return explicit guard commands for fallback/manual evidence."""
     run = _find_run(workflow, run_id)
     nodes = nodes_by_id(workflow)
     commands: list[str] = []
@@ -105,8 +105,8 @@ def render_codex_guard_commands(workflow: dict, run_id: str) -> list[str]:
         commands.append(_write_envelope_command(nodes[node_id]))
     commands.append(
         "printf '%s\\n' "
-        "'{\"tool_name\":\"Bash\","
-        "\"tool_input\":{\"command\":\"<candidate command>\"}}' "
+        '\'{"tool_name":"Bash",'
+        '"tool_input":{"command":"<candidate command>"}}\' '
         "| bash checks/reversibility-guard.sh"
     )
     return commands

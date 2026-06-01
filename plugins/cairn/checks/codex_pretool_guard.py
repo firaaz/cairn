@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -32,6 +33,21 @@ ADR_FRONTMATTER_KEYS = (
     "firmness:",
 )
 LOCK_FILE_SUFFIXES = ("uv.lock", "package-lock.json", "poetry.lock")
+GIT_FORCE_PUSH_REASON = (
+    "REVERSIBILITY GUARD: git push --force: use --force-with-lease instead"
+)
+GIT_SHORT_FORCE_PUSH_REASON = (
+    "REVERSIBILITY GUARD: git push -f: use --force-with-lease instead"
+)
+GIT_OPTIONS_WITH_VALUES = {
+    "-C",
+    "-c",
+    "--config-env",
+    "--exec-path",
+    "--git-dir",
+    "--namespace",
+    "--work-tree",
+}
 
 
 @dataclass
@@ -139,17 +155,169 @@ def _deny(reason: str) -> int:
     return 2
 
 
+def _split_shell_segments(command: str) -> list[str]:
+    segments: list[str] = []
+    current: list[str] = []
+    quote: str | None = None
+    escaped = False
+    index = 0
+
+    def flush() -> None:
+        segment = "".join(current).strip()
+        if segment:
+            segments.append(segment)
+        current.clear()
+
+    while index < len(command):
+        char = command[index]
+        if escaped:
+            current.append(char)
+            escaped = False
+            index += 1
+            continue
+        if char == "\\" and quote != "'":
+            current.append(char)
+            escaped = True
+            index += 1
+            continue
+        if quote:
+            if char == quote:
+                quote = None
+            current.append(char)
+            index += 1
+            continue
+        if char in {"'", '"'}:
+            quote = char
+            current.append(char)
+            index += 1
+            continue
+        if command.startswith(("&&", "||"), index):
+            flush()
+            index += 2
+            continue
+        if char in {";", "|"}:
+            flush()
+            index += 1
+            continue
+        current.append(char)
+        index += 1
+
+    flush()
+    return segments
+
+
+def _is_env_assignment(token: str) -> bool:
+    return bool(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", token))
+
+
+def _is_git_token(token: str) -> bool:
+    return token == "git" or token.endswith("/git")
+
+
+def _git_command_index(tokens: list[str]) -> int | None:
+    index = 0
+    while index < len(tokens) and _is_env_assignment(tokens[index]):
+        index += 1
+    if index < len(tokens) and tokens[index] == "env":
+        index += 1
+        while index < len(tokens) and (
+            tokens[index].startswith("-") or _is_env_assignment(tokens[index])
+        ):
+            index += 1
+    while index < len(tokens) and tokens[index] in {"command", "exec", "time"}:
+        index += 1
+    if index < len(tokens) and tokens[index] == "sudo":
+        index += 1
+        while index < len(tokens) and tokens[index].startswith("-"):
+            flag = tokens[index]
+            index += 1
+            if flag in {"-C", "-g", "-h", "-p", "-T", "-u"} and index < len(tokens):
+                index += 1
+        while index < len(tokens) and _is_env_assignment(tokens[index]):
+            index += 1
+    if index < len(tokens) and _is_git_token(tokens[index]):
+        return index
+    return None
+
+
+def _git_push_index(tokens: list[str], git_index: int) -> int | None:
+    index = git_index + 1
+    while index < len(tokens):
+        token = tokens[index]
+        if token == "push":
+            return index
+        if token == "--":
+            return None
+        if token in GIT_OPTIONS_WITH_VALUES:
+            index += 2
+            continue
+        if any(
+            token.startswith(f"{option}=")
+            for option in GIT_OPTIONS_WITH_VALUES
+            if option.startswith("--")
+        ):
+            index += 1
+            continue
+        if token.startswith(("-C", "-c")) and token not in {"-C", "-c"}:
+            index += 1
+            continue
+        if token.startswith("-"):
+            index += 1
+            continue
+        return None
+    return None
+
+
+def _is_short_force_token(token: str) -> bool:
+    return token.startswith("-") and not token.startswith("--") and "f" in token[1:]
+
+
+def _git_push_force_reason_from_tokens(tokens: list[str]) -> str | None:
+    git_index = _git_command_index(tokens)
+    if git_index is None:
+        return None
+    push_index = _git_push_index(tokens, git_index)
+    if push_index is None:
+        return None
+    for token in tokens[push_index + 1 :]:
+        if token == "--":
+            return None
+        if token == "--force" or token.startswith("--force="):
+            return GIT_FORCE_PUSH_REASON
+        if _is_short_force_token(token):
+            return GIT_SHORT_FORCE_PUSH_REASON
+    return None
+
+
+def _git_push_force_reason_from_unparsed(segment: str) -> str | None:
+    if re.search(r"\bgit\s+push\b.*(?<!\S)--force(?:=|\s|$)", segment):
+        return GIT_FORCE_PUSH_REASON
+    if re.search(r"\bgit\s+push\b.*(?<!\S)-[A-Za-z]*f[A-Za-z]*(?:\s|$)", segment):
+        return GIT_SHORT_FORCE_PUSH_REASON
+    return None
+
+
+def _git_push_force_reason(command: str) -> str | None:
+    for segment in _split_shell_segments(command):
+        try:
+            tokens = shlex.split(segment)
+        except ValueError:
+            reason = _git_push_force_reason_from_unparsed(segment)
+        else:
+            reason = _git_push_force_reason_from_tokens(tokens)
+        if reason:
+            return reason
+    return None
+
+
 def _destructive_command_reason(command: str) -> str | None:
     if "rm -rf" in command:
         return "REVERSIBILITY GUARD: rm -rf: use rm with explicit paths instead"
     if "rm -fr" in command:
         return "REVERSIBILITY GUARD: rm -fr: use rm with explicit paths instead"
-    if "git push --force-with-lease" in command:
-        return None
-    if "git push --force" in command:
-        return "REVERSIBILITY GUARD: git push --force: use --force-with-lease instead"
-    if "git push -f" in command:
-        return "REVERSIBILITY GUARD: git push -f: use --force-with-lease instead"
+    git_push_reason = _git_push_force_reason(command)
+    if git_push_reason:
+        return git_push_reason
     if "git reset --hard" in command:
         return "REVERSIBILITY GUARD: git reset --hard: use git stash or a backup branch"
     if "git clean -fd" in command:
