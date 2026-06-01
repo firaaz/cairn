@@ -28,6 +28,7 @@ import yaml
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
 INTENT = CAIRN_ROOT / "templates" / "intent.md"
+PHASE1 = CAIRN_ROOT / ".claude" / "agents" / "phase-1-tdd.md"
 
 
 def _read() -> str:
@@ -130,4 +131,67 @@ def test_trivial_worked_example_is_floor_only_and_parses() -> None:
     )
     assert "must-satisfy" in parsed and isinstance(parsed["must-satisfy"], list), (
         "the trivial worked example must carry a must-satisfy list."
+    )
+
+
+def _heading_index(text: str, heading: str) -> int | None:
+    lines = text.splitlines()
+    return next((i for i, ln in enumerate(lines) if ln.strip() == heading), None)
+
+
+def _section(text: str, heading: str) -> str:
+    """Return the text of a ``## Heading`` section (heading to EOF or next
+    top-level heading)."""
+    lines = text.splitlines()
+    start = _heading_index(text, heading)
+    assert start is not None, f"templates/intent.md must contain a {heading!r} heading"
+    end = next(
+        (i for i in range(start + 1, len(lines)) if lines[i].strip().startswith("## ")),
+        len(lines),
+    )
+    return "\n".join(lines[start:end])
+
+
+def test_operator_prompt_section_pinned_before_what_and_derive_exempt() -> None:
+    """gh#28 #2: a verbatim-pinned ``## Operator Prompt`` section sits at the top
+    of the intent template (before ``## What``) so a cold-read at either
+    cairn-intent sign-off gate restores the original framing, and it is exempt
+    from the derive-don't-fabricate contract (pinned input, not Phase-1
+    derivation). RED at HEAD: the template has no Operator Prompt section."""
+    text = _read()
+    op_idx = _heading_index(text, "## Operator Prompt")
+    what_idx = _heading_index(text, "## What")
+    assert op_idx is not None, (
+        "templates/intent.md must carry a '## Operator Prompt' section (gh#28 #2)."
+    )
+    assert what_idx is not None, "templates/intent.md must still carry '## What'."
+    assert op_idx < what_idx, (
+        "'## Operator Prompt' must precede '## What' (pinned at the top for "
+        "cold-read recovery)."
+    )
+    lowered = _section(text, "## Operator Prompt").lower()
+    assert "verbatim" in lowered, (
+        "the Operator Prompt section must say the framing is pinned verbatim."
+    )
+    assert "exempt" in lowered and "derive" in lowered, (
+        "the Operator Prompt section must state it is exempt from the "
+        "derive-don't-fabricate contract."
+    )
+
+
+def test_operator_prompt_reconciled_in_authoritative_shape_source() -> None:
+    """intent-challenge CF-2: the verbatim/derive-exempt carve-out must be
+    reconciled in the authoritative shape source (.claude/agents/phase-1-tdd.md),
+    not only the template — else its eight-section derive-don't-fabricate contract
+    silently contradicts the derive-exempt ninth section. RED at HEAD:
+    phase-1-tdd.md does not mention the Operator Prompt section."""
+    assert PHASE1.exists(), f"authoritative shape source not found: {PHASE1}"
+    text = PHASE1.read_text().lower()
+    assert "operator prompt" in text, (
+        ".claude/agents/phase-1-tdd.md must describe the '## Operator Prompt' "
+        "section so the shape source and the template stay in sync (CF-2)."
+    )
+    assert "exempt" in text, (
+        "phase-1-tdd.md must mark the Operator Prompt section as exempt from "
+        "the derive-don't-fabricate contract."
     )

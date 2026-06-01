@@ -15,7 +15,20 @@ derive-don't-fabricate contract: Phase 1 must populate every section from
 the plan-doc + cited ADRs + ARCHITECTURE.md, or RAISE_ISSUE if the inputs do
 not support derivation. Omission-by-oversight is structurally prevented by
 surfacing all eight headings in this template.
+
+The `## Operator Prompt` section that precedes the eight is the one exception:
+it pins the operator's initiating framing VERBATIM and is exempt from
+derive-don't-fabricate (it is input, not derivation).
 -->
+
+## Operator Prompt
+<!-- VERBATIM, derive-exempt. Pin the operator's initiating framing here word for
+word, as the first section — the cold-read anchor that restores original framing
+at every sign-off gate (the cairn-intent loop's intent approval and close-review
+are often hours apart). This is the one exception to the derive-don't-fabricate
+contract above: pinned input, NOT Phase-1 derivation. Quote, do not summarise or
+restate. (gh#28 mitigation 2.) -->
+> <operator's verbatim initiating framing>
 
 ## What
 <!-- One paragraph: the behavior change. Lift verbatim from the plan-doc's
