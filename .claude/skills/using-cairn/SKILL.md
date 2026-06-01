@@ -12,8 +12,9 @@ gates**: loading the active intent is cheap and read-only; nothing here blocks a
 operator at a boundary.
 
 The emitter is `checks/using-cairn-carrier.sh`. This skill is its documented surface; the Codex
-plugin's `using-cairn` skill is a chooser, not a SessionStart carrier (Codex has no SessionStart
-hook). Both name the same workflows and skills.
+plugin's consumer `using-cairn` skill is a chooser, not a shipped SessionStart carrier. Cairn may
+dogfood the same carrier through repo-local Codex hooks, but that remains internal-only. Both
+surfaces name the same workflows and skills.
 
 ## What it emits on session open
 
@@ -59,9 +60,10 @@ only saves the operator the first prompt.
 
 ## Distribution (using-cairn-carrier-contract D6)
 
-cairn-internal only. The carrier is registered in cairn's local `.claude/settings.json` and is not
-in `scripts/build_dist.py`, so it dogfoods inside cairn (self-consumption) without shipping to
-consumers. Consumer distribution is deferred to the firm D7 retirement ADR.
+cairn-internal only. The carrier is registered in cairn's local `.claude/settings.json` and
+repo-local `.codex/hooks.json`; it is not in `scripts/build_dist.py` or the Codex plugin hook
+manifest, so it dogfoods inside cairn (self-consumption) without shipping to consumers. Consumer
+distribution is deferred to the firm D7 retirement ADR.
 
 ## Pointers (Tier-2, load on demand)
 

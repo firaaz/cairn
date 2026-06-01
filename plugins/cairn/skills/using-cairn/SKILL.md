@@ -18,6 +18,6 @@ Cairn is a protocol layer for complex AI-assisted engineering. Use this skill fi
 
 ## Bundled References
 
-Canonical command references live in `references/`. Guard command boundaries are documented in `references/guards.md`. Templates live in `templates/`. Guard scripts live in `checks/`. The Codex workflow renderer lives in `scripts/lib/codex_workflow_executor.py`.
+Canonical command references live in `references/`. Guard hook and fallback command boundaries are documented in `references/guards.md`. Templates live in `templates/`. Guard scripts live in `checks/`. The Codex workflow renderer lives in `scripts/lib/codex_workflow_executor.py`.
 
 When in doubt, start with `cairn-catchup`, then choose the narrowest workflow that matches the current task.

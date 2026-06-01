@@ -4,7 +4,7 @@ You are about to consume cairn from another project. This file is the navigation
 
 ## What you get
 
-The cairn plugin installs the four-phase TDD dispatch skill (`cairn-tdd-feature`), the four phase agents (`phase-1-tdd` … `phase-4-tdd`) plus the triager, three Claude Code hooks (`reversibility-guard.sh`, `role_guard.py`, `reality-check.sh`), the architecture validator (`scripts/validate_architecture.py`), and the templates under `templates/`. Slash commands (`/catchup`, `/handoff`, `/decision`, `/decision.full`, `/new-adr`, `/new-adr.full`) ship in a follow-up payload bump (M5.1 per ADR D3) — they are not in the F1 plugin install.
+The cairn plugin installs the four-phase TDD dispatch skill (`cairn-tdd-feature`), the four phase agents (`phase-1-tdd` … `phase-4-tdd`) plus the triager, three Claude Code hooks (`reversibility-guard.sh`, `role_guard.py`, `reality-check.sh`), Codex hook adapters for shell/apply_patch enforcement, the architecture validator (`scripts/validate_architecture.py`), and the templates under `templates/`. Slash commands (`/catchup`, `/handoff`, `/decision`, `/decision.full`, `/new-adr`, `/new-adr.full`) ship in a follow-up payload bump (M5.1 per ADR D3) — they are not in the F1 plugin install.
 
 ## Install (quickstart)
 
@@ -24,7 +24,7 @@ codex plugin marketplace add /Users/firaazfarook/Developer/github.com/firaaz/cai
 codex plugin add cairn@cairn-local
 ```
 
-Then start a new Codex thread before testing skills. Codex gets Cairn skills and explicit guard commands; it does not get automatic Claude hook enforcement.
+Review and trust the plugin hook registration, then start a new Codex thread before testing skills and hooks. Codex gets Cairn skills, automatic shell/apply_patch enforcement hooks where the host supports them, and explicit guard commands as fallback/manual evidence.
 
 After install, run the post-install validator:
 
@@ -71,7 +71,7 @@ These rules live in `CLAUDE.md` under the `[both]` audience tag. Anchor links ar
 
 ## Troubleshooting
 
-- **Hooks silently no-op.** `jq` or `ruff` missing — install both per [hook dependencies](CLAUDE.md#hook-dependencies). The hook prints a stderr warning then exits 0; enforcement is silently disabled.
+- **Hooks silently no-op.** Claude hooks depend on `jq` and `ruff`; Codex Python reality checks depend on `ruff`. Install both per [hook dependencies](CLAUDE.md#hook-dependencies). Missing tools produce stderr warnings and skip the affected check.
 - **Writes denied unexpectedly.** The operator envelope is in `mode: operator` and your write path does not match any regex. Either widen the `paths:` list, switch to `mode: off`, or move the work into a dispatch-skill phase. See [Operator envelope](CLAUDE.md#operator-envelope).
 - **Phase 3 cannot find tests.** Phase 2's tests must be committed to git before Phase 3 dispatches. Check `git log` for the phase 2 commit; if missing, Phase 2 did not exit cleanly.
 - **ADR edit blocked.** `reversibility-guard.sh` allows only frontmatter `status:` / `superseded-by:` / `firmness:` first-line edits on existing ADRs. To change a decision body, write a new ADR with `supersedes: <id>`. Typo escape hatch: `ADR_EDITORIAL_FIX=1`. See [ADRs are append-only](CLAUDE.md#adrs-are-append-only).

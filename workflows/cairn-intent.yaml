@@ -296,9 +296,11 @@ executors:
       boundaries. Each run is a separate spawn_agent call with no inherited
       context fork.
     hook_parity: >
-      Current local Codex plugin manifests document skills and interface fields
-      only; hook registration is not available in plugin.json for this slice.
-      Render explicit guard commands until Codex plugin hooks are supported.
+      The Codex plugin registers automatic PreToolUse/PostToolUse hooks for
+      shell-command reversibility, apply_patch write-envelope policy, and
+      apply_patch Python reality checks where the host loads trusted plugin
+      hooks. Explicit guard commands remain fallback/manual evidence for
+      unsupported hosts and for non-hooked premise/atomicity checks.
     dispatch_policy:
       tool: spawn_agent
       agent_type: worker

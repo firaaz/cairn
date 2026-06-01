@@ -8,7 +8,7 @@ description: Run Cairn's phase-isolated TDD feature workflow in Codex from a per
 Codex port of Cairn's `cairn-tdd-feature`. Use when a feature has a plan at `docs/plans/<feature>.md` and needs TDD-by-construction with phase isolation.
 
 Codex does not use Claude custom agent registrations. This skill dispatches generic Codex workers with the bundled phase prompts from `references/`.
-Guard boundary semantics and explicit guard commands are documented in `references/guards.md`.
+Guard boundary semantics, automatic hook coverage, and explicit guard commands as fallback/manual evidence are documented in `references/guards.md`.
 
 ## Inputs
 

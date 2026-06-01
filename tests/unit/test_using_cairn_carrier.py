@@ -26,6 +26,8 @@ import pytest
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
 CARRIER = CAIRN_ROOT / "checks" / "using-cairn-carrier.sh"
 SETTINGS = CAIRN_ROOT / ".claude" / "settings.json"
+CODEX_HOOKS = CAIRN_ROOT / ".codex" / "hooks.json"
+CODEX_PLUGIN_HOOKS = CAIRN_ROOT / "plugins" / "cairn" / "hooks" / "hooks.json"
 
 FIRED_MARKER = "CAIRN_CARRIER_FIRED"
 
@@ -163,6 +165,25 @@ def test_carrier_registered_in_local_settings_sessionstart():
     assert any("using-cairn-carrier.sh" in c for c in commands), (
         "SessionStart must invoke the carrier"
     )
+
+
+def test_carrier_registered_in_repo_local_codex_sessionstart_only():
+    data = json.loads(CODEX_HOOKS.read_text())
+    hooks = data.get("hooks", {})
+
+    assert sorted(hooks) == ["SessionStart"]
+    commands = [
+        h.get("command", "")
+        for entry in hooks["SessionStart"]
+        for h in (entry.get("hooks") or [])
+    ]
+    assert any("using-cairn-carrier.sh" in c for c in commands)
+
+
+def test_carrier_not_shipped_in_codex_plugin_hooks():
+    text = CODEX_PLUGIN_HOOKS.read_text()
+    assert "using-cairn-carrier.sh" not in text
+    assert "SessionStart" not in text
 
 
 def test_carrier_not_shipped_to_consumers():

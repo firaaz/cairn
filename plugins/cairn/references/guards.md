@@ -1,10 +1,16 @@
 # Guard References
 
-Codex plugins currently do not register Cairn hooks. The bundled Codex plugin exposes skills, workflow references, templates, scripts, and checks; it does not install runtime hook enforcement for Codex.
+Codex plugin registers automatic hooks for Cairn's current enforcement surface where Codex supports it. The bundled Codex plugin exposes skills, workflow references, templates, scripts, checks, and hook adapters for shell command and `apply_patch` events.
 
-Guards are scripts/commands, not agent promises. When a workflow boundary calls for a guard, run the corresponding command and treat its output as evidence for that boundary.
+Guards are hook-backed where supported and script-backed as fallback. Hook denials are boundary evidence when the host has loaded and trusted the plugin hook manifest. Explicit guard commands remain the manual fallback for unsupported hosts, hook-trust review gaps, and non-hooked checks such as premise and atomicity gates.
 
-The Claude plugin path remains hook-backed where supported. This reference describes the Codex plugin contract until Codex has a supported hook registration mechanism.
+The Claude plugin path remains hook-backed where supported. Claude hooks use the existing scripts directly; Codex hooks use wrapper adapters because Codex `apply_patch` payloads can touch multiple files in one tool call.
+
+Known limitations:
+
+- Codex write-envelope enforcement focuses on `apply_patch`, the primary Codex edit surface.
+- Shell hooks block destructive command patterns; they do not parse arbitrary Bash writes such as redirects, `tee`, or heredocs.
+- The `using-cairn` SessionStart carrier is not shipped through the Codex plugin hook manifest.
 
 ## Repo Commands
 
@@ -40,4 +46,4 @@ For write-envelope checks, prefer the active intent or `.claude/active-envelope.
 
 ## Boundary Rule
 
-If a workflow says a hook would have enforced something in Claude, Codex must run the corresponding explicit guard command before crossing that workflow boundary.
+If automatic hooks are active, their allow/deny result is evidence for the corresponding boundary. If hooks are unavailable or the boundary is not hook-backed, run the corresponding explicit guard command before crossing that workflow boundary.

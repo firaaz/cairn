@@ -17,7 +17,7 @@ It is **not** for simple software. See `docs/spec-v1.md` §1 for scope.
 ## How to consume cairn from another project
 
 - **First-time consumers.** Run `/plugin marketplace add https://github.com/firaaz/cairn` then `/plugin install cairn@cairn-marketplace`. See `CONSUMER.md` for the full quickstart, post-install validator, and a 10-minute first-dispatch walkthrough.
-- **Codex local plugin.** From this repo, run `codex plugin marketplace add /Users/firaazfarook/Developer/github.com/firaaz/cairn`, then `codex plugin add cairn@cairn-local`, then start a new Codex thread before testing Cairn skills.
+- **Codex local plugin.** From this repo, run `codex plugin marketplace add /Users/firaazfarook/Developer/github.com/firaaz/cairn`, then `codex plugin add cairn@cairn-local`, review and trust the plugin hook registration, then start a new Codex thread before testing Cairn skills and hooks.
 - **Migrating from a `.slice-system` symlink.** If you currently consume cairn via a `.slice-system → cairn` symlink, see the migration runbook at `docs/upgrading-from-symlink.md`.
 - **Maintainer carve-out.** Cairn-the-repo itself retains a `.slice-system → .` self-symlink for maintainer dogfooding (INV-011, `docs/ARCHITECTURE.md`). This is a one-repo exemption — downstream consumers must NOT recreate it.
 

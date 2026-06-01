@@ -59,6 +59,9 @@ paths:
   - ^docs/operator-field-notes-.*\.md$
   # Hooks
   - ^checks/.*
+  # Codex hook-parity slice: plugin adapters/manifests + repo-local carrier config
+  - ^plugins/cairn/.*
+  - ^\.codex/.*
   # Tests
   - ^tests/.*
   # Cairn workflow registry (intent-management operating modes)
@@ -82,3 +85,5 @@ paths:
   - ^pyproject\.toml$
   - ^uv\.lock$
   - ^CLAUDE\.md$
+  - ^README\.md$
+  - ^CONSUMER\.md$

@@ -18,6 +18,7 @@
     "workflow"
   ],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Cairn",
     "shortDescription": "Run Cairn's AI-assisted engineering protocols in Codex.",

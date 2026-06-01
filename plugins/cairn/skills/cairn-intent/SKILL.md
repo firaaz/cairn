@@ -17,7 +17,7 @@ Use this for Cairn's thin intent-management mode: durable intent, current-conver
 ## Operating Loop
 
 1. Load or form the thinnest sufficient intent. Use `templates/intent.md` when creating a new `.claude/skill-runs/<feature>/intent.md`.
-2. For a new or materially changed intent, render the `cairn-intent-challenge` Codex dispatch brief and run the explicit guard commands from `references/guards.md`.
+2. For a new or materially changed intent, render the `cairn-intent-challenge` Codex dispatch brief. Codex hook-backed enforcement runs automatically where the host has loaded the plugin hooks; use the explicit guard commands from `references/guards.md` as fallback/manual evidence and for non-hooked premise/atomicity checks.
 3. Construct in the current conversation under the approved intent. Use test-first discipline for feature or bugfix behavior.
 4. When construction has diff, tests, and evidence, render the `cairn-intent-close-review` dispatch brief.
 5. Close only after fresh review passes or the operator explicitly accepts documented residual risk, then update `.claude/handoff.md`.
