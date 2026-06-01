@@ -48,6 +48,7 @@ contract:
 - docs/adr/intent-management-loop.md open activated-default-26d00c1+dp2-slice25-PASS-deprimed+co-miss-D4-open
 - docs/operator-field-notes-2026-06-01.md open dp2-slice25-recorded+gate-priming-rec->/decision-next+sink-mismatch-open
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
+- docs/adr/intent-fidelity-measure-before-enforce.md open measure-before-enforce+same+cross-family-co-miss-probe
 - docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-provisional-contingent-TrialE
