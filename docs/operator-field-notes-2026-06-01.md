@@ -59,3 +59,13 @@ guard is substring-based) is documented and accepted.
 does not fit a felt-cost narrative, and the operator envelope does not permit
 writing it. Recorded here per the approved plan instead. The canonical felt-cost
 sink for Trial E is an open question worth a one-line skill fix.
+
+### Loop reliability observations
+- The dispatched `intent-review` (close-review) agent reported writing its report
+  to `.claude/skill-runs/intent-template-operator-prompt/close-review.md` but the
+  write did not persist; the `intent-challenge` agent's write to the same
+  workspace did. Caught at staging; the verdict was transcribed from the agent's
+  return with provenance. Silent loss of a close-review report is a close-sequence
+  robustness gap — the loop's workspace-commit story is not yet deterministic
+  (same pattern as the prior build, which committed some workspace artifacts but
+  not all). Related: gh#4 (close-sequence-hardening). Worth its own gh issue.
