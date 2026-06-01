@@ -4,6 +4,10 @@
 
 Cairn is a methodology repo — TDD-by-construction dispatch skill, hooks, slash commands, validator — consumed by other projects via a `.slice-system → .` symlink. No build step. Tests live under `tests/unit/`; run with `uv run pytest` (always inside the project venv — never `python3 -m pytest`). Bootstrap: `uv sync` creates `.venv` and `uv.lock`. For repo layout, working commands, expanded editing rules, and documentation tier guidance, load `docs/operational-reference.md` on demand. For the canonical spec (theory, failure modes, empirical support), load `docs/spec-v1.md` on demand.
 
+## Operating mode [maintainer]
+
+For repo-writing work, operate via the cairn-intent loop (`cairn-intent` skill): form an intent contract, run the front intent-challenge, construct test-first, close-review before close. The SessionStart carrier (`using-cairn`) names the active intent. Read-only / Q&A / orientation work is exempt. Use `cairn-tdd-feature` instead for strict per-phase isolation against a `docs/plans/<feature>.md` plan doc.
+
 ## Identifier scheme [both]
 
 Every ADR, slice, feature, and decision point carries both `id:` (immutable mechanical identifier) and `name:` (mutable human/LLM-facing label). Prose uses `name:`; cross-references, filenames, and hook inputs use `id:`. Full protocol: `docs/adr/identifier-scheme.md` and `docs/operational-reference.md`.
