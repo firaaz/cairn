@@ -75,23 +75,18 @@ premises:
 
 <!-- The scope-split (atomicity) machine-readable contract.
 
-GRADUATED CONTRACT (ADR intent-management-loop D3). Under the cairn-intent loop,
-every repo-writing session carries at least the scope-statement floor, and the
-contract's DEPTH graduates by the size of the change. (Scope note: this binds the
-cairn-intent loop. cairn-tdd-feature keeps the band call — under the four-phase
-pipeline the `## Contract` block stays OPTIONAL and may be omitted for light work,
-fail-open — pending the Trial-E retirement decision. Do not read "mandatory" as
-binding the four-phase reader.) There is NO hard cardinality gate — the floor is a
-one-line scope-statement, and depth-vs-size is smell-tested by the front-challenge
-and the close-review, not by a clause-count check.
+GRADUATED CONTRACT (ADR intent-management-loop D3). A contract is mandatory for
+every repo-writing session, but its DEPTH graduates by the size of the change.
+There is NO hard cardinality gate — the floor is a one-line scope-statement,
+and depth-vs-size is smell-tested by the front-challenge and the close-review,
+not by a clause-count check.
 
   COMPLETENESS FLOOR. Every contract carries a one-line `scope-statement:` — a
   single sentence naming what the change touches and what it must achieve. This
   is the attack surface the front-challenge (intent-challenge) targets: a
   scope-statement that under-describes the diff is the smell the close-review
-  catches against diff size. Under the cairn-intent loop the scope-statement is
-  the minimum floor; under cairn-tdd-feature the whole block may still be omitted
-  for light work.
+  catches against diff size. The scope-statement is the minimum; it is never
+  omitted.
 
   GRADUATION. Depth scales with the work:
     - TRIVIAL (e.g. the cost-model m2 one-liner fix): scope-statement + a single
@@ -110,8 +105,8 @@ the scope-statement floor or contract-depth — that is the decorrelation
 checkpoints' job (front-challenge attacks the scope-statement; close-review
 smell-tests depth against the diff).
 
-The one-line floor, then six clause-lists:
-  scope-statement   — one-line completeness floor (the front-challenge's target); not a clause-list
+Six clause-lists:
+  scope-statement   — one-line completeness floor (the front-challenge's target)
   must-satisfy      — atomicity-checked behavioural clauses (the gate's input)
   must-not-violate  — invariants this feature must preserve
   wrong-if          — observations that mean the implementation is wrong
