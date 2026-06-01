@@ -38,3 +38,4 @@
 | cairn-intent-git-lifecycle | Cairn-intent git lifecycle — uniform branch-per-unit + --no-ff across both dispatch paths | accepted | provisional | process | 2026-06-01 |
 | using-cairn-carrier-contract | using-cairn carrier contract — dynamic SessionStart command-emitter, cairn-internal-first | accepted | provisional | architecture | 2026-06-01 |
 | codex-hook-parity | Codex hook parity — automatic consumer enforcement via wrapper adapters | accepted | provisional | architecture | 2026-06-01 |
+| intent-fidelity-measure-before-enforce | Intent-fidelity at Step 3a — populate the baseline and measure before enforcing; pilot the engagement forcing-function | accepted | provisional | architecture | 2026-06-01 |
