@@ -55,6 +55,14 @@ def test_cairn_intent_step1_is_the_unconditional_carrier_fallback():
     )
 
 
+def test_cairn_intent_step6_records_trial_e_observations_in_field_notes():
+    body = CAIRN_INTENT.read_text()
+    close_step = body.split("6. **Close", 1)[1].split("## Decorrelation", 1)[0]
+
+    assert "docs/operator-field-notes-YYYY-MM-DD.md" in close_step
+    assert "docs/dogfood-log.md" not in close_step
+
+
 def test_cairn_intent_does_not_duplicate_codex_dispatch():
     # Reconciliation: the Claude skill dispatches .claude/agents personas via the Agent tool;
     # it explicitly does NOT render Codex dispatch briefs (the Codex plugin owns that).

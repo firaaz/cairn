@@ -181,3 +181,39 @@ the front-challenge rechecked the live premises before construction, and the
 implementation is a direct change to the same grounded branches. Close-review
 did not need to rediscover a false premise; it only verified that the diff,
 tests, mirror identity, and evidence satisfied the strict fail-closed contract.
+
+## Trial E, data point 5 — field notes close sink
+
+Ran a live `cairn-intent` dogfood on the close-sink mismatch itself, feature id
+`trial-e-dp5-field-notes-sink`. The slice changed the Trial-E close observation
+sink from `docs/dogfood-log.md` to dated operator field notes across the
+canonical workflow, plugin workflow mirror, Claude-side `cairn-intent` skill,
+and Codex plugin `cairn-intent` skill. `docs/dogfood-log.md` stayed unchanged as
+the older structured cliff-defense log.
+
+### Felt cost
+The loop caught a real close-sequencing gap: the first close-review blocked
+because this dp5 field-note record was still missing, even though the
+implementation and tests were green. That is useful friction for this exact
+contract, because the sink change only matters if close actually records the
+Trial-E observation in the dated notes. Cost remained mostly mechanical: the
+usual `uv` cache escalation, one front-challenge report, and one close-review
+round before this note.
+
+### Checkpoint catch/miss table
+| checkpoint | input | result | catch/miss |
+|---|---|---|---|
+| front intent-challenge | current dogfood-log sink premises + field-note mismatch evidence | **PASS** | catch: blocked counterfactuals that dogfood-log was intentional, plugin should diverge, or D7/migration was required |
+| construction tests | close-envelope, Claude Step 6, plugin mirror, and Codex skill sink assertions | **RED then GREEN** | catch: tests exposed the old dogfood-log sink before implementation |
+| close-review attempt 1 | implementation diff + green focused/full tests + validator output | **BLOCKED** | catch: missing dp5 observation in the new field-note sink |
+
+### Co-miss result
+No co-miss. The front-challenge validated the sink-mismatch premise and the
+close-review caught the missing close observation before final close. This is a
+close-process catch, not a premise-fidelity catch.
+
+### D2 close-review charter-gap watch
+The dp3 D2 gap did not surface. This slice did not rely on a faithful
+implementation of a false contract; the front challenge attacked the live sink
+premise, and close-review evaluated the diff plus required evidence. Its block
+was exactly in charter: evidence adequacy against the approved contract.

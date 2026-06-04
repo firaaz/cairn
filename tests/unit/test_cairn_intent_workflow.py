@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from lib.workflow_registry import (
@@ -11,6 +12,10 @@ from lib.workflow_registry import (
 )
 
 CAIRN_ROOT = Path(__file__).resolve().parent.parent.parent
+
+
+def _path_is_permitted(patterns: list[str], path: str) -> bool:
+    return any(re.search(pattern, path) for pattern in patterns)
 
 
 def test_cairn_intent_has_challenge_and_review_nodes_with_no_same_context_fallback():
@@ -37,6 +42,17 @@ def test_cairn_intent_keeps_construction_out_of_fresh_agent_runs():
     for runs in (claude_runs, codex_runs):
         assert all("construct" not in run["nodes"] for run in runs)
         assert all("close" not in run["nodes"] for run in runs)
+
+
+def test_cairn_intent_close_observations_use_dated_operator_field_notes():
+    workflow = load_workflow(CAIRN_ROOT / "workflows" / "cairn-intent.yaml")
+    close_paths = nodes_by_id(workflow)["close"]["write_envelope"]["paths"]
+
+    assert _path_is_permitted(
+        close_paths,
+        "docs/operator-field-notes-2026-06-02.md",
+    )
+    assert not _path_is_permitted(close_paths, "docs/dogfood-log.md")
 
 
 def test_cairn_intent_splits_all_fresh_agent_executors_at_human_signoff_boundaries():

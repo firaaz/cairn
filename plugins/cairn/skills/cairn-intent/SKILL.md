@@ -20,7 +20,7 @@ Use this for Cairn's thin intent-management mode: durable intent, current-conver
 2. For a new or materially changed intent, render the `cairn-intent-challenge` Codex dispatch brief. Codex hook-backed enforcement runs automatically where the host has loaded the plugin hooks; use the explicit guard commands from `references/guards.md` as fallback/manual evidence and for non-hooked premise/atomicity checks.
 3. Construct in the current conversation under the approved intent. Use test-first discipline for feature or bugfix behavior.
 4. When construction has diff, tests, and evidence, render the `cairn-intent-close-review` dispatch brief.
-5. Close only after fresh review passes or the operator explicitly accepts documented residual risk, then update `.claude/handoff.md`.
+5. Close only after fresh review passes or the operator explicitly accepts documented residual risk, then update `.claude/handoff.md` and record the Trial-E observation in `docs/operator-field-notes-YYYY-MM-DD.md`.
 
 ## Rendering Dispatch Briefs
 

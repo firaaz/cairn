@@ -11,7 +11,7 @@ contract:
     - tests/unit/test_handoff_contract.py passes
 ---
 - docs/adr/cairn-thin-substrate-direction.md open identity-landed+premise-guard-hook-shipped+reactivity-N3-trigger
-- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+TrialE-dp1-4-logged-notes-2026-06-01+02
+- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+TrialE-dp1-5-logged-notes-2026-06-01+02
 - docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
@@ -45,9 +45,9 @@ contract:
 - gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
-- docs/adr/intent-management-loop.md open activated-default-26d00c1+dp2-slice25-PASS+D4-co-miss-dp3-0of3-front-loaded
+- docs/adr/intent-management-loop.md open activated-default+TrialE-dp2-pass+dp3-0of3-comiss+dp5-sink-fixed
 - docs/operator-field-notes-2026-06-01.md open dp2-slice25-recorded+gate-priming-rec->/decision-next+sink-mismatch-open
-- docs/operator-field-notes-2026-06-02.md open dp3-co-miss-0of3-front-loaded+D2-charter-gap->/decision+dp4-gh2-shipped
+- docs/operator-field-notes-2026-06-02.md open dp3+dp4+dp5-field-notes-sink-close-pass
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
 - docs/adr/intent-fidelity-measure-before-enforce.md open measure-before-enforce+same+cross-family-co-miss-probe
 - docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7

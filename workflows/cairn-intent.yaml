@@ -225,19 +225,21 @@ nodes:
     prompt: |
       Close only after close-review passes or the operator explicitly accepts a
       documented residual risk. Record the intent pointer, final verification,
-      and next-step state in handoff. Keep cairn-tdd-feature as the fallback
-      until a future firm retirement ADR supersedes it.
+      next-step state in handoff, and the Trial-E observation in dated operator
+      field notes. Keep cairn-tdd-feature as the fallback until a future firm
+      retirement ADR supersedes it.
     allowed_inputs:
       - close-review pass output
       - final verification output
       - git status and diff summary
       - .claude/handoff.md
+      - docs/operator-field-notes-YYYY-MM-DD.md
     write_envelope:
       mode: operator
       paths:
         - ^\.claude/handoff\.md$
         - ^\.claude/skill-runs/[^/]+/close\.md$
-        - ^docs/dogfood-log\.md$
+        - ^docs/operator-field-notes-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$
     evidence:
       - id: close-review-pass
         description: Fresh close-review pass output or operator risk acceptance.

@@ -35,6 +35,7 @@ Approval is **delta-triggered**: the fresh intent-challenge re-fires only when a
 - Challenge report (report-only, written by the `intent-challenge` agent): `<workspace>/intent-challenge.md`
 - Close-review report (report-only, written by the `intent-review` agent): `<workspace>/close-review.md`
 - Close record + handoff: `<workspace>/close.md`, `.claude/handoff.md`
+- Trial-E observation sink: `docs/operator-field-notes-YYYY-MM-DD.md` (dated by close date)
 
 The feature id is the intent's frontmatter `id:`.
 
@@ -69,7 +70,7 @@ The feature id is the intent's frontmatter `id:`.
 
 5a. **Operator sign-off (mandatory, `human_signoff_after: true`).** Surface the close-review verdict to the operator. Close only after a `close-review-pass` OR an explicit operator acceptance of a documented `residual_risk`.
 
-6. **Close (`close` node, current conversation).** Record the close: write `<workspace>/close.md` (intent pointer, final verification, residual risk if accepted), append a handoff pointer to `.claude/handoff.md`, and record the Trial-E observation (felt cost vs four-phase; any correlated-miss signal) to `docs/dogfood-log.md`. Run the final verification command and confirm GREEN before recording.
+6. **Close (`close` node, current conversation).** Record the close: write `<workspace>/close.md` (intent pointer, final verification, residual risk if accepted), append a handoff pointer to `.claude/handoff.md`, and record the Trial-E observation (felt cost vs four-phase; any correlated-miss signal) to `docs/operator-field-notes-YYYY-MM-DD.md` for the close date. Run the final verification command and confirm GREEN before recording.
    - Pass output (`status: closed`): `intent_path`, `verification`, `handoff_entry`, `trial_e_observation`.
    - Keep `cairn-tdd-feature` as the fallback until a future firm retirement ADR supersedes it (D7).
 

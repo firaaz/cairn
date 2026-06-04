@@ -12,6 +12,8 @@ MARKETPLACE_PATH = REPO_ROOT / ".agents" / "plugins" / "marketplace.json"
 PLUGIN_ROOT = REPO_ROOT / "plugins" / "cairn"
 PLUGIN_MANIFEST = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
 HOOKS_MANIFEST = PLUGIN_ROOT / "hooks" / "hooks.json"
+CANONICAL_INTENT_WORKFLOW = REPO_ROOT / "workflows" / "cairn-intent.yaml"
+PLUGIN_INTENT_WORKFLOW = PLUGIN_ROOT / "workflows" / "cairn-intent.yaml"
 
 REQUIRED_SKILLS = (
     "using-cairn",
@@ -41,6 +43,12 @@ def _frontmatter(skill_md: Path) -> dict:
     data = yaml.safe_load(raw)
     assert isinstance(data, dict), f"{skill_md} frontmatter must be a mapping"
     return data
+
+
+def _close_write_paths(workflow_path: Path) -> list[str]:
+    data = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    nodes = {node["id"]: node for node in data["nodes"]}
+    return nodes["close"]["write_envelope"]["paths"]
 
 
 def test_codex_marketplace_points_to_repo_owned_cairn_plugin() -> None:
@@ -176,6 +184,18 @@ def test_codex_plugin_bundles_selected_canonical_references() -> None:
     assert not missing, f"missing bundled Codex plugin references: {missing}"
 
 
+def test_codex_plugin_workflow_mirror_uses_canonical_close_observation_sink() -> None:
+    canonical_paths = _close_write_paths(CANONICAL_INTENT_WORKFLOW)
+    plugin_paths = _close_write_paths(PLUGIN_INTENT_WORKFLOW)
+
+    assert plugin_paths == canonical_paths
+    assert (
+        r"^docs/operator-field-notes-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$"
+        in plugin_paths
+    )
+    assert r"^docs/dogfood-log\.md$" not in plugin_paths
+
+
 def test_cairn_guards_are_reference_material_not_public_skill() -> None:
     assert not (PLUGIN_ROOT / "skills" / "cairn-guards" / "SKILL.md").exists(), (
         "cairn-guards must not be exposed as a public Codex skill"
@@ -208,6 +228,15 @@ def test_codex_workflow_skills_point_to_guard_reference() -> None:
         )
         assert "references/guards.md" in text
         assert "explicit guard commands" in text
+
+
+def test_codex_intent_skill_names_field_notes_close_sink() -> None:
+    text = (PLUGIN_ROOT / "skills" / "cairn-intent" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "docs/operator-field-notes-YYYY-MM-DD.md" in text
+    assert "docs/dogfood-log.md" not in text
 
 
 def test_consumer_docs_include_codex_install_flow() -> None:
