@@ -15,7 +15,6 @@ contract:
 - docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
-- gh:firaaz/cairn#2 open fail-closed-shipped-7869dd8-verified-673green+local-only-pending-push+remote-close
 - gh:firaaz/cairn#4 open close-sequence-hardening
 - gh:firaaz/cairn#5 open D1+D3-completion-gates
 - gh:firaaz/cairn#6 open AGENT_ENVELOPE-synthesis
@@ -42,7 +41,7 @@ contract:
 - gh:firaaz/cairn#29 open phase-1-adversarial-review
 - gh:firaaz/cairn#30 open cairn-on-cairn-carve-out
 - gh:firaaz/cairn#31 blocked V-3-attempt-2+V-5-operator-bound
-- gh:firaaz/cairn#32 open Node-20-bumped-18218cb-pending-push+release-smoke
+- f8e2b70 open v0.1.0-tag-diverges-local-f8e2b70-vs-remote-b190b5f-release-smoke-unverified-gh32-closed
 - gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
 - docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
 - docs/adr/intent-management-loop.md open activated-default+D7/R2-retire-with-conditions
@@ -56,5 +55,4 @@ contract:
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-TrialE-resolved+firm-on-supersession
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/operational-reference.md open claude-command-restored+contract-test-green+pending-push
 - docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+TrialE-closed-2026-06-04
