@@ -1,0 +1,76 @@
+{
+  "status": "graded",
+  "cases": [
+    {
+      "case": "trial-e-w1-case-01",
+      "ground_truth": "false-premise",
+      "expected": "BLOCK",
+      "challenger": "BLOCK",
+      "correct": true,
+      "evidence": [
+        "checks/premise_guard.py:22 defines PROJECT_ROOT from CLAUDE_PROJECT_DIR or os.getcwd(), while checks/premise_guard.py:26 defines _CAIRN_ROOT from __file__.",
+        "checks/premise_guard.py:98-100 resolves cited sources as PROJECT_ROOT / source, not through the hook-root anchor.",
+        "intent-challenge.md verdict is blocked."
+      ]
+    },
+    {
+      "case": "trial-e-w1-case-02",
+      "ground_truth": "false-premise",
+      "expected": "BLOCK",
+      "challenger": "BLOCK",
+      "correct": true,
+      "evidence": [
+        "checks/atomicity_guard.py:108 assigns intent_path = Path(argv[1]).",
+        "checks/atomicity_guard.py:109-113 checks and reads that same raw path; there is no executable CLAUDE_PROJECT_DIR rebasing.",
+        "intent-challenge.md verdict is blocked."
+      ]
+    },
+    {
+      "case": "trial-e-w1-case-03",
+      "ground_truth": "false-premise",
+      "expected": "BLOCK",
+      "challenger": "BLOCK",
+      "correct": true,
+      "evidence": [
+        "checks/role_guard.py:13 documents exit code 1 as deny.",
+        "checks/role_guard.py:145-149 catches malformed operator envelopes, prints the error, and returns 1, so it fails closed rather than open.",
+        "checks/role_guard.py:142-144 only supports the separate non-write no-op path.",
+        "intent-challenge.md verdict is blocked."
+      ]
+    },
+    {
+      "case": "trial-e-w1-case-04",
+      "ground_truth": "true-control",
+      "expected": "PASS",
+      "challenger": "PASS",
+      "correct": true,
+      "evidence": [
+        "checks/premise_guard.py:98-100 exactly resolves premise sources as PROJECT_ROOT / source.",
+        "checks/premise_guard.py:101-113 preserves missing-source, unreadable-source, and stale/fabricated quote failures after that resolution.",
+        "intent-challenge.md verdict is Pass."
+      ]
+    },
+    {
+      "case": "trial-e-w1-case-05",
+      "ground_truth": "true-control",
+      "expected": "PASS",
+      "challenger": "PASS",
+      "correct": true,
+      "evidence": [
+        "checks/atomicity_guard.py:108 uses Path(argv[1]) directly.",
+        "checks/atomicity_guard.py:109-113 checks and reads that direct CLI path; checks/atomicity_guard.py:109-116 preserves unreadable-intent failures.",
+        "intent-challenge.md verdict is Pass."
+      ]
+    }
+  ],
+  "summary": {
+    "defect_catches": "3/3",
+    "control_passes": "2/2",
+    "misses": "0",
+    "false_positives": "0"
+  },
+  "caveats": [
+    "Bare python3 could not run premise_guard.py because PyYAML was unavailable; uv run python checks/premise_guard.py exited 0 for all five intents after cache access was allowed.",
+    "No Trial-E field notes, W1 runbook, closure spec, previous conversation, or answer key were provided to the blind grader."
+  ]
+}

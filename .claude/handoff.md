@@ -11,7 +11,7 @@ contract:
     - tests/unit/test_handoff_contract.py passes
 ---
 - docs/adr/cairn-thin-substrate-direction.md open identity-landed+premise-guard-hook-shipped+reactivity-N3-trigger
-- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+TrialE-dp1-5-logged-notes-2026-06-01+02
+- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+TrialE-dp1-6-logged-notes-2026-06-01+02+04
 - docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
 - docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
 - gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
@@ -48,8 +48,9 @@ contract:
 - docs/adr/intent-management-loop.md open activated-default+TrialE-dp2-pass+dp3-0of3-comiss+dp5-sink-fixed
 - docs/operator-field-notes-2026-06-01.md open dp2-slice25-recorded+gate-priming-rec->/decision-next+sink-mismatch-open
 - docs/operator-field-notes-2026-06-02.md open dp3+dp4+dp5-field-notes-sink-close-pass
+- docs/operator-field-notes-2026-06-04.md open W1-cross-family-front-3of3-catch+2of2-controls+no-delta-vs-dp3
 - docs/adr/intent-contract-cost-model.md open D2-built-agent-judges-band+operator-veto-5a+D3-deferred-TrialE
-- docs/adr/intent-fidelity-measure-before-enforce.md open measure-before-enforce+same+cross-family-co-miss-probe
+- docs/adr/intent-fidelity-measure-before-enforce.md open W1-xfam-datum-recorded+decision-next
 - docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-provisional-contingent-TrialE
