@@ -56,4 +56,4 @@ contract:
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-TrialE-resolved+firm-on-supersession
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+next-more-trialE-or-D7
+- docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+TrialE-closed-2026-06-04
