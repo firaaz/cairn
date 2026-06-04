@@ -43,6 +43,8 @@ paths:
   - ^docs/plans/2026-05-31-thin-cairn-intent-management\.md$
   # 2026-05-22 cairn-identity brainstorm direction doc
   - ^docs/plans/2026-05-22-cairn-identity-direction\.md$
+  # 2026-06-02 Trial-E closure spec (brainstorm output → probe + adjudication /decisions)
+  - ^docs/plans/2026-06-02-cairn-trial-e-closure\.md$
   # M7 Phase-3 write surface — schema rewrite + release workflow + opt artefacts
   # (envelope expansion required because Claude Code does not auto-set
   # AGENT_ROLE on subagent dispatch; role_guard falls through to the
