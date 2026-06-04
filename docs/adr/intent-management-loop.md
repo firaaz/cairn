@@ -5,6 +5,7 @@ status: accepted
 firmness: provisional
 supersedes: null
 superseded-by: null
+resolved-by: trial-e-closure-adjudication
 topic: architecture
 invariants-touched: []
 date: 2026-05-31

@@ -25,7 +25,7 @@ Between this plan's drafting (2026-05-20, alongside the companion ADR) and its l
 |------------------|---------|--------|
 | Trial 1 — Contract block on handoff | (Already landed as **Trial A**, 2026-05-13) | Done; this plan's framing is retrospectively descriptive, not prospective |
 | Trial 2 — EARS in intent.md | Trial D | Unblocked, gated on exception-class implementation |
-| Trial 3 — Drop phase 1 derivation | Trial E | Gated on `premise_guard.py` shipping AND on `identity-and-scope-deferral` D3 evaluation |
+| Trial 3 — Drop phase 1 derivation | Trial E | **Closed 2026-06-04** → `docs/adr/trial-e-closure-adjudication.md` (W1 cross-family probe + three adjudications) |
 | (new) `premise_guard.py` implementation | Trial C | Independent of D and E; the slice #25 counterfactual is sufficient motivation |
 
 **`docs/plans/2026-05-19-adaptive-reliability-direction.md`** is the direction-doc that `identity-and-scope-deferral` ruled on. Its tiered-reliability model is orthogonal to the six-primitive thin-substrate framing in the companion ADR; both proposals are now on file for the next operator evaluation.
@@ -196,6 +196,8 @@ contract:
 **Pass criteria → Trial 3:** Authoring time delta ≤30%. Operator confirms reduced rubber-stamping on at least 2 of 3 intents. Atomicity rule false-positive rate <10% with exceptions in play.
 
 ### Trial 3 — Drop phase 1 derivation (gated on `premise_guard.py` shipping)
+
+> **CLOSED 2026-06-04.** Adjudicated in `docs/adr/trial-e-closure-adjudication.md` after the W1 cross-family probe (`docs/operator-field-notes-2026-06-04.md`). Outcome: four-phase **not** retired now — **retire-with-conditions** (de-prime + re-probe the shipped challenger; add a fidelity-aware close-review obligation; sunset window). Companion closure spec: `docs/plans/2026-06-02-cairn-trial-e-closure.md`.
 
 **Why last and gated:** Probe C falsified the original Trial 3 thesis ("contract grammar alone defeats wrong-model propagation"). The slice #25 counterfactual makes the failure mode concrete: a wrong-premise input propagates through every cairn-simplified mechanical layer unchallenged.
 
