@@ -208,6 +208,46 @@ def test_v1_handoff_template_exists_and_is_tight():
     assert not stale_headers, f"body still has retired section headers: {stale_headers}"
 
 
+def test_v1_claude_handoff_command_exists_and_is_pointer_only():
+    """The Claude `/handoff` command exists as the `/catchup` bookend and
+    preserves the pointer-only contract."""
+    canonical = CAIRN_ROOT / "commands" / "claude-code" / "handoff.md"
+    live = CAIRN_ROOT / ".claude" / "commands" / "handoff.md"
+
+    assert canonical.is_file(), f"{canonical} does not exist"
+    assert live.is_file(), f"{live} does not exist"
+
+    text = canonical.read_text()
+    assert live.read_text() == text, "live Claude command mirror drifted"
+    assert len(text) <= 3000, (
+        f"{canonical} is {len(text)} chars, exceeds tight command budget"
+    )
+
+    missing = contains_all(
+        text,
+        [
+            "# /handoff",
+            "templates/handoff.md",
+            ".claude/handoff.md",
+            "<pointer> <state>",
+            "open",
+            "blocked",
+            "deferred",
+            "resolvable pointers",
+            "uv run pytest tests/unit/test_handoff_contract.py -q",
+        ],
+    )
+    assert not missing, f"Claude handoff command missing guidance: {missing}"
+
+    stale_headers = contains_none(
+        text,
+        ["## State", "## Next", "## Blocked / Pending", "## Pointers"],
+    )
+    assert not stale_headers, (
+        f"Claude handoff command carries retired headers: {stale_headers}"
+    )
+
+
 # --- V5: Learning staging ground exists and is minimal -------------------
 
 

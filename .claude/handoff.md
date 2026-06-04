@@ -56,5 +56,5 @@ contract:
 - docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-TrialE-resolved+firm-on-supersession
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/operational-reference.md open handoff-missing-on-dev+restore-as-skill+absence-breaks-catchup-bookend
+- docs/operational-reference.md open claude-command-restored+contract-test-green+pending-push
 - docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+TrialE-closed-2026-06-04
