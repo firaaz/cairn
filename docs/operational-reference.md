@@ -394,6 +394,23 @@ One sentence each:
 
 If any of those three drift, reload this section and `commands/claude-code/catchup.md` before trying to patch the symptom.
 
+## Next-task selection
+
+`/catchup` orients (it lists handoff threads by state) but deliberately does not rank — picking the next task is a separate, operator-owned judgment. This is the policy for that pick: a ladder applied to signal the repo already carries (handoff states, GitHub `severity:` labels, roadmap `Depends on` order). No tool ranks for you, by design — a bespoke ranker with frozen weights would drift, the same anti-coupling argument `board-as-roadmap-substrate` makes for its F5 risk. The ladder just makes the judgment repeatable and auditable.
+
+Apply the rungs in order; the first that resolves a candidate wins:
+
+1. **`blocked` rots — clear it or surface it.** A `blocked` handoff thread does not wait quietly: either take the unblocking action or surface the blocker to the operator. *Signal:* `.claude/handoff.md` state `blocked`.
+2. **`deferred` is parked — skip until its trigger fires.** A `deferred` thread carries a trigger (a date or condition) in its context tail; ignore it until the trigger is met. *Signal:* `.claude/handoff.md` state `deferred` + the freetext trigger.
+3. **Finish-started beats start-new.** Among `open` threads, prefer work already in motion, lowest-friction first: staged-but-uncommitted → committed-but-unpushed → paused-mid-trial → untouched. Reduces entropy and unblocks downstream. *Signal:* `git status` / `git log origin/<branch>..<branch>` + handoff context tails (`pending-push`, `paused`).
+4. **Tiebreak by severity.** Among otherwise-equal `open` items, higher severity first (`severity:S1` highest, then `S2`, then `S3`). *Signal:* GitHub issue `severity:` labels.
+5. **Tiebreak by roadmap dependency order.** Among equal-severity items, pick the lowest-positioned Must-land item whose `Depends on` prerequisites are all satisfied. *Signal:* `docs/roadmap.md` Must-land ordering + `Depends on (N)` markers.
+6. **Route by weight.** Once a candidate is chosen, if it is outward-facing (push, PR, messaging a shared system), decision-weight, or cross-cutting, surface it to the operator rather than self-executing; proceed unprompted only on self-contained internal work. *Signal:* the candidate's own nature, not a stored field.
+
+The ladder reads only signal that already exists and is maintained independently — it adds no field, command, or file to keep current. Selection stays a human judgment the ladder makes explicit, not deterministic automation. If the rungs cannot resolve a defensible pick without inventing a new maintained input, that is the cue to escalate to the operator, not to add machinery.
+
+Out of scope (separate, deferred tracks): a read-only `/next` aid that gathers and surfaces candidates for the operator to apply this ladder to, and the `board-as-roadmap-substrate` D2/D4/D7 board implementation. Default-no on both until this written policy proves insufficient in practice.
+
 ## ADR rules during a feature
 
 If implementation requires violating an invariant:

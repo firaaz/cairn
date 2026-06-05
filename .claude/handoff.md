@@ -48,6 +48,7 @@ contract:
 - docs/operator-field-notes-2026-06-01.md open dp2-slice25-recorded+gate-priming-rec->/decision-next+sink-mismatch-open
 - docs/operator-field-notes-2026-06-02.md open dp3+dp4+dp5-field-notes-sink-close-pass
 - docs/operator-field-notes-2026-06-04.md open W1-cross-family-front-3of3-catch+2of2-controls+no-delta-vs-dp3
+- docs/operator-field-notes-2026-06-05.md open selection-ladder-operational-reference+loop-close-pass+pending-commit
 - docs/adr/intent-contract-cost-model.md open D2-built+D3-retire-build-keep-watch+revival-armed
 - docs/adr/intent-fidelity-measure-before-enforce.md open B-deferred-not-refuted+trigger-armed+instr-live
 - docs/adr/trial-e-closure-adjudication.md open next:deprime-reprobe-challenger+close-review-obligation+sunset
@@ -56,3 +57,4 @@ contract:
 - docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-TrialE-resolved+firm-on-supersession
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
 - docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+TrialE-closed-2026-06-04
+- docs/adr/decision-defect-escalation.md deferred recorded-536b6bd+enforce-deferred+auto-gated-gh#18
