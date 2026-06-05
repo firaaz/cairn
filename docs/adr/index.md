@@ -40,3 +40,4 @@
 | codex-hook-parity | Codex hook parity — automatic consumer enforcement via wrapper adapters | accepted | provisional | architecture | 2026-06-01 |
 | intent-fidelity-measure-before-enforce | Intent-fidelity at Step 3a — populate the baseline and measure before enforcing; pilot the engagement forcing-function | accepted | provisional | architecture | 2026-06-01 |
 | trial-e-closure-adjudication | Trial-E closure — adjudicate three deferred points (xfam defer, heavy-band retire-build, four-phase retire-with-conditions) | accepted | provisional | architecture | 2026-06-04 |
+| decision-defect-escalation | Decision-defect escalation — a fix that only passes by weakening a constraint is a wrong decision, not a patch | accepted | provisional | process | 2026-06-05 |
