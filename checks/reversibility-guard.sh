@@ -7,8 +7,9 @@ set -euo pipefail
 
 # Dependency check: jq is required to parse tool input
 if ! command -v jq &>/dev/null; then
-  echo "WARNING: reversibility-guard hook skipped — jq not found in PATH" >&2
-  exit 0
+  echo "ERROR: reversibility-guard dependency missing: jq not found in PATH; failing closed" >&2
+  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"REVERSIBILITY GUARD: required dependency jq not found in PATH; failing closed"}}'
+  exit 2
 fi
 
 INPUT=$(cat)

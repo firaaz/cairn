@@ -1,6 +1,6 @@
 ---
 name: cairn-tdd-feature
-description: Use when implementing a feature that has a per-feature plan doc at docs/plans/<feature>.md and the operator wants TDD-by-construction phase isolation. Sequences Phase 1 (intent) → Phase 2 (RED tests) → Phase 3 (GREEN impl) → Phase 4 (audit) using fresh subagents per phase.
+description: LEGACY (carrier-hierarchy-and-process-diet D3) — cairn-intent is the operating loop; use this only when the operator explicitly asks for strict per-phase isolation against a docs/plans/<feature>.md plan doc. Sequences Phase 1 (intent) → Phase 2 (RED tests) → Phase 3 (GREEN impl) → Phase 4 (audit) using fresh subagents per phase.
 ---
 
 # cairn-tdd-feature
@@ -63,6 +63,10 @@ The feature id is derived from the plan doc's frontmatter `id:` field, or from t
 
 5. **Verify Phase 1 commit.** Parse the JSON tail line for `status` and `commit_hash`. If `status != "OK"`, dispatch `triager-tdd`; act on its decision (escalate, re-dispatch, or abort). Verify the commit exists with `git show <commit_hash> --stat`.
 
+5a. **Premise-grounding + promise/band approval gate.** Surface the committed `intent.md` to the operator for confirmation. **The operator approves the *promise* (the What/Why/Boundary) and Phase 1's band call (`intent-contract-cost-model` D1/D2):** Phase 1 states in its `summary` whether it judged the work *light* (no `## Contract`) or *heavy* (drafted a `## Contract` from the approved promise). Surface that judgment and the presence/absence of the `## Contract` block, and let the operator **veto the band** — if the call is wrong, block dispatch and re-dispatch Phase 1 with the corrected band in the brief. Phase 1 never picks the band silently; this veto is the interim human check (a *derived* band is deferred to D3/Trial E). If the intent makes claims about existing source behaviour, the operator adds a `## Premise Grounding` block (see `templates/intent.md` for shape — operator-authored at this gate, not by `phase-1-tdd`). Run `uv run python checks/premise_guard.py .claude/skill-runs/<feature-id>/intent.md`. On exit `0`, proceed to Phase 2. On exit `1`, surface the stderr diff and **block dispatch** until the operator corrects the premise (or sets `CAIRN_PREMISE_FIX=1` for a known divergence). On exit `2`, treat as a malformed-intent RAISE_ISSUE and dispatch `triager-tdd`.
+
+5b. **Scope-split (atomicity) gate (sibling of the premise gate).** Run `uv run python checks/atomicity_guard.py .claude/skill-runs/<feature-id>/intent.md`. This reads the intent's optional `## Contract` block and scope-split-checks its `must-satisfy` clauses. On exit `0`, every clause is atomic-or-validly-tagged (or there is no `## Contract` block — fail-open with a visible stderr notice); proceed to Phase 2. On exit `1`, a non-atomic untagged clause (or unknown tag / required tag with an empty declaration); surface the stderr offences and **block dispatch** until each clause is split or carries a valid exception tag (tagging is the cheap one-line escape), or the operator sets `CAIRN_ATOMICITY_FIX=1`; `CAIRN_CONTRACT_REQUIRED=1` also makes an absent block exit `1`. On exit `2` (intent unreadable, malformed YAML, or `## Contract` heading present but unparseable), treat as a malformed-intent RAISE_ISSUE and dispatch `triager-tdd`.
+
 6. **Dispatch Phase 2.** Agent tool with `subagent_type: phase-2-tdd`, prompt including: feature id, intent.md path, plan doc path, workspace path, `SNAPSHOT_SHA`, and the touched invariant ids.
 
 7. **Verify Phase 2 commit and that tests are RED at HEAD~0.** Parse the JSON. Then run `uv run pytest <new-test-files> -v` directly (skill code, not subagent) and confirm tests fail. If green, the intent was already satisfied — escalate.
@@ -86,6 +90,6 @@ On any phase RAISE_ISSUE, dispatch `triager-tdd` with: issue commit hash, curren
 
 On success, print a four-line summary listing each phase's commit hash and a one-sentence status. The git log is the durable record; no slice.yaml.
 
-## Coexistence with the orchestrator
+## Branch lifecycle (git-workflow-v1)
 
-This skill creates files only under `.claude/skill-runs/`, `tests/`, and the source paths in the envelope — never under `.claude/current-slice/` or `.claude/features/`. Slice machinery is unaffected; running this skill while a slice is open is a smell but not blocked.
+This skill is branch-agnostic: it commits the four phase commits to whatever branch HEAD is on. Per ADR `git-workflow-v1` (D1/D2/D6), branch lifecycle is **operator-owned**: before dispatch, cut `feat/<feature-id>` from `dev`; after Phase 4 passes, integrate with `git merge --no-ff feat/<feature-id>` — never `-ff` or `--squash`, which destroy the phase-commit audit trail the snapshot-SHA chain depends on. The skill creates files only under `.claude/skill-runs/`, `tests/`, and the source paths in the envelope — never under `.claude/features/` (feature-file planning state is operator-owned, separate from the dispatch run).

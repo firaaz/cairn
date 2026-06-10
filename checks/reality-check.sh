@@ -6,8 +6,8 @@ set -euo pipefail
 
 # Dependency check: jq is required to parse tool input
 if ! command -v jq &>/dev/null; then
-  echo "WARNING: reality-check hook skipped — jq not found in PATH" >&2
-  exit 0
+  echo "ERROR: reality-check hook dependency missing: jq not found in PATH; failing closed" >&2
+  exit 1
 fi
 
 INPUT=$(cat)
@@ -22,10 +22,10 @@ esac
 # Skip if file was deleted
 [ -f "$FILE" ] || exit 0
 
-# Check ruff availability — warn once if missing so the user knows formatting is off
+# Check ruff availability — fail closed if formatting is unavailable
 if ! command -v ruff &>/dev/null; then
-  echo "WARNING: reality-check hook skipped — ruff not found in PATH. Install with: uv tool install ruff" >&2
-  exit 0
+  echo "ERROR: reality-check hook dependency missing: ruff not found in PATH; failing closed" >&2
+  exit 1
 fi
 
 # Format first, then lint with auto-fix. Both are fast (<500ms each).
