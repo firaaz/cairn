@@ -331,14 +331,6 @@ def _verify_sweep_commit(sha: str, files: list[str], parents: list[str]) -> str 
     return None
 
 
-def _verify_fix_commit(sha: str, files: list[str], parents: list[str]) -> str | None:
-    ok = all(f.startswith(".claude/sweep-results/") for f in files)
-    if not ok:
-        offenders = [f for f in files if not f.startswith(".claude/sweep-results/")]
-        return f"fix verifier: files outside sweep scope: {offenders[:3]}"
-    return None
-
-
 _SUBSTRATE_VERIFIERS: dict[str, object] = {
     "slice:": _verify_pass_through,
     "handoff:": _verify_pass_through,
@@ -346,7 +338,10 @@ _SUBSTRATE_VERIFIERS: dict[str, object] = {
     "bootstrap:": _verify_pass_through,
     "feat:": _verify_pass_through,
     "docs:": _verify_pass_through,
-    "fix:": _verify_fix_commit,
+    # fix: was sweep-constrained (touch only .claude/sweep-results/) while the
+    # /integration-sweep machinery existed; that apparatus retired at M4 and
+    # fix: is an ordinary defect-commit prefix (carrier-hierarchy-and-process-diet).
+    "fix:": _verify_pass_through,
     "chore:": _verify_pass_through,
     "design:": _verify_pass_through,
     "plan:": _verify_pass_through,

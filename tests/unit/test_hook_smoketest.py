@@ -50,3 +50,42 @@ def test_smoketest_hooks_script_runs_clean_and_reports_role_guard_pass() -> None
             f"smoketest stderr contains forbidden substring {needle!r}\n"
             f"stderr:\n{result.stderr}"
         )
+
+
+def _run_smoketest() -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [str(SCRIPT)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
+
+def test_liveness_role_guard_blocks_and_allows() -> None:
+    """INV-013 D8: role_guard provably blocks a known-bad write (exit 2) and
+    allows a known-good absolute in-envelope write (exit 0)."""
+    result = _run_smoketest()
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS liveness role_guard.py deny" in result.stdout, result.stdout
+    assert "PASS liveness role_guard.py allow-absolute" in result.stdout, result.stdout
+
+
+def test_liveness_reversibility_guard_blocks() -> None:
+    """reversibility-guard denies a force-push payload with a deny decision."""
+    result = _run_smoketest()
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS liveness reversibility-guard.sh deny" in result.stdout, result.stdout
+
+
+def test_liveness_reality_check_reformats() -> None:
+    """reality-check acts on a known-bad (unformatted) Python file."""
+    result = _run_smoketest()
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS liveness reality-check.sh reformat" in result.stdout, result.stdout
+
+
+def test_liveness_carrier_fires() -> None:
+    """using-cairn-carrier emits its marker and never gates (exit 0)."""
+    result = _run_smoketest()
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS liveness using-cairn-carrier.sh fired" in result.stdout, result.stdout

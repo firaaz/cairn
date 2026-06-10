@@ -147,22 +147,21 @@ def test_scoped_fix_commit_pass_through_not_sweep_constrained(tmp_path):
     )
 
 
-def test_bare_fix_still_sweep_constrained(tmp_path):
-    """Bare `fix: ...` must still be rejected when not touching sweep-results."""
+def test_bare_fix_passes_unconstrained(tmp_path):
+    """`fix: ...` is an ordinary defect-commit prefix since the sweep
+    apparatus retired (carrier-hierarchy-and-process-diet)."""
     from validate_architecture import _run_git_log_walk_assertion
 
     repo = _init_repo_with_registry(tmp_path)
     base = _git(repo, "rev-parse", "HEAD")
-    bad_sha = _commit(repo, "fix: bad", touch=["random/file.py"])
+    _commit(repo, "fix: ordinary defect fix", touch=["random/file.py"])
 
     result = _run_git_log_walk_assertion(
         repo,
         "INV-001",
         {"type": "git-log-walk", "binding-effective-from": base},
     )
-    assert result is not None, "Bare fix without sweep-results must still fail"
-    assert bad_sha[:8] in result
-    assert "fix verifier" in result
+    assert result is None, f"fix: must pass unconstrained; got {result!r}"
 
 
 def test_bare_sweep_still_constrained(tmp_path):
