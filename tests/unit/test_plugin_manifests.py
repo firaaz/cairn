@@ -107,14 +107,14 @@ def test_a2_canonical_plugin_template_name_is_cairn():
 
 
 def test_a2_canonical_plugin_template_version_literal_0_1_0():
-    """`version` is the literal string `"0.1.0"` per D2 (explicit, not derived)."""
+    """`version` is the literal string `"0.2.0"` per D2 (explicit, not derived)."""
     data = json.loads(PLUGIN_TEMPLATE_PATH.read_text())
     version = data.get("version")
     assert isinstance(version, str), (
         f"A2: version must be a string; got {type(version)}"
     )
-    assert version == "0.1.0", (
-        f"A2: version must be the literal string '0.1.0' per D2; got {version!r}"
+    assert version == "0.2.0", (
+        f"A2: version must be the literal string '0.2.0' per D2; got {version!r}"
     )
 
 
@@ -181,14 +181,14 @@ def test_a2_built_plugin_json_exists_and_matches_template(tmp_path):
 
 
 def test_a2_built_plugin_json_carries_explicit_version(tmp_path):
-    """Built artefact carries `version == "0.1.0"` literal."""
+    """Built artefact carries `version == "0.2.0"` literal."""
     if not BUILD_SCRIPT.is_file():
         pytest.fail(f"A2: build_dist.py not found at {BUILD_SCRIPT}")
     _run_build_into(tmp_path)
     built = tmp_path / "dist" / ".claude-plugin" / "plugin.json"
     data = json.loads(built.read_text())
-    assert data.get("version") == "0.1.0", (
-        f"A2: built plugin.json version must be '0.1.0'; got {data.get('version')!r}"
+    assert data.get("version") == "0.2.0", (
+        f"A2: built plugin.json version must be '0.2.0'; got {data.get('version')!r}"
     )
 
 

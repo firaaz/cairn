@@ -75,7 +75,7 @@ def test_codex_plugin_manifest_exposes_skills_and_hooks() -> None:
     data = _load_json(PLUGIN_MANIFEST)
 
     assert data["name"] == "cairn"
-    assert data["version"] == "0.1.0"
+    assert data["version"] == "0.2.0"
     assert data["skills"].rstrip("/") == "./skills"
     assert data["hooks"] == "./hooks/hooks.json"
     assert "apps" not in data
@@ -189,10 +189,7 @@ def test_codex_plugin_workflow_mirror_uses_canonical_close_observation_sink() ->
     plugin_paths = _close_write_paths(PLUGIN_INTENT_WORKFLOW)
 
     assert plugin_paths == canonical_paths
-    assert (
-        r"^docs/operator-field-notes-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$"
-        in plugin_paths
-    )
+    assert r"^docs/operator-field-notes-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$" in plugin_paths
     assert r"^docs/dogfood-log\.md$" not in plugin_paths
 
 

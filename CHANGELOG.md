@@ -4,6 +4,10 @@ All notable changes to cairn. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### cairn-intent loop in the Claude payload — version 0.2.0
+
+`scripts/build_dist.py`'s `ALLOW_LIST` now ships the `cairn-intent` loop (the default operating mode since the carrier-hierarchy / intent-loop work): the `cairn-intent` skill, both fresh-context decorrelation agents (`intent-challenge`, `intent-review`), and `templates/intent.md`. Before this, the Claude `dist/` payload shipped only `cairn-tdd-feature` (now legacy) — a consumer install got the methodology we replaced. The Codex tree (`plugins/cairn/`) already shipped the loop. `premise_guard` is deferred (it only fires on intents carrying a `## Premise Grounding` block, so the loop is fully functional without it). Plugin version bumped `0.1.0` → `0.2.0` across both manifests to signal the changed payload.
+
 ### M7 — Plugin Deployment Pattern (release branch)
 
 Operationalizes ADR `m5-plugin-deployment-pattern` D1–D9. `.claude-plugin/marketplace.json` now uses the documented `source.source: "github"` + `repo: "firaaz/cairn"` + `ref: "release"` shape — replacing the schema-invalid `"type": "git"` discriminator. Adds `.github/workflows/release-publish.yml` as the operator-triggered publish step (workflow_dispatch with `version` cross-check against built `plugin.json:version`; force-with-leases the `release` branch tree to match `/tmp/dist-out`; conditionally pushes `v${VERSION}` tag).
