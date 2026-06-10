@@ -190,3 +190,28 @@ def test_a2_built_plugin_json_carries_explicit_version(tmp_path):
     assert data.get("version") == "0.1.0", (
         f"A2: built plugin.json version must be '0.1.0'; got {data.get('version')!r}"
     )
+
+
+# ---------------------------------------------------------------------------
+# cairn-intent loop ships in the payload (Part A1)
+# ---------------------------------------------------------------------------
+
+
+def test_cairn_intent_loop_ships_in_dist(tmp_path):
+    """The build emits a working cairn-intent loop: the skill, both
+    fresh-context decorrelation agents, and the intent template. Regression
+    pin so a future allow-list change can't silently drop the loop."""
+    if not BUILD_SCRIPT.is_file():
+        pytest.fail(f"cairn-intent: build_dist.py not found at {BUILD_SCRIPT}")
+    _run_build_into(tmp_path)
+    dist = tmp_path / "dist"
+    expected = [
+        dist / "skills" / "cairn-intent" / "SKILL.md",
+        dist / "agents" / "intent-challenge.md",
+        dist / "agents" / "intent-review.md",
+        dist / "templates" / "intent.md",
+    ]
+    missing = [str(p.relative_to(dist)) for p in expected if not p.is_file()]
+    assert not missing, (
+        f"cairn-intent: build_dist must ship the loop; missing from dist: {missing}"
+    )

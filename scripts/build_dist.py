@@ -17,6 +17,10 @@ import typer
 
 ALLOW_LIST: list[tuple[str, str]] = [
     (".claude/skills/cairn-tdd-feature", "skills/cairn-tdd-feature"),
+    (".claude/skills/cairn-intent", "skills/cairn-intent"),
+    (".claude/agents/intent-challenge.md", "agents/intent-challenge.md"),
+    (".claude/agents/intent-review.md", "agents/intent-review.md"),
+    ("templates/intent.md", "templates/intent.md"),
     (".claude/agents/phase-1-tdd.md", "agents/phase-1-tdd.md"),
     (".claude/agents/phase-2-tdd.md", "agents/phase-2-tdd.md"),
     (".claude/agents/phase-3-tdd.md", "agents/phase-3-tdd.md"),
