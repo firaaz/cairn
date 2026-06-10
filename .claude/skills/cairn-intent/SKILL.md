@@ -1,6 +1,6 @@
 ---
 name: cairn-intent
-description: Use for intent-management mode — a durable intent contract anchors fluid, test-first construction in the current conversation, bracketed by two fresh-context decorrelation checkpoints (front-loaded intent-challenge before construction; fresh close-review before close). Coexists with cairn-tdd-feature; use cairn-tdd-feature when the operator wants strict per-phase isolation against a docs/plans/<feature>.md plan doc.
+description: Use for intent-management mode — a durable intent contract anchors fluid, test-first construction in the current conversation, bracketed by two fresh-context decorrelation checkpoints (front-loaded intent-challenge before construction; fresh close-review before close). cairn-tdd-feature is legacy (carrier-hierarchy-and-process-diet D3); use it only when the operator explicitly asks for per-phase isolation against a docs/plans/<feature>.md plan doc.
 ---
 
 # cairn-intent
@@ -12,7 +12,7 @@ Cairn's intent-management operating mode (`intent-management-loop` D1). The inte
 - Repo-writing work that wants a live intent anchor and fluid construction, not per-phase resets.
 - Resuming work that already has an active intent (the carrier or Step 1 loads it).
 
-Do NOT use for: strict phase-isolated TDD against a `docs/plans/<feature>.md` plan doc (use `cairn-tdd-feature`, the retained fallback — `intent-management-loop` D1/D7); read-only / Q&A sessions (no write → nothing to govern, D8).
+Do NOT use for: strict phase-isolated TDD against a `docs/plans/<feature>.md` plan doc (use `cairn-tdd-feature` only on explicit operator request — legacy per `carrier-hierarchy-and-process-diet` D3); read-only / Q&A sessions (no write → nothing to govern, D8).
 
 ## The loop (intent-management-loop D2)
 
@@ -65,14 +65,14 @@ The feature id is the intent's frontmatter `id:`.
 
 5. **Dispatch the fresh close-review (`close-review` node, fresh context).** Call the Agent tool:
    - `subagent_type: intent-review`
-   - `prompt:` a self-contained brief naming: the intent path, the construction `git diff`, the full focused test output, architecture-validation output when relevant, and the close evidence from Step 4. The agent checks each clause against the diff, the evidence adequacy against contract depth, and that changed files match `execution-scope`; it writes one report-only file at `<workspace>/close-review.md`. No same-context self-review fallback.
+   - `prompt:` a self-contained brief naming: the intent path, the construction `git diff`, the full focused test output, architecture-validation output when relevant, and the close evidence from Step 4. The agent checks each clause against the diff, the evidence adequacy against contract depth, and diffs the changed paths (`git diff --name-only` against the intent's base) against the contract's `execution-scope` — the review-time envelope check that cannot die silently (carrier-hierarchy-and-process-diet D4); it writes one report-only file at `<workspace>/close-review.md`. No same-context self-review fallback.
    - Parse the final JSON line. `status: close-review-pass` → `clause_results`, `evidence_summary`, `residual_risk`. `status: close-review-blocked` → surface `findings`, `missing_evidence`, `required_rework`; rework in Step 4 and re-review.
 
 5a. **Operator sign-off (mandatory, `human_signoff_after: true`).** Surface the close-review verdict to the operator. Close only after a `close-review-pass` OR an explicit operator acceptance of a documented `residual_risk`.
 
 6. **Close (`close` node, current conversation).** Record the close: write `<workspace>/close.md` (intent pointer, final verification, residual risk if accepted), append a handoff pointer to `.claude/handoff.md`, and record the Trial-E observation (felt cost vs four-phase; any correlated-miss signal) to `docs/operator-field-notes-YYYY-MM-DD.md` for the close date. Run the final verification command and confirm GREEN before recording.
    - Pass output (`status: closed`): `intent_path`, `verification`, `handoff_entry`, `trial_e_observation`.
-   - Keep `cairn-tdd-feature` as the fallback until a future firm retirement ADR supersedes it (D7).
+   - `cairn-tdd-feature` is legacy per `carrier-hierarchy-and-process-diet` D3 (the D7 retirement conditions resolved).
 
 ## Decorrelation note (intent-management-loop D4)
 

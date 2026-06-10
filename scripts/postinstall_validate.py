@@ -57,7 +57,7 @@ def _role_guard_path(plugin_root: Path) -> Path:
 def check_envelope_enforcement(project_dir: Path) -> bool:
     """Write a sample operator envelope under project_dir and assert that
     role_guard.py denies an out-of-envelope write. Returns True iff the
-    enforcement deny landed (rc=1, non-empty stderr)."""
+    enforcement deny landed (rc=2 blocking, non-empty stderr)."""
     plugin_root = _plugin_root()
     role_guard = _role_guard_path(plugin_root)
     if not role_guard.is_file():
@@ -106,7 +106,7 @@ def check_envelope_enforcement(project_dir: Path) -> bool:
         except OSError:
             pass
 
-    return proc.returncode == 1 and bool((proc.stderr or "").strip())
+    return proc.returncode == 2 and bool((proc.stderr or "").strip())
 
 
 def main() -> int:

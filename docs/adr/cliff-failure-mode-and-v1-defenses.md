@@ -1,6 +1,7 @@
 ---
 id: cliff-failure-mode-and-v1-defenses
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: []
 supersedes-sections: []

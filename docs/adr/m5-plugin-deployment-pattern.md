@@ -1,6 +1,11 @@
 ---
 id: m5-plugin-deployment-pattern
 status: accepted
+contract:
+  must-satisfy:
+    - "plugin payload ships per the release-branch pattern (carrier: tests/unit/test_marketplace_schema.py via INV-012)"
+  evidence:
+    - "tests/unit/test_marketplace_schema.py passes"
 firmness: firm
 supersedes: []
 supersedes-sections: [m5-plugin-distribution-and-symlink-retire/D3]

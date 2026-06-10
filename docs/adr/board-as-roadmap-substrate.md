@@ -2,6 +2,7 @@
 id: board-as-roadmap-substrate
 name: "Board as roadmap substrate — four-layer model + declarative reconciliation"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: []
 supersedes-sections: []

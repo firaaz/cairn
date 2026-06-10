@@ -331,14 +331,6 @@ def _verify_sweep_commit(sha: str, files: list[str], parents: list[str]) -> str 
     return None
 
 
-def _verify_fix_commit(sha: str, files: list[str], parents: list[str]) -> str | None:
-    ok = all(f.startswith(".claude/sweep-results/") for f in files)
-    if not ok:
-        offenders = [f for f in files if not f.startswith(".claude/sweep-results/")]
-        return f"fix verifier: files outside sweep scope: {offenders[:3]}"
-    return None
-
-
 _SUBSTRATE_VERIFIERS: dict[str, object] = {
     "slice:": _verify_pass_through,
     "handoff:": _verify_pass_through,
@@ -346,7 +338,10 @@ _SUBSTRATE_VERIFIERS: dict[str, object] = {
     "bootstrap:": _verify_pass_through,
     "feat:": _verify_pass_through,
     "docs:": _verify_pass_through,
-    "fix:": _verify_fix_commit,
+    # fix: was sweep-constrained (touch only .claude/sweep-results/) while the
+    # /integration-sweep machinery existed; that apparatus retired at M4 and
+    # fix: is an ordinary defect-commit prefix (carrier-hierarchy-and-process-diet).
+    "fix:": _verify_pass_through,
     "chore:": _verify_pass_through,
     "design:": _verify_pass_through,
     "plan:": _verify_pass_through,
@@ -820,6 +815,8 @@ def parse_adr(filepath: Path) -> dict | None:
         "firmness": frontmatter.get("firmness", "unknown"),
         "superseded_by": frontmatter.get("superseded-by"),
         "invariants_touched": frontmatter.get("invariants-touched", []),
+        "has_contract": "contract" in frontmatter,
+        "carrier": frontmatter.get("carrier"),
         "path": str(filepath),
     }
 
@@ -844,6 +841,36 @@ def _is_superseded(adr: dict) -> bool:
     if adr.get("superseded_by"):
         return True
     return adr["status"].lower() in ("superseded", "deprecated", "retired")
+
+
+def check_adr_carrier(adrs: dict[str, dict]) -> list[str]:
+    """Check F (INV-013 D5): non-superseded ADRs declare their carrier tier.
+
+    A `contract:` frontmatter block (live constraint, names its level 1-4
+    carrier) or `carrier: rationale-only` (history/rationale). Superseded
+    ADRs are exempt — append-only stands.
+    """
+    failures = []
+    for key, adr in adrs.items():
+        if _is_superseded(adr):
+            continue
+        if adr.get("has_contract"):
+            continue
+        carrier = adr.get("carrier")
+        if carrier == "rationale-only":
+            continue
+        if carrier is not None:
+            failures.append(
+                f"Check F: {key} has carrier: {carrier!r} — only "
+                f"'rationale-only' or a contract: block is valid"
+            )
+            continue
+        failures.append(
+            f"Check F: {key} ({adr['title']}) is non-superseded but declares "
+            f"no carrier tier — add a contract: block naming its mechanical "
+            f"carrier, or carrier: rationale-only"
+        )
+    return failures
 
 
 def _is_active_firm(adr: dict) -> bool:
@@ -935,7 +962,10 @@ def validate() -> list[str]:
                 f"but has no invariant in ARCHITECTURE.md"
             )
 
-    # A/B/C failure short-circuits before check D/E
+    # Check F (INV-013 D5): every non-superseded ADR declares its carrier tier
+    failures.extend(check_adr_carrier(adrs))
+
+    # A/B/C/F failure short-circuits before check D/E
     if failures:
         return failures
 

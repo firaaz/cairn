@@ -2,6 +2,11 @@
 id: schema-amendment-threshold
 name: "Schema amendment threshold — N≥3 trigger; D5 default-permit reading"
 status: accepted
+contract:
+  must-satisfy:
+    - "feature-file schema widening stays below the amendment threshold (carrier: scripts/validate_architecture.py INV-006)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: null
 supersedes-sections: []

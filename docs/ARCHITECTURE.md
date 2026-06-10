@@ -92,6 +92,14 @@ pattern: "tests/unit/test_marketplace_schema.py"
 description: "Schema-shape lint binding for INV-012's marketplace.json sha-pin contract: plugins[0].source.source == 'url', source.url == 'https://github.com/firaaz/cairn.git', source.sha matches ^[0-9a-f]{40}$, no ref field (defensive — ref re-introduction routes back to the broken github-clone path), no version on the marketplace plugin entry, no legacy type field. Six assertions in tests/unit/test_marketplace_schema.py per plugin-payload-transport-a1/D4."
 ```
 
+**INV-013** Decisions live in the strongest carrier that can hold them (carrier hierarchy: hooks → contract tests/validator assertions → skills/commands → CLAUDE.md line → ADR for rationale). Every non-superseded ADR declares its carrier tier in frontmatter: a `contract:` block whose clauses name a level 1–4 mechanical carrier, or `carrier: rationale-only`. Every surviving hook carries a liveness assertion proving it blocks a known-bad input. A mechanism earns retention by a logged catch, not by completing its ceremony. (carrier-hierarchy-and-process-diet)
+
+```invariant-check INV-013
+type: test-ref
+pattern: "tests/unit/test_adr_carrier_contract.py"
+description: "Check F binding for D5: every non-superseded ADR carries a contract: block or carrier: rationale-only (check_adr_carrier in scripts/validate_architecture.py, asserted on the live corpus). D8's hook-liveness half is carried by scripts/smoketest_hooks.sh via tests/unit/test_hook_smoketest.py."
+```
+
 ## Boundaries
 
 The slice pipeline has four phase boundaries, each implemented as a fresh session separated by a committed artifact (phase-lock-and-role-declaration D1):

@@ -70,7 +70,7 @@ def test_phase_1_tdd_denied_outside_skill_runs():
         {"tool_name": "Write", "tool_input": {"file_path": "docs/foo.md"}},
         role="phase-1-tdd",
     )
-    assert code == 1
+    assert code == 2
     assert "phase-1-tdd" in stderr or "denied" in stderr
 
 
@@ -124,7 +124,7 @@ def test_phase_3_tdd_envelope_denies_outside():
         role="phase-3-tdd",
         envelope=json.dumps([r"^src/foo\.py$"]),
     )
-    assert code == 1
+    assert code == 2
     assert "denied" in stderr or "phase-3-tdd" in stderr
 
 

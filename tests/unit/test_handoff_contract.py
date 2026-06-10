@@ -9,7 +9,6 @@ narrative summary. This test enforces the contract.
 
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 from pathlib import Path
@@ -129,46 +128,22 @@ def test_pointers_resolve():
 
 
 # ---------------------------------------------------------------------------
-# Test 4: coverage — every open GH issue appears
+# Test 4 (open-issue coverage) removed by carrier-hierarchy-and-process-diet
+# D6: open gh issues live solely in gh; mirroring them here forced the
+# handoff to duplicate the tracker. The handoff carries load-bearing
+# threads only, capped below.
 # ---------------------------------------------------------------------------
 
 
-def _live_open_issues() -> set[int]:
-    r = subprocess.run(
-        [
-            "gh",
-            "issue",
-            "list",
-            "--state",
-            "open",
-            "--json",
-            "number",
-            "--limit",
-            "200",
-        ],
-        capture_output=True,
-        text=True,
-        cwd=CAIRN_ROOT,
-    )
-    assert r.returncode == 0, f"gh issue list failed: {r.stderr}"
-    return {item["number"] for item in json.loads(r.stdout)}
+MAX_ACTIVE_THREADS = 6
 
 
-def _handoff_gh_pointers() -> set[int]:
+def test_handoff_is_dieted():
+    """At most MAX_ACTIVE_THREADS load-bearing thread lines (D6)."""
     _, body, _ = _parse_handoff(HANDOFF.read_text())
-    out = set()
-    for line in body:
-        if m := POINTER_GH.search(_entry_text(line)):
-            out.add(int(m.group(1)))
-    return out
-
-
-def test_coverage_open_issues():
-    open_issues = _live_open_issues()
-    in_handoff = _handoff_gh_pointers()
-    missing = open_issues - in_handoff
-    assert not missing, (
-        f"open GitHub issues not represented in handoff: {sorted(missing)}"
+    assert len(body) <= MAX_ACTIVE_THREADS, (
+        f"handoff carries {len(body)} threads; D6 caps it at "
+        f"{MAX_ACTIVE_THREADS} — move the rest to gh issues or close them"
     )
 
 

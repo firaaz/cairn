@@ -60,6 +60,7 @@ def _make_adr(adr_dir: Path, adr_id: str, num: str, inv_ids: list[str]) -> None:
             ---
             id: {adr_id}
             status: accepted
+            carrier: rationale-only
             firmness: firm
             supersedes: []
             supersedes-sections: []
@@ -1120,7 +1121,7 @@ class TestCairnSelfDogfood:
 # assertion-block requirement.
 
 
-EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 13)}
+EXPECTED_INVARIANT_IDS = {f"INV-{n:03d}" for n in range(1, 14)}
 # Retired invariants: prose marker present in ARCHITECTURE.md but no binding block.
 RETIRED_INVARIANT_IDS = {"INV-008", "INV-009", "INV-010"}
 V1_ASSERTION_TYPES = {

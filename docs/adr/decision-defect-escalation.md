@@ -2,6 +2,7 @@
 id: decision-defect-escalation
 name: "Decision-defect escalation — a fix that only passes by weakening a constraint is a wrong decision, not a patch"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: null
 superseded-by: null

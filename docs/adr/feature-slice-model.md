@@ -2,6 +2,11 @@
 id: feature-slice-model
 title: Feature-Slice Model
 status: accepted
+contract:
+  must-satisfy:
+    - "feature files carry the structured decomposition schema (carrier: scripts/validate_architecture.py INV-007 + templates)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections: []

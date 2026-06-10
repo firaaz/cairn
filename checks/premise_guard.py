@@ -5,9 +5,11 @@ and diffs each quote against live source via the shared lib.premise_match.ground
 matcher (FLI-1: same tolerance as the validator assertion). Invocation:
 `uv run python checks/premise_guard.py <path-to-intent.md>`.
 
-Exit codes (mirror role_guard.py): 0 = all premises grounded, or no section /
-empty premises; 1 = one+ premises not grounded / source missing / unreadable;
+Exit codes: 0 = all premises grounded, or no section / empty premises;
+1 = one+ premises not grounded / source missing / unreadable;
 2 = intent file missing/unreadable, malformed YAML block, or bad args.
+(CLI gate, not a PreToolUse hook — role_guard.py denies with exit 2 since
+the gh#35 repair; these codes no longer mirror it.)
 
 FLI-2: fail-open on ABSENCE (no block → 0), fail-closed on MALFORMATION (→ 2).
 """

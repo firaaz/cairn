@@ -2,6 +2,7 @@
 id: cost-per-slice-budget
 name: "Cost-per-slice budget — INV-009 provisional introduction with advisory-only semantics"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: []
 supersedes-sections: []

@@ -2,6 +2,7 @@
 id: slice-artifact-preservation-superseded
 name: "Slice artifact preservation — superseded"
 status: firm
+carrier: rationale-only
 firmness: firm
 supersedes: slice-artifact-preservation
 date: 2026-05-07

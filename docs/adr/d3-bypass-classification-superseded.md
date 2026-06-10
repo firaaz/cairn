@@ -2,6 +2,7 @@
 id: d3-bypass-classification-superseded
 name: "D3 bypass classification — superseded"
 status: firm
+carrier: rationale-only
 firmness: firm
 supersedes: d3-bypass-classification
 date: 2026-05-07

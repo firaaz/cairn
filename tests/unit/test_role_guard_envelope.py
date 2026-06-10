@@ -232,8 +232,8 @@ def test_json_object_envelope_non_matching_denies():
             role="phase-1-tdd",
             envelope=envelope,
         )
-        assert code == 1, (
-            f"object envelope without matching path must deny; "
+        assert code == 2, (
+            f"object envelope without matching path must deny (blocking); "
             f"got rc={code} stderr={stderr!r}"
         )
     finally:
@@ -291,8 +291,8 @@ def test_unset_envelope_does_not_grant_static_role():
             role="phase-1-tdd",
             envelope=None,
         )
-        assert code == 1, (
-            f"phase-1-tdd outside allowlist with no envelope must deny; "
+        assert code == 2, (
+            f"phase-1-tdd outside allowlist with no envelope must deny (blocking); "
             f"got rc={code} stderr={stderr!r}"
         )
         assert not GRANT_LOG.exists() or GRANT_LOG.read_text() == "", (
@@ -315,8 +315,8 @@ def test_empty_envelope_does_not_grant_static_role():
             role="phase-1-tdd",
             envelope="",
         )
-        assert code == 1, (
-            f"phase-1-tdd outside allowlist with empty envelope must deny; "
+        assert code == 2, (
+            f"phase-1-tdd outside allowlist with empty envelope must deny (blocking); "
             f"got rc={code} stderr={stderr!r}"
         )
     finally:

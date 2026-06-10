@@ -2,6 +2,11 @@
 id: using-cairn-carrier-contract
 name: "using-cairn carrier contract — dynamic SessionStart command-emitter, cairn-internal-first"
 status: accepted
+contract:
+  must-satisfy:
+    - "the SessionStart carrier emits a state-accurate pointer and never gates (carrier: checks/using-cairn-carrier.sh + scripts/smoketest_hooks.sh liveness)"
+  evidence:
+    - "bash scripts/smoketest_hooks.sh"
 firmness: provisional
 supersedes: null
 superseded-by: null

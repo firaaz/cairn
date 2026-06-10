@@ -3,58 +3,16 @@ contract:
   must-satisfy:
     - every body line names a thread with a resolvable pointer
     - each thread declares state ∈ {open, blocked, deferred}
+    - at most 6 active threads (carrier-hierarchy-and-process-diet D6)
   must-not-violate:
     - no narrative prose; no multi-sentence entries
+    - no open-issue mirror — gh issues live solely in gh
   wrong-if:
     - any pointer fails to resolve on read
   evidence:
     - tests/unit/test_handoff_contract.py passes
 ---
-- docs/adr/cairn-thin-substrate-direction.md open identity-landed+premise-guard-hook-shipped+reactivity-N3-trigger
-- docs/plans/2026-05-20-cairn-thin-substrate-trials.md open TrialD-paused+TrialE-closed-2026-06-04
-- docs/plans/2026-05-14-cairn-adr-contract-trial-b.md deferred legacy-label-retrofit
-- docs/adr/delivery-mechanism-friction.md deferred cairn-diagnostics-with-detection-trigger-2026-09-01-OR-3-J5-entries
-- gh:firaaz/cairn#1 open methodology-audit-tracking-2026-04-29
-- gh:firaaz/cairn#4 open close-sequence-hardening
-- gh:firaaz/cairn#5 open D1+D3-completion-gates
-- gh:firaaz/cairn#6 open AGENT_ENVELOPE-synthesis
-- gh:firaaz/cairn#7 open bash-write-class-parsing
-- gh:firaaz/cairn#8 open phase-3-cluster-fan-out
-- gh:firaaz/cairn#9 open retry-classification-B8-backoff
-- gh:firaaz/cairn#10 open INV-009-cost-discipline
-- gh:firaaz/cairn#11 open MCP-server-hardening
-- gh:firaaz/cairn#12 open heartbeat-signal-lifecycle
-- gh:firaaz/cairn#13 open resume-reconcile-run_id
-- gh:firaaz/cairn#14 open consumer-tenancy-model
-- gh:firaaz/cairn#15 open phase-1-verification-zone
-- gh:firaaz/cairn#16 open verdict-OK-blind-spot
-- gh:firaaz/cairn#17 open instruction-only-enforcement
-- gh:firaaz/cairn#18 open triager-flow-gaps
-- gh:firaaz/cairn#19 open symlink-validation-doctor
-- gh:firaaz/cairn#20 open ADR-upgrade-doc-ecosystem
-- gh:firaaz/cairn#21 open slash-command-doc-drift
-- gh:firaaz/cairn#22 open cost-telemetry-cosmetic
-- gh:firaaz/cairn#23 open test-coverage-targets
-- gh:firaaz/cairn#26 open close_slice-staging-surface
-- gh:firaaz/cairn#27 open operator-surface-ADR
-- gh:firaaz/cairn#28 open mitigation2-operator-prompt-pinned+caps3-routed-to-decision+1and4-remain
-- gh:firaaz/cairn#29 open phase-1-adversarial-review
-- gh:firaaz/cairn#30 open cairn-on-cairn-carve-out
-- gh:firaaz/cairn#31 blocked V-3-attempt-2+V-5-operator-bound
-- f8e2b70 open v0.1.0-tag-diverges-local-f8e2b70-vs-remote-b190b5f-release-smoke-unverified-gh32-closed
-- gh:firaaz/cairn#33 open delivery-mechanism-friction-impl-slice
-- docs/plans/2026-05-30-cairn-trial-d-scope-split.md open m2-paused-friction-finding-fed-cost-model-ADR
-- docs/adr/intent-management-loop.md open activated-default+D7/R2-retire-with-conditions
-- docs/operator-field-notes-2026-06-01.md open dp2-slice25-recorded+gate-priming-rec->/decision-next+sink-mismatch-open
-- docs/operator-field-notes-2026-06-02.md open dp3+dp4+dp5-field-notes-sink-close-pass
-- docs/operator-field-notes-2026-06-04.md open W1-cross-family-front-3of3-catch+2of2-controls+no-delta-vs-dp3
-- docs/operator-field-notes-2026-06-05.md open selection-ladder-operational-reference+loop-close-pass+pending-commit
-- docs/adr/intent-contract-cost-model.md open D2-built+D3-retire-build-keep-watch+revival-armed
-- docs/adr/intent-fidelity-measure-before-enforce.md open B-deferred-not-refuted+trigger-armed+instr-live
-- docs/adr/trial-e-closure-adjudication.md open next:deprime-reprobe-challenger+close-review-obligation+sunset
-- docs/adr/using-cairn-carrier-contract.md open ApproachD-built-76ff1ab+D5-editorial-fix-pending+internal-until-D7
-- docs/adr/git-workflow-v1.md deferred shipped-firm+--no-ff-dogfooded-cross-session-f8d7f4e+D4/D5/D6+F5-merge-guard
-- docs/adr/cairn-intent-git-lifecycle.md deferred uniform-feat/<id>+--no-ff-TrialE-resolved+firm-on-supersession
+- docs/adr/carrier-hierarchy-and-process-diet.md open closed-4d8738d+18-issues-swept+merge-to-dev-pending
+- docs/adr/intent-management-loop.md open activated-default+D7/R2-resolved-tdd-feature-legacy
+- a18bca0 open v0.1.0-tag-converged-local-eq-remote-b190b5f+release-smoke-unverified
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
-- docs/plans/2026-05-31-thin-cairn-intent-management.md open merged-to-dev+TrialE-closed-2026-06-04
-- docs/adr/decision-defect-escalation.md deferred recorded-536b6bd+enforce-deferred+auto-gated-gh#18

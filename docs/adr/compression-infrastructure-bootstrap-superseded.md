@@ -2,6 +2,11 @@
 id: compression-infrastructure-bootstrap-superseded
 name: "Compression infrastructure bootstrap — superseded"
 status: firm
+contract:
+  must-satisfy:
+    - "per-role write allowlists enforce phase write paths (carrier: checks/role_guard.py ROLE_POLICIES)"
+  evidence:
+    - "tests/unit/test_role_guard_post_m4.py passes"
 firmness: firm
 supersedes: compression-infrastructure-bootstrap
 date: 2026-05-07

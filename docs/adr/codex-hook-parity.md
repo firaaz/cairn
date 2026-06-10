@@ -2,6 +2,11 @@
 id: codex-hook-parity
 name: "Codex hook parity — automatic consumer enforcement via wrapper adapters"
 status: accepted
+contract:
+  must-satisfy:
+    - "codex plugin adapters mirror the claude-code hook surface (carrier: tests/unit/test_codex_hook_adapters.py + test_codex_plugin_manifest.py)"
+  evidence:
+    - "tests/unit/test_codex_hook_adapters.py passes"
 firmness: provisional
 supersedes: null
 superseded-by: null

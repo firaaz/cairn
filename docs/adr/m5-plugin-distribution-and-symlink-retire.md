@@ -1,6 +1,11 @@
 ---
 id: m5-plugin-distribution-and-symlink-retire
 status: accepted
+contract:
+  must-satisfy:
+    - "consumers install via plugin; cairn keeps the self-symlink (carrier: scripts/validate_architecture.py INV-011/INV-012 + scripts/migrate_from_symlink.sh exit-3 self-guard)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections: []

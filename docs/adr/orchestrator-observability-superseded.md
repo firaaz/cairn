@@ -2,6 +2,7 @@
 id: orchestrator-observability-superseded
 name: "Orchestrator observability — superseded"
 status: firm
+carrier: rationale-only
 firmness: firm
 supersedes: orchestrator-observability
 date: 2026-05-07

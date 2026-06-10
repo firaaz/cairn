@@ -2,6 +2,11 @@
 id: parallelism-v1
 title: Parallelism v1
 status: accepted
+contract:
+  must-satisfy:
+    - "the D4 v2+ time-box binds concurrent-worktree slices only, not in-session subagents (carrier: CLAUDE.md new-code guidance line)"
+  evidence:
+    - "CLAUDE.md within-slice-parallel-subagents line"
 firmness: provisional
 supersedes:
   - "cliff-failure-mode-and-v1-defenses D4 (partial: parallelism deferral only)"

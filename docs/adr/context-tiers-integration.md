@@ -2,6 +2,11 @@
 id: context-tiers-integration
 title: Context Tiers Integration for Feature-Slice Model
 status: accepted
+contract:
+  must-satisfy:
+    - "feature artifacts respect the three-tier context model (carrier: scripts/validate_architecture.py INV-007)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections: []
