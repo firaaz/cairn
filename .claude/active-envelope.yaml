@@ -3,89 +3,27 @@
 # write paths against `paths`. Set when starting feature work; clear
 # (mode: off) when returning to ad-hoc / cross-cutting work.
 #
-# Note: regex strings are matched against the path AS REPORTED BY THE TOOL.
-# Cairn convention is that paths are repo-root-relative (e.g., "scripts/foo.py",
-# NOT "/Users/.../cairn/scripts/foo.py"). Anchor your regex with ^ accordingly.
+# Note: regex strings are matched against the tool path AFTER normalization
+# to repo-root-relative form (gh#35 repair). Anchor with ^.
+#
+# Active feature: carrier-hierarchy-refocus (intent execution-scope).
 
-mode: operator   # values: "operator" (enforce), "off" (no-op)
+mode: operator
 paths:
-  # M4 plan docs and ADRs
-  - ^docs/plans/2026-05-07-cairn-shrink-m4.*
   - ^docs/adr/.*
   - ^docs/ARCHITECTURE\.md$
-  - ^docs/operational-reference\.md$
-  - ^docs/upgrading-from-pre-compression\.md$
-  - ^docs/why-cairn\.md$
-  - ^docs/spec-v2\.md$
-  # Scripts
-  - ^scripts/validate_architecture\.py$
-  - ^scripts/lib/.*
-  - ^scripts/smoketest_hooks\.sh$
-  # Plans (stress-test scope)
-  - ^docs/plans/2026-05-08-hook-bare-python3-smoketest\.md$
-  # M5 feature trio plans (active dispatch surface)
-  - ^docs/plans/2026-05-08-cairn-m5-f1-packaging\.md$
-  - ^docs/plans/2026-05-08-cairn-m5-f2-consumer-doc-surface\.md$
-  - ^docs/plans/2026-05-08-cairn-m6-f3-migration-and-symlink-retire\.md$
-  # M7 plugin-deployment-pattern plan (active dispatch surface)
-  - ^docs/plans/2026-05-09-cairn-m7-plugin-deployment-pattern\.md$
-  # 2026-05-13 interaction-protocol reframe — brainstorm plan
-  - ^docs/plans/2026-05-13-cairn-as-interaction-protocol\.md$
-  # 2026-05-14 Trial B — ADR contract on identifier-scheme (spec + impl plan)
-  - ^docs/plans/2026-05-14-cairn-adr-contract-trial-b\.md$
-  - ^docs/plans/2026-05-14-cairn-adr-contract-trial-b-impl\.md$
-  # 2026-05-20 thin-substrate direction trials plan (DRAFT companion to cairn-thin-substrate-direction)
-  - ^docs/plans/2026-05-20-cairn-thin-substrate-trials\.md$
-  # 2026-05-30 Trial D — scope-split / atomicity exception classes (cairn-trial-d-scope-split)
-  - ^docs/plans/2026-05-30-cairn-trial-d-scope-split\.md$
-  - ^templates/intent\.md$
-  # 2026-05-31 thin-cairn intent-management design (brainstorm output → /decision input)
-  - ^docs/plans/2026-05-31-thin-cairn-intent-management\.md$
-  # 2026-05-22 cairn-identity brainstorm direction doc
-  - ^docs/plans/2026-05-22-cairn-identity-direction\.md$
-  # 2026-06-02 Trial-E closure spec (brainstorm output → probe + adjudication /decisions)
-  - ^docs/plans/2026-06-02-cairn-trial-e-closure\.md$
-  # M7 Phase-3 write surface — schema rewrite + release workflow + opt artefacts
-  # (envelope expansion required because Claude Code does not auto-set
-  # AGENT_ROLE on subagent dispatch; role_guard falls through to the
-  # operator-envelope path when AGENT_ROLE is unset).
-  - ^\.claude-plugin/marketplace\.json$
-  - ^\.github/workflows/release-publish\.yml$
-  - ^\.github/workflows/dist-gate\.yml$
-  - ^\.gitignore$
-  - ^CHANGELOG\.md$
   - ^docs/roadmap\.md$
-  # Lessons file — Phase 6 propagation surface for L-022 capture
-  - ^docs/lessons\.md$
-  # Operator field notes (dated memos; append-only by convention)
+  - ^docs/operational-reference\.md$
   - ^docs/operator-field-notes-.*\.md$
-  # Hooks
-  - ^checks/.*
-  # Codex hook-parity slice: plugin adapters/manifests + repo-local carrier config
-  - ^plugins/cairn/.*
-  - ^\.codex/.*
-  # Tests
-  - ^tests/.*
-  # Cairn workflow registry (intent-management operating modes)
-  - ^workflows/.*
-  # .claude internals (must include itself so editing this file isn't denied)
-  - ^\.claude/active-envelope\.yaml$
-  - ^\.claude/agents/.*
-  - ^\.claude/skills/.*
-  - ^\.claude/features/.*
-  - ^\.claude/skill-runs/.*
-  - ^\.claude/handoff\.md$
-  - ^\.claude/settings\.json$
-  - ^\.claude/settings\.local\.json$
-  - ^\.claude/envelope-grants\.log$
-  - ^\.claude/adr-editorial-fixes\.log$
-  - ^\.claude/learning\.md$
-  - ^\.claude/commands/.*
-  # Commands
-  - ^commands/claude-code/.*
-  # Root config files
-  - ^pyproject\.toml$
-  - ^uv\.lock$
+  - ^docs/dogfood-log\.md$
   - ^CLAUDE\.md$
-  - ^README\.md$
-  - ^CONSUMER\.md$
+  - ^\.claude/handoff\.md$
+  - ^\.claude/active-envelope\.yaml$
+  - ^\.claude/skills/.*
+  - ^\.claude/agents/.*
+  - ^\.claude/skill-runs/carrier-hierarchy-refocus/.*
+  - ^checks/.*
+  - ^scripts/.*
+  - ^tests/.*
+  - ^commands/claude-code/.*
+  - ^workflows/.*

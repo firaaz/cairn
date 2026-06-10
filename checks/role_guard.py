@@ -10,7 +10,8 @@ Post-M4-shrink:
 - Phase-3 write gate is envelope-driven; mechanism unchanged.
 - Operator envelope gate added (F3): active when AGENT_ROLE unset + file present.
 
-Exit codes: 0 = allow, 1 = deny (with stderr diagnostic), 2 = malformed stdin.
+Exit codes: 0 = allow, 2 = deny or malformed input (blocking — Claude Code
+treats only exit 2 as a blocking hook error; gh#35).
 """
 
 from __future__ import annotations
@@ -51,6 +52,20 @@ def _matches_any(path: str, patterns: list[str]) -> bool:
         if pat and re.search(pat, path):
             return True
     return False
+
+
+def _normalize_path(file_path: str) -> str:
+    """Repo-root-relative form of an absolute tool path.
+
+    Tools report absolute paths; allow-list regexes are anchored repo-root-
+    relative (gh#35's masked second defect). Lexical strip only — no
+    resolve(), so `.slice-system/...` keeps its symlinked shape and stays
+    deny-able (edit-canonical-paths-only rule).
+    """
+    root = str(CAIRN_ROOT)
+    if file_path.startswith(root + os.sep):
+        return file_path[len(root) + 1 :]
+    return file_path
 
 
 def _envelope_patterns(raw: str | None) -> list[str]:
@@ -146,14 +161,14 @@ def main() -> int:
             env = _load_operator_envelope()
         except ValueError as exc:
             print(f"role_guard: {exc}", file=sys.stderr)
-            return 1
+            return 2
         if env is None:
             return 0  # no envelope file = no-op (default)
         mode, paths = env
         if mode == "off":
             return 0
         # mode == "operator" — enforce
-        file_path = tool_input.get("file_path", "") or ""
+        file_path = _normalize_path(tool_input.get("file_path", "") or "")
         if not file_path:
             return 0
         if _matches_any(file_path, paths):
@@ -162,13 +177,13 @@ def main() -> int:
             f"role_guard: operator envelope denied write outside paths: {file_path}",
             file=sys.stderr,
         )
-        return 1
+        return 2
 
     # ────────── Existing per-phase logic (AGENT_ROLE set) ──────────
     if tool_name not in WRITE_TOOLS:
         return 0
 
-    file_path = tool_input.get("file_path", "") or ""
+    file_path = _normalize_path(tool_input.get("file_path", "") or "")
     if not file_path:
         return 0
 
@@ -181,7 +196,7 @@ def main() -> int:
             f"role_guard: phase-3-tdd denied write outside envelope: {file_path}",
             file=sys.stderr,
         )
-        return 1
+        return 2
 
     if role in ROLE_POLICIES:
         if _matches_any(file_path, ROLE_POLICIES[role]):
@@ -197,10 +212,10 @@ def main() -> int:
             f"role_guard: {role} denied write outside allow-list: {file_path}",
             file=sys.stderr,
         )
-        return 1
+        return 2
 
     print(f"role_guard: unknown role '{role}'", file=sys.stderr)
-    return 1
+    return 2
 
 
 if __name__ == "__main__":

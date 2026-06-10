@@ -217,7 +217,7 @@ uv run python checks/premise_guard.py .claude/skill-runs/<feature-id>/intent.md
 
 Run by the dispatch skill at Step 5a (between the Phase-1 commit verify and the Phase-2 dispatch). `source:` paths resolve relative to `CLAUDE_PROJECT_DIR` (the consumer cwd); the shared matcher loads from cairn's own root, so the two diverge cleanly when cairn is consumed downstream.
 
-**Exit codes** (mirror `role_guard.py`):
+**Exit codes** (CLI gate; `role_guard.py` no longer shares this scheme — since the gh#35 repair it denies with exit 2, blocking):
 
 - `0` — all premises grounded, OR no `## Premise Grounding` section, OR a `premises:` value of YAML null (`~`/absent value) or an empty list. Proceed to Phase 2.
 - `1` — one or more premises not grounded: the quoted span is absent (stale or fabricated), or the cited source is missing/unreadable. The stderr names each failing premise; **block dispatch** until corrected.
@@ -290,6 +290,7 @@ Three hooks wired in `.claude/settings.json`:
 - **`role_guard.py`** (PreToolUse on `Edit|Write|MultiEdit|NotebookEdit`): two paths.
   - When `AGENT_ROLE` is set (dispatch-skill subagents): per-role static allowlist for `phase-1-tdd` / `phase-2-tdd` / `phase-4-tdd`; `phase-3-tdd` is envelope-driven via `AGENT_ENVELOPE` (no static entry — intentional asymmetry per `compression-infrastructure-bootstrap-superseded`). Wider grants via `AGENT_ENVELOPE` for static-policy roles are logged to `.claude/envelope-grants.log` (D9 envelope-grant escape).
   - When `AGENT_ROLE` is unset: reads `.claude/active-envelope.yaml` per the Operator envelope section above.
+  - Both paths normalize absolute tool paths to repo-root-relative before matching and deny with exit 2 (blocking) — the gh#35 repair. `.slice-system/` shapes are deliberately not normalized (canonical-paths rule).
 - **`reality-check.sh`** (PostToolUse on `Edit|Write`): runs `ruff format` and `ruff check --fix` on `*.py` files. No-op for non-Python paths.
 
 **Hook dependencies.** All three hooks expect `jq` (the bash hooks parse stdin JSON). `reality-check.sh` additionally needs `ruff`. Missing deps cause silent no-op with a stderr warning. Install before any work in cairn:

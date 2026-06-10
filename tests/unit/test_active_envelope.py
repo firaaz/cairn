@@ -131,7 +131,7 @@ def test_operator_denies_non_matching_path(envelope_file):
     code, stderr = _run_hook(
         {"tool_name": "Write", "tool_input": {"file_path": "src/bar.py"}}
     )
-    assert code == 1
+    assert code == 2
     assert "operator envelope denied" in stderr
     assert "src/bar.py" in stderr
 
@@ -142,12 +142,12 @@ def test_operator_denies_non_matching_path(envelope_file):
 
 
 def test_malformed_yaml_fails_closed(envelope_file):
-    """Broken YAML in active-envelope.yaml causes exit 1 (fail-closed)."""
+    """Broken YAML in active-envelope.yaml causes exit 2 (fail-closed, blocking)."""
     envelope_file("mode: operator\npaths: [\nbad yaml")
     code, stderr = _run_hook(
         {"tool_name": "Write", "tool_input": {"file_path": "src/foo.py"}}
     )
-    assert code == 1
+    assert code == 2
     assert "role_guard" in stderr
 
 
@@ -157,12 +157,12 @@ def test_malformed_yaml_fails_closed(envelope_file):
 
 
 def test_unknown_mode_fails_closed(envelope_file):
-    """Unrecognised mode value causes exit 1 (fail-closed)."""
+    """Unrecognised mode value causes exit 2 (fail-closed, blocking)."""
     envelope_file("mode: foo\npaths:\n  - ^src/.*\n")
     code, stderr = _run_hook(
         {"tool_name": "Write", "tool_input": {"file_path": "src/foo.py"}}
     )
-    assert code == 1
+    assert code == 2
     assert "mode" in stderr
 
 
@@ -172,12 +172,12 @@ def test_unknown_mode_fails_closed(envelope_file):
 
 
 def test_operator_without_paths_fails_closed(envelope_file):
-    """mode: operator with no paths key causes exit 1."""
+    """mode: operator with no paths key causes exit 2."""
     envelope_file("mode: operator\n")
     code, stderr = _run_hook(
         {"tool_name": "Write", "tool_input": {"file_path": "src/foo.py"}}
     )
-    assert code == 1
+    assert code == 2
     assert "paths" in stderr
 
 
@@ -223,7 +223,7 @@ def test_edit_tool_is_gated(envelope_file):
     code, stderr = _run_hook(
         {"tool_name": "Edit", "tool_input": {"file_path": "src/bar.py"}}
     )
-    assert code == 1
+    assert code == 2
     assert "operator envelope denied" in stderr
 
 

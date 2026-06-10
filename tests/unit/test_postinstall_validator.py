@@ -317,19 +317,18 @@ def test_a10_plugin_cache_simulation_role_guard_anchors_via_env(tmp_path):
         env=env,
     )
     # The COPY must read the envelope from $CLAUDE_PROJECT_DIR (project_dir),
-    # see scripts/foo.py is out-of-envelope, and DENY (exit 1).
+    # see scripts/foo.py is out-of-envelope, and DENY (exit 2, blocking).
     # If anchoring is broken (uses __file__), the copy looks for the envelope
     # under plugin_cache/.claude/active-envelope.yaml, sees nothing, and
     # silently fail-opens with exit 0 — the regression we are pinning against.
-    assert proc.returncode == 1, (
+    assert proc.returncode == 2, (
         f"A10 (plugin-cache canary): role_guard.py invoked from a copy at "
         f"{copy_path} with $CLAUDE_PROJECT_DIR={project_dir} must DENY an "
-        f"out-of-envelope write (exit 1). Got rc={proc.returncode}.\n"
+        f"out-of-envelope write (exit 2). Got rc={proc.returncode}.\n"
         f"This indicates CAIRN_ROOT is anchored on __file__, not on "
         f"$CLAUDE_PROJECT_DIR — the D5 regression.\n"
         f"stderr={proc.stderr!r}"
     )
     assert proc.stderr.strip(), (
-        "A10 (plugin-cache canary): denial must emit non-empty stderr; "
-        "got empty stderr"
+        "A10 (plugin-cache canary): denial must emit non-empty stderr; got empty stderr"
     )
