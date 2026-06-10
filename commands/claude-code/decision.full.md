@@ -1,5 +1,7 @@
 # Decision — Full Reference
 
+> **LEGACY** (carrier-hierarchy-and-process-diet D7). Replaced by the lean form: ADR + one fresh-context adversarial attack + operator sign-off. Kept for provenance.
+
 Make an architectural or design decision with structural safeguards against correlated errors.
 
 Usage: `/decision <question>`

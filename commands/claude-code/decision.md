@@ -1,5 +1,7 @@
 # /decision
 
+> **LEGACY** (carrier-hierarchy-and-process-diet D7). The 8-phase arc is replaced by the lean form: write the ADR, subject it to one fresh-context adversarial attack (intent-challenge form), record the attack report alongside, operator sign-off. This doc stays for provenance; use the phases below only if the operator explicitly asks for the full arc.
+
 Make an architectural decision with structural safeguards against correlated errors.
 
 Usage: `/decision <question>`

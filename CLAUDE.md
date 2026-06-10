@@ -6,7 +6,7 @@ Cairn is a methodology repo — TDD-by-construction dispatch skill, hooks, slash
 
 ## Operating mode [maintainer]
 
-For repo-writing work, operate via the cairn-intent loop (`cairn-intent` skill): form an intent contract, run the front intent-challenge, construct test-first, close-review before close. The SessionStart carrier (`using-cairn`) names the active intent. Read-only / Q&A / orientation work is exempt. Use `cairn-tdd-feature` instead for strict per-phase isolation against a `docs/plans/<feature>.md` plan doc.
+For repo-writing work, operate via the cairn-intent loop (`cairn-intent` skill): form an intent contract, run the front intent-challenge, construct test-first, close-review before close. The SessionStart carrier (`using-cairn`) names the active intent. Read-only / Q&A / orientation work is exempt. `cairn-tdd-feature` (four-phase pipeline) is LEGACY — only on explicit operator request. Decision-weight changes take the lean form: ADR + one fresh-context adversarial attack + operator sign-off (`carrier-hierarchy-and-process-diet` D7; the 8-phase `/decision` arc is legacy). Constraints live in the strongest carrier that can hold them — hook → contract test/validator → skill/command → CLAUDE.md line → ADR for rationale (INV-013).
 
 ## Identifier scheme [both]
 

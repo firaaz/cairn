@@ -1,6 +1,6 @@
 ---
 name: cairn-tdd-feature
-description: Use when implementing a feature that has a per-feature plan doc at docs/plans/<feature>.md and the operator wants TDD-by-construction phase isolation. Sequences Phase 1 (intent) → Phase 2 (RED tests) → Phase 3 (GREEN impl) → Phase 4 (audit) using fresh subagents per phase.
+description: LEGACY (carrier-hierarchy-and-process-diet D3) — cairn-intent is the operating loop; use this only when the operator explicitly asks for strict per-phase isolation against a docs/plans/<feature>.md plan doc. Sequences Phase 1 (intent) → Phase 2 (RED tests) → Phase 3 (GREEN impl) → Phase 4 (audit) using fresh subagents per phase.
 ---
 
 # cairn-tdd-feature
