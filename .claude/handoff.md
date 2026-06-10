@@ -14,6 +14,5 @@ contract:
 ---
 - docs/adr/carrier-hierarchy-and-process-diet.md open refocus-landing+gh-sweep+contract-block-backfill
 - docs/adr/intent-management-loop.md open activated-default+D7/R2-resolved-tdd-feature-legacy
-- docs/plans/2026-06-07-spec-elicitation-discipline.md open next:dry-run-on-fidelity-close-review
 - a18bca0 open v0.1.0-tag-converged-local-eq-remote-b190b5f+release-smoke-unverified
 - 61afec4 open codex-local-plugin+renamed-skills+manifest-tests-on-dev
