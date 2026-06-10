@@ -2,6 +2,11 @@
 id: intent-contract-cost-model
 name: "Intent-contract cost model — user approves the promise, agent owns the proof"
 status: accepted
+contract:
+  must-satisfy:
+    - "contract depth graduates by change size from the scope-statement floor (carrier: templates/intent.md graduated-contract rules + .claude/skills/cairn-intent)"
+  evidence:
+    - "templates/intent.md Contract section"
 firmness: provisional
 supersedes: null
 superseded-by: null

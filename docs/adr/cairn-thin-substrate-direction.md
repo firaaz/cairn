@@ -2,6 +2,7 @@
 id: cairn-thin-substrate-direction
 name: "Cairn thin substrate — six load-bearing primitives at three time scales"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: []
 supersedes-sections: []

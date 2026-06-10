@@ -90,6 +90,7 @@ def _make_consumer_project(
                 ---
                 id: {adr_id}
                 status: accepted
+                carrier: rationale-only
                 firmness: firm
                 supersedes: []
                 supersedes-sections: []
@@ -407,6 +408,7 @@ def _make_flat_slug_project(
             ---
             id: {id_field}
             status: {status}
+            carrier: rationale-only
             firmness: {firmness}
             supersedes: []
             supersedes-sections: []

@@ -2,6 +2,11 @@
 id: cairn-substrate-and-fastmcp-superseded
 name: "Cairn substrate (FastMCP) — superseded"
 status: firm
+contract:
+  must-satisfy:
+    - "standing deps stay pydantic+typer+pyyaml only (carrier: CLAUDE.md new-code guidance + pyproject.toml)"
+  evidence:
+    - "pyproject.toml dependency list"
 firmness: firm
 supersedes: cairn-substrate-and-fastmcp
 date: 2026-05-07

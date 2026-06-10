@@ -1,6 +1,11 @@
 ---
 id: bootstrap-exception
 status: accepted
+contract:
+  must-satisfy:
+    - "the self-symlink bootstrap carve-out holds (carrier: scripts/validate_architecture.py INV-011 assertion)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections: []

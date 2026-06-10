@@ -1,6 +1,7 @@
 ---
 id: phase-pipeline-evaluation
 status: accepted
+carrier: rationale-only
 firmness: firm
 supersedes: []
 supersedes-sections: []

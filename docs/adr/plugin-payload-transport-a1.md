@@ -2,6 +2,11 @@
 id: plugin-payload-transport-a1
 name: Plugin payload transport — url+sha pin (A1), supersedes plugin-payload-transport
 status: accepted
+contract:
+  must-satisfy:
+    - "marketplace.json keeps the sha-pinned url shape (carrier: tests/unit/test_marketplace_schema.py via INV-012)"
+  evidence:
+    - "tests/unit/test_marketplace_schema.py passes"
 firmness: firm
 date: 2026-05-12
 topic: architecture

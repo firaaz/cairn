@@ -2,6 +2,7 @@
 id: intent-fidelity-measure-before-enforce
 name: "Intent-fidelity at Step 3a — populate the baseline and measure (incl. cross-family) before enforcing; pilot the engagement forcing-function"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: null
 superseded-by: null

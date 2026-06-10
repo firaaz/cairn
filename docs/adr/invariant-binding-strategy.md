@@ -1,6 +1,11 @@
 ---
 id: invariant-binding-strategy
 status: accepted
+contract:
+  must-satisfy:
+    - "every firm invariant carries a machine-checkable assertion (carrier: scripts/validate_architecture.py Check D/E runners)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections: []

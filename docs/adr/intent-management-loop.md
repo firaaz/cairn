@@ -2,6 +2,11 @@
 id: intent-management-loop
 name: "Intent-management loop — coexisting thin-cairn path, retirement gated on Trial E"
 status: accepted
+contract:
+  must-satisfy:
+    - "repo-writing work runs the intent loop with two fresh-context checkpoints (carrier: .claude/skills/cairn-intent + workflows/cairn-intent.yaml)"
+  evidence:
+    - "tests/unit/test_cairn_intent_workflow.py + test_cairn_intent_skill_conformance.py pass"
 firmness: provisional
 supersedes: null
 superseded-by: null

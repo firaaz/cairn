@@ -2,6 +2,7 @@
 id: cairn-intent-git-lifecycle
 name: "Cairn-intent git lifecycle — uniform branch-per-unit + --no-ff across both dispatch paths"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: []
 supersedes-sections: []

@@ -2,6 +2,11 @@
 id: pipeline-substrate-naming-superseded
 name: "Pipeline substrate naming — superseded"
 status: firm
+contract:
+  must-satisfy:
+    - "commit-prefix registry mechanics survive via the inline fallback (carrier: scripts/validate_architecture.py _FALLBACK_REGISTRY INV-001)"
+  evidence:
+    - "tests/unit/test_inv_001_git_log_walk.py passes"
 firmness: firm
 supersedes: pipeline-substrate-naming
 date: 2026-05-07

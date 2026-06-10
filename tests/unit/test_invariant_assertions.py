@@ -60,6 +60,7 @@ def _make_adr(adr_dir: Path, adr_id: str, num: str, inv_ids: list[str]) -> None:
             ---
             id: {adr_id}
             status: accepted
+            carrier: rationale-only
             firmness: firm
             supersedes: []
             supersedes-sections: []

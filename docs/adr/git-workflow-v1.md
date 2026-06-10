@@ -2,6 +2,11 @@
 id: git-workflow-v1
 name: "Git workflow v1 — branch-per-feature, --no-ff integration, feature-level naming"
 status: accepted
+contract:
+  must-satisfy:
+    - "commit subjects validate against the registry; --no-merges exemption holds (carrier: scripts/validate_architecture.py INV-001 git-log-walk)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections:

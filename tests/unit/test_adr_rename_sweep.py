@@ -669,6 +669,7 @@ def _synthetic_valid_adr():
         f"id: {slug}\n"
         'name: "synthetic probe ADR — phase-2 skeptic fixture"\n'
         "status: accepted\n"
+        "carrier: rationale-only\n"
         "---\n"
         "\n"
         "Synthetic body. No residue tokens.\n",

@@ -2,6 +2,7 @@
 id: delivery-mechanism-friction
 name: Delivery-mechanism friction — SessionStart pointer + reworked nav agents, deferred diagnostics
 status: accepted
+carrier: rationale-only
 firmness: provisional
 date: 2026-05-11
 topic: architecture

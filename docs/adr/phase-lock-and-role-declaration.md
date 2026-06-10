@@ -1,6 +1,11 @@
 ---
 id: phase-lock-and-role-declaration
 status: accepted
+contract:
+  must-satisfy:
+    - "phase roles match the declared topology and write locks (carrier: checks/role_guard.py + scripts/validate_architecture.py INV-003 phase-topology)"
+  evidence:
+    - "uv run python scripts/validate_architecture.py"
 firmness: firm
 supersedes: []
 supersedes-sections: []

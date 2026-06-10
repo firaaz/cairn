@@ -2,6 +2,7 @@
 id: slice-close-contract-superseded
 name: "Slice close contract — superseded"
 status: firm
+carrier: rationale-only
 firmness: firm
 supersedes: slice-close-contract
 date: 2026-05-07

@@ -2,6 +2,7 @@
 id: trial-e-closure-adjudication
 name: "Trial-E closure — adjudicate the three deferred points (cross-family defer, heavy-band retire-build, four-phase retire-with-conditions)"
 status: accepted
+carrier: rationale-only
 firmness: provisional
 supersedes: null
 superseded-by: null

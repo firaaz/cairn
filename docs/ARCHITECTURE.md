@@ -96,8 +96,8 @@ description: "Schema-shape lint binding for INV-012's marketplace.json sha-pin c
 
 ```invariant-check INV-013
 type: test-ref
-pattern: "tests/unit/test_hook_smoketest.py"
-description: "Interim proxy binding (INV-001/002 precedent): the hook-liveness home for D8. Graduates to the adr-carrier validator rule's contract test when the corpus backfill lands later in the carrier-hierarchy-refocus feature."
+pattern: "tests/unit/test_adr_carrier_contract.py"
+description: "Check F binding for D5: every non-superseded ADR carries a contract: block or carrier: rationale-only (check_adr_carrier in scripts/validate_architecture.py, asserted on the live corpus). D8's hook-liveness half is carried by scripts/smoketest_hooks.sh via tests/unit/test_hook_smoketest.py."
 ```
 
 ## Boundaries

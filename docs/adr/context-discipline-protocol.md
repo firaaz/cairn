@@ -1,6 +1,11 @@
 ---
 id: context-discipline-protocol
 status: accepted
+contract:
+  must-satisfy:
+    - "handoff stays pointer-only within budget (carrier: tests/unit/test_handoff_contract.py via INV-002)"
+  evidence:
+    - "tests/unit/test_handoff_contract.py passes"
 firmness: firm
 supersedes: []
 supersedes-sections: []
